@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 
-class MapDbBotContextManagerIT {
+class MapDbBotContextManagerTest {
 
     @Test
     fun testWithTempFile() {
