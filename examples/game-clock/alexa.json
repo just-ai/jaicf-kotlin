@@ -1,0 +1,91 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "game clock",
+      "intents": [
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "StartIntent",
+          "slots": [
+            {
+              "name": "gamers",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "start new game with {gamers} gamers",
+            "start new game for {gamers} gamers",
+            "start new round",
+            "start new game"
+          ]
+        },
+        {
+          "name": "AMAZON.PauseIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.ResumeIntent",
+          "samples": []
+        },
+        {
+          "name": "GamersIntent",
+          "slots": [
+            {
+              "name": "gamers",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "{gamers} gamers",
+            "it is {gamers}",
+            "there are {gamers} gamers",
+            "{gamers}"
+          ]
+        },
+        {
+          "name": "GamerColorIntent",
+          "slots": [
+            {
+              "name": "color",
+              "type": "AMAZON.Color"
+            }
+          ],
+          "samples": [
+            "I have {color} color",
+            "I am {color}",
+            "{color} color",
+            "{color}"
+          ]
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        }
+      ],
+      "types": []
+    }
+  }
+}

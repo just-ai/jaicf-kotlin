@@ -1,0 +1,28 @@
+/**
+ * Bintray release configuration
+ * */
+ext {
+    bintrayOrg = 'just-ai'
+    bintrayRepo = 'jaicf'
+    bintrayName = project.name
+
+    publishedGroupId = rootProject.getGroup()
+    libraryName = 'JAICF'
+
+    artifact = project.name
+    packagingType = 'jar'
+
+    siteUrl = 'https://just-ai.com'
+    gitUrl = 'https://github.com/just-ai'
+
+    libraryVersion = rootProject.getVersion()
+
+    developerId = 'just-ai'
+    developerName = 'Just AI'
+    developerEmail = 'contact@just-ai.com'
+
+    allLicenses = ["Apache-2.0"]
+}
+
+// Publish on Bintray.
+apply from: rootProject.file('jcenter/bintray.gradle')
