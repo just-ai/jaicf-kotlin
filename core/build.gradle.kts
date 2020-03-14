@@ -36,5 +36,5 @@ publishing {
 }
 
 apply {
-    from(rootProject.file("release-bintray.gradle"))
+    from(rootProject.file("release.gradle"))
 }

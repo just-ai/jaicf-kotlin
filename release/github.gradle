@@ -1,0 +1,21 @@
+apply plugin: 'com.github.breadmoirai.github-release'
+
+ext {
+    githubRepo = "jaicf-kotlin"
+    githubOwner = "just-ai"
+}
+
+Properties properties = new Properties()
+File propsFile = project.rootProject.file('local.properties')
+
+if (propsFile.exists()) {
+    properties.load(propsFile.newDataInputStream())
+}
+
+githubRelease {
+    token = properties.getProperty("github.token", "")
+    owner = githubOwner
+    repo = githubRepo
+
+    overwrite = true
+}

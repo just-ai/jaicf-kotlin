@@ -24,5 +24,4 @@ ext {
     allLicenses = ["Apache-2.0"]
 }
 
-// Publish on Bintray.
-apply from: rootProject.file('jcenter/bintray.gradle')
+apply from: rootProject.file('release/bintray.gradle')
