@@ -9,6 +9,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task dokkaJavadoc(type: dokka.getClass()) {
     outputFormat = 'javadoc'
     outputDirectory = "$buildDir/javadoc"
+
+    configuration {
+        noStdlibLink = true
+        noJdkLink = true
+    }
 }
 
 task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
