@@ -4,8 +4,9 @@ JAICF is a comprehensive enterprise-level framework for conversational voice ass
 
 <br/>
 
-<a href="https://travis-ci.org/just-ai/jaicf-kotlin/"><img alt="Travis CI Build" src="https://travis-ci.org/just-ai/jaicf-kotlin.svg?branch=master"></a>
-<a href="https://bintray.com/just-ai/jaicf/"><img alt="Bintray artifacts" src="https://api.bintray.com/packages/just-ai/jaicf/core/images/download.svg"></a>
+[![Build Status](https://travis-ci.org/just-ai/jaicf-kotlin.svg?branch=master)](https://travis-ci.org/just-ai/jaicf-kotlin)
+[![Download](https://api.bintray.com/packages/just-ai/jaicf/core/images/download.svg) ](https://bintray.com/just-ai/jaicf/core/_latestVersion)
+[![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 ```kotlin
 object HelloWorldScenario: Scenario() {
