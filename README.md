@@ -2,6 +2,11 @@
 
 JAICF is a comprehensive enterprise-level framework for conversational voice assistants and chat bots development using Kotlin-based DSL.
 
+<br/>
+
+<a href="https://travis-ci.org/just-ai/jaicf-kotlin/"><img alt="Travis CI Build" src="https://travis-ci.org/just-ai/jaicf-kotlin.svg?branch=master"></a>
+<a href="https://bintray.com/just-ai/jaicf/"><img alt="Bintray artifacts" src="https://api.bintray.com/packages/just-ai/jaicf/core/images/download.svg"></a>
+
 ```kotlin
 object HelloWorldScenario: Scenario() {
     init {
