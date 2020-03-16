@@ -9,6 +9,16 @@ JAICF is a comprehensive enterprise-level framework for conversational voice ass
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 ```kotlin
+repositories {
+    mavenCentral()
+    jcenter()
+}
+dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("com.justai.jaicf:core:$jaicfVersion")
+}
+```
+```kotlin
 object HelloWorldScenario: Scenario() {
     init {
         state("main") {
