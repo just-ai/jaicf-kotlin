@@ -18,6 +18,14 @@ interface JaicpBotChannel : BotChannel
 interface JaicpCompatibleBotChannel : JaicpBotChannel, HttpBotChannel
 
 /**
+ * Basic interface for external asynchronous channels compatible with JAICP channels.
+ * These channel can use channel-specific reactions.
+ *
+ * @see HttpBotChannel
+ */
+interface JaicpCompatibleAsyncBotChannel : JaicpBotChannel, HttpBotChannel
+
+/**
  * Basic interface for JAICP-provided channel factories.
  */
 interface JaicpChannelFactory {
@@ -46,12 +54,12 @@ interface JaicpCompatibleChannelFactory : JaicpChannelFactory {
  */
 interface JaicpCompatibleAsyncChannelFactory : JaicpChannelFactory {
     /**
-     * Creates a new [JaicpCompatibleBotChannel] instance.
+     * Creates a new [JaicpCompatibleAsyncChannelFactory] instance.
      *
      * @param botApi a [BotApi] implementation used to process the requests to this channel
      * @param apiUrl an URL where to send a replies
      */
-    fun create(botApi: BotApi, apiUrl: String): JaicpCompatibleBotChannel
+    fun create(botApi: BotApi, apiUrl: String): JaicpCompatibleAsyncBotChannel
 }
 
 

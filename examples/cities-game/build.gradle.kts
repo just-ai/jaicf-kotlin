@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":channels:google-actions"))
     implementation(project(":channels:jaicp"))
     implementation(project(":channels:telegram"))
+    implementation(project(":channels:facebook"))
     implementation(project(":activators:caila"))
 
     implementation("io.ktor:ktor-server-netty" version {ktor})

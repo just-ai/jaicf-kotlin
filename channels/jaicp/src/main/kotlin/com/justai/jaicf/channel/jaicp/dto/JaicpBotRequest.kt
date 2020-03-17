@@ -5,7 +5,6 @@ import com.justai.jaicf.api.BotRequestType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.content
 
 @Serializable
 data class JaicpBotRequest(
