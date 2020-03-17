@@ -1,4 +1,4 @@
-package com.justai.jaicf.examples.jaicpexamples
+package com.justai.jaicf.examples.jaicptelephony
 
 import com.justai.jaicf.channel.jaicp.channels.TelephonyEvents
 import com.justai.jaicf.channel.jaicp.dto.telephony
@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.scenario.Scenario
 
-class CitiesGameBotModule : Scenario(), WithLogger {
+class TelephonyBotModule : Scenario(), WithLogger {
     init {
         state("/ringing") {
             globalActivators {

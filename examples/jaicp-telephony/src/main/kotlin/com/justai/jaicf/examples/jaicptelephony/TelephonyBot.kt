@@ -1,4 +1,4 @@
-package com.justai.jaicf.examples.jaicpexamples
+package com.justai.jaicf.examples.jaicptelephony
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.caila.CailaIntentActivator
@@ -9,7 +9,7 @@ import com.justai.jaicf.activator.regex.RegexActivator
 val cailaIntentActivator = CailaIntentActivator.Factory(nluSettings)
 
 val citiesGameBot = BotEngine(
-    CitiesGameBotModule().model,
+    TelephonyBotModule().model,
     activators = arrayOf(
         BaseEventActivator,
         RegexActivator,

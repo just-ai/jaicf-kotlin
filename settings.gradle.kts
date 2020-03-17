@@ -5,8 +5,8 @@ include("core")
 
 include("examples:hello-world")
 findProject(":examples:hello-world")?.name = "hello-world"
-include("examples:jaicp-examples")
-findProject(":examples:jaicp-examples")?.name = "jaicp-examples"
+include("examples:jaicp-telephony")
+findProject(":examples:jaicp-telephony")?.name = "jaicp-telephony"
 include("examples:game-clock")
 findProject(":examples:game-clock")?.name = "game-clock"
 
