@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.scenario.Scenario
 
-class TelephonyBotModule : Scenario(), WithLogger {
+object TelephonyBotScenario : Scenario(), WithLogger {
     init {
         state("/ringing") {
             globalActivators {
