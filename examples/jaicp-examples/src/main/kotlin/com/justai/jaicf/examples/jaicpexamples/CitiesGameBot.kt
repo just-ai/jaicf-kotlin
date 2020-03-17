@@ -1,4 +1,4 @@
-package com.justai.jaicf.examples.citiesgame
+package com.justai.jaicf.examples.jaicpexamples
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.caila.CailaIntentActivator

@@ -12,11 +12,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
 internal class CailaConnector(
-    projectId: String,
+    accessToken: String,
     url: String
 ) : WithLogger {
 
-    private val simpleInferenceUrl = "$url/$projectId/nlu/inference".toUrl()
+    private val simpleInferenceUrl = "$url/$accessToken/nlu/inference".toUrl()
     private val client = HttpClient(CIO) { expectSuccess = true }
     private val json = Json(JsonConfiguration.Stable.copy(strictMode = false, encodeDefaults = false))
 

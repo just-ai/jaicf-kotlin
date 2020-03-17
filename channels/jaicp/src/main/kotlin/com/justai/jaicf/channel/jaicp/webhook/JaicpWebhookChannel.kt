@@ -9,7 +9,7 @@ import com.justai.jaicf.helpers.logging.WithLogger
 
 class JaicpWebhookChannel(
     override val botApi: BotApi,
-    override val projectId: String,
+    override val accessToken: String,
     override val url: String = DEFAULT_PROXY_URL,
     override val channels: List<JaicpChannelFactory>
 ) : WithLogger,

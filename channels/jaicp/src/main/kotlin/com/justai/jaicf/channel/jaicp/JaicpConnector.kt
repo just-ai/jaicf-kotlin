@@ -7,10 +7,10 @@ const val DEFAULT_PROXY_URL = "https://jaicf01-demo-htz.lab.just-ai.com/chatadap
 interface JaicpConnector {
     val botApi: BotApi
     val channels: List<JaicpChannelFactory>
-    val projectId: String
+    val accessToken: String
     val url: String
 
 }
 
 val JaicpConnector.proxyUrl: String
-    get() = "$url/proxy/$projectId"
+    get() = "$url/proxy/$accessToken"

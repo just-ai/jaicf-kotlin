@@ -16,7 +16,7 @@ class CailaIntentActivator(
     private val settings: CailaNLUSettings
 ) : BaseIntentActivator(model) {
 
-    private val connector = CailaConnector(settings.projectId, settings.cailaUrl)
+    private val connector = CailaConnector(settings.accessToken, settings.cailaUrl)
 
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
