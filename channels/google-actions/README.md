@@ -30,7 +30,7 @@ state("launch") {
         val user = actionsRequest?.user
 
         // Dialogflow named entities extracted from the user's query
-        // IN CASE YOU'RE USING Dialogflow Fulfillment
+        // IN CASE YOU'RE USING ActionsDialogflowActivator
         val slots = activator.actionsDialogflow?.slots
 
         // Use Actions-specified response builders
@@ -58,7 +58,7 @@ You can also build a response directly via `reactions.actions?.response?.builder
 
 #### 3. Configure activator and webhook
 
-Google Actions platform allows you to use any third-party NLU engine or use a Dialogflow.
+Google Actions platform allows you to use any third-party NLU engine or use a [Dialogflow integration](https://dialogflow.com/docs/integrations/actions/integration).
 
 #### Dialogflow
 
