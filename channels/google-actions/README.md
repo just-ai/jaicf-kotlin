@@ -114,7 +114,7 @@ Using [Spring Boot](https://spring.io/projects/spring-boot)
 
 ```kotlin
 @Bean
-fun aimyboxServlet() {
+fun actionsServlet() {
     return ServletRegistrationBean(
         HttpBotChannelServlet(ActionsFulfillment.dialogflow(helloWorldBot)),
         "/"
@@ -144,6 +144,8 @@ fun main() {
     }.start(wait = true)
 }
 ```
+
+And accordingly for Spring Boot.
 
 Once you've obtained a public URL of the webhook, you have to create Action project and upload the Action JSON package manually.
 

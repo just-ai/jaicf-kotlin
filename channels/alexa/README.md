@@ -85,7 +85,7 @@ Using [Spring Boot](https://spring.io/projects/spring-boot)
 
 ```kotlin
 @Bean
-fun aimyboxServlet() {
+fun alexaServlet() {
     return ServletRegistrationBean(
         HttpBotChannelServlet(AlexaChannel(helloWorldBot)),
         "/"
