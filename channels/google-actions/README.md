@@ -151,3 +151,15 @@ Once you've obtained a public URL of the webhook, you have to create Action proj
 
 > Please refer to the [Actions SDK overview](https://developers.google.com/assistant/actions/actions-sdk) to learn how to do this.
 
+## Using SSML
+
+Google Actions support [Speech Synthesis Markup Language](https://developers.google.com/assistant/actions/reference/ssml) enabling you to control how Google Assistant generates the speech.
+For example, you can add pauses and other speech effects.
+
+To use these SSML tags in your scenarios you can use it directly or via helper functions:
+
+```kotlin
+reactions.say("Hello there! $break500ms Let's listen this audio ${audio("https://address/audio.mp3")}")
+```
+
+> Learn more about available SSML helpers [here](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/helpers/ssml/SSML.kt).
