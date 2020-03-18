@@ -1,9 +1,9 @@
-package com.justai.jaicf.examples.citiesgame
+package com.justai.jaicf.examples.jaicptelephony
 
 import com.justai.jaicf.activator.caila.CailaNLUSettings
 
-val projectId = "mva_test_jaicf-263-YBW"
+const val accessToken = "dev-262-TnQ"
 val nluSettings = CailaNLUSettings(
-    projectId = projectId,
+    accessToken = accessToken,
     confidenceThreshold = 0.2
 )

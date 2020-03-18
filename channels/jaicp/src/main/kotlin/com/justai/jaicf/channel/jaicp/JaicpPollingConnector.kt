@@ -3,17 +3,18 @@ package com.justai.jaicf.channel.jaicp
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.channel.jaicp.polling.Dispatcher
+import com.justai.jaicf.helpers.logging.WithLogger
 
 
 class JaicpPollingConnector(
     override val botApi: BotApi,
-    val projectId: String,
-    url: String = DEFAULT_URL,
+    override val accessToken: String,
+    override val url: String = DEFAULT_PROXY_URL,
     override val channels: List<JaicpChannelFactory>
-) : JaicpConnector {
+) : JaicpConnector,
+    WithLogger {
 
-    private val dispatcher =
-        Dispatcher("$url/polling/$projectId")
+    private val dispatcher = Dispatcher(proxyUrl)
 
     fun runBlocking() {
         channels.forEach {
@@ -27,13 +28,15 @@ class JaicpPollingConnector(
                 is JaicpNativeChannelFactory -> {
                     dispatcher.registerPolling(it, it.create(botApi))
                 }
+                is JaicpCompatibleAsyncChannelFactory -> {
+                    dispatcher.registerPolling(it, it.create(botApi, "$proxyUrl/${it.channelType}"))
+                }
+                else -> logger.warn(
+                    "No channel will be created for ${it.channelType} as it's not supported by JaicpChannelFactory"
+                )
             }
         }
 
         dispatcher.startPollingBlocking()
-    }
-
-    companion object {
-        private const val DEFAULT_URL = "http://jaicf01-demo-htz.lab.just-ai.com/chatadapter"
     }
 }

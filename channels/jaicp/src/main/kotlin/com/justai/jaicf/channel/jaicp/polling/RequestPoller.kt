@@ -19,7 +19,7 @@ class RequestPoller(private val client: HttpClient) : WithLogger {
             try {
                 client.get<HttpResponse>("$url/getUpdates".toUrl()).let { response ->
                     if (response.status == HttpStatusCode.OK) {
-                        emit(response.receive())
+                        emit(response.receive<String>())
                     } else {
                         delay(500)
                     }

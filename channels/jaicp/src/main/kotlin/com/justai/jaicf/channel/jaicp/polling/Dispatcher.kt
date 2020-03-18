@@ -1,16 +1,11 @@
 package com.justai.jaicf.channel.jaicp.polling
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.JaicpBotChannel
-import com.justai.jaicf.channel.jaicp.JaicpChannelFactory
-import com.justai.jaicf.channel.jaicp.JaicpCompatibleBotChannel
-import com.justai.jaicf.channel.jaicp.JaicpExternalPollingChannelFactory
+import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
-import com.justai.jaicf.channel.jaicp.dto.JaicpPollingRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
-import com.justai.jaicf.channel.jaicp.dto.create
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
@@ -24,13 +19,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.json
-import kotlinx.serialization.json.jsonArray
 
-private fun deserializeBotRequest(rawRequest: String) = JSON.parse(
-    JaicpPollingRequest.serializer(), rawRequest
-)
 
 class Dispatcher(private val proxyUrl: String) :
     WithLogger,
@@ -57,7 +46,12 @@ class Dispatcher(private val proxyUrl: String) :
     fun runChannel(
         factory: JaicpExternalPollingChannelFactory,
         botApi: BotApi
-    ) = launch { factory.createAndRun(botApi, "$proxyUrl/${factory.channelType}".toUrl()) }
+    ) = launch {
+        factory.createAndRun(botApi, "$proxyUrl/${factory.channelType}".toUrl()).also {
+            logger.info("Running external polling channel ${factory.channelType}")
+        }
+    }
+
 
     fun registerPolling(
         factory: JaicpChannelFactory,
@@ -83,39 +77,37 @@ class Dispatcher(private val proxyUrl: String) :
     private suspend fun runPollingForChannel(channel: PollingChannel) {
         poller.getUpdates(channel.url).collect { rawRequest ->
             logger.info("Received bot request: $rawRequest")
-            val botRequest = deserializeBotRequest(rawRequest)
+            val request = rawRequest.asJaicpPollingRequest().request
             when (val botChannel = channel.botChannel) {
-                is JaicpNativeBotChannel -> processNative(botChannel, channel.url, botRequest)
-                is JaicpCompatibleBotChannel -> processCompatible(botChannel, channel.url, botRequest)
+                is JaicpNativeBotChannel -> processNativeChannel(botChannel, channel.url, request)
+                is JaicpCompatibleBotChannel -> processCompatibleChannel(botChannel, channel.url, request)
+                is JaicpCompatibleAsyncBotChannel -> processAsyncChannel(botChannel, request)
             }
         }
     }
 
-    private fun processNative(
+    private fun processAsyncChannel(
+        channel: JaicpCompatibleAsyncBotChannel,
+        request: JaicpBotRequest
+    ) = channel.process(request.rawRequest.toString())
+
+    private fun processNativeChannel(
         channel: JaicpNativeBotChannel,
         url: String,
-        pollingRequest: JaicpPollingRequest
-    ) {
-        val botRequest = pollingRequest.request
-        val botResponse = channel.process(botRequest)
+        request: JaicpBotRequest
+    ) = sendResponse(
+        botResponse = channel.process(request),
+        url = url
+    )
 
-        sendResponse(botResponse, url)
-    }
-
-    private fun processCompatible(
+    private fun processCompatibleChannel(
         channel: JaicpCompatibleBotChannel,
         url: String,
-        pollingRequest: JaicpPollingRequest
-    ) {
-        val rawRequest = pollingRequest.request.rawRequest.toString()
-        channel.process(rawRequest)?.let { json ->
-            val rawJson = JSON.parseJson(json)
-            val rawResponse = addRawReply(rawJson)
-
-            val botResponse = JaicpBotResponse.create(pollingRequest.request, rawResponse)
-            sendResponse(botResponse, url)
-        }
-    }
+        request: JaicpBotRequest
+    ) = sendResponse(
+        botResponse = channel.processCompatible(request),
+        url = url
+    )
 
     private fun sendResponse(
         botResponse: JaicpBotResponse,
@@ -126,13 +118,5 @@ class Dispatcher(private val proxyUrl: String) :
             JaicpPollingResponse(botResponse.questionId, botResponse)
         )
     }
-
-    private fun addRawReply(rawResponse: JsonElement) = json {
-        "replies" to jsonArray {
-            +(json {
-                "type" to "raw"
-                "text" to rawResponse
-            })
-        }
-    }
 }
+
