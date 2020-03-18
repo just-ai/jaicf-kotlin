@@ -18,6 +18,8 @@ You can connect your JAICF conversational agent to the channels listed below.
 
 Please refer to the selected channel page to learn how to connect your JAICF conversational agent to this channel.
 
+> Learn more about JAICF channels [here](https://github.com/just-ai/jaicf-kotlin/wiki/Channels).
+
 # How to create a new channel
 
 You can learn how to create a new channel connection investigating existing implementations source code.
