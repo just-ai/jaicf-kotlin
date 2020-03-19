@@ -15,3 +15,8 @@ Refer to the appropriate channel configuration to learn how to create a channel 
 
 You can learn how sub-scenarios are used in this example.
 Look into `HelperScenario` to see how `askForName` is used to invoke a helper scenario and return a result back to the `HelloWorldScenario` once the user responds with their name.
+
+## Automatic tests
+
+You can also learn how automatic tests are used in this project.
+Just try to run `HelloWorldScenarioTest` to see how it works.

@@ -36,3 +36,8 @@ You can also use a physical Amazon Echo device or Echo application on your smart
 2. Go to Fulfillment in the left side bar and paste your Webhook URL with appended `/actions` path to the end of URL. Click on Save.
 3. Go through an each intent and enable Fulfillment for each.
 4. Click the Google Assistant link on the right side bar to test your action.
+
+## Automatic tests
+
+You can also learn how automatic tests are used in this project.
+Just try to run `MainScenarioTest` to see how it works.
