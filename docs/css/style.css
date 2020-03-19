@@ -53,7 +53,8 @@ p {
 }
 
 p.lead {
-    color: #977BFF;
+   /* color: #977BFF;*/
+    color: #562AE6;
     margin-bottom: 2rem;
 }
 
@@ -406,8 +407,8 @@ header {
     padding: 1rem 1rem;
     border-color: #faf6fb #faf6fb #FFF;
     font-size: 19px;
-    color: #CFC5FF;
-    background: #f5eff7;
+   /* color: #CFC5FF;
+    background: #f5eff7;*/
 }
 
 .nav-tabs .nav-link.active {
