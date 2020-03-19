@@ -1,7 +1,8 @@
 <p align="center">
     <img src="https://i.imgur.com/jMsp7uq.png" width="128" height="128"/>
-    <h1>Telegram messenger channel</h1>
 </p>
+
+<h1 align="center">Telegram messenger channel</h1>
 
 Allows to create chatbots for [Telegram](https://core.telegram.org/bots).
 

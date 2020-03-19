@@ -1,4 +1,8 @@
-# Aimybox Channel
+<p align="center">
+    <img src="https://static.tildacdn.com/tild6166-3764-4435-a563-356437363835/aimybox.png" width="128" height="134"/>
+</p>
+
+<h1 align="center">Aimybox channel</h1>
 
 Allows to create skills for custom voice assistant applications built on top of [Aimybox SDK](https://aimybox.com).
 

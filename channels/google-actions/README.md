@@ -1,4 +1,8 @@
-# Google Actions channel
+<p align="center">
+    <img src="https://developers.google.com/assistant/assistant.png" width="128" height="128"/>
+</p>
+
+<h1 align="center">Google Actions channel</h1>
 
 Allows to create custom voice actions for [Google Actions](https://developers.google.com/assistant) platform.
 

@@ -1,4 +1,8 @@
-# Facebook Messenger channel
+<p align="center">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Facebook_Messenger_logo.svg/1200px-Facebook_Messenger_logo.svg.png" width="128" height="128"/>
+</p>
+
+<h1 align="center">Facebook Messenger channel</h1>
 
 Allows to create chatbots for [Facebook Messenger Platform](https://developers.facebook.com/docs/messenger-platform).
 

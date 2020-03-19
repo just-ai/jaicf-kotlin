@@ -1,4 +1,8 @@
-# Amazon Alexa channel
+<p align="center">
+    <img src="https://m.media-amazon.com/images/G/01/mobile-apps/dex/avs/docs/ux/branding/mark1._TTH_.png" width="200" height="200"/>
+</p>
+
+<h1 align="center">Amazon Alexa channel</h1>
 
 Allows to create custom voice skills for [Amazon Alexa](https://developer.amazon.com/en-US/docs/alexa/custom-skills/understanding-custom-skills.html).
 
