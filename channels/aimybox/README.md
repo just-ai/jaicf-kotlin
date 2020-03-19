@@ -60,4 +60,4 @@ fun aimyboxServlet() {
 
 #### 4. Configure Aimybox
 
-Then you can use the public webhook URL to register a custom voice skill via [Aimybox Console](https://app.aimybox.com) or provide this URL directly to the Aimybox initialisation block of your mobile application.
+Then you can use the public webhook URL (using [ngrok](https://ngrok.com) for example) to register a custom voice skill via [Aimybox Console](https://app.aimybox.com) or provide this URL directly to the Aimybox initialisation block of your mobile application.

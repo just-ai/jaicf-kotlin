@@ -50,7 +50,7 @@ state("launch") {
 
 > Learn more about Actions SDK [ActionRequest](https://github.com/actions-on-google/actions-on-google-java/blob/master/src/main/kotlin/com/google/actions/api/ActionRequest.kt) and [ActionsReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/google-actions/src/main/kotlin/com/justai/jaicf/channel/googleactions/ActionsReactions.kt).
 
-#### Native builder
+#### Native response builder
 
 You can also build a response directly via `reactions.actions?.response?.builder` native builder.
 
@@ -147,7 +147,7 @@ fun main() {
 
 And accordingly for Spring Boot.
 
-Once you've obtained a public URL of the webhook, you have to create Action project and upload the Action JSON package manually.
+Once you've obtained a public URL of the webhook (using [ngrok](https://ngrok.com) for example), you have to create Action project and upload the Action JSON package manually.
 
 > Please refer to the [Actions SDK overview](https://developers.google.com/assistant/actions/actions-sdk) to learn how to do this.
 

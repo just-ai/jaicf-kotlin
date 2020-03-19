@@ -47,7 +47,7 @@ state("launch") {
 > Learn more about Amazon SDK [HandlerInput](https://github.com/alexa/alexa-skills-kit-sdk-for-java/blob/2.0.x/ask-sdk-core/src/com/amazon/ask/dispatcher/request/handler/HandlerInput.java) and [AmazonReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/alexa/src/main/kotlin/com/justai/jaicf/channel/alexa/AlexaReactions.kt).
 
 
-#### Native builder
+#### Native response builder
 
 You can also build a response directly via `reactions.alexa?.response?.builder` native builder.
 
@@ -101,6 +101,8 @@ Create and sign-in to your **Developer account** on [Alexa Developer Console](ht
 
 Create new custom skill and setup a **HTTPS Endpoint** on the Build tab using your public URL of the webhook.
 _Select "My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority" in the drop-down list._
+
+You can obtain a public URL of your webhook using [ngrok](https://ngrok.com) for example.
 
 #### 6. Provide custom intents
 
