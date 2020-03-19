@@ -575,7 +575,7 @@ header {
 }
 
 .call-to-action .tagline {
-    font-size: 16px;
+    /*font-size: 16px;*/
     font-weight: 300;
     color: #bbb3ff;
     max-width: 650px;
