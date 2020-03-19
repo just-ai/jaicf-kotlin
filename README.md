@@ -46,7 +46,7 @@ object HelloWorldScenario: Scenario() {
 * Connects to any [voice and text channels](https://github.com/just-ai/jaicf-kotlin/wiki/Channels) like Amazon Alexa, Google Actions, Facebook, Telegram and others.
 * Works with any [NLU engines](https://github.com/just-ai/jaicf-kotlin/wiki/Natural-Language-Understanding) like Dialogflow, Rasa and Caila.
 * Enables developer to create dialogue scenarios that work [simultaneously in multiple platforms](https://github.com/just-ai/jaicf-kotlin/wiki/Channels#multi-channel-support) without any restrictions of platform-related features.
-* Contains JUnit layer to automate dialogue scenarios testing.
+* Contains a [JUnit-based test suite](https://github.com/just-ai/jaicf-kotlin/wiki/Testing) to automate dialogue scenarios testing.
 * Being a Kotlin app, JAICF driven bot can use any Kotlin or Java features and third-party libraries.
 * Can be ran in any servlet container, as [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot) application.
 
