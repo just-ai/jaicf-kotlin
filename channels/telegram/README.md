@@ -13,7 +13,14 @@ _Built on top of [Kotlin Telegram Bot](https://github.com/kotlin-telegram-bot/ko
 #### 1. Include Telegram dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:telegram:$jaicfVersion")
+repositories {
+    jcenter()
+    mavenCentral()
+    maven(uri("https://jitpack.io"))
+}
+dependencies {
+    implementation("com.justai.jaicf:telegram:$jaicfVersion")
+}
 ```
 
 #### 2. Use Telegram `request` and `reactions` in your scenarios' actions

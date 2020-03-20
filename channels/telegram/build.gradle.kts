@@ -3,10 +3,6 @@ plugins {
     `maven-publish`
 }
 
-repositories {
-    maven(uri("https://jitpack.io"))
-}
-
 dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
