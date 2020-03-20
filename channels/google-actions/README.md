@@ -81,7 +81,7 @@ val helloWorldBot = BotEngine(
 #### Third-party NLU engine
 
 In case of third-party NLU engine usage you're free to pick any NLU engine you wish to use.
-Add it's activator to the JAICF agent's configuration:
+Add its activator to the JAICF agent's configuration:
 
 ```kotlin
 val helloWorldBot = BotEngine(
