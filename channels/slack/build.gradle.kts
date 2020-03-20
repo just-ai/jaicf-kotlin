@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
 
-    api("com.github.Ullink:simple-slack-api:1.2.0")
+    api("com.ullink.slack:simpleslackapi:1.2.0")
 }
 
 tasks {

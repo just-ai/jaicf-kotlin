@@ -18,14 +18,13 @@ buildscript {
 allprojects {
 
     group = "com.justai.jaicf"
-    version = "0.1.0"
+    version = "0.2.0"
 
     repositories {
         google()
         jcenter()
         mavenCentral()
         mavenLocal()
-        maven(url = "https://jitpack.io")
     }
 
 }
