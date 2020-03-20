@@ -9,7 +9,7 @@ import io.ktor.server.netty.Netty
 fun main() {
     embeddedServer(Netty, 8000) {
         routing {
-            httpBotRouting("/" to AliceChannel(skill, "AQAAAAAKhSVuAAT7o85dnh5wXk5giv0zXOmQ7ow"))
+            httpBotRouting("/" to AliceChannel(skill, "place your oauth token"))
         }
     }.start(wait = true)
 }
