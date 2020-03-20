@@ -8,7 +8,7 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
-class AimyboxChannel(
+class AimyboxChannel private constructor(
     override val botApi: BotApi
 ): JaicpCompatibleBotChannel {
 
