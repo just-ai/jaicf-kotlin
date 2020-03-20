@@ -559,7 +559,7 @@ header {
 .call-to-action {
     text-align: center;
     color: #FFF;
-    margin: 3rem 0;
+   /* margin: 3rem 0;*/
 }
 
 .call-to-action .box-icon {
