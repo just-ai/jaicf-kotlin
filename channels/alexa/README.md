@@ -110,7 +110,7 @@ You can obtain a public URL of your webhook using [ngrok](https://ngrok.com) for
 
 #### 6. Provide custom intents
 
-Alexa implements it's own NLU engine that recognises a user's requests and extracts named entities from their phrases.
+Alexa implements its own NLU engine that recognises a user's requests and extracts named entities from their phrases.
 You have to provide at least one custom intent to the intents list on the left side bar of Alexa Developer Console.
 
 #### 7. Start testing

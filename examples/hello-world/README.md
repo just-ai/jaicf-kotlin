@@ -9,7 +9,7 @@ Start `Console.kt` to talk with hello world bot in the terminal.
 This example also provides other channels to test like `Telegram.kt`, `Slack.kt` and `Facebook.kt`.
 Just replace configuration parameters in these channels configuration with your own.
 
-Refer to the appropriate channel configuration to learn how to create a channel and obtain it's parameters.
+Refer to the appropriate channel configuration to learn how to create a channel and obtain its parameters.
 
 ## Sub-scenarios
 

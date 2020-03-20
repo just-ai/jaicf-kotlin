@@ -24,5 +24,5 @@ Please refer to the selected channel page to learn how to connect your JAICF con
 
 You can learn how to create a new channel connection investigating existing implementations source code.
 
-In general, every channel in JAICF contains it's own [BotRequest](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/api/BotRequest.kt) and [Reactions](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/reactions/Reactions.kt).
+In general, every channel in JAICF contains its own [BotRequest](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/api/BotRequest.kt) and [Reactions](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/reactions/Reactions.kt).
 Depending on the type of connection it can implement [HttpBotChannel](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/channel/http/HttpBotChannel.kt) (in case of webhook type) or [BotChannel](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/channel/BotChannel.kt) directly (in case of websocket or long polling).

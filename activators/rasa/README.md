@@ -34,7 +34,7 @@ state("launch") {
 Create your NLU model that includes intents and named entities you need.
 There is a [great tutorial](https://rasa.com/docs/rasa/user-guide/rasa-tutorial/) that shows how to install and run Rasa NLU models.
 
-Then you have to [train and run NLU only server](https://rasa.com/docs/rasa/nlu/using-nlu-only/) and obtain it's public URL (using [ngrok](https://ngrok.com) for example).
+Then you have to [train and run NLU only server](https://rasa.com/docs/rasa/nlu/using-nlu-only/) and obtain its public URL (using [ngrok](https://ngrok.com) for example).
 
 #### Rasa NLU server template
 
