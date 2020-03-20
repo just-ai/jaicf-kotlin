@@ -40,5 +40,5 @@ internal fun smartRandom(max: Int, context: ActionContext): Int {
 
     smartRandom!![id] = prev
 
-    return i
+    return i % max
 }
