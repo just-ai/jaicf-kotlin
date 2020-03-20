@@ -53,7 +53,8 @@ p {
 }
 
 p.lead {
-    color: #977BFF;
+   /* color: #977BFF;*/
+    color: #562AE6;
     margin-bottom: 2rem;
 }
 
@@ -83,7 +84,7 @@ p.lead {
     background-image: -webkit-linear-gradient( 122deg, #977BFF 0%, #562AE6 100%);
     background-image: -ms-linear-gradient( 122deg, #977BFF 0%, #562AE6 100%);
     background-image: linear-gradient( 122deg, #977BFF 0%, #562AE6 100%);
-    box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.2);
+   /* box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.2);*/
     font-weight: 500;
     padding: 0.6rem 2rem;
     border: 0;
@@ -96,20 +97,28 @@ p.lead {
 .btn-primary:not([disabled]):not(.disabled):active,
 .show>.btn-primary.dropdown-toggle {
     background-image: linear-gradient( 122deg, #562AE6 0%, #4120ad 100%);
-    box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.3);
+    /*box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.3);*/
     color: #FFF;
 }
 
 .btn-light {
     border-radius: 3px;
     background: #FFF;
-    box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.26);
+    /*box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.26);*/
     font-size: 14px;
     font-weight: 500;
     color: #562AE6;
     margin: 0.5rem;
     padding: 0.7rem 1.6rem;
     line-height: 1.8;
+
+}
+
+a.btn.btn-light.btn-light_new:hover {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0px 9px 32px 0px rgba(0, 0, 0, 0.26);
+    color: #552AE6;
 }
 
 .btn-group-lg>.btn,
@@ -119,11 +128,12 @@ p.lead {
 }
 
 .light-bg {
-    background-color: #faf6fb;
+   /* background-color: #faf6fb;*/
+   background-color: #F4F1FF;
 }
 
 .section {
-    padding: 80px 0;
+    padding: 120px 0;
 }
 
 .section-title {
@@ -180,7 +190,7 @@ p.lead {
     }
     .navbar-nav>.nav-item>.nav-link.active:after {
         content: "";
-        border-bottom: 2px solid #562AE6;
+        border-bottom: 1px solid #fff;
         left: 1rem;
         right: 1rem;
         bottom: 5px;
@@ -397,8 +407,8 @@ header {
     padding: 1rem 1rem;
     border-color: #faf6fb #faf6fb #FFF;
     font-size: 19px;
-    color: #CFC5FF;
-    background: #f5eff7;
+   /* color: #CFC5FF;
+    background: #f5eff7;*/
 }
 
 .nav-tabs .nav-link.active {
@@ -549,7 +559,7 @@ header {
 .call-to-action {
     text-align: center;
     color: #FFF;
-    margin: 3rem 0;
+   /* margin: 3rem 0;*/
 }
 
 .call-to-action .box-icon {
@@ -565,7 +575,7 @@ header {
 }
 
 .call-to-action .tagline {
-    font-size: 16px;
+    /*font-size: 16px;*/
     font-weight: 300;
     color: #bbb3ff;
     max-width: 650px;
