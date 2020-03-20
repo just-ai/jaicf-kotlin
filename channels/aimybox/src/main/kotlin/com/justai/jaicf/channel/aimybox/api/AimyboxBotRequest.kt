@@ -8,9 +8,9 @@ import kotlinx.serialization.json.JsonObject
 @Serializable
 data class AimyboxBotRequest(
     val unit: String,
-    val key: String?,
+    val key: String? = null,
     val query: String,
-    val data: JsonObject?
+    val data: JsonObject? = null
 ): BotRequest {
     override val type = BotRequestType.QUERY
     override val clientId = unit
