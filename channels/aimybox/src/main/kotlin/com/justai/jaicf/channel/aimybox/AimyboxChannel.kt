@@ -8,8 +8,9 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
-class AimyboxChannel private constructor(
-    override val botApi: BotApi
+class AimyboxChannel(
+    override val botApi: BotApi,
+    private val apiKey: String? = null
 ): JaicpCompatibleBotChannel {
 
     private val JSON = Json(JsonConfiguration.Stable.copy(
@@ -17,8 +18,13 @@ class AimyboxChannel private constructor(
         encodeDefaults = false
     ))
 
-    override fun process(input: String): String {
+    override fun process(input: String): String? {
         val request = JSON.parse(AimyboxBotRequest.serializer(), input)
+
+        if (!apiKey.isNullOrEmpty() && apiKey != request.key) {
+            return null
+        }
+
         val reactions = AimyboxReactions(AimyboxBotResponse(request.query))
 
         botApi.process(request, reactions)
