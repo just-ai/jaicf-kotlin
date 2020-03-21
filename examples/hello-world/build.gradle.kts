@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":channels:alexa"))
     implementation(project(":channels:slack"))
     implementation(project(":channels:facebook"))
+    implementation(project(":channels:aimybox"))
+
     implementation(project(":activators:dialogflow"))
 
     testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})

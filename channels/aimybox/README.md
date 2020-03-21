@@ -65,3 +65,19 @@ fun aimyboxServlet() {
 #### 4. Configure Aimybox
 
 Then you can use the public webhook URL (using [ngrok](https://ngrok.com) for example) to register a custom voice skill via [Aimybox Console](https://app.aimybox.com) or provide this URL directly to the Aimybox initialisation block of your mobile application.
+
+## Start event
+
+If you send an empty query, Aimybox recognises this as a `START` event instead of query request:
+
+```kotlin
+state("launch") {
+    activators {
+        event(AimyboxEvent.START)
+    }
+}
+```
+
+This can be used to start a voice skill scenario. New user session will be started automatically.
+
+> Do not miss to include a `BaseEventActivator` in activators array of the `BotEngine` initializer. 

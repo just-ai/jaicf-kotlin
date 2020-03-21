@@ -1,22 +1,15 @@
 package com.justai.jaicf.channel.aimybox
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.aimybox.api.AimyboxBotRequest
-import com.justai.jaicf.channel.aimybox.api.AimyboxBotResponse
+import com.justai.jaicf.channel.aimybox.api.*
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
+import com.justai.jaicf.context.RequestContext
 
 class AimyboxChannel(
     override val botApi: BotApi,
     private val apiKey: String? = null
 ): JaicpCompatibleBotChannel {
-
-    private val JSON = Json(JsonConfiguration.Stable.copy(
-        strictMode = false,
-        encodeDefaults = false
-    ))
 
     override fun process(input: String): String? {
         val request = JSON.parse(AimyboxBotRequest.serializer(), input)
@@ -27,7 +20,7 @@ class AimyboxChannel(
 
         val reactions = AimyboxReactions(AimyboxBotResponse(request.query))
 
-        botApi.process(request, reactions)
+        botApi.process(request, reactions, RequestContext(newSession = request.query.isEmpty()))
         return JSON.stringify(AimyboxBotResponse.serializer(), reactions.response)
     }
 

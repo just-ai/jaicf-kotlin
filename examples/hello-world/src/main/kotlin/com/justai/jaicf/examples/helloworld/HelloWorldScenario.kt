@@ -1,5 +1,7 @@
 package com.justai.jaicf.examples.helloworld
 
+import com.justai.jaicf.channel.aimybox.AimyboxEvent
+import com.justai.jaicf.channel.aimybox.aimybox
 import com.justai.jaicf.channel.alexa.*
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
@@ -18,6 +20,7 @@ object HelloWorldScenario: Scenario(
             activators {
                 catchAll()
                 event(AlexaEvent.LAUNCH)
+                event(AimyboxEvent.START)
             }
 
             action {
@@ -38,6 +41,7 @@ object HelloWorldScenario: Scenario(
                     reactions.run {
                         image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
                         sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
+                        aimybox?.endConversation()
                     }
                 }
             }

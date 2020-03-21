@@ -44,4 +44,6 @@ class AimyboxReactions(
     fun buttons(vararg buttons: Button) = addReply(
         ButtonsReply(buttons.toList())
     )
+
+    fun endConversation() = question(false)
 }

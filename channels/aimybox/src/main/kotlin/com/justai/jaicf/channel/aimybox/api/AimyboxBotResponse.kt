@@ -10,7 +10,7 @@ data class AimyboxBotResponse(
     var text: String? = null,
     var action: String? = null,
     var intent: String? = null,
-    var question: Boolean = false,
+    var question: Boolean = true,
     val data: JsonObject = JsonObject(mapOf()),
     val replies: MutableList<AimyboxReply> = mutableListOf()
 ): BotResponse
