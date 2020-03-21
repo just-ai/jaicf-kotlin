@@ -24,11 +24,6 @@ class AimyboxReactions(
         }
     }
 
-    fun ask(text: String, tts: String? = null, lang: String? = null) {
-        question(true)
-        say(text, tts, lang)
-    }
-
     fun question(question: Boolean) {
         response.question = question
     }
