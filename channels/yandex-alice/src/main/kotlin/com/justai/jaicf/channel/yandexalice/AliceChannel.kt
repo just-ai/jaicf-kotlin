@@ -36,10 +36,15 @@ class AliceChannel(
     override fun process(input: String): String? {
         val request = JSON.parse(AliceBotRequest.serializer(), input)
         val response = AliceBotResponse(request)
-        val api = oauthToken?.let { AliceApi(oauthToken, request.session.skillId) }
-        val reactions = AliceReactions(api, request, response)
 
-        botApi.process(request, reactions, RequestContext(newSession = request.session.newSession))
+        if (request.request.originalUtterance == "ping") {
+            response.response.text = "pong"
+        } else {
+            val api = oauthToken?.let { AliceApi(oauthToken, request.session.skillId) }
+            val reactions = AliceReactions(api, request, response)
+            botApi.process(request, reactions, RequestContext(newSession = request.session.newSession))
+        }
+
         return JSON.stringify(AliceBotResponse.serializer(), response)
     }
 
