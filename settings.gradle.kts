@@ -36,3 +36,7 @@ include("channels:aimybox")
 findProject(":channels:aimybox")?.name = "aimybox"
 include("channels:facebook")
 findProject(":channels:facebook")?.name = "facebook"
+include("channels:yandex-alice")
+findProject(":channels:yandex-alice")?.name = "yandex-alice"
+include("examples:alice-skill")
+findProject(":examples:alice-skill")?.name = "alice-skill"

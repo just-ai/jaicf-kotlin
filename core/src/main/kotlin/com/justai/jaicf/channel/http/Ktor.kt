@@ -1,13 +1,15 @@
 package com.justai.jaicf.channel.http
 
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receiveText
+import io.ktor.request.receiveStream
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.post
+import java.nio.charset.Charset
 
 /**
  * A helper extension for Ktor framework.
@@ -31,7 +33,7 @@ fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
         val contentType = ContentType.parse(channel.second.contentType)
 
         post(channel.first) {
-            val input = call.receiveText()
+            val input = call.receiveText(Charsets.UTF_8)
             val output = channel.second.process(input)
             when {
                 output == null -> call.respond(HttpStatusCode.NotFound, "Bot didn't respond")
@@ -41,3 +43,6 @@ fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
         }
     }
 }
+
+private suspend fun ApplicationCall.receiveText(charset: Charset)
+        = receiveStream().bufferedReader(charset).readText()
