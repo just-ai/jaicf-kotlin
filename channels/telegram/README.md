@@ -13,13 +13,18 @@ _Built on top of [Kotlin Telegram Bot](https://github.com/kotlin-telegram-bot/ko
 #### 1. Include Telegram dependency to your _build.gradle_
 
 ```kotlin
+implementation("com.justai.jaicf:telegram:$jaicfVersion")
+```
+
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
+Also add _Jitpack_ to repositories:
+
+```kotlin
 repositories {
-    jcenter()
     mavenCentral()
+    jcenter()
     maven(uri("https://jitpack.io"))
-}
-dependencies {
-    implementation("com.justai.jaicf:telegram:$jaicfVersion")
 }
 ```
 

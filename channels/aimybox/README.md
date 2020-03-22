@@ -14,6 +14,8 @@ Allows to create skills for custom voice assistant applications built on top of 
 implementation("com.justai.jaicf:aimybox:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Use Aimybox `request` and `reactions` in your scenarios' actions
 
 ```kotlin

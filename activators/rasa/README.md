@@ -14,6 +14,8 @@ Allows to use [Rasa AI](https://rasa.com) NLU engine as a states activator in JA
 implementation("com.justai.jaicf:rasa:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Use Rasa `activator` in your scenario actions
 
 ```kotlin

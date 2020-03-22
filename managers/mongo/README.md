@@ -12,6 +12,8 @@ Allows to use [Mongo database](https://www.mongodb.com/) to persist [BotContext]
 implementation("com.justai.jaicf:mongo:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Create a Mongo database
 
 You can install and run Mongo DB locally or use any cloud-based mongo hosting like [Atlas](https://www.mongodb.com/cloud/atlas).

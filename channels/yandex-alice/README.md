@@ -33,6 +33,8 @@ dependencies {
 }
 ```
 
+**Замените `$jaicfVersion` последней версией ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 ### Создание логики навыка
 
 JAICF дает возможность описывать логику чатбота или голосового приложения в виде сценариев на Kotlin.

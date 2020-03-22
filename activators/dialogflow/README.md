@@ -16,6 +16,8 @@ _Built on top of [Google Dialogflow API Client for Java](https://github.com/goog
 implementation("com.justai.jaicf:dialogflow:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Use Dialogflow `activator` in your scenario actions
 
 ```kotlin

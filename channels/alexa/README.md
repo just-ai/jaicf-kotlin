@@ -20,6 +20,8 @@ Here is an [example](https://github.com/just-ai/jaicf-kotlin/tree/master/example
 implementation("com.justai.jaicf:alexa:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Use Alexa `request`, `activator` and `reactions` in your scenarios' actions
 
 ```kotlin

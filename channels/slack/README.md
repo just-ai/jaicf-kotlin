@@ -16,6 +16,8 @@ _Built on top of [Simple Slack API](https://github.com/Itiviti/simple-slack-api)
 implementation("com.justai.jaicf:slack:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Use Slack `request` and `reactions` in your scenarios' actions
 
 ```kotlin

@@ -16,6 +16,8 @@ _Built on top of [messenger4j library](https://github.com/messenger4j/messenger4
 implementation("com.justai.jaicf:facebook:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Use Facebook Messenger `request` and `reactions` in your scenarios' actions
 
 ```kotlin

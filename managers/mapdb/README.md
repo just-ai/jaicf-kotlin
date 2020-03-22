@@ -23,6 +23,8 @@ Please note that all your custom data classes should implement `Serializable` in
 implementation("com.justai.jaicf:mapdb:$jaicfVersion")
 ```
 
+**Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
+
 #### 2. Configure Map DB manager
 
 ```kotlin
