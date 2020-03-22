@@ -28,8 +28,8 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.ktor:ktor-server-netty:1.3.1")
 
-    implementation("com.justai.jaicf:core:$jaicf")
-    implementation("com.justai.jaicf:yandex-alice:$jaicf")
+    implementation("com.justai.jaicf:core:$jaicfVersion")
+    implementation("com.justai.jaicf:yandex-alice:$jaicfVersion")
 }
 ```
 
