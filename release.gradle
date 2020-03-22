@@ -12,7 +12,7 @@ ext {
     artifact = project.name
     packagingType = 'jar'
 
-    siteUrl = 'https://just-ai.com'
+    siteUrl = 'https://framework.just-ai.com'
     gitUrl = 'https://github.com/just-ai'
 
     libraryVersion = rootProject.getVersion()
