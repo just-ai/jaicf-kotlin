@@ -3,8 +3,8 @@ apply plugin: 'com.github.breadmoirai.github-release'
 ext {
     githubRepo = "jaicf-kotlin"
     githubOwner = "just-ai"
-    githubTagName = "${project.version}"
-    githubReleaseName = "${project.version}"
+    githubTagName = project.version.toString()
+    githubReleaseName = project.version.toString()
 }
 
 Properties properties = new Properties()
