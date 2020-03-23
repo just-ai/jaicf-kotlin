@@ -51,7 +51,7 @@ object HelloWorldScenario: Scenario() {
 * Enables developer to create dialogue scenarios that work [simultaneously in multiple platforms](https://github.com/just-ai/jaicf-kotlin/wiki/Channels#multi-channel-support) without any restrictions of platform-related features.
 * Contains a [JUnit-based test suite](https://github.com/just-ai/jaicf-kotlin/wiki/Testing) to automate dialogue scenarios testing.
 * Being a Kotlin app, JAICF driven bot can use any [Kotlin](https://kotlinlang.org/docs/reference/) or Java features and third-party libraries.
-* Can be ran in any servlet container, as [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot) application.
+* Can be ran and deployed in [any environment](https://github.com/just-ai/jaicf-kotlin/wiki/Environments) using [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot) application.
 
 ## How to start using
 
