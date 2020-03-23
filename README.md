@@ -7,19 +7,7 @@ JAICF is a comprehensive enterprise-level framework from [Just AI](https://just-
 [![Build Status](https://travis-ci.org/just-ai/jaicf-kotlin.svg?branch=master)](https://travis-ci.org/just-ai/jaicf-kotlin)
 [![Download](https://api.bintray.com/packages/just-ai/jaicf/core/images/download.svg) ](https://bintray.com/just-ai/jaicf/core/_latestVersion)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://github.com/just-ai/jaicf-kotlin/blob/master/LICENSE)
-
-```kotlin
-repositories {
-    mavenCentral()
-    jcenter()
-}
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("com.justai.jaicf:core:$jaicfVersion")
-}
-```
-
-[Or using Maven configuration](https://github.com/just-ai/jaicf-kotlin/wiki/Installing#maven)
+[![](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ```kotlin
 object HelloWorldScenario: Scenario() {
@@ -42,6 +30,19 @@ object HelloWorldScenario: Scenario() {
     }
 }
 ```
+```kotlin
+repositories {
+    mavenCentral()
+    jcenter()
+}
+dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("com.justai.jaicf:core:$jaicfVersion")
+}
+```
+[Or using Maven configuration](https://github.com/just-ai/jaicf-kotlin/wiki/Installing#maven)
+
+**The latest version is** ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)
 
 ## Key features
 
