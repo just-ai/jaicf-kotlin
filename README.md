@@ -18,6 +18,9 @@ dependencies {
     implementation("com.justai.jaicf:core:$jaicfVersion")
 }
 ```
+
+[Or using Maven configuration](https://github.com/just-ai/jaicf-kotlin/wiki/Installing#maven)
+
 ```kotlin
 object HelloWorldScenario: Scenario() {
     init {
@@ -43,11 +46,11 @@ object HelloWorldScenario: Scenario() {
 ## Key features
 
 * Provides [Kotlin-based DSL](https://github.com/just-ai/jaicf-kotlin/wiki/Scenario-DSL) for writing context-aware dialogue scenarios in declarative style.
-* Connects to any [voice and text channels](https://github.com/just-ai/jaicf-kotlin/wiki/Channels) like Amazon Alexa, Google Actions, Facebook, Telegram and others.
-* Works with any [NLU engines](https://github.com/just-ai/jaicf-kotlin/wiki/Natural-Language-Understanding) like Dialogflow, Rasa and Caila.
+* Connects to any [voice and text channels](https://github.com/just-ai/jaicf-kotlin/wiki/Channels) like [Amazon Alexa](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/alexa), [Google Actions](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/google-actions), [Facebook Messenger](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/facebook), [Telegram](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/telegram) and [others](https://github.com/just-ai/jaicf-kotlin/wiki/Channels).
+* Works with any [NLU engines](https://github.com/just-ai/jaicf-kotlin/wiki/Natural-Language-Understanding) like [Dialogflow](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/dialogflow) or [Rasa](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/rasa).
 * Enables developer to create dialogue scenarios that work [simultaneously in multiple platforms](https://github.com/just-ai/jaicf-kotlin/wiki/Channels#multi-channel-support) without any restrictions of platform-related features.
 * Contains a [JUnit-based test suite](https://github.com/just-ai/jaicf-kotlin/wiki/Testing) to automate dialogue scenarios testing.
-* Being a Kotlin app, JAICF driven bot can use any Kotlin or Java features and third-party libraries.
+* Being a Kotlin app, JAICF driven bot can use any [Kotlin](https://kotlinlang.org/docs/reference/) or Java features and third-party libraries.
 * Can be ran in any servlet container, as [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot) application.
 
 ## How to start using
