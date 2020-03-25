@@ -39,6 +39,7 @@ action {
     val username = message?.chat?.username
     
     // Use Telegram-specified response builders
+    reactions.telegram?.say("Are you agree?", listOf("Yes", "No"))
     reactions.telegram?.image("https://address.com/image.jpg", "Image caption")
     reactions.telegram?.api?.sendAudio(message?.chat?.id, File("audio.mp3"))
 
@@ -50,15 +51,25 @@ action {
 
 _Note that Telegram bot works as long polling. This means that every reactions' method actually sends a response to the user._
 
+> Refer to the [TelegramReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/telegram/src/main/kotlin/com/justai/jaicf/channel/telegram/TelegramReactions.kt) class to learn more about available response builders.
+
 #### Native API
 
-You can use native Telegram API via `reactions.telegram?.api`.
+You can use native Telegram API directly via `reactions.telegram?.api`.
 This enables you to build any response that Telegram supports using channel-specific features.
 As well as fetch some data from Telegram bot API (like [getMe](https://core.telegram.org/bots/api#getme) for example).
 
+```kotlin
+action {
+    val me = reactions.telegram?.run {
+        api.getMe().first?.body()?.result
+    }
+}
+```
+
 > Learn more about available API methods [here](https://github.com/kotlin-telegram-bot/kotlin-telegram-bot/blob/master/telegram/src/main/kotlin/me/ivmg/telegram/Bot.kt).
 
-#### 3. Create a bot in Telegram
+#### 3. Create a new bot in Telegram
 
 Create a new bot using Telegram's `@BotFather` and any Telegram client as described [here](https://core.telegram.org/bots#6-botfather).
 Copy your new bot's **access token** to the clipboard.
@@ -108,3 +119,57 @@ val helloWorldBot = BotEngine(
 ```
 
 The same way you can react on ony other Telegram commands.
+
+## Events
+
+User can send not only a text queries to your Telegram bot.
+They can also send contacts and locations for example.
+These messages contain non-text queries and can be handled in your scenarios via `event` activators.
+
+```kotlin
+state("events") {
+    activators {
+        event(TelegramEvent.LOCATION)
+        event(TelegramEvent.CONTACT)
+    }
+
+    action {
+        val location = request.telegram?.location
+        val contact = request.telegram?.contact
+    }
+}
+```
+
+## Buttons
+
+Telegram allows to add [keyboard](https://core.telegram.org/bots#keyboards) or [inline keyboard](https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating) to the text message reply.
+This means that it's not possible to add a keyboard without an actual text response.
+
+That is why a standard `reactions.buttons` method does nothing when the request was received from the Telegram channel.
+
+To add buttons to the response, please use a channel-specific methods:
+
+```kotlin
+action {
+    // Append inline keyboard
+    reactions.telegram?.say("Are you agree?", listOf("Yes", "No"))
+
+    // Append arbitrary keyboard layout
+    reactions.telegram?.say(
+        "Could you please send me your contact?", 
+        replyMarkup = KeyboardReplyMarkup(
+            listOf(listOf(KeyboardButton("Send", requestContact = true), KeyboardButton("No")))
+        )
+    )
+}
+```
+
+You can also remove keyboard sending a `ReplyKeyboardRemove` in the response:
+
+```kotlin
+action {
+    reactions.telegram?.say("Okay then!", replyMarkup = ReplyKeyboardRemove())
+}
+```
+
+> Refer to the [TelegramReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/telegram/src/main/kotlin/com/justai/jaicf/channel/telegram/TelegramReactions.kt) class to learn more about buttons replies.
