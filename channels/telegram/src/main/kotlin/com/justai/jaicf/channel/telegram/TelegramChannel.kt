@@ -5,9 +5,7 @@ import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.jaicp.JaicpExternalPollingChannelFactory
 import me.ivmg.telegram.bot
 import me.ivmg.telegram.dispatch
-import me.ivmg.telegram.dispatcher.contact
-import me.ivmg.telegram.dispatcher.location
-import me.ivmg.telegram.dispatcher.text
+import me.ivmg.telegram.dispatcher.*
 import okhttp3.logging.HttpLoggingInterceptor
 
 class TelegramChannel(
@@ -31,19 +29,25 @@ class TelegramChannel(
 
                 text { _, update ->
                     update.message?.let {
-                        process(request = TelegramTextRequest(update.message!!))
+                        process(TelegramTextRequest(it))
+                    }
+                }
+
+                callbackQuery { _, update ->
+                    update.callbackQuery?.let {
+                        process(TelegramQueryRequest(it.message!!, it.data))
                     }
                 }
 
                 location { _, update, location ->
                     update.message?.let {
-                        process(TelegramLocationRequest(update.message!!, location))
+                        process(TelegramLocationRequest(it, location))
                     }
                 }
 
                 contact { _, update, contact ->
                     update.message?.let {
-                        process(TelegramContactRequest(update.message!!, contact))
+                        process(TelegramContactRequest(it, contact))
                     }
                 }
             }
