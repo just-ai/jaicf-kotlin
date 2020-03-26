@@ -2,6 +2,9 @@ package com.justai.jaicf.channel.jaicp.channels
 
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.channel.http.HttpBotRequest
+import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.asJaicpBotRequest
 import com.justai.jaicf.channel.jaicp.deserialized
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
@@ -20,9 +23,9 @@ abstract class JaicpNativeChannel(
 
     internal abstract fun createReactions(): JaicpReactions
 
-    override fun process(input: String): String? {
-        val request = input.asJaicpBotRequest()
-        return process(request).deserialized()
+    override fun process(request: HttpBotRequest): HttpBotResponse? {
+        val botRequest = request.receiveText().asJaicpBotRequest()
+        return process(botRequest).deserialized().asJsonHttpBotResponse()
     }
 
     override fun process(request: JaicpBotRequest): JaicpBotResponse {

@@ -4,6 +4,9 @@ import com.github.messenger4j.exception.MessengerVerificationException
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.facebook.api.toBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
+import com.justai.jaicf.channel.http.HttpBotRequest
+import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.http.asTextHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import java.util.*
@@ -22,13 +25,13 @@ class FacebookChannel private constructor(
         messenger = Messenger.create("", "", "", baseUrl)
     }
 
-    override fun process(input: String): String? {
-        messenger.onReceiveEvents(input, Optional.empty()) { event ->
-            event.toBotRequest().let { request ->
-                botApi.process(request, FacebookReactions(messenger, request))
+    override fun process(request: HttpBotRequest): HttpBotResponse? {
+        messenger.onReceiveEvents(request.receiveText(), Optional.empty()) { event ->
+            event.toBotRequest().let { botRequest ->
+                botApi.process(botRequest, FacebookReactions(messenger, botRequest))
             }
         }
-        return ""
+        return "".asTextHttpBotResponse()
     }
 
     fun verifyToken(mode: String?, token: String?, challenge: String?): String {

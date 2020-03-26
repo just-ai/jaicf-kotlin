@@ -1,6 +1,9 @@
 package com.justai.jaicf.channel.yandexalice
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.http.HttpBotRequest
+import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
 import com.justai.jaicf.channel.yandexalice.api.AliceApi
@@ -13,19 +16,20 @@ class AliceChannel(
     private val oauthToken: String? = null
 ) : JaicpCompatibleBotChannel {
 
-    override fun process(input: String): String? {
-        val request = JSON.parse(AliceBotRequest.serializer(), input)
-        val response = AliceBotResponse(request)
+    override fun process(request: HttpBotRequest): HttpBotResponse? {
+        val botRequest = JSON.parse(AliceBotRequest.serializer(), request.receiveText())
+        val botResponse = AliceBotResponse(botRequest)
 
-        if (request.request.originalUtterance == "ping") {
-            response.response.text = "pong"
+        if (botRequest.request?.originalUtterance == "ping") {
+            botResponse.response?.text = "pong"
         } else {
-            val api = oauthToken?.let { AliceApi(oauthToken, request.session.skillId) }
-            val reactions = AliceReactions(api, request, response)
-            botApi.process(request, reactions, RequestContext(newSession = request.session.newSession))
+            botRequest.headers.putAll(request.headers)
+            val api = oauthToken?.let { AliceApi(oauthToken, botRequest.session.skillId) }
+            val reactions = AliceReactions(api, botRequest, botResponse)
+            botApi.process(botRequest, reactions, RequestContext(newSession = botRequest.session.newSession))
         }
 
-        return JSON.stringify(AliceBotResponse.serializer(), response)
+        return JSON.stringify(AliceBotResponse.serializer(), botResponse).asJsonHttpBotResponse()
     }
 
     class Factory(

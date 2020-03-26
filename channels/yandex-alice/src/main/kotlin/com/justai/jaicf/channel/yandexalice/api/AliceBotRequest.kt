@@ -14,19 +14,30 @@ val BotRequest.alice
 @Serializable
 data class AliceBotRequest(
     val version: String,
-    val meta: Meta,
+    val meta: Meta? = null,
     val session: Session,
-    val request: Request
+    val request: Request? = null,
+    @SerialName("account_linking_complete_event")
+    val accountLinkingCompleteEvent: JsonObject? = null
 ): BotRequest {
     override val clientId = session.userId
+    val headers = mutableMapOf<String, List<String>>()
+
+    val accessToken by lazy {
+        headers["Authorization"]
+            ?.firstOrNull()
+            ?.substringAfter("Bearer ", "")
+    }
 
     override val type = when {
+        request == null -> BotRequestType.EVENT
         request.command.isEmpty() -> BotRequestType.EVENT
         else -> BotRequestType.QUERY
     }
 
     override val input = when {
-        request.command.isEmpty() -> AliceEvent.START
+        accountLinkingCompleteEvent != null -> AliceEvent.ACCOUNT_LINKING_COMPLETE
+        request!!.command.isEmpty() -> AliceEvent.START
         else -> request.command
     }
 }

@@ -1,7 +1,7 @@
 package com.justai.jaicf.channel.jaicp.webhook
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.http.HttpBotChannel
+import com.justai.jaicf.channel.http.*
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
@@ -41,20 +41,14 @@ class JaicpWebhookChannel(
         }
     }
 
-    override fun process(input: String): String? {
-        val request = input.asJaicpBotRequest()
+    override fun process(request: HttpBotRequest): HttpBotResponse? {
+        val botRequest = request.receiveText().asJaicpBotRequest()
 
-        return when (val channel = channelMap[request.channelType]) {
-            is JaicpNativeBotChannel -> {
-                channel.process(request).deserialized()
-            }
-            is JaicpCompatibleBotChannel -> {
-                channel.processCompatible(request).deserialized()
-            }
-            is JaicpCompatibleAsyncBotChannel -> {
-                channel.process(request.rawRequest.toString())
-            }
-            else -> throw RuntimeException("Channel ${request.channelType} is not configured or not supported")
+        return when (val channel = channelMap[botRequest.channelType]) {
+            is JaicpNativeBotChannel -> channel.process(botRequest).deserialized().asJsonHttpBotResponse()
+            is JaicpCompatibleBotChannel -> channel.processCompatible(botRequest).deserialized().asJsonHttpBotResponse()
+            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.rawRequest.toString().asHttpBotRequest())
+            else -> throw RuntimeException("Channel ${botRequest.channelType} is not configured or not supported")
         }
     }
 

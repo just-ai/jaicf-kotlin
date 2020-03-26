@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.jaicp
 
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.create
@@ -13,8 +14,9 @@ internal fun JaicpCompatibleBotChannel.processCompatible(
     botRequest: JaicpBotRequest
 ): JaicpBotResponse {
     val startTime = OffsetDateTime.now().toEpochSecond()
-    val response = this.process(botRequest.rawRequest.toString())?.let { response ->
-        val rawJson = JSON.parseJson(response)
+    val request = botRequest.rawRequest.toString().asHttpBotRequest()
+    val response = process(request)?.let { response ->
+        val rawJson = JSON.parseJson(response.output.toString())
         addRawReply(rawJson)
     } ?: throw RuntimeException("Failed to process compatible channel request")
 

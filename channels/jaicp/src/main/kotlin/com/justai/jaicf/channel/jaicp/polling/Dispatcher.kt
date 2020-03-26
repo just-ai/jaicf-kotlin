@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp.polling
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
@@ -89,7 +90,7 @@ class Dispatcher(private val proxyUrl: String) :
     private fun processAsyncChannel(
         channel: JaicpCompatibleAsyncBotChannel,
         request: JaicpBotRequest
-    ) = channel.process(request.rawRequest.toString())
+    ) = channel.process(request.rawRequest.toString().asHttpBotRequest())
 
     private fun processNativeChannel(
         channel: JaicpNativeBotChannel,

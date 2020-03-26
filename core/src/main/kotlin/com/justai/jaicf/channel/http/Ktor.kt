@@ -1,15 +1,14 @@
 package com.justai.jaicf.channel.http
 
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveStream
 import io.ktor.response.respond
-import io.ktor.response.respondText
+import io.ktor.response.respondOutputStream
 import io.ktor.routing.Routing
 import io.ktor.routing.post
-import java.nio.charset.Charset
+import io.ktor.util.toMap
 
 /**
  * A helper extension for Ktor framework.
@@ -27,22 +26,28 @@ import java.nio.charset.Charset
  *   }
  * }.start(wait = true)
  * ```
+ *
+ * @see HttpBotChannel
+ * @see HttpBotRequest
  */
 fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
     channels.forEach { channel ->
-        val contentType = ContentType.parse(channel.second.contentType)
-
         post(channel.first) {
-            val input = call.receiveText(Charsets.UTF_8)
-            val output = channel.second.process(input)
-            when {
-                output == null -> call.respond(HttpStatusCode.NotFound, "Bot didn't respond")
-                output.isNotEmpty() -> call.respondText(output, contentType)
-                else -> call.respond(HttpStatusCode.OK)
+            val request = HttpBotRequest(
+                stream = call.receiveStream(),
+                headers = call.request.headers.toMap(),
+                parameters = call.request.queryParameters.toMap()
+            )
+
+            val response = channel.second.process(request)
+            response?.headers?.forEach { call.response.headers.append(it.key, it.value, false) }
+
+            when (response) {
+                null -> call.respond(HttpStatusCode.NotFound, "Bot didn't respond")
+                else -> call.respondOutputStream(ContentType.parse(response.contentType)) {
+                    response.output.writeTo(this)
+                }
             }
         }
     }
 }
-
-private suspend fun ApplicationCall.receiveText(charset: Charset)
-        = receiveStream().bufferedReader(charset).readText()
