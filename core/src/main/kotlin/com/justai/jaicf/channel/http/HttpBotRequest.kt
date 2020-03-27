@@ -4,6 +4,13 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.Charset
 
+/**
+ * Contains details of the HTTP request to the corresponding [HttpBotChannel]
+ *
+ * @property stream input stream containing a request data
+ * @property headers request HTTP headers
+ * @property parameters HTTP query parameters
+ */
 data class HttpBotRequest(
     val stream: InputStream,
     val headers: Map<String, List<String>> = mapOf(),

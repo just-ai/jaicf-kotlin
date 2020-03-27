@@ -4,6 +4,12 @@ import java.io.ByteArrayOutputStream
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
+/**
+ * Contains details of the HTTP responce returned by [HttpBotChannel]
+ *
+ * @property output stream that contains a response data
+ * @property contentType the type of response ("application/json" for example)
+ */
 data class HttpBotResponse(
     val output: ByteArrayOutputStream,
     val contentType: String
