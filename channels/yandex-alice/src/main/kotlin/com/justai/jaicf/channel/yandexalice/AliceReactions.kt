@@ -8,6 +8,7 @@ import com.justai.jaicf.channel.yandexalice.api.model.Image
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
+import kotlinx.serialization.json.JsonObject
 
 val Reactions.alice
     get() = this as? AliceReactions
@@ -18,7 +19,7 @@ class AliceReactions(
     override val response: AliceBotResponse
 ) : ResponseReactions<AliceBotResponse>(response) {
 
-    private val builder = response.response
+    private val builder = response.response ?: AliceBotResponse.Response()
     private val skillId = request.session.skillId
 
     override fun say(text: String) = say(text, text)
@@ -64,5 +65,10 @@ class AliceReactions(
 
     fun endSession() {
         builder.endSession = true
+    }
+
+    fun startAccountLinking() {
+        response.response = null
+        response.startAccountLinking = JsonObject(mapOf())
     }
 }

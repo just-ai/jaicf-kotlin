@@ -9,12 +9,14 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class AliceBotResponse(
-    val response: Response,
+    var response: Response?,
+    @SerialName("start_account_linking")
+    var startAccountLinking: JsonObject? = null,
     val session: Session,
     val version: String
 ): BotResponse {
 
-    constructor(request: AliceBotRequest): this(Response(), request.session, request.version)
+    constructor(request: AliceBotRequest): this(Response(), null, request.session, request.version)
 
     @Serializable
     data class Response(

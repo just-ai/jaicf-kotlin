@@ -10,19 +10,13 @@ import com.justai.jaicf.channel.BotChannel
  * Every implementation could be used through Ktor httpBotRouting extension or [HttpBotChannelServlet]
  */
 interface HttpBotChannel: BotChannel {
-
-    /**
-     * A content-type of the reply (application/json by default)
-     */
-    val contentType: String
-        get() = "application/json"
-
     /**
      * Processes a channel-related request to the bot and returns channel-related response.
      * This method should de-serialize request and serialize response using some tool according to the expected request and response format.
      *
-     * @param input a raw request body serialized to string
+     * @param request a received HTTP request
      * @return a serialized channel-related response. Should return null if the request cannot be processed.
+     * @see HttpBotRequest
      */
-    fun process(input: String): String?
+    fun process(request: HttpBotRequest): HttpBotResponse?
 }

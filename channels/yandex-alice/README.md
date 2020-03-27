@@ -306,6 +306,33 @@ action {
     request.alice?.request // Данные запроса (NLU, payload от кнопки и тд)
 }
 ```
+
+### Авторизация пользователя
+
+API Алисы поддерживает [OAuth авторизацию пользователей](https://yandex.ru/dev/dialogs/alice/doc/auth/about-account-linking-docpage/).
+Вы можете запустить процесс авторизации так
+
+```kotlin
+action {
+    reactions.alice?.startAccountLinking()
+}
+```
+
+После завершения авторизации сценарий получит событие `AliceEvent.ACCOUNT_LINKING_COMPLETE`, на который нужно отреагировать [соответственно](https://yandex.ru/dev/dialogs/alice/doc/auth/account-linking-in-custom-skills-docpage/#authorization-complete)
+
+```kotlin
+state("auth") {
+    activators {
+        event(AliceEvent.ACCOUNT_LINKING_COMPLETE)
+    }
+    action {
+        ...
+    }
+}
+```
+
+Бибилиотека автоматически записывает заголовок с токеном авторизации в поле `request.alice?.accessToken`.
+
 # Вопросы и предложения
 
 Если вы нашли баг, то можете написать о нем в [issues](https://github.com/just-ai/jaicf-kotlin/issues) или предложить вашу реализацию и отправить pull request.

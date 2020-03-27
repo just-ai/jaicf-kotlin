@@ -17,28 +17,27 @@ open class HttpBotChannelServlet(
 
     override fun doPost(req: HttpServletRequest?, resp: HttpServletResponse?) {
         req?.run {
-            val input = String(inputStream.readBytes())
-            logger.info("{} received request {}", channel, input)
+            val request = HttpBotRequest(
+                stream = req.inputStream,
+                headers = req.headerNames.asSequence().map { it to listOf(req.getHeader(it)) }.toMap(),
+                parameters = req.parameterMap.mapValues { it.value.toList() }
+            )
 
-            input.takeIf { it.isNotEmpty() }?.let {
-                val output = channel.process(input)
-                logger.info("{} responded with {}", channel, output)
+            logger.info("{} received request {}", channel, request)
 
-                when (output) {
-                    null -> resp?.sendError(HttpServletResponse.SC_NOT_FOUND, "Bot didn't respond")
-                    else -> resp?.run {
-                        status = HttpServletResponse.SC_OK
+            val response = channel.process(request)
+            logger.info("{} responded with {}", channel, response)
 
-                        if (output.isNotEmpty()) {
-                            characterEncoding = "UTF-8"
-                            contentType = channel.contentType
-                            outputStream.write(output.toByteArray())
-                            outputStream.flush()
-                        }
+            when (response) {
+                null -> resp?.sendError(HttpServletResponse.SC_NOT_FOUND, "Bot didn't respond")
+                else -> resp?.run {
+                    status = HttpServletResponse.SC_OK
 
-                    }
+                    contentType = response.contentType
+                    response.headers.forEach { addHeader(it.key, it.value) }
+                    response.output.writeTo(outputStream)
+                    outputStream.flush()
                 }
-
             }
         }
     }
