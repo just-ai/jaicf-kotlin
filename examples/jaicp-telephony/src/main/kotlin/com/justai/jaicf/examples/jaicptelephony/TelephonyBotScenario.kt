@@ -8,6 +8,7 @@ import com.justai.jaicf.model.scenario.Scenario
 
 object TelephonyBotScenario : Scenario(), WithLogger {
     init {
+
         state("/ringing") {
             globalActivators {
                 event(TelephonyEvents.ringing)
@@ -39,18 +40,6 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             }
         }
 
-        state("/catchAll") {
-            globalActivators {
-                catchAll()
-            }
-            action {
-                reactions.say("You said: ${request.input}")
-                request.telephony?.let {
-                    logger.info("Unrecognized message from caller: ${it.caller}")
-                }
-            }
-        }
-
         state("/hangup") {
             globalActivators {
                 regex("Enough")
@@ -69,12 +58,20 @@ object TelephonyBotScenario : Scenario(), WithLogger {
                 reactions.say("I'm sorry, I can't hear you!")
             }
         }
+
         state("/catchHangup") {
             globalActivators {
                 event(TelephonyEvents.hangup)
             }
             action {
                 logger.debug("User hanged up")
+            }
+        }
+
+        fallback {
+            reactions.say("You said: ${request.input}")
+            request.telephony?.let {
+                logger.info("Unrecognized message from caller: ${it.caller}")
             }
         }
     }

@@ -114,6 +114,18 @@ abstract class ScenarioBuilder(
         currentState = statesStack.last
     }
 
+    fun fallback(
+        state: String = "fallback",
+        action: ActionContext.() -> Unit
+    ) = state(
+        name = state,
+        noContext = true,
+        body = {
+            activators { catchAll() }
+            action(action)
+        }
+    )
+
     private fun state0(
         name: String,
         noContext: Boolean,
