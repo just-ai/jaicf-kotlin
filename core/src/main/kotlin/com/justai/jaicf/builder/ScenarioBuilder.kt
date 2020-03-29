@@ -114,6 +114,33 @@ abstract class ScenarioBuilder(
         currentState = statesStack.last
     }
 
+    /**
+     * Appends a fallback state to the scenario.
+     * This state will be activated for every request that doesn't match to any other state.
+     * The current dialogue's context won't be changed.
+     * This builder requires a CatchAllActivator to be added to the activators list of your BotEngine instance.
+     *
+     * ```
+     * fallback {
+     *   reactions.say("Sorry, I didn't get it...")
+     * }
+     * ```
+     *
+     * @param state an optional state name ("fallback" by default)
+     * @param action an action block that will be executed
+     */
+    fun fallback(
+        state: String = "fallback",
+        action: ActionContext.() -> Unit
+    ) = state(
+        name = state,
+        noContext = true,
+        body = {
+            activators { catchAll() }
+            action(action)
+        }
+    )
+
     private fun state0(
         name: String,
         noContext: Boolean,

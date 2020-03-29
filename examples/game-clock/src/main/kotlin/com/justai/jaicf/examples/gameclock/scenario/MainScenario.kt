@@ -13,7 +13,6 @@ import com.justai.jaicf.helpers.ssml.break300ms
 import com.justai.jaicf.helpers.ssml.break500ms
 import com.justai.jaicf.helpers.ssml.breakMs
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.test.context.runInTest
 
 object MainScenario : Scenario(
     dependencies = listOf(GameSetupScenario, GameLoopScenario)
@@ -165,14 +164,8 @@ object MainScenario : Scenario(
             }
         }
 
-        state("fallback", noContext = true) {
-            globalActivators {
-                catchAll()
-            }
-
-            action {
-                reactions.say("Sorry, I didn't get it... Please try again or say cancel to stop me.")
-            }
+        fallback {
+            reactions.say("Sorry, I didn't get it... Please try again or say cancel to stop me.")
         }
 
     }
