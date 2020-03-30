@@ -50,14 +50,11 @@ state("launch") {
 }
 ```
 
-> Learn more about Amazon SDK [HandlerInput](https://github.com/alexa/alexa-skills-kit-sdk-for-java/blob/2.0.x/ask-sdk-core/src/com/amazon/ask/dispatcher/request/handler/HandlerInput.java) and [AmazonReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/alexa/src/main/kotlin/com/justai/jaicf/channel/alexa/AlexaReactions.kt).
-
+> Learn more about Amazon SDK [HandlerInput](https://github.com/alexa/alexa-skills-kit-sdk-for-java/blob/2.0.x/ask-sdk-core/src/com/amazon/ask/dispatcher/request/handler/HandlerInput.java) and [AlexaReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/alexa/src/main/kotlin/com/justai/jaicf/channel/alexa/AlexaReactions.kt).
 
 #### Native response builder
 
-You can also build a response directly via `reactions.alexa?.response?.builder` native builder.
-
-> Learn more about native response builder [here](https://github.com/alexa/alexa-skills-kit-sdk-for-java/blob/2.0.x/ask-sdk-core/src/com/amazon/ask/response/ResponseBuilder.java).
+You can also build a response directly via `reactions.alexa?.response?.builder` native builder. See details [below](#composing-responses).
 
 #### 3. Configure Alexa Activator
 
@@ -75,7 +72,7 @@ val helloWorldBot = BotEngine(
 
 #### 4. Create and run Alexa webhook
 
-Using [Ktor](https://ktor.io)
+Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin
 fun main() {
@@ -87,18 +84,13 @@ fun main() {
 }
 ```
 
-Using [Spring Boot](https://spring.io/projects/spring-boot)
+Using [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot)
 
 ```kotlin
-@Bean
-fun alexaServlet() {
-    return ServletRegistrationBean(
-        HttpBotChannelServlet(AlexaChannel(helloWorldBot)),
-        "/"
-    ).apply {
-        setLoadOnStartup(1)
-    }
-}
+@WebServlet("/")
+class AlexaController: HttpBotChannelServlet(
+    AlexaChannel(helloWorldBot)
+)
 ```
 
 #### 5. Configure Alexa Custom Skill
@@ -157,7 +149,32 @@ object MainScenario : Scenario() {
 }
 ```
 
-## Using SSML
+## Composing responses
+
+You can use both standard and native response builders to compose responses.
+
+```kotlin
+action {
+    reactions.say("This is a standard way to compose a response.")
+
+    // Or use native builder
+    reactions.alexa?.response?.run {
+        // Response with card
+        builder.withSimpleCard("Card title", "Card text")
+        builder.withStandardCard("Card title", "Card text", Image(...))
+        builder.withAskForPermissionsConsentCard(listOf(...))
+    
+        // Display templates
+        builder.addRenderTemplateDirective(...)
+
+        // etc.
+    }
+}
+```
+
+> Learn more about available response builders [here](https://github.com/alexa/alexa-skills-kit-sdk-for-java/blob/2.0.x/ask-sdk-core/src/com/amazon/ask/response/ResponseBuilder.java).
+
+### Using SSML
 
 Alexa supports [Speech Synthesis Markup Language](https://developer.amazon.com/en-US/docs/alexa/custom-skills/speech-synthesis-markup-language-ssml-reference.html) enabling you to control how Alexa generates the speech.
 For example, you can add pauses and other speech effects.

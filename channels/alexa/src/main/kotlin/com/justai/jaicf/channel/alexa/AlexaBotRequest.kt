@@ -9,6 +9,13 @@ import com.justai.jaicf.api.IntentBotRequest
 val BotRequest.alexa
     get() = this as? AlexaBotRequest
 
+val AlexaBotRequest.intent
+    get() = this as? AlexaIntentRequest
+
+val AlexaBotRequest.event
+    get() = this as? AlexaEventRequest
+
+
 interface AlexaBotRequest: BotRequest {
     val handlerInput: HandlerInput
 }
