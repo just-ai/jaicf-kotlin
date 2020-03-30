@@ -60,6 +60,16 @@ state("launch") {
 
 You can also build a response directly via `reactions.actions?.response?.builder` native builder.
 
+```kotlin
+action {
+    reactions.actions?.response?.run {
+        builder.add(BasicCard())
+        builder.add(CarouselBrowse())
+        // etc.
+    }
+}
+```
+
 > Learn more about native response builder [here](https://github.com/actions-on-google/actions-on-google-java/blob/master/src/main/kotlin/com/google/actions/api/response/ResponseBuilder.kt).
 
 #### 3. Configure activator and webhook
@@ -102,7 +112,7 @@ The configuration of the Actions webhook depends on the NLU engine configuration
 
 If you decided to use Dialogflow as NLU engine, you have to use `ActionsFulfillment.dialogflow` builder this way:
 
-Using [Ktor](https://ktor.io)
+Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin
 fun main() {
@@ -116,18 +126,13 @@ fun main() {
 }
 ```
 
-Using [Spring Boot](https://spring.io/projects/spring-boot)
+Using [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot)
 
 ```kotlin
-@Bean
-fun actionsServlet() {
-    return ServletRegistrationBean(
-        HttpBotChannelServlet(ActionsFulfillment.dialogflow(helloWorldBot)),
-        "/"
-    ).apply {
-        setLoadOnStartup(1)
-    }
-}
+@WebServlet("/")
+class AlexaController: HttpBotChannelServlet(
+    ActionsFulfillment.dialogflow(helloWorldBot)
+)
 ```
 
 After this you have to obtain a public URL of your fulfillment webhook and provide it to the agent's settings created via [Dialogflow Console](https://dialogflow.com).
@@ -137,7 +142,7 @@ _Please note that you have to manually enable fulfillment option for every inten
 
 If you decided to use third-party NLU engine, you have to use `ActionsFulfillment.sdk` builder this way:
 
-Using [Ktor](https://ktor.io)
+Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin
 fun main() {
@@ -151,7 +156,7 @@ fun main() {
 }
 ```
 
-And accordingly for Spring Boot.
+And accordingly for [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot).
 
 Once you've obtained a public URL of the webhook (using [ngrok](https://ngrok.com) for example), you have to create Action project and upload the Action JSON package manually.
 
