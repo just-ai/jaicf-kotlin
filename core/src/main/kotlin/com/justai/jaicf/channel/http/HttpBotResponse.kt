@@ -14,7 +14,7 @@ data class HttpBotResponse(
     val output: ByteArrayOutputStream,
     val contentType: String
 ) {
-    val headers: Map<String, String> = mutableMapOf()
+    val headers = mutableMapOf<String, String>()
 
     constructor(
         text: String,

@@ -35,7 +35,7 @@ open class ActionContext(
      * @param elements a vararg of elements to select random from
      * @return a random element
      */
-    fun <T> random(vararg elements: T) = elements[smartRandom(elements.size, this)]
+    fun <T> random(vararg elements: T) = elements[smartRandom(elements.size, this) % elements.size]
 
     /**
      * Returns random [Int] between 0 (inclusive) and [max] (exclusive).

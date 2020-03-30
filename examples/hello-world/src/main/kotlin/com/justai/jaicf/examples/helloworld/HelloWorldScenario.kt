@@ -7,6 +7,7 @@ import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.facebook.api.facebook
 import com.justai.jaicf.channel.facebook.facebook
+import com.justai.jaicf.channel.slack.slack
 import com.justai.jaicf.channel.telegram.telegram
 import com.justai.jaicf.model.scenario.Scenario
 
@@ -32,6 +33,9 @@ object HelloWorldScenario: Scenario(
                     }
                     request.facebook?.run {
                         name = reactions.facebook?.queryUserProfile()?.firstName()
+                    }
+                    request.slack?.run {
+                        name = reactions.slack?.getUserProfile(request.clientId)?.realName
                     }
                 }
 
@@ -75,6 +79,17 @@ object HelloWorldScenario: Scenario(
 
             action {
                 reactions.alexa?.endSession("See you latter! Bye bye!")
+            }
+        }
+
+        state("mew") {
+            activators {
+                regex("/mew")
+            }
+
+            action {
+                reactions.image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
+                reactions.slack?.buttons("Show more" to "/mew")
             }
         }
     }
