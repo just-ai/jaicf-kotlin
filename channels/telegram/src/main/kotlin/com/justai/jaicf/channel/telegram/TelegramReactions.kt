@@ -22,7 +22,7 @@ class TelegramReactions(
         chatId,
         text,
         replyMarkup = InlineKeyboardMarkup(
-            listOf(inlineButtons.map { InlineKeyboardButton(it) })
+            listOf(inlineButtons.map { InlineKeyboardButton(it, callbackData = it) })
         )
     )
 

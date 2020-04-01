@@ -36,7 +36,7 @@ data class TelegramQueryRequest(
     val data: String
 ): TelegramBotRequest, QueryBotRequest(
     clientId = message.chat.id.toString(),
-    input = message.text!!
+    input = data
 )
 
 data class TelegramLocationRequest(
