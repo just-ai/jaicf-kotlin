@@ -1,13 +1,29 @@
-package com.justai.jaicf.channel.jaicp.webhook
+package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.*
-import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.helpers.logging.WithLogger
 
-class JaicpWebhookChannel(
+
+/**
+ * This class is used to process webhook requests from JAICP.
+ *
+ * Supported channels are [JaicpCompatibleBotChannel], [JaicpNativeBotChannel], [JaicpCompatibleAsyncBotChannel]
+ *
+ * See example at
+ * examples/jaicp-telephony/src/main/kotlin/com/justai/jaicf/examples/jaicptelephony/channels/WebhookConnection.kt
+ *
+ * @see JaicpNativeBotChannel
+ * @see JaicpCompatibleBotChannel
+ * @see JaicpCompatibleAsyncBotChannel
+ *
+ * @param botApi the [BotApi] implementation used to process the requests for all channels
+ * @param accessToken can be configured in JAICP Web Interface
+ * @param channels is a list of channels which will be managed by connector
+ * */
+class JaicpWebhookConnector(
     override val botApi: BotApi,
     override val accessToken: String,
     override val url: String = DEFAULT_PROXY_URL,
