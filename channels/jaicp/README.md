@@ -93,12 +93,44 @@ Or use **long polling** connection. This connection does not require public webh
 
 ## TelephonyChannel
 
-... add
- 
+TelephonyChannel can be used to process incoming calls and make smart outgoing calls with JAICP. 
+It provides a list of TelephonyEvents, for example, **TelephonyEvents.speechNotRecognized**, which will be send 
+if ASR service cannot recognize user query.
+```kotlin
+state("/playAudio") {
+    globalActivators {
+        event(TelephonyEvents.speechNotRecognized)
+    }
+}
+```
+You also can send audio with **TelephonyReactions.audio** function. Here is the full example:
+```kotlin
+state("/playAudio") {
+    globalActivators {
+        event(TelephonyEvents.speechNotRecognized)
+    }
+    action {
+        reactions.telephony?.audio("https://www2.cs.uic.edu/~i101/SoundFiles/taunt.wav")
+    }
+}
+```
+Client data can be accessed from **TelephonyBotRequest** class:
+```kotlin
+fallback {
+    reactions.say("You said: ${request.input}")
+    request.telephony?.let {
+        logger.info("Unrecognized message ${request.input} from caller: ${it.caller}")
+    }
+}
+```
 ## ChatWidgetChannel
 
-... add
+ChatWidgetChannel can be used to insert a widget onto your page and process incoming messages from it.
+ 
+> Guides how to create a widget and embed it into your website will soon be public
 
 ## ChatApiChannel
 
-... add
+ChatApiChannel can be used to process simple POST and GET requests with queries.
+
+> Guides how to create a chatapi and requests examples will soon be public

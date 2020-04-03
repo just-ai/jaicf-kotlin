@@ -4,4 +4,5 @@ object TelephonyEvents {
     const val speechNotRecognized = "speechNotRecognized"
     const val hangup = "hangup"
     const val ringing = "ringing"
+    const val noDtmfAnswer = "noDtmfAnswerEvent"
 }
