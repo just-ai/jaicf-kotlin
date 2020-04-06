@@ -14,7 +14,9 @@ object TelephonyBotScenario : Scenario(), WithLogger {
                 event(TelephonyEvents.ringing)
             }
             action {
-                logger.debug("Incoming call from ${request.clientId}")
+                request.telephony?.let {
+                    logger.debug("Incoming call from ${it.caller}")
+                }
             }
         }
 
@@ -24,11 +26,8 @@ object TelephonyBotScenario : Scenario(), WithLogger {
                 intent("/start")
             }
             action {
-                reactions.apply {
-                    say("Hello from ${reactions::class.java.name}")
-                    say("Hmm. I dont know what to do... Well, lets play some good old cities game, you wanna?")
-
-                }
+                reactions.say("Hello from telephony channel! Say audio to play some audio example.")
+                reactions.say("Or you can say enough to end this conversation.")
             }
         }
         state("/playAudio") {
@@ -64,7 +63,9 @@ object TelephonyBotScenario : Scenario(), WithLogger {
                 event(TelephonyEvents.hangup)
             }
             action {
-                logger.debug("User hanged up")
+                request.telephony?.let {
+                    logger.info("Conversation ended with caller: ${it.caller}")
+                }
             }
         }
 

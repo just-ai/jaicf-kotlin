@@ -7,7 +7,21 @@ import com.justai.jaicf.channel.jaicp.JaicpChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 
-
+/**
+ * Interface for JAICP Native Channels, which are:
+ * 1. [TelephonyChannel]
+ * 2. [ChatApiChannel]
+ * 3. [ChatWidgetChannel]
+ *
+ * These channels communicate through [JaicpBotRequest] and [JaicpBotResponse].
+ * All channels are synchronous and use channel-specific reactions.
+ * These channels can only be configured in JAICP Web Interface.
+ *
+ * @see TelephonyChannel
+ * @see ChatApiChannel
+ * @see ChatWidgetChannel
+ * @see JaicpNativeChannel
+ */
 interface JaicpNativeBotChannel : JaicpBotChannel, HttpBotChannel {
     fun process(request: JaicpBotRequest): JaicpBotResponse
 }
