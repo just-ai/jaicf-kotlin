@@ -14,6 +14,13 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core" version { coroutinesCore })
     api("io.ktor:ktor-client-cio" version { ktor })
     api("io.ktor:ktor-client-logging-jvm" version { ktor })
+
+    testCompile(kotlin("test-junit"))
+    testCompile(kotlin("test"))
+    testCompile(project(":channels:facebook"))
+    testCompile(project(":channels:google-actions"))
+    testCompile("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    testRuntime("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {
@@ -22,6 +29,9 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+    }
+    test {
+        useJUnitPlatform()
     }
 }
 
