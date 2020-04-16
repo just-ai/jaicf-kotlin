@@ -1,0 +1,44 @@
+{
+  "data": {
+    "livechatStatus": {
+      "enabled": false
+    },
+    "chatId": "2993394024045339"
+  },
+  "version": 1,
+  "botId": "jaicf_dev-262-pWj",
+  "channelType": "facebook",
+  "channelBotId": "jaicf_dev-262-pWj",
+  "channelUserId": "facebook-jaicf_dev-262-pWj-2993394024045339",
+  "questionId": "6d5c70c2-c456-4c98-a1c7-a947b1afe764",
+  "query": "hello",
+  "rawRequest": {
+    "object": "page",
+    "entry": [
+      {
+        "id": "110387787249256",
+        "time": 1586785718131,
+        "messaging": [
+          {
+            "sender": {
+              "id": "2993394024045339"
+            },
+            "recipient": {
+              "id": "110387787249256"
+            },
+            "timestamp": 1586785717930,
+            "message": {
+              "mid": "m_YiWun57Z-UGAFt43Z75_z4p_DEk3pZPsPQ-4ipM50BtDb5ROqGdFex3Kz5GSJha7Otca182D9nBEZ1gHfLfVYQ",
+              "text": "hello"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "userFrom": {
+    "id": "2993394024045339",
+    "firstName": "Владислав",
+    "lastName": "Метелягин"
+  }
+}
