@@ -20,6 +20,13 @@ dependencies {
     api("io.ktor:ktor-client-serialization-jvm" version { ktor })
     api("io.ktor:ktor-server-netty" version { ktor })
 
+
+    testCompile(kotlin("test-junit"))
+    testCompile(kotlin("test"))
+    testCompile(project(":channels:facebook"))
+    testCompile(project(":channels:google-actions"))
+    testCompile("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    testRuntime("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {
@@ -28,6 +35,9 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+    }
+    test {
+        useJUnitPlatform()
     }
 }
 
