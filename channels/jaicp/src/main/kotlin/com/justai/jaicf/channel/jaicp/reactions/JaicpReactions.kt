@@ -23,7 +23,7 @@ open class JaicpReactions : Reactions() {
         replies.add(TextReply(text))
     }
 
-    internal fun collect(): JsonObject {
+    fun collect(): JsonObject {
         val jsonReplies: List<JsonElement> = replies.map { reply ->
             when (reply) {
                 is TextReply -> JSON.toJson(
@@ -44,10 +44,19 @@ open class JaicpReactions : Reactions() {
             }
         }
 
+        val answer = replies.joinToString(separator = "\n\n") {
+            if (it is TextReply) {
+                it.text
+            } else {
+                ""
+            }
+        }
+
         return json {
             "replies" to jsonArray {
                 jsonReplies.forEach { +it }
             }
+            "answer" to answer
         }
     }
 }
