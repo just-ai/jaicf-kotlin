@@ -13,12 +13,11 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
 class CailaKtorClient(
-    accessToken: String,
-    url: String
+    override val accessToken: String,
+    override val url: String
 ) : WithLogger,
     CailaHttpClient {
 
-    private val simpleInferenceUrl = "$url/$accessToken/nlu/inference".toUrl()
     private val client = HttpClient(CIO) { expectSuccess = true }
     private val json = Json(JsonConfiguration.Stable.copy(strictMode = false, encodeDefaults = false))
 
@@ -32,7 +31,7 @@ class CailaKtorClient(
     }
 
     private suspend fun simpleInferenceAsync(query: String): CailaInferenceResults {
-        val response = client.get<String>(simpleInferenceUrl) {
+        val response = client.get<String>(inferenceUrl) {
             parameter("query", query)
         }
         logger.info(response)
@@ -49,7 +48,7 @@ class CailaKtorClient(
     }
 
     private suspend fun entitiesLookupAsync(query: String, showAll: Boolean = true): EntitiesLookupResults {
-        val response = client.get<String>(simpleInferenceUrl) {
+        val response = client.get<String>(entitiesLookupUrl) {
             parameter("query", query)
             parameter("showAll", showAll)
         }
