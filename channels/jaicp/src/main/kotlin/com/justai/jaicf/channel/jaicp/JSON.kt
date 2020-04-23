@@ -16,3 +16,5 @@ internal fun String.asJaicpPollingRequest() = JSON.parse(JaicpPollingRequest.ser
 internal fun JaicpBotResponse.deserialized() = JSON.stringify(JaicpBotResponse.serializer(), this)
 
 internal fun JaicpPollingResponse.deserialized() = JSON.stringify(JaicpPollingResponse.serializer(), this)
+
+internal fun String.toJson() = JSON.parseJson(this).jsonObject

@@ -46,6 +46,11 @@ abstract class JaicpNativeChannel(
         request: JaicpBotRequest,
         currentState: String,
         processingTime: Long
-    ) = JaicpBotResponse.create(request, reactions.collect(), processingTime, currentState)
+    ) = JaicpBotResponse.create(
+        jaicpBotRequest = request,
+        rawResponse = reactions.collect(),
+        processingTime = processingTime,
+        currentState = currentState
+    )
 }
 
