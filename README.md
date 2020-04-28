@@ -68,7 +68,7 @@ Please see [the contribution guide](CONTRIBUTING.md) to learn how you can be inv
 
 ## Community
 
-You're welcome to [join a Slack community](https://join.slack.com/t/jaicf/shared_invite/zt-clzasfyq-f4gv8hf3JHD4RmpMtrt0Aw) to share your ideas or ask questions regarding the JAICF usage.
+You're welcome to [join a Slack community](https://join.slack.com/t/jaicf/shared_invite/zt-duq07hx2-w_c71O8BnKDCIqhSXflRjA) to share your ideas or ask questions regarding the JAICF usage.
 
 ## Licensing
 
