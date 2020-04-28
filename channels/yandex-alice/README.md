@@ -337,4 +337,4 @@ state("auth") {
 
 Если вы нашли баг, то можете написать о нем в [issues](https://github.com/just-ai/jaicf-kotlin/issues) или предложить вашу реализацию и отправить pull request.
 
-Также вы можете присоединиться к [сообществу разработчиков в Slack](https://join.slack.com/t/jaicf/shared_invite/zt-clzasfyq-f4gv8hf3JHD4RmpMtrt0Aw), чтобы задавать вопросы по данной библиотеке.
+Также вы можете присоединиться к [сообществу разработчиков в Slack](https://join.slack.com/t/jaicf/shared_invite/zt-duq07hx2-w_c71O8BnKDCIqhSXflRjA), чтобы задавать вопросы по данной библиотеке.
