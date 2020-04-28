@@ -4,7 +4,7 @@ There are a lot of ways on how you can contribute to JAICF 😀
 
 #### 0. Join our community
 
-There is a [Slack community](https://join.slack.com/t/jaicf/shared_invite/zt-clzasfyq-f4gv8hf3JHD4RmpMtrt0Aw) you can simply join to start discuss a JAICF and share your ideas on how to make it better!
+There is a [Slack community](https://join.slack.com/t/jaicf/shared_invite/zt-duq07hx2-w_c71O8BnKDCIqhSXflRjA) you can simply join to start discuss a JAICF and share your ideas on how to make it better!
 
 #### 1. Add a new channel support
 
