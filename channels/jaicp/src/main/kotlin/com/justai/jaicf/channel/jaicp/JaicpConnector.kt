@@ -26,4 +26,4 @@ interface JaicpConnector {
 }
 
 val JaicpConnector.proxyUrl: String
-    get() = "$url/proxy/$accessToken"
+    get() = "$url/proxy"
