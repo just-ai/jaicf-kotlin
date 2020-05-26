@@ -28,7 +28,7 @@ private fun addRawReply(rawResponse: JsonElement) = json {
     "replies" to jsonArray {
         +(json {
             "type" to "raw"
-            "text" to rawResponse
+            "body" to rawResponse
         })
     }
 }
