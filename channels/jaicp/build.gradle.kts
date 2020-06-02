@@ -14,6 +14,9 @@ dependencies {
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core" version { coroutinesCore })
     api("io.ktor:ktor-client-cio" version { ktor })
     api("io.ktor:ktor-client-logging-jvm" version { ktor })
+    api("io.ktor:ktor-client-json-jvm" version { ktor })
+    api("io.ktor:ktor-client-serialization-jvm" version { ktor })
+
 }
 
 tasks {

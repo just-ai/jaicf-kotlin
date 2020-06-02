@@ -46,9 +46,10 @@ class Dispatcher(private val proxyUrl: String) :
 
     fun runChannel(
         factory: JaicpExternalPollingChannelFactory,
-        botApi: BotApi
+        botApi: BotApi,
+        channelToken: String
     ) = launch {
-        factory.createAndRun(botApi, "$proxyUrl/${factory.channelType}".toUrl()).also {
+        factory.createAndRun(botApi, "$proxyUrl/$channelToken/${factory.channelType}".toUrl()).also {
             logger.info("Running external polling channel ${factory.channelType}")
         }
     }
@@ -56,12 +57,15 @@ class Dispatcher(private val proxyUrl: String) :
 
     fun registerPolling(
         factory: JaicpChannelFactory,
-        channel: JaicpBotChannel
+        channel: JaicpBotChannel,
+        channelToken: String
     ) = pollingChannels.add(
         PollingChannel(
-            "$proxyUrl/${factory.channelType}".toUrl(),
-            channel
-        )
+            "$proxyUrl/$channelToken/${factory.channelType}".toUrl(),
+             channel
+        ).also {
+            logger.info("Registered polling for channel $channel")
+        }
     )
 
     fun startPollingBlocking() {
