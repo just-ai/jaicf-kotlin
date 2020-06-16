@@ -2,7 +2,6 @@ package com.justai.jaicf.activator.caila.client
 
 import com.justai.jaicf.activator.caila.dto.CailaInferenceResults
 import com.justai.jaicf.activator.caila.dto.EntitiesLookupResults
-import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -30,11 +29,15 @@ class CailaKtorClient(
         return null
     }
 
-    private suspend fun simpleInferenceAsync(query: String): CailaInferenceResults {
+    private suspend fun simpleInferenceAsync(query: String): CailaInferenceResults? {
         val response = client.get<String>(inferenceUrl) {
             parameter("query", query)
         }
         logger.info(response)
+        val intent = json.parseJson(response).jsonObject["intent"] ?: return null
+        if (intent.isNull) {
+            return null
+        }
         return json.parse(CailaInferenceResults.serializer(), response)
     }
 
