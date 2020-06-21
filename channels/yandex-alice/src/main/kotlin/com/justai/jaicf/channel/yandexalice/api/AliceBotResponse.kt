@@ -5,6 +5,7 @@ import com.justai.jaicf.channel.yandexalice.api.model.Button
 import com.justai.jaicf.channel.yandexalice.api.model.Card
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
@@ -12,11 +13,14 @@ data class AliceBotResponse(
     var response: Response?,
     @SerialName("start_account_linking")
     var startAccountLinking: JsonObject? = null,
-    val session: Session,
-    val version: String
+    val version: String,
+    @Deprecated(message = "May be omitted")
+    val session: Session? = null,
+    val userStateUpdate: MutableMap<String, JsonElement?> = mutableMapOf(),
+    var sessionState: JsonObject? = null
 ): BotResponse {
 
-    constructor(request: AliceBotRequest): this(Response(), null, request.session, request.version)
+    constructor(request: AliceBotRequest): this(Response(), null, request.version)
 
     @Serializable
     data class Response(
