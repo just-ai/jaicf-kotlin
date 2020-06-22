@@ -57,6 +57,8 @@ class AliceApi(
             contentType(ContentType.Application.Json)
             body = JsonObject(mapOf("url" to JsonLiteral(url)))
         }.image
+    }.also { image ->
+        imageStorage[skillId]?.put(image.origUrl, image.id)
     }
 
     fun listImages(): List<Image> = runBlocking {
