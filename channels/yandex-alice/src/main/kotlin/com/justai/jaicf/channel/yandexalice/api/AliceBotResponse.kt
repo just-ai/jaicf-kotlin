@@ -16,6 +16,13 @@ data class AliceBotResponse(
     val version: String,
     @Deprecated(message = "May be omitted")
     val session: Session? = null,
+    /**
+     * User state is incremental, meaning that the skill returns only increment to the user_state in response as it's
+     * shared among all surfaces of the user and there might be a race in changing it. That's why it's of [MutableMap]
+     * type.
+     * By design a developer has to pass `null` value associated with a key to remove the key's entry from the user
+     * state.
+     */
     val userStateUpdate: MutableMap<String, JsonElement?> = mutableMapOf(),
     var sessionState: JsonObject? = null
 ): BotResponse {
