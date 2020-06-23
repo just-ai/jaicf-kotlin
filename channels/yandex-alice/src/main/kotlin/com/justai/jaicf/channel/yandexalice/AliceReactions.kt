@@ -8,6 +8,7 @@ import com.justai.jaicf.channel.yandexalice.api.model.Image
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 val Reactions.alice
@@ -70,5 +71,17 @@ class AliceReactions(
     fun startAccountLinking() {
         response.response = null
         response.startAccountLinking = JsonObject(mapOf())
+    }
+
+    fun sessionState(state: JsonObject) {
+        response.sessionState = state
+    }
+
+    fun updateUserState(key: String, value: JsonElement?) {
+        response.userStateUpdate[key] = value
+    }
+
+    fun deleteFromUserState(key: String) {
+        response.userStateUpdate[key] = null
     }
 }

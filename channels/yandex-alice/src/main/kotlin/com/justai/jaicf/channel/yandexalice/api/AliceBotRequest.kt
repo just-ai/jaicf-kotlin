@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.yandexalice.api
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
 import com.justai.jaicf.channel.yandexalice.AliceEvent
+import com.justai.jaicf.channel.yandexalice.api.model.AliceIntent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -17,10 +18,11 @@ data class AliceBotRequest(
     val meta: Meta? = null,
     val session: Session,
     val request: Request? = null,
+    val state: State? = null,
     @SerialName("account_linking_complete_event")
     val accountLinkingCompleteEvent: JsonObject? = null
 ): BotRequest {
-    override val clientId = session.userId
+    override val clientId = session.application.applicationId
     val headers = mutableMapOf<String, List<String>>()
 
     val accessToken by lazy {
@@ -59,10 +61,39 @@ data class Session(
     val messageId: Int,
     @SerialName("session_id")
     val sessionId: String,
+    @SerialName("skill_id")
+    val skillId: String,
+    val application: Application,
+    val user: User? = null
+) {
+    // see: https://yandex.ru/dev/dialogs/alice/doc/protocol-docpage/
+    // application.applicationId contains the same value `user_id` contained
+    @Deprecated(
+        message = "use application.applicationId instead as recommended in documentation",
+        replaceWith = ReplaceWith(expression = "application.applicationId")
+    )
+    val userId: String
+        get() = application.applicationId
+}
+
+@Serializable
+data class User(
     @SerialName("user_id")
     val userId: String,
-    @SerialName("skill_id")
-    val skillId: String
+    @SerialName("access_token")
+    val accessToken: String?
+)
+
+@Serializable
+data class Application(
+    @SerialName("application_id")
+    val applicationId: String
+)
+
+@Serializable
+data class State(
+    val session: JsonObject? = null,
+    val user: Map<String, JsonElement> = emptyMap()
 )
 
 @Serializable
@@ -78,7 +109,11 @@ data class Request(
     @Serializable
     data class Nlu(
         val tokens: List<String>,
-        val entities: List<Entity>
+        val entities: List<Entity>,
+        /**
+         * @see AliceIntent for predefined
+         * */
+        val intents: Map<String, Intent>
     ) {
         @Serializable
         data class Entity(
@@ -92,5 +127,23 @@ data class Request(
                 val end: Int
             )
         }
+
+        @Serializable
+        data class Intent(
+            val slots: Map<String, Slot> = emptyMap()
+        )
+
+        @Serializable
+        data class Slot(
+            val type: String,
+            val value: JsonElement,
+            val tokens: Tokens?
+        )
+
+        @Serializable
+        data class Tokens(
+            val start: Int,
+            val end: Int
+        )
     }
 }
