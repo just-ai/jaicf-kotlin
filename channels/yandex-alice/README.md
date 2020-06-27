@@ -333,6 +333,39 @@ state("auth") {
 
 Бибилиотека автоматически записывает заголовок с токеном авторизации в поле `request.alice?.accessToken`.
 
+### NLP в Алисе
+Яндекс Диалоги предоставляют возможность] обрабатываеть запросы пользователя на естественном языке.
+Подробнее читайте в [документации Яндекс Диалогов](https://yandex.ru/dev/dialogs/alice/doc/nlu-docpage/).
+
+Чтобы использовать этот функционал в вашем сценарии, добавьте в настройки вашего агента активатор `AliceIntentActivator`, например:
+
+```kotlin
+val skill = BotEngine(
+    model = MainScenario.model,
+    activators = arrayOf(
+        AliceIntentActivator,
+        BaseEventActivator,
+        CatchAllActivator
+    )
+)
+```
+
+После этого вы сможете обрабатывать интенты Алисы и ваши собственные интенты в вашем сценарии:
+
+```kotlin
+state("repeat") {
+    activators {
+        intent(AliceIntent.REPEAT)
+    }
+
+    action {
+        reactions.say("Повторяю...")
+    }
+}
+```
+
+Слоты доступны с помощью `activator.alice?.slots`.
+
 # Вопросы и предложения
 
 Если вы нашли баг, то можете написать о нем в [issues](https://github.com/just-ai/jaicf-kotlin/issues) или предложить вашу реализацию и отправить pull request.
