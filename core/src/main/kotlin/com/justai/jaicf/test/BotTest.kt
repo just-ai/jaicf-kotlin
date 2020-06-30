@@ -38,7 +38,6 @@ import java.util.*
  */
 open class BotTest(private val bot: BotEngine) {
 
-    private var clientId: String = UUID.randomUUID().toString()
     private lateinit var botContext: BotContext
     private lateinit var requestContext: TestRequestContext
     private lateinit var reactions: Reactions
@@ -68,7 +67,7 @@ open class BotTest(private val bot: BotEngine) {
      * @param clientId client ID
      */
     fun withClientId(clientId: String) {
-        this.clientId = clientId
+        botContext = bot.defaultContextManager.loadContext(EventBotRequest(clientId, ""))
     }
 
     /**
@@ -167,7 +166,7 @@ open class BotTest(private val bot: BotEngine) {
      *
      * @see ProcessResult
      */
-    fun intent(intent: String) = process(IntentBotRequest(clientId, intent))
+    fun intent(intent: String) = process(IntentBotRequest(botContext.clientId, intent))
 
     /**
      * A helper method that processes an event
@@ -176,7 +175,7 @@ open class BotTest(private val bot: BotEngine) {
      *
      * @see ProcessResult
      */
-    fun event(event: String) = process(EventBotRequest(clientId, event))
+    fun event(event: String) = process(EventBotRequest(botContext.clientId, event))
 
     /**
      * A helper method that processes a raw text query
@@ -185,7 +184,7 @@ open class BotTest(private val bot: BotEngine) {
      *
      * @see ProcessResult
      */
-    fun query(query: String) = process(QueryBotRequest(clientId, query))
+    fun query(query: String) = process(QueryBotRequest(botContext.clientId, query))
 
     /**
      * Asserts text response in the case if reactions is [TextReactions]
