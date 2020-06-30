@@ -3,7 +3,7 @@ package com.justai.jaicf.channel.yandexalice.api
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
 import com.justai.jaicf.channel.yandexalice.AliceEvent
-import com.justai.jaicf.channel.yandexalice.api.model.AliceIntent
+import com.justai.jaicf.channel.yandexalice.AliceIntent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -81,7 +81,7 @@ data class User(
     @SerialName("user_id")
     val userId: String,
     @SerialName("access_token")
-    val accessToken: String?
+    val accessToken: String? = null
 )
 
 @Serializable
@@ -137,7 +137,7 @@ data class Request(
         data class Slot(
             val type: String,
             val value: JsonElement,
-            val tokens: Tokens?
+            val tokens: Tokens? = null
         )
 
         @Serializable
