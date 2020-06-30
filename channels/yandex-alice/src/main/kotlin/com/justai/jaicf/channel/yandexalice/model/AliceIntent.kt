@@ -1,4 +1,4 @@
-package com.justai.jaicf.channel.yandexalice
+package com.justai.jaicf.channel.yandexalice.model
 
 object AliceIntent {
     const val CONFIRM = "YANDEX.CONFIRM"

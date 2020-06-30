@@ -38,6 +38,7 @@ import java.util.*
  */
 open class BotTest(private val bot: BotEngine) {
 
+    private var clientId: String = UUID.randomUUID().toString()
     private lateinit var botContext: BotContext
     private lateinit var requestContext: TestRequestContext
     private lateinit var reactions: Reactions
@@ -50,7 +51,7 @@ open class BotTest(private val bot: BotEngine) {
     }
 
     private fun saveBotContext() {
-        bot.contextManager.saveContext(botContext)
+        bot.defaultContextManager.saveContext(botContext, null, null)
     }
 
     /**
@@ -67,7 +68,7 @@ open class BotTest(private val bot: BotEngine) {
      * @param clientId client ID
      */
     fun withClientId(clientId: String) {
-        botContext = bot.contextManager.loadContext(clientId)
+        this.clientId = clientId
     }
 
     /**
@@ -154,8 +155,8 @@ open class BotTest(private val bot: BotEngine) {
      * @see ProcessResult
      */
     fun process(request: BotRequest): ProcessResult {
-        bot.process(request, reactions, requestContext)
-        botContext = bot.contextManager.loadContext(request.clientId)
+        bot.process(request, reactions, requestContext = requestContext)
+        botContext = bot.defaultContextManager.loadContext(request)
         return ProcessResult(botContext, reactions)
     }
 
@@ -166,7 +167,7 @@ open class BotTest(private val bot: BotEngine) {
      *
      * @see ProcessResult
      */
-    fun intent(intent: String) = process(IntentBotRequest(botContext.clientId, intent))
+    fun intent(intent: String) = process(IntentBotRequest(clientId, intent))
 
     /**
      * A helper method that processes an event
@@ -175,7 +176,7 @@ open class BotTest(private val bot: BotEngine) {
      *
      * @see ProcessResult
      */
-    fun event(event: String) = process(EventBotRequest(botContext.clientId, event))
+    fun event(event: String) = process(EventBotRequest(clientId, event))
 
     /**
      * A helper method that processes a raw text query
@@ -184,7 +185,7 @@ open class BotTest(private val bot: BotEngine) {
      *
      * @see ProcessResult
      */
-    fun query(query: String) = process(QueryBotRequest(botContext.clientId, query))
+    fun query(query: String) = process(QueryBotRequest(clientId, query))
 
     /**
      * Asserts text response in the case if reactions is [TextReactions]

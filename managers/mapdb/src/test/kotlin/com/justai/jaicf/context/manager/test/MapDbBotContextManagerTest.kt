@@ -1,5 +1,6 @@
 package com.justai.jaicf.context.manager.test
 
+import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.manager.mapdb.MapDbBotContextManager
 import org.junit.jupiter.api.Test
@@ -11,14 +12,14 @@ class MapDbBotContextManagerTest {
     @Test
     fun testWithTempFile() {
         val manager = MapDbBotContextManager()
-        val context = manager.loadContext("client1")
+        val context = manager.loadContext(EventBotRequest("client1", "event"))
         context.apply {
             result = "some result"
             session["key1"] = "value1"
         }
 
-        manager.saveContext(context)
-        val result = manager.loadContext("client1")
+        manager.saveContext(context, null, null)
+        val result = manager.loadContext(EventBotRequest("client1", "event"))
 
         assertEquals("client1", context.clientId)
         assertEquals(context.clientId, result.clientId)
@@ -30,12 +31,12 @@ class MapDbBotContextManagerTest {
     fun testWithFile() {
         val context = BotContext("client1").apply { result = "some result" }
         MapDbBotContextManager(".mapdb").apply {
-            saveContext(context)
+            saveContext(context, null, null)
             close()
         }
 
         val result = MapDbBotContextManager(".mapdb").run {
-            loadContext(context.clientId)
+            loadContext(EventBotRequest(context.clientId, "event"))
         }
 
         assertEquals(context.result, result.result)
