@@ -51,11 +51,18 @@ internal class JaicpWebhookConnectorTest : BaseTest() {
             accessToken = ""
         )
         val request = HttpBotRequest(
-            stream = getResourceAsInputStream("query.json")
+            stream = getResourceAsInputStream("query0.json")
         )
         val response = channel.processSync(request)
         val expected = """{"replies":[{"type":"text","text":"You said: /start from TelephonyReactions"}]}"""
         assertEquals(expected, response)
+
+        val request1 = HttpBotRequest(
+            stream = getResourceAsInputStream("query1.json")
+        )
+        val response1 = channel.processSync(request1)
+        val expected1 = """{"replies":[{"type":"text","text":"You said: /start from TelephonyReactions"}]}"""
+        assertEquals(expected1, response1)
     }
 
     @Test
