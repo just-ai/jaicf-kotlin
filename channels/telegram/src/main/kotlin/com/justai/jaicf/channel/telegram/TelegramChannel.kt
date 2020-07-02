@@ -14,7 +14,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/bot",
+    private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC
 ) : BotChannel {
 
