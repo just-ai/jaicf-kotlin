@@ -10,7 +10,7 @@ import org.slf4j.MDC
 
 @Serializable
 data class JaicpBotRequest(
-    val data: JsonElement,
+    val data: JsonElement?,
     val version: Int,
     val botId: String,
     val channelType: String,

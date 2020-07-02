@@ -1,0 +1,41 @@
+{
+  "data": {
+    "resterisk": {
+      "channel": "SIP/1315-00000881",
+      "isIncoming": true
+    }
+  },
+  "version": 1,
+  "botId": "263-fomin_jaicf_weather-263-IMV-1461",
+  "channelType": "resterisk",
+  "channelBotId": "263-fomin_jaicf_weather-263-IMV-1461",
+  "channelUserId": "resterisk-263-fomin_jaicf_weather-263-IMV-1461-79117801258",
+  "questionId": "0d7cf81f-9a4b-48f2-a3dc-e4b011b7bf34",
+  "event": "hangup",
+  "rawRequest": {
+    "event": "hangup",
+    "trunkId": 1315,
+    "accountId": 263,
+    "caller": "79117801258",
+    "extension": "907128",
+    "channel": "SIP/1315-00000881",
+    "billingData": {
+      "asrDuration": 0,
+      "ttsCounter": 0,
+      "billSec": 0,
+      "internal": false
+    }
+  },
+  "userFrom": {
+    "id": "79117801258",
+    "firstName": "79117801258"
+  },
+  "channelData": {
+    "@type": "resterisk",
+    "isCallIncoming": true,
+    "billingData": {
+      "realCallSeconds": 0,
+      "tariffBillSeconds": 0
+    }
+  }
+}
