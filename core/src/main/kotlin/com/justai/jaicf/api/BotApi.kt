@@ -1,6 +1,7 @@
 package com.justai.jaicf.api
 
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -19,6 +20,7 @@ interface BotApi {
      * @param request request from the particular channel
      * @param reactions abstraction that provides all channel-related API to build and send a response(s)
      * @param requestContext additional general request's data that can be used during the request processing
+     * @param contextManager a [BotContextManager] that can override the default one configured for this [com.justai.jaicf.BotEngine]
      *
      * @see BotRequest
      * @see Reactions
@@ -27,6 +29,7 @@ interface BotApi {
     fun process(
         request: BotRequest,
         reactions: Reactions,
-        requestContext: RequestContext = RequestContext()
+        requestContext: RequestContext = RequestContext(),
+        contextManager: BotContextManager? = null
     )
 }

@@ -1,5 +1,7 @@
 package com.justai.jaicf.context.manager
 
+import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
 
 /**
@@ -14,14 +16,18 @@ interface BotContextManager {
 
     /**
      * Loads the bot context from the storage
-     * @param clientId current user's id who made a request to the bot
+     *
+     * @param request current user's request
      * @return current user's [BotContext]
      */
-    fun loadContext(clientId: String): BotContext
+    fun loadContext(request: BotRequest): BotContext
 
     /**
      * Persists the current user's bot context.
+     *
      * @param botContext an instance of BotContext to persist
+     * @param request current user's request
+     * @param response a response that are going to be sent back to the user
      */
-    fun saveContext(botContext: BotContext)
+    fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?)
 }

@@ -50,7 +50,7 @@ open class BotTest(private val bot: BotEngine) {
     }
 
     private fun saveBotContext() {
-        bot.contextManager.saveContext(botContext)
+        bot.defaultContextManager.saveContext(botContext, null, null)
     }
 
     /**
@@ -67,7 +67,7 @@ open class BotTest(private val bot: BotEngine) {
      * @param clientId client ID
      */
     fun withClientId(clientId: String) {
-        botContext = bot.contextManager.loadContext(clientId)
+        botContext = bot.defaultContextManager.loadContext(EventBotRequest(clientId, ""))
     }
 
     /**
@@ -154,8 +154,8 @@ open class BotTest(private val bot: BotEngine) {
      * @see ProcessResult
      */
     fun process(request: BotRequest): ProcessResult {
-        bot.process(request, reactions, requestContext)
-        botContext = bot.contextManager.loadContext(request.clientId)
+        bot.process(request, reactions, requestContext = requestContext)
+        botContext = bot.defaultContextManager.loadContext(request)
         return ProcessResult(botContext, reactions)
     }
 

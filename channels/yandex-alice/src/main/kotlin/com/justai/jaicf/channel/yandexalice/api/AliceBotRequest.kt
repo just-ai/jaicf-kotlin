@@ -2,8 +2,8 @@ package com.justai.jaicf.channel.yandexalice.api
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
-import com.justai.jaicf.channel.yandexalice.AliceEvent
-import com.justai.jaicf.channel.yandexalice.AliceIntent
+import com.justai.jaicf.channel.yandexalice.model.AliceEvent
+import com.justai.jaicf.channel.yandexalice.model.AliceIntent
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement

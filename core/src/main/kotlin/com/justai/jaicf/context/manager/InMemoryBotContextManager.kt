@@ -1,5 +1,7 @@
 package com.justai.jaicf.context.manager
 
+import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
 
 /**
@@ -15,15 +17,15 @@ object InMemoryBotContextManager: BotContextManager {
      * @param clientId a client identifier
      * @return [BotContext] instance
      */
-    override fun loadContext(clientId: String): BotContext {
-        storage.putIfAbsent(clientId, BotContext(clientId))
-        return storage[clientId]!!
+    override fun loadContext(request: BotRequest): BotContext {
+        storage.putIfAbsent(request.clientId, BotContext(request.clientId))
+        return storage[request.clientId]!!
     }
 
     /**
      * Stores a shallow copy [BotContext] to the internal mutable map.
      */
-    override fun saveContext(botContext: BotContext) {
+    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
         storage[botContext.clientId] = botContext.copy().apply {
             result = botContext.result
             client.putAll(botContext.client)

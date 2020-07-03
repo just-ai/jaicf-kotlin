@@ -23,7 +23,9 @@ data class AliceBotResponse(
      * By design a developer has to pass `null` value associated with a key to remove the key's entry from the user
      * state.
      */
+    @SerialName("user_state_update")
     val userStateUpdate: MutableMap<String, JsonElement?> = mutableMapOf(),
+    @SerialName("session_state")
     var sessionState: JsonObject? = null
 ): BotResponse {
 
