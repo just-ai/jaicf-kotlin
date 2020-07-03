@@ -1,12 +1,11 @@
 package com.justai.jaicf.channel.telegram
 
+import com.github.kotlintelegrambot.entities.Contact
+import com.github.kotlintelegrambot.entities.Location
+import com.github.kotlintelegrambot.entities.Message
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
-import me.ivmg.telegram.entities.Contact
-import me.ivmg.telegram.entities.Location
-import me.ivmg.telegram.entities.Message
-import me.ivmg.telegram.entities.payment.PreCheckoutQuery
 
 val BotRequest.telegram
     get() = this as? TelegramBotRequest

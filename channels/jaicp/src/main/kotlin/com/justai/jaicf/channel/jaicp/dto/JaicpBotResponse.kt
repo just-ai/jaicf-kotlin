@@ -14,7 +14,7 @@ data class JaicpBotResponse(
     val channelBotId: String,
     val channelUserId: String,
     val questionId: String,
-    val query: String,
+    val query: String?,
     val timestamp: Long,
     val currentState: String,
     var processingTime: Long,
@@ -35,7 +35,7 @@ fun JaicpBotResponse.Companion.create(
     channelBotId = jaicpBotRequest.channelBotId,
     channelUserId = jaicpBotRequest.channelUserId,
     questionId = jaicpBotRequest.questionId,
-    query = jaicpBotRequest.query!!,
+    query = jaicpBotRequest.query,
     timestamp = OffsetDateTime.now().toEpochSecond(),
     currentState = currentState,
     processingTime = processingTime
