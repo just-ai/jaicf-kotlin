@@ -27,19 +27,19 @@ class AliceBotContextManager: BotContextManager {
 
     override fun loadContext(request: BotRequest): BotContext {
         return request.alice?.state?.let { state ->
-            val client = state.user.takeIf { it.isNotEmpty() }?.let {
-                mapper.readValue(JsonObject(state.user).toString(), MutableMap::class.java)
-            }?.mapKeys { it.key as String }
+            val client = state.user["com.justai.jaicf"]?.let { user ->
+                mapper.readValue(user.toString(), MutableMap::class.java).mapKeys { it.key as String }
+            }
 
-            val session = state.session?.takeIf { it.isNotEmpty() }?.let {
-                mapper.readValue(it.toString(), MutableMap::class.java)
-            }?.mapKeys { it.key as String }
+            val session = state.session?.get("com.justai.jaicf")?.let { session ->
+                mapper.readValue(session.toString(), MutableMap::class.java).mapKeys { it.key as String }
+            }
 
             BotContext(
                 clientId = request.clientId,
-                dialogContext = session?.get("_dialog_context") as? DialogContext ?: DialogContext()
+                dialogContext = session?.get("dialogContext") as? DialogContext ?: DialogContext()
             ).apply {
-                this.result = session?.get("_result")
+                this.result = session?.get("result")
                 this.client.putAll(client ?: emptyMap())
                 this.session.putAll(session ?: emptyMap())
             }
@@ -50,13 +50,16 @@ class AliceBotContextManager: BotContextManager {
         (response as? AliceBotResponse)?.run {
             val model = BotContextModel(botContext)
             val json = JSON.parseJson(mapper.writeValueAsString(model)).jsonObject
-            val sessionMap = mutableMapOf<String, JsonElement>().apply {
+            val session = mutableMapOf<String, JsonElement>().apply {
                 putAll(json.getObject("session").content)
-                put("_result", json["result"] ?: JsonNull)
-                put("_dialog_context", json["dialogContext"] ?: JsonNull)
+                put("result", json["result"] ?: JsonNull)
+                put("dialogContext", json["dialogContext"] ?: JsonNull)
+            }.let {
+                mapOf("com.justai.jaicf" to JsonObject(it))
             }
-            userStateUpdate.putAll(json.getObject("client").content)
-            sessionState = JsonObject(sessionState?.content?.plus(sessionMap) ?: sessionMap)
+
+            userStateUpdate["com.justai.jaicf"] = json["client"]
+            sessionState = JsonObject(sessionState?.content?.plus(session) ?: session)
         }
     }
 }
