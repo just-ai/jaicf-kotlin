@@ -10,6 +10,7 @@ dependencies {
     api("com.github.kotlin-telegram-bot:kotlin-telegram-bot:5.0.0") {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+        exclude("com.github.kotlin-telegram-bot.kotlin-telegram-bot", "webhook")
     }
 }
 
