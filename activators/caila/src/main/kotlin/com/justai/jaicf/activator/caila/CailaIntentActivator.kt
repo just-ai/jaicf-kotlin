@@ -37,7 +37,7 @@ class CailaIntentActivator(
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
         val results = client.analyze(request.input) ?: return null
-        val topIntentPrediction = results.inference.variants[0]
+        val topIntentPrediction = results.inference.variants.maxBy { it.confidence }!!
 
         return when {
             topIntentPrediction.confidence > settings.confidenceThreshold -> return CailaIntentActivatorContext(results)
