@@ -1,9 +1,14 @@
 package com.justai.jaicf.activator
 
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
+import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.slotfilling.SlotFiller
+import com.justai.jaicf.slotfilling.SlotFillingResult
+import com.justai.jaicf.slotfilling.SlotFillingSkipped
 
 /**
  * Main abstraction for state activator.
@@ -49,6 +54,14 @@ interface Activator {
         botContext: BotContext,
         request: BotRequest
     ): Activation?
+
+    fun fillSlots(
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions,
+        activatorContext: ActivatorContext?,
+        slotFiller: SlotFiller? = null
+    ): SlotFillingResult = SlotFillingSkipped
 }
 
 /**

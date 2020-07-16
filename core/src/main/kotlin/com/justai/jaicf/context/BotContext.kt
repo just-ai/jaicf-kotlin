@@ -1,5 +1,7 @@
 package com.justai.jaicf.context
 
+import com.justai.jaicf.activator.Activator
+
 /**
  * Class that contains a required data for request processing. The instance of this class is available fro each request in [ActionContext].
  * Here are scoped mutable properties available to store the arbitrary user-related data during the scenario execution.
@@ -56,5 +58,20 @@ data class BotContext(
         result = null
         temp.clear()
         session.clear()
+    }
+
+    fun setSlotfillingStarted(activator: Activator?) {
+        client[clientSlotfillingKey] = activator
+    }
+
+    fun getSlotfillingActivator() = client[clientSlotfillingKey] as? Activator
+
+    fun setSlotFillingIsFinished() = client.remove(clientSlotfillingKey)
+
+    private val clientSlotfillingKey: String
+        get() = "$clientId$SLOTFILLING_ACTIVATOR_KEY"
+
+    internal companion object {
+        const val SLOTFILLING_ACTIVATOR_KEY = "-slotfilling-activator"
     }
 }
