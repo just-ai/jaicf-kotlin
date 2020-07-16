@@ -7,15 +7,15 @@ import com.justai.jaicf.context.ActivatorContext
 data class CailaIntentActivatorContext(
     val result: CailaAnalyzeResponseData
 ) : IntentActivatorContext(
-    result.inference.variants[0].confidence.toFloat(),
-    result.inference.variants[0].intent.name
+    result.inference.variants.maxBy { it.confidence }!!.confidence.toFloat(),
+    result.inference.variants.maxBy { it.confidence }!!.intent.name
 ) {
 
-    var slots = result.inference.variants[0].slots?.map { it.name to it.value }?.toMap() ?: emptyMap()
+    val topIntent = result.inference.variants.maxBy { it.confidence }!!.intent
+
+    var slots = result.inference.variants.maxBy { it.confidence }!!.slots?.map { it.name to it.value }?.toMap() ?: emptyMap()
 
     val entities = result.entitiesLookup.entities
-
-    val topIntent = result.inference.variants[0].intent
 }
 
 val ActivatorContext.caila
