@@ -7,9 +7,10 @@ dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
 
-    api("io.github.seik.kotlin-telegram-bot:telegram:0.3.4") {
+    api("com.github.kotlin-telegram-bot:kotlin-telegram-bot:5.0.0") {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-common")
+        exclude("com.github.kotlin-telegram-bot.kotlin-telegram-bot", "webhook")
     }
 }
 

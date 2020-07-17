@@ -15,6 +15,7 @@ import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.*
+import com.justai.jaicf.reactions.ResponseReactions
 import java.lang.RuntimeException
 
 /**
@@ -35,7 +36,7 @@ import java.lang.RuntimeException
  * ```
  *
  * @param model bot scenario model. Every bot should serve some scenario that implements a business logic of the bot.
- * @param contextManager manages a bot's context during the request execution
+ * @param defaultContextManager the default manager that manages a bot's context during the request execution. Can be overriden by the channel itself fot every user's request.
  * @param activators an array of used activator that can handle a request. Note that an order is matter: lower activators won't be called if top-level activator handles a request and a corresponding state is found in scenario.
  *
  * @see BotApi
@@ -46,7 +47,7 @@ import java.lang.RuntimeException
  */
 class BotEngine(
     val model: ScenarioModel,
-    val contextManager: BotContextManager = InMemoryBotContextManager,
+    val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
     val slotFiller: SlotFiller? = null
 ) : BotApi, WithLogger {
@@ -65,8 +66,14 @@ class BotEngine(
         handler.actions.putAll(model.hooks)
     }
 
-    override fun process(request: BotRequest, reactions: Reactions, requestContext: RequestContext) {
-        val botContext = contextManager.loadContext(request.clientId)
+    override fun process(
+        request: BotRequest,
+        reactions: Reactions,
+        requestContext: RequestContext,
+        contextManager: BotContextManager?
+    ) {
+        val cm = contextManager ?: defaultContextManager
+        val botContext = cm.loadContext(request)
         reactions.botContext = botContext
 
         processContext(botContext, requestContext)
@@ -123,7 +130,10 @@ class BotEngine(
                 )
 
                 processStates(context)
-                contextManager.saveContext(botContext)
+                cm.saveContext(botContext, request, when (reactions) {
+                    is ResponseReactions<*> -> reactions.response
+                    else -> null
+                })
             }
         }
     }

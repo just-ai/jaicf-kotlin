@@ -333,6 +333,79 @@ state("auth") {
 
 Бибилиотека автоматически записывает заголовок с токеном авторизации в поле `request.alice?.accessToken`.
 
+## NLP в Алисе
+Яндекс Диалоги предоставляют возможность] обрабатываеть запросы пользователя на естественном языке.
+Подробнее читайте в [документации Яндекс Диалогов](https://yandex.ru/dev/dialogs/alice/doc/nlu-docpage/).
+
+Чтобы использовать этот функционал в вашем сценарии, добавьте в настройки вашего агента активатор `AliceIntentActivator`, например:
+
+```kotlin
+val skill = BotEngine(
+    model = MainScenario.model,
+    activators = arrayOf(
+        AliceIntentActivator,
+        BaseEventActivator,
+        CatchAllActivator
+    )
+)
+```
+
+После этого вы сможете обрабатывать интенты Алисы и ваши собственные интенты в вашем сценарии:
+
+```kotlin
+state("repeat") {
+    activators {
+        intent(AliceIntent.REPEAT)
+    }
+
+    action {
+        reactions.say("Повторяю...")
+    }
+}
+```
+
+[Слоты](https://yandex.ru/dev/dialogs/alice/doc/nlu-docpage/#granet_sntx__naming-entities) доступны с помощью `activator.alice?.slots`:
+
+```kotlin
+action {
+    activator.alice?.run {
+        val firstAmount = slots["first_amount"]
+        val secondAmount = slots["second_amount"]
+    }
+}
+```
+
+## Хранение состояния
+JAICF уже осуществляет автоматическое хранение состояния с помощью [различных БД](https://github.com/just-ai/jaicf-kotlin/wiki/Environments).
+Но вы также можете использовать механизм хранения состояния, [доступный в Яндекс Дислогах](https://yandex.ru/dev/dialogs/alice/doc/session-persistence-docpage/).
+
+_Это позволяет обойтись без развертывания дополнительной БД, если она вам не нужна. Функциональность JAICF остается прежней._
+
+Чтобы использовать хранение состояния средствами Яндекс Диалогов, нужно лишь указать это при создании канала `AliceChannel`:
+
+```kotlin
+fun main() {
+    embeddedServer(Netty, System.getenv("PORT")?.toInt() ?: 8080) {
+        routing {
+            httpBotRouting("/" to AliceChannel(skill, useDataStorage = true))
+        }
+    }.start(wait = true)
+}
+```
+
+Сам код сценария при этом остается прежним - вы все так же можете сохранять и читать данные из `context.client` и `context.session` для клиенстких и сессионных данных соответственно.
+
+```kotlin
+action {
+    context.session["first"] = Product(...)
+    context.client["last_reply"] = "Предыдущий ответ"
+
+    val second = context.session["second"] as? Product
+}
+```
+
+Вы можете хранить любые POJO, так как JAICF автоматически сериализует и десериализует ваши объекты, поэтому не нужно делать этого отдельно без необходимости.
+
 # Вопросы и предложения
 
 Если вы нашли баг, то можете написать о нем в [issues](https://github.com/just-ai/jaicf-kotlin/issues) или предложить вашу реализацию и отправить pull request.

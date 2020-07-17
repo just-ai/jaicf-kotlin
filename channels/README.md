@@ -7,6 +7,7 @@ You can connect your JAICF conversational agent to the channels listed below.
 * [Aimybox](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/aimybox)
 * [Amazon Alexa](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/alexa)
 * [Google Actions](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/google-actions)
+* [Yandex Alice](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/yandex-alice)
 
 ### Messengers
 

@@ -9,12 +9,16 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
 import com.justai.jaicf.channel.yandexalice.api.AliceApi
 import com.justai.jaicf.channel.yandexalice.api.AliceBotRequest
 import com.justai.jaicf.channel.yandexalice.api.AliceBotResponse
+import com.justai.jaicf.channel.yandexalice.manager.AliceBotContextManager
 import com.justai.jaicf.context.RequestContext
 
 class AliceChannel(
     override val botApi: BotApi,
-    private val oauthToken: String? = null
+    private val oauthToken: String? = null,
+    useDataStorage: Boolean = false
 ) : JaicpCompatibleBotChannel {
+
+    private val contextManager = useDataStorage.takeIf { it }?.let { AliceBotContextManager() }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val botRequest = JSON.parse(AliceBotRequest.serializer(), request.receiveText())
@@ -26,7 +30,12 @@ class AliceChannel(
             botRequest.headers.putAll(request.headers)
             val api = oauthToken?.let { AliceApi(oauthToken, botRequest.session.skillId) }
             val reactions = AliceReactions(api, botRequest, botResponse)
-            botApi.process(botRequest, reactions, RequestContext(newSession = botRequest.session.newSession))
+            botApi.process(
+                request = botRequest,
+                reactions = reactions,
+                contextManager = contextManager,
+                requestContext = RequestContext(newSession = botRequest.session.newSession)
+            )
         }
 
         return JSON.stringify(AliceBotResponse.serializer(), botResponse).asJsonHttpBotResponse()

@@ -1,8 +1,13 @@
 package com.justai.jaicf.channel.telegram
 
+import com.github.kotlintelegrambot.Bot
+import com.github.kotlintelegrambot.entities.InlineKeyboardButton
+import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
+import com.github.kotlintelegrambot.entities.ParseMode
+import com.github.kotlintelegrambot.entities.ReplyMarkup
+import com.github.kotlintelegrambot.entities.inputmedia.InputMedia
+import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
 import com.justai.jaicf.reactions.Reactions
-import me.ivmg.telegram.Bot
-import me.ivmg.telegram.entities.*
 
 val Reactions.telegram
     get() = this as? TelegramReactions
@@ -51,16 +56,20 @@ class TelegramReactions(
     fun image(
         url: String,
         caption: String? = null,
+        parseMode: ParseMode? = null,
         disableNotification: Boolean? = null,
-        replyToMessageId: Long? = null
-    ) = sendPhoto(url, caption, disableNotification, replyToMessageId)
+        replyToMessageId: Long? = null,
+        replyMarkup: ReplyMarkup? = null
+    ) = sendPhoto(url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendPhoto(
         url: String,
         caption: String? = null,
+        parseMode: ParseMode? = null,
         disableNotification: Boolean? = null,
-        replyToMessageId: Long? = null
-    ) = api.sendPhoto(chatId, url, caption, disableNotification, replyToMessageId)
+        replyToMessageId: Long? = null,
+        replyMarkup: ReplyMarkup? = null
+    ) = api.sendPhoto(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendVideo(
         url: String,
@@ -94,10 +103,11 @@ class TelegramReactions(
     fun sendDocument(
         url: String,
         caption: String? = null,
+        parseMode: ParseMode? = null,
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendDocument(chatId, url, caption, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendDocument(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendVenue(
         latitude: Float,
@@ -105,10 +115,11 @@ class TelegramReactions(
         title: String,
         address: String,
         foursquareId: String? = null,
+        foursquareType: String? = null,
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVenue(chatId, latitude, longitude, title, address, foursquareId, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendVenue(chatId, latitude, longitude, title, address, foursquareId, foursquareType, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendContact(
         phoneNumber: String,
@@ -129,10 +140,10 @@ class TelegramReactions(
     ) = api.sendLocation(chatId, latitude, longitude, livePeriod, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendMediaGroup(
-        media: List<InputMedia>,
+        mediaGroup: MediaGroup,
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null
-    ) = api.sendMediaGroup(chatId, media, disableNotification, replyToMessageId)
+    ) = api.sendMediaGroup(chatId, mediaGroup, disableNotification, replyToMessageId)
 
     fun sendVideoNote(
         url: String,

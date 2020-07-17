@@ -1,17 +1,20 @@
 package com.justai.jaicf.channel.telegram
 
+import com.github.kotlintelegrambot.bot
+import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.dispatcher.callbackQuery
+import com.github.kotlintelegrambot.dispatcher.contact
+import com.github.kotlintelegrambot.dispatcher.location
+import com.github.kotlintelegrambot.dispatcher.text
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.jaicp.JaicpExternalPollingChannelFactory
-import me.ivmg.telegram.bot
-import me.ivmg.telegram.dispatch
-import me.ivmg.telegram.dispatcher.*
 import okhttp3.logging.HttpLoggingInterceptor
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/bot",
+    private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC
 ) : BotChannel {
 

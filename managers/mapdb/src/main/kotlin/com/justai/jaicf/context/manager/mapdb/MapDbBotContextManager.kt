@@ -1,5 +1,7 @@
 package com.justai.jaicf.context.manager.mapdb
 
+import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.manager.BotContextManager
 import org.mapdb.DBMaker
@@ -11,17 +13,17 @@ class MapDbBotContextManager(dbFilePath: String? = null): BotContextManager {
 
     private val map = db.hashMap("contexts", Serializer.STRING, Serializer.JAVA).createOrOpen()
 
-    override fun loadContext(clientId: String): BotContext {
-        val model = map[clientId] as? BotContextModel ?: return BotContext(clientId)
+    override fun loadContext(request: BotRequest): BotContext {
+        val model = map[request.clientId] as? BotContextModel ?: return BotContext(request.clientId)
 
-        return BotContext(clientId, model.dialogContext).apply {
+        return BotContext(request.clientId, model.dialogContext).apply {
             result = model.result
             client.putAll(model.client)
             session.putAll(model.session)
         }
     }
 
-    override fun saveContext(botContext: BotContext) {
+    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
         map[botContext.clientId] = BotContextModel(botContext)
         db.commit()
     }
