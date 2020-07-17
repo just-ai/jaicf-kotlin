@@ -2,7 +2,7 @@ package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
 
-const val DEFAULT_PROXY_URL = "https://jaicf01-demo-htz.lab.just-ai.com/chatadapter"
+const val DEFAULT_PROXY_URL = "https://bot.jaicp.com"
 
 /**
  * Basic interface for JAICP Connectors
