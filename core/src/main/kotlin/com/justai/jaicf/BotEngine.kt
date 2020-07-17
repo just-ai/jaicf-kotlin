@@ -99,9 +99,9 @@ class BotEngine(
                 if (!isSlotFillingSession) {
                     botContext.setSlotfillingStarted(activation?.activator)
                     botContext.dialogContext.nextState = activation?.activation?.state
-                    contextManager.saveContext(botContext)
+                    saveContext(cm, botContext, request, reactions)
                 }
-                contextManager.saveContext(botContext)
+                saveContext(cm, botContext, request, reactions)
                 return
             }
             if (res is SlotFillingFinished) {
@@ -130,13 +130,11 @@ class BotEngine(
                 )
 
                 processStates(context)
-                cm.saveContext(botContext, request, when (reactions) {
-                    is ResponseReactions<*> -> reactions.response
-                    else -> null
-                })
+                saveContext(cm, botContext, request, reactions)
             }
         }
     }
+
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
         try {
@@ -216,5 +214,19 @@ class BotEngine(
             dc.nextContext(model)
             withHook(AfterProcessHook(botContext, request, reactions, activationContext.activation.context))
         }
+    }
+
+    private fun saveContext(
+        cm: BotContextManager,
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions
+    ) {
+        cm.saveContext(
+            botContext, request, when (reactions) {
+                is ResponseReactions<*> -> reactions.response
+                else -> null
+            }
+        )
     }
 }
