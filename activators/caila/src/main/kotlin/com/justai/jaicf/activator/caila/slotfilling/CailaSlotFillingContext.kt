@@ -18,7 +18,7 @@ internal data class CailaSlotFillingContext(
             initialActivatorContext = initial,
             knownSlots = initial.caila?.result?.inference?.variants?.get(0)?.slots?.toMutableList() ?: mutableListOf(),
             knownEntities = initial.caila?.entities?.toMutableList() ?: mutableListOf(),
-            requiredSlots = initial.caila?.topIntent?.slots?.toMutableList() ?: mutableListOf(),
+            requiredSlots = initial.caila?.topIntent?.slots?.filter { it.required }?.toMutableList() ?: mutableListOf(),
             maxRetries = initial.caila?.topIntent?.slots?.map { it.name to 0 }?.toMap()?.toMutableMap() ?: mutableMapOf()
         )
     }
