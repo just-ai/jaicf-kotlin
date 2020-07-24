@@ -14,12 +14,23 @@ internal data class CailaSlotFillingContext(
     val maxRetries: MutableMap<String, Int> = HashMap()
 ) {
     companion object Factory {
-        fun createInitial(initial: ActivatorContext) = CailaSlotFillingContext(
-            initialActivatorContext = initial,
-            knownSlots = initial.caila?.result?.inference?.variants?.get(0)?.slots?.toMutableList() ?: mutableListOf(),
-            knownEntities = initial.caila?.entities?.toMutableList() ?: mutableListOf(),
-            requiredSlots = initial.caila?.topIntent?.slots?.filter { it.required }?.toMutableList() ?: mutableListOf(),
-            maxRetries = initial.caila?.topIntent?.slots?.map { it.name to 0 }?.toMap()?.toMutableMap() ?: mutableMapOf()
-        )
+        fun createInitial(initial: ActivatorContext): CailaSlotFillingContext {
+            val knownSlots = initial.caila?.result?.inference?.variants?.get(0)?.slots?.toMutableList()
+                ?: mutableListOf()
+            val knownEntities = initial.caila?.entities?.toMutableList()
+                ?: mutableListOf()
+            val requiredSlots = initial.caila?.topIntent?.slots?.filter { it.required }?.toMutableList()
+                ?: mutableListOf()
+            val maxRetries = initial.caila?.topIntent?.slots?.map { it.name to 0 }?.toMap()?.toMutableMap()
+                ?: mutableMapOf()
+
+            return CailaSlotFillingContext(
+                initialActivatorContext = initial,
+                knownSlots = knownSlots,
+                knownEntities = knownEntities,
+                requiredSlots = requiredSlots,
+                maxRetries = maxRetries
+            )
+        }
     }
 }

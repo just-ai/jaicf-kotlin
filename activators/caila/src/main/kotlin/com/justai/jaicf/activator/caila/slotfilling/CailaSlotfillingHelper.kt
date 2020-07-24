@@ -80,7 +80,7 @@ internal class CailaSlotfillingHelper(
 
     private fun tryFillSlot(ctx: CailaSlotFillingContext, e: CailaEntityMarkupData) {
         val filledSlots = ctx.knownSlots.map { it.name }
-        val filledValues = ctx.knownSlots.map { "${it.value}-${it.name}" } // it.startPos
+        val filledValues = ctx.knownEntities.map { "${it.value}-${it.startPos}" }
         val slotsForEntity = ctx.requiredSlots.filter { s -> s.entity == e.entity }
 
         for (s in slotsForEntity) {
