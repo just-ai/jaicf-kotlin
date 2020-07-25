@@ -55,6 +55,27 @@ interface Activator {
         request: BotRequest
     ): Activation?
 
+
+    /**
+     * Fills slots for activator implementations.
+     * When activator is selected for user query, engine will call this function to see,
+     * if slot filling session should be started. Otherwise it is skipped.
+     *
+     * When slot filling session is started, initial activator's context and next state will be put into storage.
+     * After all slots are filled, new slots and entities will be put into initial activation context,
+     * and will be available in scenario.
+     *
+     * If slot filling session is interrupted (e.g. by max retries for slots or by intent recognition interruption),
+     * last user query can be put back into BotEngine processing, therefore selecting new state.
+     *
+     * @param botContext current user's [BotContext]
+     * @param request current user's [BotRequest]
+     * @param reactions current request's channel reactions.
+     * @param activatorContext current activation context. Can be null if slotfilling is in progress.
+     * @param slotFiller custom filler for slots.
+     *
+     * @return [SlotFillingResult] result of filling slots for activator implementation.
+     * */
     fun fillSlots(
         botContext: BotContext,
         request: BotRequest,
