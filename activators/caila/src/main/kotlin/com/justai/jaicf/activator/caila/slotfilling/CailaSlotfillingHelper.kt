@@ -88,7 +88,7 @@ internal class CailaSlotfillingHelper(
             val isArray = s.array ?: false
             if (isArray || (!filledSlots.contains(s.name) && !filledValues.contains(valueAtPos))) {
                 e.slot = s.name
-                ctx.knownSlots.add(CailaKnownSlotData(s.name, e.value))
+                ctx.knownSlots.add(CailaKnownSlotData(s.name, e.value, isArray))
                 ctx.knownEntities.add(e)
             }
         }
