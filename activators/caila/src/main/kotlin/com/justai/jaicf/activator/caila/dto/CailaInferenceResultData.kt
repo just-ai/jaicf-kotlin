@@ -35,5 +35,6 @@ data class CailaSlotData(
 @Serializable
 data class CailaKnownSlotData(
     val name: String,
-    val value: String
+    val value: String,
+    val array: String?
 )
