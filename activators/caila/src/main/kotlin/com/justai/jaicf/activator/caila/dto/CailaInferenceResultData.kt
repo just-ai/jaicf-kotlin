@@ -36,5 +36,5 @@ data class CailaSlotData(
 data class CailaKnownSlotData(
     val name: String,
     val value: String,
-    val array: Boolean
+    val array: Boolean?
 )
