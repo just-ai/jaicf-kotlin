@@ -8,6 +8,7 @@ import com.justai.jaicf.helpers.http.toUrl
 interface CailaHttpClient {
     val url: String
     val accessToken: String
+    val inferenceNBest: Int
 
     fun simpleInference(query: String): CailaInferenceResultData?
 

@@ -22,7 +22,8 @@ import kotlinx.serialization.json.JsonConfiguration
 
 class CailaKtorClient(
     override val accessToken: String,
-    override val url: String = DEFAULT_CAILA_URL
+    override val url: String = DEFAULT_CAILA_URL,
+    override val inferenceNBest: Int
 ) : WithLogger,
     CailaHttpClient {
 
@@ -81,12 +82,11 @@ class CailaKtorClient(
     override fun analyze(query: String): CailaAnalyzeResponseData? {
         val requestData = CailaAnalyzeRequestData(
             CailaInferenceRequestData(
-                CailaPhraseMarkupData(
-                    text = query,
-                    entities = emptyList()
-                ),
-                knownSlots = emptyList()
+                CailaPhraseMarkupData(text = query, entities = emptyList()),
+                knownSlots = emptyList(),
+                nBest = inferenceNBest
             ), true
+
         )
 
         try {

@@ -12,7 +12,7 @@ data class CailaAnalyzeRequestData(
 data class CailaInferenceRequestData(
     val phrase: CailaPhraseMarkupData,
     val knownSlots: List<CailaKnownSlotData>,
-    val nBest: Int = 1,
+    val nBest: Int,
     val showDebugInfo: Boolean = false
 )
 

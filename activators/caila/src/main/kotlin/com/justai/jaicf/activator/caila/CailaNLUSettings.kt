@@ -6,6 +6,7 @@ data class CailaNLUSettings(
     val accessToken: String,
     val confidenceThreshold: Double = 0.2,
     val cailaSlotfillingSettings: CailaSlotFillingSettings = CailaSlotFillingSettings.DEFAULT,
+    val classifierNBest: Int = 5,
     val cailaUrl: String = "$DEFAULT_CAILA_URL/api/caila/p"
 )
 
