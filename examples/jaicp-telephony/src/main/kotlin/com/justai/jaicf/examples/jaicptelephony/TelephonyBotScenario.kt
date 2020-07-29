@@ -55,7 +55,7 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             }
             action {
                 reactions.say("I'm sorry, I can't hear you!")
-                logger.info("")
+                logger.debug("Transferring call from ${request.telephony?.caller} to operator")
                 reactions.telephony?.transferCall("+79999999999")
             }
         }

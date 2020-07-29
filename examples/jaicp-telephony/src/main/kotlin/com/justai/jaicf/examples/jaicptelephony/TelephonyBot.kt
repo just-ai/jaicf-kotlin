@@ -8,7 +8,7 @@ import com.justai.jaicf.activator.regex.RegexActivator
 
 val cailaIntentActivator = CailaIntentActivator.Factory(nluSettings)
 
-val citiesGameBot = BotEngine(
+val telephonyCallScenario = BotEngine(
     TelephonyBotScenario.model,
     activators = arrayOf(
         BaseEventActivator,
