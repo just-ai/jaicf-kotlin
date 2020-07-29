@@ -1,6 +1,7 @@
 package com.justai.jaicf
 
 import com.justai.jaicf.activator.ActivationContext
+import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
@@ -83,21 +84,22 @@ class BotEngine(
             val skippedActivators = mutableListOf<ActivatorContext>()
 
             var activation: ActivationContext? = null
-            val cachedSlotFillingActivator = botContext.getSlotfillingActivator()
-            val isSlotFillingSession = cachedSlotFillingActivator != null
+            val activatorName = botContext.getSlotfillingActivator()
+            val isSlotFillingSession = activatorName != null
 
             if (!isSlotFillingSession) {
                 activation = state
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
                     ?: selectActivation(botContext, request, skippedActivators)
             }
-            val res = when(val a = activation?.activator ?: cachedSlotFillingActivator){
+
+            val res = when (val a = activation?.activator ?: getActivatorForName(activatorName)) {
                 null -> SlotFillingSkipped
                 else -> a.fillSlots(botContext, request, reactions, activation?.activation?.context, slotFiller)
             }
             if (res is SlotFillingInProgress) {
                 if (!isSlotFillingSession) {
-                    botContext.setSlotfillingStarted(activation?.activator)
+                    botContext.setSlotFillingActivator(activation?.activator?.name)
                     botContext.dialogContext.nextState = activation?.activation?.state
                     saveContext(cm, botContext, request, reactions)
                 }
@@ -107,10 +109,11 @@ class BotEngine(
             if (res is SlotFillingFinished) {
                 botContext.setSlotFillingIsFinished()
                 activation = ActivationContext(
-                    cachedSlotFillingActivator, Activation(botContext.dialogContext.nextState, res.activatorContext)
+                    activator = getActivatorForName(activatorName),
+                    activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
                 )
             }
-            if (res is SlotFillingInterrupted){
+            if (res is SlotFillingInterrupted) {
                 botContext.setSlotFillingIsFinished()
                 activation = state
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
@@ -135,6 +138,10 @@ class BotEngine(
         }
     }
 
+    private fun getActivatorForName(activatorName: String?): Activator? {
+        activatorName ?: return null
+        return activators.find { it.name == activatorName }
+    }
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
         try {

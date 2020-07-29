@@ -19,6 +19,8 @@ class AlexaActivator private constructor(
     private val eventActivator: AlexaEventActivator
 ) : IntentActivator by intentActivator, EventActivator by eventActivator {
 
+    override val name = "alexaActivator"
+
     override fun canHandle(request: BotRequest) =
         intentActivator.canHandle(request) || eventActivator.canHandle(request)
 

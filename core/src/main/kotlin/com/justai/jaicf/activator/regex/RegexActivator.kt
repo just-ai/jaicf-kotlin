@@ -21,6 +21,8 @@ import java.util.*
  */
 class RegexActivator(model: ScenarioModel) : Activator {
 
+    override val name = "regexActivator"
+
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
     private val transitions = model.activations

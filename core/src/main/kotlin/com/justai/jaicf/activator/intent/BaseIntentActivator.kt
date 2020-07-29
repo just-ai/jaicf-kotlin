@@ -22,6 +22,8 @@ open class BaseIntentActivator(
     model: ScenarioModel
 ): StateMapActivator(ActivationRuleType.intent, model), IntentActivator {
 
+    override val name = "baseIntentActivator"
+
     override fun canHandle(request: BotRequest) = request.hasIntent()
 
     override fun activate(botContext: BotContext, request: BotRequest): Activation? {

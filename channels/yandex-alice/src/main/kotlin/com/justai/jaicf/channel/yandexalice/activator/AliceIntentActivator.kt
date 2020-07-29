@@ -11,6 +11,8 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 
 class AliceIntentActivator(model: ScenarioModel): BaseIntentActivator(model) {
 
+    override val name = "aliceIntentActivator"
+
     override fun canHandle(request: BotRequest) = request is AliceBotRequest
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {

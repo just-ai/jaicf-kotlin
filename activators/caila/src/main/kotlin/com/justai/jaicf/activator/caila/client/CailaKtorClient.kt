@@ -82,7 +82,7 @@ class CailaKtorClient(
     override fun analyze(query: String): CailaAnalyzeResponseData? {
         val requestData = CailaAnalyzeRequestData(
             CailaInferenceRequestData(
-                CailaPhraseMarkupData(text = query, entities = emptyList()),
+                CailaPhraseMarkupData(text = query, entities = mutableListOf()),
                 knownSlots = emptyList(),
                 nBest = inferenceNBest
             ), true

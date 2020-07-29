@@ -28,6 +28,8 @@ import com.justai.jaicf.slotfilling.SlotFillingSkipped
  */
 interface Activator {
 
+    val name: String
+
     /**
      * Signals if this activator can handle a particular [BotRequest].
      * Note that this doesn't mean that this activator actually should activate some state of scenario. It just indicates that this activator can work with such a request at all.

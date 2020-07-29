@@ -23,6 +23,8 @@ class CailaIntentActivator(
     private val client: CailaHttpClient = CailaKtorClient(settings.accessToken, settings.cailaUrl, settings.classifierNBest)
 ) : BaseIntentActivator(model) {
 
+    override val name = "cailaIntentActivator"
+
     private val slotFillingHelper = CailaSlotfillingHelper(client)
 
     override fun canHandle(request: BotRequest) = request.hasQuery()

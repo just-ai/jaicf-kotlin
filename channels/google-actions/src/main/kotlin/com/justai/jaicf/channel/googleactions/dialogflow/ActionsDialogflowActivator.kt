@@ -10,6 +10,8 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 
 class ActionsDialogflowActivator(model: ScenarioModel): BaseIntentActivator(model) {
 
+    override val name = "actionsDialogflowActivator"
+
     override fun canHandle(request: BotRequest) = request is ActionsIntentRequest
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {

@@ -21,6 +21,8 @@ open class BaseEventActivator(model: ScenarioModel) : StateMapActivator(
     ActivationRuleType.event, model
 ), EventActivator {
 
+    override val name = "baseEventActivator"
+
     override fun canHandle(request: BotRequest) = request.hasEvent()
 
     override fun activate(

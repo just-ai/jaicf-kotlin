@@ -60,13 +60,13 @@ data class BotContext(
         session.clear()
     }
 
-    fun setSlotfillingStarted(activator: Activator?) {
-        client[clientSlotfillingKey] = activator
+    fun setSlotFillingActivator(activatorName: String?) {
+        session[clientSlotfillingKey] = activatorName
     }
 
-    fun getSlotfillingActivator() = client[clientSlotfillingKey] as? Activator
+    fun getSlotfillingActivator() = session[clientSlotfillingKey] as? String
 
-    fun setSlotFillingIsFinished() = client.remove(clientSlotfillingKey)
+    fun setSlotFillingIsFinished() = session.remove(clientSlotfillingKey)
 
     private val clientSlotfillingKey: String
         get() = "$clientId$SLOTFILLING_ACTIVATOR_KEY"

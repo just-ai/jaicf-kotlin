@@ -19,5 +19,5 @@ data class CailaInferenceRequestData(
 @Serializable
 data class CailaPhraseMarkupData(
     val text: String,
-    val entities: List<CailaEntityMarkupData>
+    val entities: MutableList<CailaEntityMarkupData>
 )

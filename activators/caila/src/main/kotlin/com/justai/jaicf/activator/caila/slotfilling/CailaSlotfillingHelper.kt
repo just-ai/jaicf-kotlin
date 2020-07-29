@@ -55,7 +55,9 @@ internal class CailaSlotfillingHelper(
         }
 
         val newSlots = known.map { it.name to it.value }.toMap()
+        val newEntities = ctx.knownEntities
         ctx.initialActivatorContext.caila?.slots = newSlots
+        ctx.initialActivatorContext.caila?.result?.entitiesLookup?.entities?.addAll(newEntities)
         clearSlotfillingContext(botContext)
         return SlotFillingFinished(ctx.initialActivatorContext)
     }
