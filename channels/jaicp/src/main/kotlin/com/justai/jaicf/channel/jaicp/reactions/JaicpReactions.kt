@@ -1,12 +1,7 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
-import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.dto.AudioReply
-import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
-import com.justai.jaicf.channel.jaicp.dto.HangupReply
-import com.justai.jaicf.channel.jaicp.dto.ImageReply
-import com.justai.jaicf.channel.jaicp.dto.TextReply
+import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.reactions.Reactions
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -40,6 +35,9 @@ open class JaicpReactions : Reactions() {
                 )
                 is HangupReply -> JSON.toJson(
                     HangupReply.serializer(), reply
+                )
+                is SwitchReply -> JSON.toJson(
+                    SwitchReply.serializer(), reply
                 )
             }
         }

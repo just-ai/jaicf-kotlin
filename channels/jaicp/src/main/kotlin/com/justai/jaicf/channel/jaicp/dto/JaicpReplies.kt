@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp.dto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 internal sealed class Reply(val type: String)
@@ -31,3 +32,15 @@ internal data class AudioReply(val audioUrl: String) : Reply("audio")
 
 @Serializable
 internal class HangupReply : Reply("hangup")
+
+@Serializable
+internal data class SwitchReply(
+    val phoneNumber: String? = null,
+    val headers: Map<String, String>? = null,
+    val firstMessage: String? = null,
+    val lastMessage: String? = null,
+    val closeChatPhrases: List<String>? = emptyList(),
+    val ignoreOffline: Boolean? = false,
+    val destination: String? = null,
+    val attributes: JsonObject? = null
+) : Reply("switch")
