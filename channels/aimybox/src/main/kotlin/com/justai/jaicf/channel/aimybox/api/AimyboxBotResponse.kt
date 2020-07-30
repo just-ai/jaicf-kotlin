@@ -3,7 +3,6 @@ package com.justai.jaicf.channel.aimybox.api
 import com.justai.jaicf.api.BotResponse
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class AimyboxBotResponse(
