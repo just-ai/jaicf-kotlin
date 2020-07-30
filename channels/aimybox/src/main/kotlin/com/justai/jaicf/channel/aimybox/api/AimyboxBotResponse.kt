@@ -11,6 +11,6 @@ data class AimyboxBotResponse(
     var action: String? = null,
     var intent: String? = null,
     var question: Boolean = true,
-    val data: JsonObject = JsonObject(mapOf()),
+    val data: MutableMap<String, JsonObject> = mutableMapOf(),
     val replies: MutableList<AimyboxReply> = mutableListOf()
 ): BotResponse
