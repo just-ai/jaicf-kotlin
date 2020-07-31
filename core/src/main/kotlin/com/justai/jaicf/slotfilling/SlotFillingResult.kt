@@ -42,8 +42,11 @@ object SlotFillingInterrupted : SlotFillingResult()
 /**
  * This result indicates that slot filling session is finished and returns activator context,
  * which will be passed to scenario.
- * 
+ *
+ * @param activatorContext initially stored activator context. New slots can be added to this context to be available in scenario.
+ *
  * @see [com.justai.jaicf.activator.Activator]
+ * @see [com.justai.jaicf.context.ActivatorContext]
  * */
 data class SlotFillingFinished(
     val activatorContext: ActivatorContext
