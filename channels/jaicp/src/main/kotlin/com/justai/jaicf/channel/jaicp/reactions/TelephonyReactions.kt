@@ -18,7 +18,7 @@ class TelephonyReactions : JaicpReactions() {
         replies.add(HangupReply())
     }
 
-    fun transferCall(phoneNumber: String, sipHeaders: Map<String, String>? = null) {
+    fun transferCall(phoneNumber: String, sipHeaders: Map<String, String> = emptyMap()) {
         replies.add(SwitchReply(phoneNumber, sipHeaders))
     }
 }
