@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.dto.AudioReply
 import com.justai.jaicf.channel.jaicp.dto.HangupReply
+import com.justai.jaicf.channel.jaicp.dto.SwitchReply
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.reactions.Reactions
 
@@ -13,7 +14,11 @@ class TelephonyReactions : JaicpReactions() {
         replies.add(AudioReply(url.toUrl()))
     }
 
-    fun hangup(){
+    fun hangup() {
         replies.add(HangupReply())
+    }
+
+    fun transferCall(phoneNumber: String, sipHeaders: Map<String, String> = emptyMap()) {
+        replies.add(SwitchReply(phoneNumber, sipHeaders))
     }
 }
