@@ -84,41 +84,15 @@ class BotEngine(
             val skippedActivators = mutableListOf<ActivatorContext>()
 
             var activation: ActivationContext? = null
-            val activatorName = botContext.getSlotfillingActivator()
-            val isSlotFillingSession = activatorName != null
-
-            if (!isSlotFillingSession) {
+            if (!botContext.isActiveSlotfilling()) {
                 activation = state
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
                     ?: selectActivation(botContext, request, skippedActivators)
             }
 
-            val res = when (val a = activation?.activator ?: getActivatorForName(activatorName)) {
-                null -> SlotFillingSkipped
-                else -> a.fillSlots(botContext, request, reactions, activation?.activation?.context, slotFiller)
-            }
-            if (res is SlotFillingInProgress) {
-                if (!isSlotFillingSession) {
-                    botContext.setSlotFillingActivator(activation?.activator?.name)
-                    botContext.dialogContext.nextState = activation?.activation?.state
-                    saveContext(cm, botContext, request, reactions)
-                }
-                saveContext(cm, botContext, request, reactions)
-                return
-            }
-            if (res is SlotFillingFinished) {
-                botContext.setSlotFillingIsFinished()
-                activation = ActivationContext(
-                    activator = getActivatorForName(activatorName),
-                    activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
-                )
-            }
-            if (res is SlotFillingInterrupted) {
-                botContext.setSlotFillingIsFinished()
-                activation = state
-                    ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
-                    ?: selectActivation(botContext, request, skippedActivators)
-            }
+            activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
+                if (shouldReturn) return
+            }.activationContext
 
             if (activation?.activation == null) {
                 logger.warn("No state selected to handle a request $request")
@@ -136,6 +110,51 @@ class BotEngine(
                 saveContext(cm, botContext, request, reactions)
             }
         }
+    }
+
+    private data class SlotFillingResult(val shouldReturn: Boolean, val activationContext: ActivationContext?)
+
+    private fun fillSlots(
+        selectedActivator: ActivationContext?,
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions,
+        cm: BotContextManager,
+        state: String?,
+        skippedActivators: MutableList<ActivatorContext>
+    ): SlotFillingResult {
+        val slotFillingActivatorName = botContext.getSlotfillingActivator()
+        val isSlotFillingSession = slotFillingActivatorName != null
+        var activationContext = selectedActivator
+        var shouldReturn = false
+
+        val res = when (val a = activationContext?.activator ?: getActivatorForName(slotFillingActivatorName)) {
+            null -> SlotFillingSkipped
+            else -> a.fillSlots(botContext, request, reactions, activationContext?.activation?.context, slotFiller)
+        }
+        if (res is SlotFillingInProgress) {
+            if (!isSlotFillingSession) {
+                botContext.setSlotFillingActivator(activationContext?.activator?.name)
+                botContext.dialogContext.nextState = activationContext?.activation?.state
+                saveContext(cm, botContext, request, reactions)
+            }
+            saveContext(cm, botContext, request, reactions)
+            shouldReturn = true
+        }
+        if (res is SlotFillingFinished) {
+            botContext.setSlotFillingIsFinished()
+            activationContext = ActivationContext(
+                activator = getActivatorForName(slotFillingActivatorName),
+                activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
+            )
+        }
+        if (res is SlotFillingInterrupted) {
+            botContext.setSlotFillingIsFinished()
+            activationContext = state
+                ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
+                ?: selectActivation(botContext, request, skippedActivators)
+        }
+        return SlotFillingResult(shouldReturn, activationContext)
     }
 
     private fun getActivatorForName(activatorName: String?): Activator? {

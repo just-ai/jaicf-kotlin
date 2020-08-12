@@ -60,18 +60,20 @@ data class BotContext(
         session.clear()
     }
 
-    fun setSlotFillingActivator(activatorName: String?) {
+    internal fun setSlotFillingActivator(activatorName: String?) {
         session[clientSlotfillingKey] = activatorName
     }
 
-    fun getSlotfillingActivator() = session[clientSlotfillingKey] as? String
+    internal fun getSlotfillingActivator() = session[clientSlotfillingKey] as? String
 
-    fun setSlotFillingIsFinished() = session.remove(clientSlotfillingKey)
+    internal fun setSlotFillingIsFinished() = session.remove(clientSlotfillingKey)
+
+    internal fun isActiveSlotfilling() = getSlotfillingActivator() != null
 
     private val clientSlotfillingKey: String
-        get() = "$clientId$SLOTFILLING_ACTIVATOR_KEY"
+        get() = "$SLOTFILLING_ACTIVATOR_KEY$clientId"
 
     internal companion object {
-        const val SLOTFILLING_ACTIVATOR_KEY = "-slotfilling-activator"
+        const val SLOTFILLING_ACTIVATOR_KEY = "com.justai.jaicf.slotfilling."
     }
 }
