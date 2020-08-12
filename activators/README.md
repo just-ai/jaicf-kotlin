@@ -4,6 +4,7 @@ Activators in JAICF try to handle user's request and _activate_ a corresponding 
 
 Here is a list of ready to use activators that implement natural language processing algorithms to recognise user's intents.
 
+* [Caila](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/caila)
 * [Dialogflow](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/dialogflow)
 * [Rasa AI](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/rasa)
 
@@ -21,11 +22,19 @@ val dialogflowActivator = DialogflowIntentActivator.Factory(
     ))
 )
 
+val cailaActivator = CailaIntentActivator.Factory(
+    CailaNLUSettings(
+        accessToken = "<your_jaicp_access_token>", 
+        confidenceThreshold = 0.2  
+))
+
+
 val helloWorldBot = BotEngine(
     model = HelloWorldScenario.model,
     activators = arrayOf(
         AlexaActivator,
         dialogflowActivator,
+        cailaActivator,
         RegexActivator,
         BaseEventActivator,
         CatchAllActivator
