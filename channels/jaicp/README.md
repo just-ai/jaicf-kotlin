@@ -4,9 +4,7 @@
 
 <h1 align="center">JAICP Channel</h1>
 
-This channel is created to provide full [JAICP](https://just-ai.com/en/platform.php) infrastructural support for JAICF.
-
-JAICP is just about to go public. [Contact us](https://join.slack.com/t/jaicf/shared_invite/zt-clzasfyq-f4gv8hf3JHD4RmpMtrt0Aw) to get early access.
+This channel is created to provide full [JAICP](https://just-ai.com/en/platform.php) infrastructural support for JAICF. You can find quickstart guide [here].(https://github.com/just-ai/jaicf-kotlin/wiki/Quick-Start-With-JAICP)
  
 ## About
 JAICP is used to connect your bots to JAICP infrastructure. This infrastructure will provide:  
