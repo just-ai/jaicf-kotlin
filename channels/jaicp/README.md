@@ -35,9 +35,9 @@ And use your preferred logger implementation to log incoming requests and respon
 implementation("ch.qos.logback:logback-classic:1.2.3")
 ```
 
-#### 2. Create project in JAICP Web Interface
+#### 2. Create project in [JAICP Application Panel](https://app.jaicp.com/register?utm_source=github&utm_medium=article&utm_campaign=quickstart)
 
-> This section soon will become public, but not right now.
+![Create first project in JAICP](https://i.imgur.com/5r35CCv.gif)
 
 #### 3. Create suitable `JaicpWebhookConnector` or `JaicpPollingConnector` to connect your bot to JAICP infrastructure
 Webhook can be created using [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot). Here is Ktor implementation example:
@@ -90,6 +90,26 @@ Or use **long polling** connection. This connection does not require public webh
  **Access token** can be aquired after creating project in JAICP Web Interface.
  
  See full example for JAICP channel [here](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/jaicp-telephony).
+ 
+ ## ChatWidgetChannel
+
+ChatWidgetChannel can be used to insert a widget onto your page and process incoming messages from it.
+
+![Create first channel](https://i.imgur.com/wsfuFoh.gif)
+
+Here is example usage:
+```kotlin
+state("start"){
+    globalActivators {
+        intent("Hello")
+        regex("/start")
+    }
+    action {
+        reactions.say("Hi! Here's some questions I can help you with.")
+        reactions.chatwidget?.buttons("How to save the earth", "How to stop drinking")
+    }
+}
+```
 
 ## TelephonyChannel
 
@@ -123,14 +143,7 @@ fallback {
     }
 }
 ```
-## ChatWidgetChannel
-
-ChatWidgetChannel can be used to insert a widget onto your page and process incoming messages from it.
- 
-> Guides how to create a widget and embed it into your website will soon be public
 
 ## ChatApiChannel
 
-ChatApiChannel can be used to process simple POST and GET requests with queries.
-
-> Guides how to create a chatapi and requests examples will soon be public
+ChatApiChannel can be used to process simple POST and GET requests with queries. The only reaction this channel can process is `reactions.say`.
