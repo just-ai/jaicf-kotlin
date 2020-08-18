@@ -28,6 +28,9 @@ import com.justai.jaicf.slotfilling.SlotFillingSkipped
  */
 interface Activator {
 
+    /**
+     * Name of this [Activator] implementation.
+     * */
     val name: String
 
     /**
