@@ -6,7 +6,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.slotfilling.SlotFiller
+import com.justai.jaicf.slotfilling.SlotFillingReactionsProcessor
 import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotFillingSkipped
 
@@ -74,7 +74,7 @@ interface Activator {
      * @param request current user's [BotRequest]
      * @param reactions current request's channel reactions.
      * @param activatorContext current activation context. Can be null if slotfilling is in progress.
-     * @param slotFiller custom filler for slots.
+     * @param slotFillingReactionsProcessor custom filler for slots.
      *
      * @return [SlotFillingResult] result of filling slots for activator implementation.
      * */
@@ -83,7 +83,7 @@ interface Activator {
         request: BotRequest,
         reactions: Reactions,
         activatorContext: ActivatorContext?,
-        slotFiller: SlotFiller? = null
+        slotFillingReactionsProcessor: SlotFillingReactionsProcessor? = null
     ): SlotFillingResult = SlotFillingSkipped
 }
 

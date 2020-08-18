@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class CailaEntitiesLookupResults(
     val text: String,
     val entities: List<CailaEntityMarkupData>
-)
+): java.io.Serializable
 
 @Serializable
 data class CailaEntityMarkupData(
@@ -19,4 +19,4 @@ data class CailaEntityMarkupData(
     val default: Boolean?,
     val system: Boolean?,
     val entityId: Long?
-)
+): java.io.Serializable

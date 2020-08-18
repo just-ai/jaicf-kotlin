@@ -1,7 +1,7 @@
 package com.justai.jaicf.activator.caila.slotfilling
 
 /**
- * These settings are used in [CailaSlotfillingHelper] to specify when bot should end filling slots
+ * These settings are used in [CailaSlotFillingHelper] to specify when bot should end filling slots
  * and interrupt slot filling session.
  *
  * Slots are property of CailaIntent, required slots and prompts for then can be set in JAICP Web Interface.
@@ -11,8 +11,8 @@ package com.justai.jaicf.activator.caila.slotfilling
  * After client answered and filled all the slots, CailaIntentActivatorContext will contain filled slots.
  *
  * @see [com.justai.jaicf.activator.caila.CailaIntentActivatorContext]
- * @see [CailaSlotfillingHelper]
- * @see [com.justai.jaicf.slotfilling.SlotFiller]
+ * @see [com.justai.jaicf.activator.caila.slotfilling.CailaSlotFillingHelper]
+ * @see [com.justai.jaicf.slotfilling.SlotFillingReactionsProcessor]
  * @see [com.justai.jaicf.slotfilling.SlotFillingResult]
  *
  * @param maxSlotRetries specifies how many times client will be asked for slot.

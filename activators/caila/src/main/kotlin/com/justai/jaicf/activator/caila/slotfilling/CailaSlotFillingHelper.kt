@@ -13,7 +13,7 @@ import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.*
 
 
-internal class CailaSlotfillingHelper(
+internal class CailaSlotFillingHelper(
     private val cailaClient: CailaHttpClient,
     private val cailaSlotFillingSettings: CailaSlotFillingSettings = CailaSlotFillingSettings.DEFAULT
 ) {
@@ -23,7 +23,7 @@ internal class CailaSlotfillingHelper(
         botRequest: BotRequest,
         reactions: Reactions,
         initialActivationContext: ActivatorContext?,
-        slotFiller: SlotFiller?
+        slotFillingReactionsProcessor: SlotFillingReactionsProcessor?
     ): SlotFillingResult {
         val ctx = restoreContext(botContext, initialActivationContext)
         val required = ctx.requiredSlots
@@ -32,17 +32,24 @@ internal class CailaSlotfillingHelper(
             return SlotFillingSkipped
         }
 
-        val actionContext = ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions, mutableListOf())
+        val actionContext =
+            ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions, mutableListOf())
+
         val filled = fillSlots(ctx, botRequest.input)
         for (slot in required) {
             if (slot.required && !known.any { k -> slot.name == k.name }) {
                 if (checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(botRequest.input)) {
-                    clearSlotfillingContext(botContext)
+                    clearSlotFillingContext(botContext)
                     return SlotFillingInterrupted
                 }
                 if (slot.name !in filled) {
-                    if (slotFiller != null && slotFiller.canHandle(slot.name)) {
-                        slotFiller.handle(slot.name, botContext, reactions)
+                    if (slotFillingReactionsProcessor != null && slotFillingReactionsProcessor.canProcess(slot.name)) {
+                        slotFillingReactionsProcessor.process(
+                            slot.name,
+                            botContext,
+                            reactions,
+                            slot.prompts ?: emptyList()
+                        )
                     } else {
                         with(actionContext) {
                             reactions.sayRandom(*slot.prompts?.toTypedArray() ?: return SlotFillingSkipped)
@@ -58,7 +65,7 @@ internal class CailaSlotfillingHelper(
         val newEntities = ctx.knownEntities
         ctx.initialActivatorContext.caila?.slots = newSlots
         ctx.initialActivatorContext.caila?.result?.entitiesLookup?.entities?.addAll(newEntities)
-        clearSlotfillingContext(botContext)
+        clearSlotFillingContext(botContext)
         return SlotFillingFinished(ctx.initialActivatorContext)
     }
 
@@ -119,7 +126,7 @@ internal class CailaSlotfillingHelper(
         botContext: BotContext,
         initialActivationContext: ActivatorContext?
     ): CailaSlotFillingContext {
-        var ctx = getSlotfillingContext(botContext)
+        var ctx = getSlotFillingContext(botContext)
         if (ctx == null) {
             initialActivationContext ?: error("Null activation context for caila slotfilling. It should never happen.")
             ctx = CailaSlotFillingContext.createInitial(initialActivationContext)
@@ -127,22 +134,19 @@ internal class CailaSlotfillingHelper(
         return ctx
     }
 
-    private fun getSlotfillingContext(botContext: BotContext): CailaSlotFillingContext? {
-        val key = getSlotfillingKey(botContext.clientId)
-        return botContext.client[key] as? CailaSlotFillingContext
+    private fun getSlotFillingContext(botContext: BotContext): CailaSlotFillingContext? {
+        return botContext.session[SLOTFILLING_CONTEXT_KEY] as? CailaSlotFillingContext
     }
 
     private fun saveSlotFillingContext(botContext: BotContext, cailaSlotFillingContext: CailaSlotFillingContext) {
-        val key = getSlotfillingKey(botContext.clientId)
-        botContext.client[key] = cailaSlotFillingContext
+        botContext.session[SLOTFILLING_CONTEXT_KEY] = cailaSlotFillingContext
     }
 
-    private fun clearSlotfillingContext(botContext: BotContext) {
-        val key = getSlotfillingKey(botContext.clientId)
-        botContext.client.remove(key)
+    private fun clearSlotFillingContext(botContext: BotContext) {
+        botContext.session.remove(SLOTFILLING_CONTEXT_KEY)
     }
 
     companion object {
-        private fun getSlotfillingKey(clientId: String) = "$clientId-slotfilling-context"
+        private const val SLOTFILLING_CONTEXT_KEY = "com/justai/jaicf/activator/caila/slotfilling/context"
     }
 }

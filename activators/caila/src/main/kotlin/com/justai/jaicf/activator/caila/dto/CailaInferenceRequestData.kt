@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class CailaAnalyzeRequestData(
     val data: CailaInferenceRequestData,
     val showAll: Boolean
-)
+) : java.io.Serializable
 
 @Serializable
 data class CailaInferenceRequestData(
@@ -14,10 +14,10 @@ data class CailaInferenceRequestData(
     val knownSlots: List<CailaKnownSlotData>,
     val nBest: Int,
     val showDebugInfo: Boolean = false
-)
+) : java.io.Serializable
 
 @Serializable
 data class CailaPhraseMarkupData(
     val text: String,
     val entities: MutableList<CailaEntityMarkupData>
-)
+) : java.io.Serializable

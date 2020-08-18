@@ -10,7 +10,7 @@ data class CailaInferenceResultData(
     val confidence: Double,
     val slots: List<CailaKnownSlotData>?,
     val debug: JsonObject?
-)
+) : java.io.Serializable
 
 @Serializable
 data class CailaIntentData(
@@ -19,7 +19,7 @@ data class CailaIntentData(
     val answer: String?,
     val customData: String?,
     val slots: List<CailaSlotData>?
-) {
+)  : java.io.Serializable{
     val name = path.substring(path.lastIndexOf('/') + 1)
 }
 
@@ -30,11 +30,11 @@ data class CailaSlotData(
     val required: Boolean,
     val prompts: List<String>?,
     val array: Boolean?
-)
+) : java.io.Serializable
 
 @Serializable
 data class CailaKnownSlotData(
     val name: String,
     val value: String,
     val array: Boolean?
-)
+) : java.io.Serializable

@@ -50,7 +50,7 @@ class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
-    val slotFiller: SlotFiller? = null
+    private val slotFillingReactionsProcessor: SlotFillingReactionsProcessor? = null
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
@@ -84,7 +84,7 @@ class BotEngine(
             val skippedActivators = mutableListOf<ActivatorContext>()
 
             var activation: ActivationContext? = null
-            if (!botContext.isActiveSlotfilling()) {
+            if (!botContext.isActiveSlotFilling()) {
                 activation = state
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
                     ?: selectActivation(botContext, request, skippedActivators)
@@ -123,14 +123,20 @@ class BotEngine(
         state: String?,
         skippedActivators: MutableList<ActivatorContext>
     ): SlotFillingResult {
-        val slotFillingActivatorName = botContext.getSlotfillingActivator()
+        val slotFillingActivatorName = botContext.getSlotFillingActivator()
         val isSlotFillingSession = slotFillingActivatorName != null
         var activationContext = selectedActivator
         var shouldReturn = false
 
         val res = when (val a = activationContext?.activator ?: getActivatorForName(slotFillingActivatorName)) {
             null -> SlotFillingSkipped
-            else -> a.fillSlots(botContext, request, reactions, activationContext?.activation?.context, slotFiller)
+            else -> a.fillSlots(
+                botContext,
+                request,
+                reactions,
+                activationContext?.activation?.context,
+                slotFillingReactionsProcessor
+            )
         }
         if (res is SlotFillingInProgress) {
             if (!isSlotFillingSession) {

@@ -10,7 +10,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.slotfilling.SlotFiller
+import com.justai.jaicf.slotfilling.SlotFillingReactionsProcessor
 import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotFillingSkipped
 
@@ -33,7 +33,7 @@ class AlexaActivator private constructor(
         request: BotRequest,
         reactions: Reactions,
         activatorContext: ActivatorContext?,
-        slotFiller: SlotFiller?
+        slotFillingReactionsProcessor: SlotFillingReactionsProcessor?
     ): SlotFillingResult = SlotFillingSkipped
 
     companion object : ActivatorFactory {

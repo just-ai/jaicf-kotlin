@@ -12,7 +12,7 @@ data class CailaIntentActivatorContext(
 ) : IntentActivatorContext(
     intent = intentData.intent.name,
     confidence = intentData.confidence.toFloat()
-) {
+), java.io.Serializable {
 
     val topIntent = intentData.intent
 
