@@ -131,9 +131,9 @@ class BotEngine(
         val res = when (val a = activationContext?.activator ?: getActivatorForName(slotFillingActivatorName)) {
             null -> SlotFillingSkipped
             else -> a.fillSlots(
-                botContext,
                 request,
                 reactions,
+                botContext,
                 activationContext?.activation?.context,
                 slotFillingReactionsProcessor
             )

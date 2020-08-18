@@ -34,9 +34,9 @@ class CailaIntentActivator(
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
     override fun fillSlots(
-        botContext: BotContext,
         request: BotRequest,
         reactions: Reactions,
+        botContext: BotContext,
         activatorContext: ActivatorContext?,
         slotFillingReactionsProcessor: SlotFillingReactionsProcessor?
     ): SlotFillingResult =

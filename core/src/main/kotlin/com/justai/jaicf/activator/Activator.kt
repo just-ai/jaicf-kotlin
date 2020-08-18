@@ -82,9 +82,9 @@ interface Activator {
      * @return [SlotFillingResult] result of filling slots for activator implementation.
      * */
     fun fillSlots(
-        botContext: BotContext,
         request: BotRequest,
         reactions: Reactions,
+        botContext: BotContext,
         activatorContext: ActivatorContext?,
         slotFillingReactionsProcessor: SlotFillingReactionsProcessor? = null
     ): SlotFillingResult = SlotFillingSkipped
