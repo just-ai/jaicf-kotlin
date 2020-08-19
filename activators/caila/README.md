@@ -31,7 +31,7 @@ state("launch") {
         val slots = activator.caila?.slots
 
         // Recognizes entities in query
-        val entities = activator.caila?.slots
+        val entities = activator.caila?.entities
 
         // May contain answer 
         activator.caila?.topIntent?.answer?.let {
