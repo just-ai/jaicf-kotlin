@@ -57,7 +57,7 @@ interface SlotReactor {
      * @param request a current [BotRequest]
      * @param botContext current user's [BotContext]
      * @param reactions current user's request [Reactions]
-     * @param activatorContext initially stored [ActivatorContext] for current SlotFilling session. This context will be passed via [SlotFillingFinished] result to scenario when all slots are filled.
+     * @param activator initially stored [ActivatorContext] for current SlotFilling session. This context will be passed via [SlotFillingFinished] result to scenario when all slots are filled.
      * @param slotName of slot to be handled
      * @param prompts list of questions, asking user to fill slot, provided by activator.
      *
@@ -68,7 +68,7 @@ interface SlotReactor {
         request: BotRequest,
         botContext: BotContext,
         reactions: Reactions,
-        activatorContext: ActivatorContext?,
+        activator: ActivatorContext?,
         slotName: String,
         prompts: List<String> = emptyList()
     )
