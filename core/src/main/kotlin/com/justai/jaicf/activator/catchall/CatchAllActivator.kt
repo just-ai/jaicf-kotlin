@@ -34,6 +34,8 @@ import com.justai.jaicf.model.state.StatePath
  */
 class CatchAllActivator(model: ScenarioModel) : Activator {
 
+    override val name = "catchAllActivator"
+
     override fun canHandle(request: BotRequest) = request.hasQuery() || request.hasIntent()
 
     private val transitions = model.activations

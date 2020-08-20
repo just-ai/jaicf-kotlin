@@ -16,6 +16,8 @@ class RasaIntentActivator(
     private val confidenceThreshold: Double
 ): BaseIntentActivator(model) {
 
+    override val name = "rasaIntentActivator"
+
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {

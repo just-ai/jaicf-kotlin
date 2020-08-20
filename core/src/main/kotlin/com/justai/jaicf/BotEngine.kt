@@ -1,11 +1,12 @@
 package com.justai.jaicf
 
+import com.justai.jaicf.activator.ActivationContext
+import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.*
-import com.justai.jaicf.context.ProcessContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -14,7 +15,7 @@ import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
-import java.lang.RuntimeException
+import com.justai.jaicf.slotfilling.*
 
 /**
  * Default [BotApi] implementation.
@@ -46,11 +47,12 @@ import java.lang.RuntimeException
 class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
-    activators: Array<ActivatorFactory>
-): BotApi, WithLogger {
+    activators: Array<ActivatorFactory>,
+    private val slotReactor: SlotReactor? = null
+) : BotApi, WithLogger {
 
-    private val activators = activators.map {
-            a -> a.create(model)
+    private val activators = activators.map { a ->
+        a.create(model)
     }
 
     /**
@@ -79,11 +81,18 @@ class BotEngine(
             val state = checkStrictTransitions(botContext, request)
             val skippedActivators = mutableListOf<ActivatorContext>()
 
-            val activation = state
-                ?.let { Activation(state, StrictActivatorContext()) }
-                ?: selectActivation(botContext, request, skippedActivators)
+            var activation: ActivationContext? = null
+            if (!botContext.isActiveSlotFilling()) {
+                activation = state
+                    ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
+                    ?: selectActivation(botContext, request, skippedActivators)
+            }
 
-            if (activation == null) {
+            activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
+                if (first) return
+            }.second
+
+            if (activation?.activation == null) {
                 logger.warn("No state selected to handle a request $request")
             } else {
                 val context = ProcessContext(
@@ -96,12 +105,63 @@ class BotEngine(
                 )
 
                 processStates(context)
-                cm.saveContext(botContext, request, when (reactions) {
-                    is ResponseReactions<*> -> reactions.response
-                    else -> null
-                })
+                saveContext(cm, botContext, request, reactions)
             }
         }
+    }
+
+    private fun fillSlots(
+        selectedActivator: ActivationContext?,
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions,
+        cm: BotContextManager,
+        state: String?,
+        skippedActivators: MutableList<ActivatorContext>
+    ): Pair<Boolean, ActivationContext?> {
+        val slotFillingActivatorName = botContext.getSlotFillingActivator()
+        val isSlotFillingSession = slotFillingActivatorName != null
+        var activationContext = selectedActivator
+        var shouldReturn = false
+
+        val res = when (val a = activationContext?.activator ?: getActivatorForName(slotFillingActivatorName)) {
+            null -> SlotFillingSkipped
+            else -> a.fillSlots(
+                request,
+                reactions,
+                botContext,
+                activationContext?.activation?.context,
+                slotReactor
+            )
+        }
+        if (res is SlotFillingInProgress) {
+            if (!isSlotFillingSession) {
+                botContext.startSlotFilling(activationContext?.activator?.name)
+                botContext.dialogContext.nextState = activationContext?.activation?.state
+                saveContext(cm, botContext, request, reactions)
+            }
+            saveContext(cm, botContext, request, reactions)
+            shouldReturn = true
+        }
+        if (res is SlotFillingFinished) {
+            botContext.finishSlotFilling()
+            activationContext = ActivationContext(
+                activator = getActivatorForName(slotFillingActivatorName),
+                activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
+            )
+        }
+        if (res is SlotFillingInterrupted) {
+            botContext.finishSlotFilling()
+            activationContext = state
+                ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
+                ?: selectActivation(botContext, request, skippedActivators)
+        }
+        return shouldReturn to activationContext
+    }
+
+    private fun getActivatorForName(activatorName: String?): Activator? {
+        activatorName ?: return null
+        return activators.find { it.name == activatorName }
     }
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
@@ -132,13 +192,13 @@ class BotEngine(
         botContext: BotContext,
         request: BotRequest,
         skippedActivators: MutableList<ActivatorContext>
-    ): Activation? {
+    ): ActivationContext? {
 
         activators.filter { it.canHandle(request) }.forEach { a ->
             val activation = a.activate(botContext, request)
             if (activation != null) {
                 if (activation.state != null) {
-                    return activation
+                    return ActivationContext(a, activation)
                 } else {
                     skippedActivators.add(activation.context)
                 }
@@ -149,9 +209,9 @@ class BotEngine(
     }
 
     private fun processStates(context: ProcessContext) = with(context) {
-        val activator = activation.context
+        val activator = activationContext.activation.context
         val dc = botContext.dialogContext
-        dc.nextState = activation.state
+        dc.nextState = activationContext.activation.state
 
         withHook(BeforeProcessHook(context.botContext, request, reactions, activator)) {
             while (dc.nextState() != null) {
@@ -163,14 +223,13 @@ class BotEngine(
                     dc.nextContext(model)
 
                     withHook(BeforeActionHook(botContext, request, reactions, activator, state)) {
-
                         if (state.action == null) {
                             logger.warn("No action on state ${dc.currentState}")
                         } else {
                             try {
+                                logger.trace("Executing state: $state")
                                 state.action.execute(this)
                                 withHook(AfterActionHook(botContext, request, reactions, activator, state))
-
                             } catch (e: Exception) {
                                 hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, e))
                                 throw RuntimeException("Error on state " + dc.currentState, e)
@@ -181,7 +240,21 @@ class BotEngine(
             }
 
             dc.nextContext(model)
-            withHook(AfterProcessHook(botContext, request, reactions, activation.context))
+            withHook(AfterProcessHook(botContext, request, reactions, activationContext.activation.context))
         }
+    }
+
+    private fun saveContext(
+        cm: BotContextManager,
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions
+    ) {
+        cm.saveContext(
+            botContext, request, when (reactions) {
+                is ResponseReactions<*> -> reactions.response
+                else -> null
+            }
+        )
     }
 }

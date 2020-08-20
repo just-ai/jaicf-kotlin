@@ -15,6 +15,8 @@ class DialogflowIntentActivator(
     private val connector: DialogflowConnector
 ): BaseIntentActivator(model) {
 
+    override val name = "dialogflowIntentActivator"
+
     override fun canHandle(request: BotRequest) = request.hasQuery() || request.hasEvent()
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): DialogflowActivatorContext? {

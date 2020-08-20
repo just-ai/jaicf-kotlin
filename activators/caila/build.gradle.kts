@@ -10,6 +10,8 @@ dependencies {
 
     api("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0")
     api("io.ktor:ktor-client-cio" version { ktor })
+    api("io.ktor:ktor-client-logging-jvm" version { ktor })
+    api("io.ktor:ktor-client-serialization-jvm" version { ktor })
 }
 
 tasks {

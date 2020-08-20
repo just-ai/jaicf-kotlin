@@ -9,6 +9,8 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 
 internal class AlexaIntentActivator(model: ScenarioModel): BaseIntentActivator(model) {
 
+    override val name = "alexaIntentActivator"
+
     override fun canHandle(request: BotRequest) = request is AlexaIntentRequest
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {

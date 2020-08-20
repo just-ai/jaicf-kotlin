@@ -105,7 +105,7 @@ abstract class ScenarioBuilder(
         sb.body()
 
         if (model.states[sb.path.toString()] != null) {
-            throw IllegalStateException()
+            throw IllegalStateException("Dublicated declaration of state with path: ${sb.path}")
         }
 
         model.states[sb.path.toString()] = sb.build()

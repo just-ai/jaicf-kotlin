@@ -12,7 +12,7 @@ data class TestActionContext(
     private val processContext: ProcessContext
 ): ActionContext(
     context = processContext.botContext,
-    activator = processContext.activation.context,
+    activator = processContext.activationContext.activation.context,
     request = processContext.request,
     reactions = processContext.reactions,
     skippedActivators = processContext.skippedActivators
