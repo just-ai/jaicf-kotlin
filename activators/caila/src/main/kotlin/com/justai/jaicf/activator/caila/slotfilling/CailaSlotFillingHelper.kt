@@ -4,6 +4,7 @@ package com.justai.jaicf.activator.caila.slotfilling
 import com.justai.jaicf.activator.caila.caila
 import com.justai.jaicf.activator.caila.client.CailaHttpClient
 import com.justai.jaicf.activator.caila.dto.CailaEntityMarkupData
+import com.justai.jaicf.activator.caila.dto.CailaKnownSlotData
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
