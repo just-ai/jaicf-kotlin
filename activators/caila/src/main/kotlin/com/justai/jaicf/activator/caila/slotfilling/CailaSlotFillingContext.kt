@@ -2,19 +2,19 @@ package com.justai.jaicf.activator.caila.slotfilling
 
 import com.justai.jaicf.activator.caila.caila
 import com.justai.jaicf.activator.caila.dto.CailaEntityMarkupData
-import com.justai.jaicf.activator.caila.dto.CailaSlotData
 import com.justai.jaicf.activator.caila.dto.CailaKnownSlotData
+import com.justai.jaicf.activator.caila.dto.CailaSlotData
 import com.justai.jaicf.context.ActivatorContext
-import kotlinx.serialization.Serializable
+import java.io.Serializable
 
-@Serializable
+
 internal data class CailaSlotFillingContext(
     val initialActivatorContext: ActivatorContext,
     val requiredSlots: List<CailaSlotData>,
     val knownSlots: MutableList<CailaKnownSlotData>,
     val knownEntities: MutableList<CailaEntityMarkupData>,
     val maxRetries: MutableMap<String, Int> = HashMap()
-) : java.io.Serializable {
+) : Serializable {
     companion object Factory {
         fun createInitial(initial: ActivatorContext): CailaSlotFillingContext {
             val knownSlots = initial.caila?.result?.inference?.variants?.get(0)?.slots?.toMutableList()

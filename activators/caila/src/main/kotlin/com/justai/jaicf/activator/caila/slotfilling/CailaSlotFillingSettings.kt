@@ -12,7 +12,7 @@ package com.justai.jaicf.activator.caila.slotfilling
  *
  * @see [com.justai.jaicf.activator.caila.CailaIntentActivatorContext]
  * @see [com.justai.jaicf.activator.caila.slotfilling.CailaSlotFillingHelper]
- * @see [com.justai.jaicf.slotfilling.SlotFillingReactionsProcessor]
+ * @see [com.justai.jaicf.slotfilling.SlotReactor]
  * @see [com.justai.jaicf.slotfilling.SlotFillingResult]
  *
  * @param maxSlotRetries specifies how many times client will be asked for slot.

@@ -7,7 +7,6 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.*
-import com.justai.jaicf.context.ProcessContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -15,9 +14,8 @@ import com.justai.jaicf.hook.*
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.slotfilling.*
 import com.justai.jaicf.reactions.ResponseReactions
-import java.lang.RuntimeException
+import com.justai.jaicf.slotfilling.*
 
 /**
  * Default [BotApi] implementation.
@@ -50,7 +48,7 @@ class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
-    private val slotFillingReactionsProcessor: SlotFillingReactionsProcessor? = null
+    private val slotReactor: SlotReactor? = null
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
@@ -91,8 +89,8 @@ class BotEngine(
             }
 
             activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
-                if (shouldReturn) return
-            }.activationContext
+                if (first) return
+            }.second
 
             if (activation?.activation == null) {
                 logger.warn("No state selected to handle a request $request")
@@ -112,8 +110,6 @@ class BotEngine(
         }
     }
 
-    private data class SlotFillingResult(val shouldReturn: Boolean, val activationContext: ActivationContext?)
-
     private fun fillSlots(
         selectedActivator: ActivationContext?,
         botContext: BotContext,
@@ -122,7 +118,7 @@ class BotEngine(
         cm: BotContextManager,
         state: String?,
         skippedActivators: MutableList<ActivatorContext>
-    ): SlotFillingResult {
+    ): Pair<Boolean, ActivationContext?> {
         val slotFillingActivatorName = botContext.getSlotFillingActivator()
         val isSlotFillingSession = slotFillingActivatorName != null
         var activationContext = selectedActivator
@@ -135,12 +131,12 @@ class BotEngine(
                 reactions,
                 botContext,
                 activationContext?.activation?.context,
-                slotFillingReactionsProcessor
+                slotReactor
             )
         }
         if (res is SlotFillingInProgress) {
             if (!isSlotFillingSession) {
-                botContext.setSlotFillingActivator(activationContext?.activator?.name)
+                botContext.startSlotFilling(activationContext?.activator?.name)
                 botContext.dialogContext.nextState = activationContext?.activation?.state
                 saveContext(cm, botContext, request, reactions)
             }
@@ -148,19 +144,19 @@ class BotEngine(
             shouldReturn = true
         }
         if (res is SlotFillingFinished) {
-            botContext.setSlotFillingIsFinished()
+            botContext.finishSlotFilling()
             activationContext = ActivationContext(
                 activator = getActivatorForName(slotFillingActivatorName),
                 activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
             )
         }
         if (res is SlotFillingInterrupted) {
-            botContext.setSlotFillingIsFinished()
+            botContext.finishSlotFilling()
             activationContext = state
                 ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
                 ?: selectActivation(botContext, request, skippedActivators)
         }
-        return SlotFillingResult(shouldReturn, activationContext)
+        return shouldReturn to activationContext
     }
 
     private fun getActivatorForName(activatorName: String?): Activator? {

@@ -4,7 +4,6 @@ package com.justai.jaicf.activator.caila.slotfilling
 import com.justai.jaicf.activator.caila.caila
 import com.justai.jaicf.activator.caila.client.CailaHttpClient
 import com.justai.jaicf.activator.caila.dto.CailaEntityMarkupData
-import com.justai.jaicf.activator.caila.dto.CailaKnownSlotData
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
@@ -23,7 +22,7 @@ internal class CailaSlotFillingHelper(
         botRequest: BotRequest,
         reactions: Reactions,
         initialActivationContext: ActivatorContext?,
-        slotFillingReactionsProcessor: SlotFillingReactionsProcessor?
+        slotReactor: SlotReactor?
     ): SlotFillingResult {
         val ctx = restoreContext(botContext, initialActivationContext)
         val required = ctx.requiredSlots
@@ -43,16 +42,21 @@ internal class CailaSlotFillingHelper(
                     return SlotFillingInterrupted
                 }
                 if (slot.name !in filled) {
-                    if (slotFillingReactionsProcessor != null && slotFillingReactionsProcessor.canProcess(slot.name)) {
-                        slotFillingReactionsProcessor.process(
-                            slot.name,
+                    if (slotReactor?.canReact(slot.name) == true) {
+                        slotReactor.react(
+                            botRequest,
                             botContext,
                             reactions,
+                            initialActivationContext,
+                            slot.name,
                             slot.prompts ?: emptyList()
                         )
                     } else {
                         with(actionContext) {
-                            reactions.sayRandom(*slot.prompts?.toTypedArray() ?: return SlotFillingSkipped)
+                            slot.prompts?.let { prompts ->
+                                if (prompts.isEmpty()) return SlotFillingSkipped
+                                reactions.sayRandom(*prompts.toTypedArray())
+                            } ?: return SlotFillingSkipped
                         }
                     }
                     saveSlotFillingContext(botContext, ctx)

@@ -13,8 +13,8 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.slotfilling.SlotFillingReactionsProcessor
 import com.justai.jaicf.slotfilling.SlotFillingResult
+import com.justai.jaicf.slotfilling.SlotReactor
 
 
 class CailaIntentActivator(
@@ -38,9 +38,9 @@ class CailaIntentActivator(
         reactions: Reactions,
         botContext: BotContext,
         activatorContext: ActivatorContext?,
-        slotFillingReactionsProcessor: SlotFillingReactionsProcessor?
+        slotReactor: SlotReactor?
     ): SlotFillingResult =
-        slotFillingHelper.process(botContext, request, reactions, activatorContext, slotFillingReactionsProcessor)
+        slotFillingHelper.process(botContext, request, reactions, activatorContext, slotReactor)
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
         val results = client.analyze(request.input) ?: return null
