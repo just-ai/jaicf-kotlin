@@ -180,12 +180,14 @@ class BotEngine(
     }
 
     private fun checkStrictTransitions(botContext: BotContext, request: BotRequest): String? {
-        return request.hasQuery().takeIf { true }?.let {
-            val dc = botContext.dialogContext
-            val transition = dc.transitions[request.input.toLowerCase()]
-            dc.transitions.clear()
-            return transition
+        if (!request.hasQuery()) {
+            return null
         }
+
+        val dc = botContext.dialogContext
+        val transition = dc.transitions[request.input.toLowerCase()]
+        dc.transitions.clear()
+        return transition
     }
 
     private fun selectActivation(
