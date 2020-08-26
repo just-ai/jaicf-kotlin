@@ -13,6 +13,8 @@ include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"
 include("activators:caila")
 findProject(":activators:caila")?.name = "caila"
+include("activators:lex")
+findProject(":activators:lex")?.name = "lex"
 
 include("channels:alexa")
 findProject(":channels:alexa")?.name = "alexa"
