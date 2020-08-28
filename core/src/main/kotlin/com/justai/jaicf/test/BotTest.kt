@@ -156,7 +156,7 @@ open class BotTest(private val bot: BotEngine) {
     fun process(request: BotRequest): ProcessResult {
         bot.process(request, reactions, requestContext = requestContext)
         botContext = bot.defaultContextManager.loadContext(request)
-        return ProcessResult(botContext, reactions)
+        return ProcessResult(botContext, reactions).also { reactions = TextReactions(TextResponse()) }
     }
 
     /**
