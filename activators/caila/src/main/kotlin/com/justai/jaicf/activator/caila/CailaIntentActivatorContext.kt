@@ -16,8 +16,7 @@ data class CailaIntentActivatorContext(
 
     val topIntent = intentData.intent
 
-    var slots =
-        result.inference.variants.maxBy { it.confidence }!!.slots?.map { it.name to it.value }?.toMap() ?: emptyMap()
+    var slots = intentData.slots?.map { it.name to it.value }?.toMap() ?: emptyMap()
 
     val entities = result.entitiesLookup.entities
 }
