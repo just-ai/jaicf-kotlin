@@ -22,7 +22,6 @@ interface JaicpConnector {
     val channels: List<JaicpChannelFactory>
     val accessToken: String
     val url: String
-
 }
 
 val JaicpConnector.proxyUrl: String

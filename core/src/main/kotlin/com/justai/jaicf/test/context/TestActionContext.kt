@@ -1,6 +1,7 @@
 package com.justai.jaicf.test.context
 
 import com.justai.jaicf.context.ActionContext
+import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.context.ProcessContext
 
 /**
@@ -10,12 +11,13 @@ import com.justai.jaicf.context.ProcessContext
  */
 data class TestActionContext(
     private val processContext: ProcessContext
-): ActionContext(
+) : ActionContext(
     context = processContext.botContext,
     activator = processContext.activationContext.activation.context,
     request = processContext.request,
     reactions = processContext.reactions,
-    skippedActivators = processContext.skippedActivators
+    skippedActivators = processContext.skippedActivators,
+    loggingContext = processContext.loggingContext
 ) {
     private val requestContext = processContext.requestContext as TestRequestContext
 

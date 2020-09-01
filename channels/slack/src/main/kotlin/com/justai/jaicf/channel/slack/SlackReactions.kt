@@ -1,6 +1,9 @@
 package com.justai.jaicf.channel.slack
 
+import com.justai.jaicf.reactions.ButtonsReaction
+import com.justai.jaicf.reactions.ImageReaction
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.SayReaction
 import com.slack.api.bolt.context.ActionRespondUtility
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.context.SayUtility
@@ -18,7 +21,7 @@ val Reactions.slack
 
 class SlackReactions(
     val context: Context
-): Reactions() {
+) : Reactions() {
 
     val client = context.client()
 
@@ -40,24 +43,30 @@ class SlackReactions(
         }
     }
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         when (context) {
             is SayUtility -> context.say(text)
             is ActionRespondUtility -> context.respond(text)
         }
+        return createSayReaction(text)
     }
 
-    override fun image(url: String) = image(
-        ImageBlock.builder()
-            .imageUrl(url)
-            .altText(url)
-            .build()
-    )
+    override fun image(url: String): ImageReaction {
+        image(
+            ImageBlock.builder()
+                .imageUrl(url)
+                .altText(url)
+                .build()
+        )
+        return createImageReaction(url)
+    }
 
     fun image(image: ImageBlock) = respond(listOf(image))
 
-    override fun buttons(vararg buttons: String)
-            = buttons(*buttons.map { it to it }.toTypedArray())
+    override fun buttons(vararg buttons: String): ButtonsReaction {
+        buttons(*buttons.map { it to it }.toTypedArray())
+        return createButtonsReaction(*buttons)
+    }
 
     fun buttons(vararg buttons: Pair<String, String>) {
         respond(listOf(

@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib", Version.stdLib))
 
     implementation(project(":core"))
     implementation(project(":channels:google-actions"))

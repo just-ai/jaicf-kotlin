@@ -1,8 +1,10 @@
 package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.http.HttpBotChannel
+import com.justai.jaicf.channel.http.HttpBotRequest
 
 /**
  * Basic interface for all (native or compatible) JAICP channels.
@@ -62,16 +64,3 @@ interface JaicpCompatibleAsyncChannelFactory : JaicpChannelFactory {
     fun create(botApi: BotApi, apiUrl: String): JaicpCompatibleAsyncBotChannel
 }
 
-
-/**
- * Channel created with this factory works as a self-contained long polling connection, e.g. telegram channel.
- * JAICP provides an URL to proxy traffic between channel and connector.
- */
-interface JaicpExternalPollingChannelFactory : JaicpChannelFactory {
-    /**
-     * Creates and immediately runs a new [BotChannel] instance.
-     * @param botApi a [BotApi] implementation used to process the requests to this channel
-     * @param apiUrl a proxy URL for long polling connection
-     */
-    fun createAndRun(botApi: BotApi, apiUrl: String): BotChannel
-}

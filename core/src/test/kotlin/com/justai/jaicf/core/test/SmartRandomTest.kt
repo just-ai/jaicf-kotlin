@@ -4,6 +4,7 @@ import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.api.TextResponse
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.helpers.action.smartRandom
 import com.justai.jaicf.reactions.TextReactions
@@ -24,7 +25,9 @@ class SmartRandomTest {
             StrictActivatorContext(),
             QueryBotRequest("", ""),
             TextReactions(TextResponse()),
-            listOf())
+            listOf(),
+            LoggingContext()
+        )
     }
 
     @RepeatedTest(100)

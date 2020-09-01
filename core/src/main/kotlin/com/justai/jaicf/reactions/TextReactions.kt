@@ -10,7 +10,7 @@ import com.justai.jaicf.api.TextResponse
  */
 class TextReactions(
     override val response: TextResponse
-): ResponseReactions<TextResponse>(response) {
+) : ResponseReactions<TextResponse>(response) {
 
     /**
      * Fills the response with provided text.
@@ -18,11 +18,12 @@ class TextReactions(
      *
      * @param text a raw text to append to the response
      */
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         response.text = when {
             response.text.isNullOrBlank() -> text
             else -> "${response.text}\n$text"
         }
+        return createSayReaction(text)
     }
 
 }

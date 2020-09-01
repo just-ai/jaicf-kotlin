@@ -5,6 +5,7 @@ import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.context.RequestContext
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
@@ -73,7 +74,7 @@ class SlackChannel private constructor(
     }
 
     private fun launch(request: SlackBotRequest, reactions: SlackReactions) = launch {
-        botApi.process(request, reactions)
+        botApi.process(request, reactions, RequestContext.DEFAULT) // TODO: fix http bot request for slack channel
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {

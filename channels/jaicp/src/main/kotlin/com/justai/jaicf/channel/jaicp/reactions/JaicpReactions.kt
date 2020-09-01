@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.SayReaction
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.json
@@ -14,8 +15,9 @@ open class JaicpReactions : Reactions() {
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         replies.add(TextReply(text))
+        return createSayReaction(text)
     }
 
     fun collect(): JsonObject {

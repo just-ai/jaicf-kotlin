@@ -2,7 +2,6 @@ package com.justai.jaicf.context
 
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -14,5 +13,6 @@ data class ProcessContext(
     val requestContext: RequestContext,
     val botContext: BotContext,
     val activationContext: ActivationContext,
-    val skippedActivators: List<ActivatorContext>
+    val skippedActivators: List<ActivatorContext>,
+    val loggingContext: LoggingContext
 )

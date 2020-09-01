@@ -10,7 +10,10 @@ import com.github.messenger4j.send.message.richmedia.RichMediaAsset
 import com.github.messenger4j.send.message.richmedia.UrlRichMediaAsset
 import com.justai.jaicf.channel.facebook.api.FacebookBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
+import com.justai.jaicf.reactions.AudioReaction
+import com.justai.jaicf.reactions.ImageReaction
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.SayReaction
 import java.net.URL
 
 val Reactions.facebook
@@ -19,7 +22,7 @@ val Reactions.facebook
 class FacebookReactions(
     private val messenger: Messenger,
     private val request: FacebookBotRequest
-): Reactions() {
+) : Reactions() {
 
     fun send(payload: Payload) = messenger.send(payload)
 
@@ -27,25 +30,28 @@ class FacebookReactions(
         MessagePayload.create(request.event.senderId(), MessagingType.RESPONSE, message)
     )
 
-    fun sendUrlRichMediaResponse(url: String, type: RichMediaAsset.Type)
-            = sendResponse(RichMediaMessage.create(UrlRichMediaAsset.create(type, URL(url))))
+    fun sendUrlRichMediaResponse(url: String, type: RichMediaAsset.Type) =
+        sendResponse(RichMediaMessage.create(UrlRichMediaAsset.create(type, URL(url))))
 
     fun queryUserProfile() = messenger.queryUserProfile(request.event.senderId())
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         sendResponse(TextMessage.create(text))
+        return createSayReaction(text)
     }
 
-    override fun image(url: String) {
+    override fun image(url: String): ImageReaction {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.IMAGE)
+        return createImageReaction(url)
     }
 
     fun video(url: String) {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.VIDEO)
     }
 
-    fun audio(url: String) {
+    override fun audio(url: String): AudioReaction {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.AUDIO)
+        return createAudioReaction(url)
     }
 
     fun file(url: String) {

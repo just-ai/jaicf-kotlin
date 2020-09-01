@@ -9,7 +9,7 @@ import java.util.*
  */
 class TestRequestContext(
     override val newSession: Boolean = false
-): RequestContext(newSession) {
+) : RequestContext(newSession, null) {
 
     val randomNumbers = ArrayDeque<Int>()
     val variables = mutableMapOf<String, Any?>().withDefault { null }
