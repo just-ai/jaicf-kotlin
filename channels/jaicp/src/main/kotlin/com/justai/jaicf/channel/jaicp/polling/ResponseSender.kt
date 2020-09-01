@@ -10,7 +10,7 @@ import io.ktor.client.request.post
 import io.ktor.content.TextContent
 import io.ktor.http.ContentType
 
-class ResponseSender(private val client: HttpClient) : WithLogger {
+internal class ResponseSender(private val client: HttpClient) : WithLogger {
     suspend fun processResponse(url: String, result: JaicpPollingResponse) {
         try {
             val text = result.deserialized()

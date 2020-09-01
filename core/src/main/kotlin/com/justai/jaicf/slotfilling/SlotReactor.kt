@@ -68,7 +68,7 @@ interface SlotReactor {
         request: BotRequest,
         botContext: BotContext,
         reactions: Reactions,
-        activator: ActivatorContext?,
+        activator: ActivatorContext,
         slotName: String,
         prompts: List<String> = emptyList()
     )

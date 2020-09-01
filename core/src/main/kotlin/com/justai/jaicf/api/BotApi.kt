@@ -29,7 +29,7 @@ interface BotApi {
     fun process(
         request: BotRequest,
         reactions: Reactions,
-        requestContext: RequestContext = RequestContext(),
+        requestContext: RequestContext,
         contextManager: BotContextManager? = null
     )
 }

@@ -2,7 +2,7 @@ package com.justai.jaicf.context
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.helpers.action.smartRandom
-import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions   .Reactions
 import kotlin.random.Random
 
 /**
@@ -15,18 +15,21 @@ import kotlin.random.Random
  * @property request a particular channel-related [BotRequest] that contains request's details
  * @property reactions a particular channel-related [Reactions] that contains methods for building and sending a response
  * @property skippedActivators a list of activators that returned some data but weren't selected by the bot engine because there is no related state in scenario
+ * @property loggingContext current request's logging context, used by [com.justai.jaicf.logging.ConversationLogger]
  *
  * @see [BotContext]
  * @see [ActivatorContext]
  * @see [BotRequest]
  * @see [Reactions]
+ * @see [LoggingContext]
  */
 open class ActionContext(
     val context: BotContext,
     val activator: ActivatorContext,
     val request: BotRequest,
     val reactions: Reactions,
-    val skippedActivators: List<ActivatorContext>
+    val skippedActivators: List<ActivatorContext>,
+    private val loggingContext: LoggingContext
 ) {
 
     /**

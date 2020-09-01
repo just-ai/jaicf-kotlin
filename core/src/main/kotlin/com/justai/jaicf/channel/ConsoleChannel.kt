@@ -3,6 +3,7 @@ package com.justai.jaicf.channel
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.api.TextResponse
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.reactions.TextReactions
 import java.util.*
 
@@ -52,7 +53,7 @@ class ConsoleChannel(override val botApi: BotApi): BotChannel {
         val request = QueryBotRequest(clientId, text)
         val reactions = TextReactions(TextResponse())
 
-        botApi.process(request, reactions)
+        botApi.process(request, reactions, RequestContext.DEFAULT)
         return reactions.response.text
     }
 }

@@ -23,7 +23,8 @@ import kotlinx.serialization.json.JsonConfiguration
 class CailaKtorClient(
     override val accessToken: String,
     override val url: String = DEFAULT_CAILA_URL,
-    override val inferenceNBest: Int
+    override val inferenceNBest: Int,
+    logLevel: LogLevel = LogLevel.INFO
 ) : WithLogger,
     CailaHttpClient {
 
@@ -31,7 +32,7 @@ class CailaKtorClient(
         expectSuccess = true
         install(Logging) {
             logger = Logger.DEFAULT
-            level = LogLevel.BODY
+            level = logLevel
         }
         install(JsonFeature) {
             serializer = KotlinxSerializer()

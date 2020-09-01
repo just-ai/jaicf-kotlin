@@ -11,6 +11,7 @@ import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
+import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
@@ -48,7 +49,8 @@ class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
-    private val slotReactor: SlotReactor? = null
+    private val slotReactor: SlotReactor? = null,
+    val conversationLoggers: Array<ConversationLogger> = arrayOf()
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
@@ -73,7 +75,9 @@ class BotEngine(
     ) {
         val cm = contextManager ?: defaultContextManager
         val botContext = cm.loadContext(request)
+        val loggingContext = LoggingContext(requestContext.httpBotRequest)
         reactions.botContext = botContext
+        reactions.loggingContext = loggingContext
 
         processContext(botContext, requestContext)
 
@@ -88,9 +92,10 @@ class BotEngine(
                     ?: selectActivation(botContext, request, skippedActivators)
             }
 
-            activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
-                if (first) return
-            }.second
+            activation =
+                fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators, conversationLoggers).apply {
+                    if (first) return
+                }.second
 
             if (activation?.activation == null) {
                 logger.warn("No state selected to handle a request $request")
@@ -101,12 +106,15 @@ class BotEngine(
                     requestContext,
                     botContext,
                     activation,
-                    skippedActivators
+                    skippedActivators,
+                    loggingContext
                 )
 
                 processStates(context)
                 saveContext(cm, botContext, request, reactions)
+
             }
+            conversationLoggers.forEach { it.produce(activation, botContext, request, loggingContext) }
             botContext.cleanTempData()
         }
     }
@@ -118,7 +126,8 @@ class BotEngine(
         reactions: Reactions,
         cm: BotContextManager,
         state: String?,
-        skippedActivators: MutableList<ActivatorContext>
+        skippedActivators: MutableList<ActivatorContext>,
+        conversationLoggers: Array<ConversationLogger>
     ): Pair<Boolean, ActivationContext?> {
         val slotFillingActivatorName = botContext.getSlotFillingActivator()
         val isSlotFillingSession = slotFillingActivatorName != null
@@ -142,6 +151,7 @@ class BotEngine(
                 saveContext(cm, botContext, request, reactions)
             }
             saveContext(cm, botContext, request, reactions)
+            conversationLoggers.forEach { it.produce(activationContext, botContext, request, reactions.loggingContext) }
             shouldReturn = true
         }
         if (res is SlotFillingFinished) {

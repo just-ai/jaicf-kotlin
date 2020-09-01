@@ -6,7 +6,7 @@ import kotlinx.serialization.json.content
 
 abstract class JaicpNativeBotRequest(
     val jaicp: JaicpBotRequest
-): BotRequest {
+) : BotRequest {
     override val type: BotRequestType = jaicp.type
     override val clientId: String = jaicp.clientId
     override val input: String = jaicp.input
@@ -35,3 +35,9 @@ val BotRequest.chatapi
 
 val BotRequest.chatwidget
     get() = this as? ChatWidgetBotRequest
+
+val BotRequest.jaicp
+    get() = this as? JaicpBotRequest
+
+val BotRequest.native
+    get() = this as? JaicpNativeBotRequest

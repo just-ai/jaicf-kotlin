@@ -3,8 +3,7 @@ package com.justai.jaicf.channel.googleactions
 import com.google.actions.api.ActionRequest
 import com.google.actions.api.Capability
 import com.google.api.services.actions_fulfillment.v2.model.*
-import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.reactions.ResponseReactions
+import com.justai.jaicf.reactions.*
 
 val Reactions.actions
     get() = this as? ActionsReactions
@@ -12,7 +11,7 @@ val Reactions.actions
 class ActionsReactions(
     private val request: ActionRequest,
     override val response: ActionsBotResponse
-): ResponseReactions<ActionsBotResponse>(response) {
+) : ResponseReactions<ActionsBotResponse>(response) {
 
     companion object {
         private val ssmlRegex = "<.*?>".toRegex()
@@ -30,21 +29,24 @@ class ActionsReactions(
 
     private fun clean(text: String) = text.replace(ssmlRegex, " ")
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         addSimpleResponse(clean(text), text)
+        return createSayReaction(text)
     }
 
-    override fun buttons(vararg buttons: String) {
+    override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons.forEach { title ->
             response.builder.add(Suggestion().also {
                 it.title = title
             })
         }
+        return createButtonsReaction(buttons.asList())
     }
 
-    override fun image(url: String) {
+    override fun image(url: String): ImageReaction {
         response.builder.add(Image().setUrl(url))
         simpleResponse = null
+        return createImageReaction(url)
     }
 
     fun endConversation() = response.builder.endConversation()

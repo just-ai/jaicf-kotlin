@@ -1,9 +1,9 @@
 package com.justai.jaicf.channel.jaicp
 
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
+import com.justai.jaicf.channel.jaicp.dto.Reply
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 

@@ -12,7 +12,7 @@ import com.justai.jaicf.context.RequestContext
 class AimyboxChannel(
     override val botApi: BotApi,
     private val apiKey: String? = null
-): JaicpCompatibleBotChannel {
+) : JaicpCompatibleBotChannel {
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val req = JSON.parse(AimyboxBotRequest.serializer(), request.receiveText())
@@ -23,7 +23,7 @@ class AimyboxChannel(
 
         val reactions = AimyboxReactions(AimyboxBotResponse(req.query))
 
-        botApi.process(req, reactions, RequestContext(newSession = req.query.isEmpty()))
+        botApi.process(req, reactions, RequestContext(newSession = req.query.isEmpty(), httpBotRequest = request))
         return JSON.stringify(AimyboxBotResponse.serializer(), reactions.response).asJsonHttpBotResponse()
     }
 

@@ -9,6 +9,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asTextHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.context.RequestContext
 import java.util.*
 
 class FacebookChannel private constructor(
@@ -28,7 +29,11 @@ class FacebookChannel private constructor(
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         messenger.onReceiveEvents(request.receiveText(), Optional.empty()) { event ->
             event.toBotRequest().let { botRequest ->
-                botApi.process(botRequest, FacebookReactions(messenger, botRequest))
+                botApi.process(
+                    botRequest,
+                    FacebookReactions(messenger, botRequest),
+                    RequestContext.fromHttp(request)
+                )
             }
         }
         return "".asTextHttpBotResponse()
