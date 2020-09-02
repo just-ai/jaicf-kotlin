@@ -27,7 +27,7 @@ class RegexActivator(model: ScenarioModel) : Activator {
 
     private val transitions = model.activations
         .filter { a -> a.type == ActivationRuleType.regexp }
-        .map { a -> Pair(a.fromState, Pair(Pattern.compile(a.rule), a.toState)) }
+        .map { a -> Pair(a.fromState, Pair(Pattern.compile(a.rule, Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE), a.toState)) }
         .groupBy {a -> a.first}
         .mapValues { l -> l.value.map { v -> v.second } }
 
@@ -63,10 +63,7 @@ class RegexActivator(model: ScenarioModel) : Activator {
     ): Activation? {
         val rules = transitions[path]
         rules?.forEach { r ->
-            var m = r.first.matcher(query)
-            if (!m.matches()) {
-                m = r.first.matcher(query.toLowerCase())
-            }
+            val m = r.first.matcher(query)
             if (m.matches()) {
                 val context = RegexActivatorContext(r.first)
                 storeVariables(context, m)
