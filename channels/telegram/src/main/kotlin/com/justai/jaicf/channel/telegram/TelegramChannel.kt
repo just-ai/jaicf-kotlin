@@ -12,6 +12,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.kotlin.NoBackingFieldProperty
 import okhttp3.logging.HttpLoggingInterceptor
 
 class TelegramChannel(
@@ -83,4 +84,8 @@ class TelegramChannel(
                 it.botUpdater.startCheckingUpdates()
             }
     }
+}
+
+internal var Update.httpBotRequest: HttpBotRequest by NoBackingFieldProperty {
+    HttpBotRequest("".byteInputStream())
 }
