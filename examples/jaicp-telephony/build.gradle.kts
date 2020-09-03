@@ -14,6 +14,7 @@ dependencies {
 
     implementation("io.ktor:ktor-server-netty" version {ktor})
     implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("com.charleskorn.kaml:kaml:0.15.0")
 }
 
 tasks {

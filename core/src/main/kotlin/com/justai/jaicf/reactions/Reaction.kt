@@ -3,12 +3,14 @@ package com.justai.jaicf.reactions
 import com.justai.jaicf.context.LoggingContext
 
 /**
- * JAVADOC ME
+ * Abstraction for result of performing some reaction.
+ *
+ * @see Reactions
  * */
 interface Reaction
 
 /**
- * JAVADOC ME
+ * Result of performing reactions.say()
  * */
 data class SayReaction internal constructor(
     var text: String,
@@ -23,7 +25,7 @@ data class SayReaction internal constructor(
 }
 
 /**
- * JAVADOC ME
+ * Result of performing reactions.image(). May not be supported in some channels.
  * */
 data class ImageReaction internal constructor(
     val imageUrl: String,
@@ -38,7 +40,7 @@ data class ImageReaction internal constructor(
 }
 
 /**
- * JAVADOC ME
+ * Result of performing reactions.buttons(). May not be supported in some channels.
  * */
 data class ButtonsReaction internal constructor(
     val buttons: List<String>,
@@ -53,7 +55,7 @@ data class ButtonsReaction internal constructor(
 }
 
 /**
- * JAVADOC ME
+ * Result of performing reactions.go().
  * */
 data class GoReaction internal constructor(
     val transition: String,
@@ -68,7 +70,7 @@ data class GoReaction internal constructor(
 }
 
 /**
- * JAVADOC ME
+ * Result of performing reactions.audio(). May not be supported in some channels.
  * */
 data class AudioReaction internal constructor(
     val audioUrl: String,
