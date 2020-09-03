@@ -11,6 +11,7 @@ dependencies {
     implementation("javax.servlet:javax.servlet-api" version {javaxServletApi})
     implementation("io.ktor:ktor-server-core" version {ktor})
     implementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
+    implementation("com.github.h0tk3y:kotlin-fun:v0.9")
 
     testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
