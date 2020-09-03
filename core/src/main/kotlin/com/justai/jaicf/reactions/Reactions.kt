@@ -96,6 +96,8 @@ abstract class Reactions {
      * This method should be implemented by every particular channel-related [Reactions].
      *
      * @param text a raw text to append to the response
+     *
+     * @return [ImageReaction] for logging purposes
      */
     abstract fun say(text: String): SayReaction
 
@@ -104,6 +106,8 @@ abstract class Reactions {
      * Not every channel supports this type of reply.
      *
      * @param url a full URL of the image file
+     *
+     * @return [ImageReaction] for logging purposes
      */
     open fun image(url: String): ImageReaction = createImageReaction(url)
 
@@ -112,14 +116,20 @@ abstract class Reactions {
      * Not every channel supports this type of reply.
      *
      * @param buttons a collection of text buttons
+     *
+     * @return [ButtonsReaction] for logging purposes
      */
     open fun buttons(vararg buttons: String): ButtonsReaction = createButtonsReaction(*buttons)
 
     /**
-     * JAVADOC ME
+     * Appends audio to the response
+     * Not every channels supports this type of reply.
+     *
+     * @param url of audio
+     *
+     * @return [AudioReaction] for logging purposes
      * */
     open fun audio(url: String): AudioReaction = createAudioReaction(url)
-
 
     protected fun createAudioReaction(audioUrl: String) =
         AudioReaction(audioUrl, botContext.dialogContext.currentState, loggingContext)

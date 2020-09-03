@@ -6,9 +6,14 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.logging.ConversationLogObfuscator
 
+/**
+ * Example implementation of [ConversationLogObfuscator].
+ *
+ * This implementation hides all entities found in client [BotRequest].
+ * */
 class CailaNamedEntityLogObfuscator(
-    val hideAll: Boolean = true,
-    val hideCustomEntities: List<String> = emptyList()
+    private val hideAll: Boolean = true,
+    private val hideCustomEntities: List<String> = emptyList()
 ) : ConversationLogObfuscator {
 
     override fun obfuscateInput(
@@ -17,9 +22,9 @@ class CailaNamedEntityLogObfuscator(
         request: BotRequest,
         loggingContext: LoggingContext
     ): String {
-        val out = request.input
+        var out = request.input
         getEntityTexts(activationContext)?.forEach { entity ->
-            out.replace(entity, "***")
+            out = out.replace(entity, "***")
         }
         return out
     }
@@ -32,11 +37,11 @@ class CailaNamedEntityLogObfuscator(
     ) = loggingContext.reactions
 
     private fun getEntityTexts(activationContext: ActivationContext?): List<String>? {
-        val entities = activationContext?.activation?.context?.caila?.entities
+        val entities = activationContext?.activation?.context?.caila?.entities ?: return emptyList()
         return when {
-            hideAll -> entities?.map { it.text }
+            hideAll -> entities.map { it.text }
             !hideAll && hideCustomEntities.isEmpty() -> emptyList()
-            else -> entities?.filter { it.entity in hideCustomEntities }?.map { it.text } ?: emptyList()
+            else -> entities.filter { it.entity in hideCustomEntities }.map { it.text }
         }
     }
 }

@@ -1,11 +1,7 @@
 package com.justai.jaicf.examples.jaicptelephony
 
-import com.justai.jaicf.activator.caila.CailaIntentActivator
-import com.justai.jaicf.activator.caila.CailaIntentActivatorContext
-import com.justai.jaicf.activator.caila.caila
 import com.justai.jaicf.channel.jaicp.channels.TelephonyEvents
 import com.justai.jaicf.channel.jaicp.dto.telephony
-import com.justai.jaicf.channel.jaicp.reactions.chatwidget
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.scenario.Scenario
@@ -24,36 +20,22 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             }
         }
 
-        state("Hello") {
+        state("/start") {
             globalActivators {
-//                intent("Hello")
+                regex("start")
+                intent("/start")
             }
             action {
-                reactions.say("Приветики")
+                reactions.say("Hello from telephony channel! Say audio to play some audio example.")
+                reactions.say("Or you can say enough to end this conversation.")
             }
         }
-
         state("/playAudio") {
             globalActivators {
                 regex("audio")
             }
             action {
                 reactions.telephony?.audio("https://248305.selcdn.ru/demo_bot_static/1M.wav")
-                reactions.say("somegovno")
-                reactions.image("some-url")
-                reactions.buttons("govnobuttons", "govnobuttons2")
-            }
-        }
-
-        state("/da") {
-            globalActivators {
-                regex("da")
-                regex("да")
-                regex("вф")
-            }
-            action {
-                reactions.say("нет")
-                reactions.buttons("нет", "нет")
             }
         }
 
@@ -89,23 +71,11 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             }
         }
 
-        state("start") {
-            globalActivators {
-//                intent("Hello")
-                regex("/start")
-            }
-            action {
-                reactions.say("Hi! Here's some questions I can help you with.")
-                reactions.chatwidget?.buttons("How to save the earth", "How to stop drinking")
-            }
-        }
-
         fallback {
-            val find = skippedActivators
-                .first { it is CailaIntentActivatorContext }
-
-
-
+            reactions.say("You said: ${request.input}")
+            request.telephony?.let {
+                logger.info("Unrecognized message from caller: ${it.caller}")
+            }
         }
     }
 }

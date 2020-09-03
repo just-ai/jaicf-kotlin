@@ -12,11 +12,17 @@ import com.justai.jaicf.reactions.Reaction
  * Implementations of this interface should be used to hide sensitive data during logging in [ConversationLogger].
  *
  * @see com.justai.jaicf.logging.ConversationLogger
+ * @see com.justai.jaicf.logging.ConsoleConversationLogger
  * */
 interface ConversationLogObfuscator {
 
     /**
      * Obfuscates user input from [BotRequest] in [ConversationLogger] implementation.
+     *
+     * @param activationContext current request's [ActivationContext]
+     * @param botContext a current user's [BotContext]
+     * @param request a current user's [BotRequest]
+     * @param loggingContext current request's [LoggingContext]
      *
      * @return obfuscated input
      * */
@@ -29,6 +35,11 @@ interface ConversationLogObfuscator {
 
     /**
      * Obfuscates bot reactions in [ConversationLogger] implementation.
+     *
+     * @param activationContext current request's [ActivationContext]
+     * @param botContext a current user's [BotContext]
+     * @param request a current user's [BotRequest]
+     * @param loggingContext current request's [LoggingContext]
      *
      * @return list of obfuscated [Reaction]
      * */

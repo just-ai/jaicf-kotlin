@@ -7,10 +7,7 @@ import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.logging.toEpochMillis
-import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.context.StrictActivatorContext
-import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.reactions.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -20,7 +17,7 @@ import java.time.ZoneId
 
 
 @Serializable
-internal data class LogModel private constructor(
+internal class LogModel private constructor(
     val bot: String,
     val channel: String,
     val userId: String,
@@ -150,21 +147,11 @@ internal data class LogModel private constructor(
     companion object Factory {
         fun fromRequest(
             jaicpBotRequest: JaicpBotRequest,
-            loggingContext: LoggingContext,
+            reactions: MutableList<Reaction>,
             activationContext: ActivationContext?,
-            botContext: BotContext,
-            logObfuscator: ConversationLogObfuscator?
+            input: String
         ): LogModel {
             val currentTimeUTC = OffsetDateTime.now(ZoneId.of("UTC")).toEpochMillis()
-            val input = logObfuscator
-                ?.obfuscateInput(activationContext, botContext, jaicpBotRequest, loggingContext)
-                ?: jaicpBotRequest.input
-
-            val reactions = logObfuscator
-                ?.obfuscateReactions(activationContext, botContext, jaicpBotRequest, loggingContext)
-                ?: loggingContext.reactions
-
-            // TODO: RequestData
             val request = Request.fromRequest(jaicpBotRequest, input)
             val user = User.fromRequest(jaicpBotRequest)
             val nlp = NlpInfo.fromActivation(activationContext)
