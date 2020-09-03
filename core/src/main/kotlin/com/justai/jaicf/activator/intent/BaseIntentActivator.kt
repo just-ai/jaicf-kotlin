@@ -3,11 +3,12 @@ package com.justai.jaicf.activator.intent
 import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.activator.StateMapActivator
+import com.justai.jaicf.activator.event.EventActivationRule
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasIntent
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationRuleType
+import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.ScenarioModel
 
 /**
@@ -18,18 +19,17 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  *
  * @see StateMapActivator
  */
-open class BaseIntentActivator(
-    model: ScenarioModel
-): StateMapActivator(ActivationRuleType.intent, model), IntentActivator {
-
+open class BaseIntentActivator(model: ScenarioModel): StateMapActivator(model), IntentActivator {
     override val name = "baseIntentActivator"
 
     override fun canHandle(request: BotRequest) = request.hasIntent()
 
+    override fun canHandleRule(rule: ActivationRule) = rule is IntentActivationRule
+
     override fun activate(botContext: BotContext, request: BotRequest): Activation? {
         val context = recogniseIntent(botContext, request)
         return context?.let {
-            val state = findState(it.intent, botContext)
+            val state = findState(botContext) { rule -> (rule as? IntentActivationRule)?.intent == it.intent  }
             Activation(state, it)
         }
     }

@@ -6,7 +6,6 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationRuleType
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 import java.util.regex.Matcher
@@ -25,10 +24,14 @@ class RegexActivator(model: ScenarioModel) : Activator {
 
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
-    private val transitions = model.activations
-        .filter { a -> a.type == ActivationRuleType.regexp }
-        .map { a -> Pair(a.fromState, Pair(Pattern.compile(a.rule, Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE), a.toState)) }
-        .groupBy {a -> a.first}
+    private val transitions = model.transitions
+        .mapNotNull { t ->
+            (t.rule as? RegexActivationRule)?.let {
+                val pattern = Pattern.compile(t.rule.regex, Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE)
+                t.fromState to (pattern to t.toState)
+            }
+        }
+        .groupBy { a -> a.first }
         .mapValues { l -> l.value.map { v -> v.second } }
 
     override fun activate(

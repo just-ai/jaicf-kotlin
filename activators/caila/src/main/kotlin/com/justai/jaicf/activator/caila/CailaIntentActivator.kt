@@ -6,6 +6,7 @@ import com.justai.jaicf.activator.caila.client.CailaHttpClient
 import com.justai.jaicf.activator.caila.client.CailaKtorClient
 import com.justai.jaicf.activator.caila.slotfilling.CailaSlotFillingHelper
 import com.justai.jaicf.activator.intent.BaseIntentActivator
+import com.justai.jaicf.activator.intent.IntentActivationRule
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -49,7 +50,7 @@ class CailaIntentActivator(
         val transitionsPerContextSorted = results.inference.variants
             .filter { it.confidence >= settings.confidenceThreshold }
             .mapNotNull {
-                findState(it.intent.name, botContext)?.let { state ->
+                findState(botContext) { rule -> (rule as? IntentActivationRule)?.intent ==  it.intent.name }?.let { state ->
                     state to it
                 }
             }

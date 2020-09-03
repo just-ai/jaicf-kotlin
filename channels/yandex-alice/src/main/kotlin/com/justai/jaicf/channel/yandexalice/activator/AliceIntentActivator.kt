@@ -1,8 +1,8 @@
 package com.justai.jaicf.channel.yandexalice.activator
 
-import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.activator.intent.BaseIntentActivator
+import com.justai.jaicf.activator.intent.IntentActivationRule
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.yandexalice.api.AliceBotRequest
@@ -20,7 +20,7 @@ class AliceIntentActivator(model: ScenarioModel): BaseIntentActivator(model) {
 
         val intent = aliceRequest.request?.let { req ->
             req.nlu.intents.map { entry ->
-                findState(entry.key, botContext) to entry
+                findState(botContext) { (it as? IntentActivationRule)?.intent == entry.key } to entry
             }.maxBy { it.first?.count { c -> c == '/'} ?: 0 }?.second
         }
 

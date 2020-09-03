@@ -7,7 +7,6 @@ import com.justai.jaicf.api.hasIntent
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationRuleType
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 
@@ -38,8 +37,8 @@ class CatchAllActivator(model: ScenarioModel) : Activator {
 
     override fun canHandle(request: BotRequest) = request.hasQuery() || request.hasIntent()
 
-    private val transitions = model.activations
-        .filter { a -> a.type == ActivationRuleType.anytext }
+    private val transitions = model.transitions
+        .filter { t -> t.rule is CatchAllActivationRule }
         .associate { a -> Pair(a.fromState, a.toState) }
 
     override fun activate(

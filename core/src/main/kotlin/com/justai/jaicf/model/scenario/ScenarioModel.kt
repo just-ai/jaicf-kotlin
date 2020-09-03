@@ -2,8 +2,8 @@ package com.justai.jaicf.model.scenario
 
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
-import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.state.State
+import com.justai.jaicf.model.transition.Transition
 import kotlin.reflect.KClass
 
 /**
@@ -15,14 +15,14 @@ import kotlin.reflect.KClass
  * @see com.justai.jaicf.builder.ScenarioBuilder
  */
 class ScenarioModel {
-    val activations = mutableListOf<ActivationRule>()
+    val transitions = mutableListOf<Transition>()
     val states = mutableMapOf<String, State>()
     val hooks = mutableMapOf<KClass<out BotHook>, MutableList<BotHookAction<in BotHook>>>()
 
     operator fun plus(other: ScenarioModel): ScenarioModel {
         val model = ScenarioModel()
 
-        model.activations.addAll(activations + other.activations)
+        model.transitions.addAll(transitions + other.transitions)
         model.states.putAll(states + other.states)
         model.hooks.putAll(hooks)
         other.hooks.forEach { (event, listeners) ->
