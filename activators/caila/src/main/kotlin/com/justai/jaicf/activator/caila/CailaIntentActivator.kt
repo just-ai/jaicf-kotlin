@@ -6,14 +6,12 @@ import com.justai.jaicf.activator.caila.client.CailaHttpClient
 import com.justai.jaicf.activator.caila.client.CailaKtorClient
 import com.justai.jaicf.activator.caila.slotfilling.CailaSlotFillingHelper
 import com.justai.jaicf.activator.intent.BaseIntentActivator
-import com.justai.jaicf.activator.intent.IntentActivationRule
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotReactor
@@ -44,35 +42,9 @@ class CailaIntentActivator(
     ): SlotFillingResult =
         slotFillingHelper.process(botContext, request, reactions, activatorContext, slotReactor)
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
-        val results = client.analyze(request.input) ?: return null
-
-        val transitionsPerContextSorted = results.inference.variants
-            .filter { it.confidence >= settings.confidenceThreshold }
-            .mapNotNull {
-                findState(botContext) { rule -> (rule as? IntentActivationRule)?.intent ==  it.intent.name }?.let { state ->
-                    state to it
-                }
-            }
-            // Sort all predicted intents by context relevance
-            .sortedByDescending {
-                var currentState = botContext.dialogContext.currentState
-                if (currentState == it.first) {
-                    currentState = StatePath.parse(currentState).parent
-                }
-                currentState.commonPrefixWith(it.first)
-            }
-            .groupBy { it.first }
-
-        // From most relevant by context take intent with maximum confidence.
-        val intent = transitionsPerContextSorted.values
-            .firstOrNull()
-            ?.maxBy { it.second.confidence }?.second
-
-        return when {
-            intent != null -> return CailaIntentActivatorContext(results, intent)
-            else -> null
-        }
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
+        val results = client.analyze(request.input) ?: return emptyList()
+        return results.inference.variants.map { CailaIntentActivatorContext(results, it) }
     }
 
     class Factory(private val settings: CailaNLUSettings) : ActivatorFactory {

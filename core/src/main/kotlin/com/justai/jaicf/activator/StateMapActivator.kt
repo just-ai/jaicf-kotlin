@@ -1,10 +1,12 @@
 package com.justai.jaicf.activator
 
+import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
-import com.sun.org.apache.xpath.internal.operations.Bool
+import com.justai.jaicf.model.transition.Transition
 
 /**
  * A helper abstraction for every [Activator] that should activate a state if it contains a particular rule like event or intent.
@@ -14,34 +16,26 @@ import com.sun.org.apache.xpath.internal.operations.Bool
  */
 abstract class StateMapActivator(model: ScenarioModel): Activator {
 
-    private val transitions = model.transitions
-        .filter { t -> canHandleRule(t.rule) }
-        .map { a -> Pair(a.fromState, Pair(a.rule, a.toState)) }
-        .groupBy {a -> a.first}
-        .mapValues { l -> l.value.map { v -> v.second } }
+    private val transitions = model.transitions.filter { canHandleRule(it.rule) }.groupBy { it.fromState }
 
-    abstract fun canHandleRule(rule: ActivationRule): Boolean
+    protected abstract fun canHandleRule(rule: ActivationRule): Boolean
 
-    fun findState(botContext: BotContext, predicate: (ActivationRule) -> Boolean): String? {
-        val path = StatePath.parse(botContext.dialogContext.currentContext)
-        return checkWithParents(path, predicate)
+    protected abstract fun getRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher?
+
+    override fun activate(botContext: BotContext, request: BotRequest): Activation? {
+        val matcher = getRuleMatcher(botContext, request) ?: return null
+        val transitions = generateTransitions(botContext)
+
+        return transitions.mapNotNull { transition ->
+            matcher.match(transition.rule)?.let { Activation(transition.toState, it) }
+        }.firstOrNull()
     }
 
-    private fun checkWithParents(path: StatePath, predicate: (ActivationRule) -> Boolean): String? {
-        var p = path
-        while (true) {
-            val res = findState(p.toString(), predicate)
-            if (res != null) {
-                return res
-            }
-            if (p.toString() == "/") {
-                break
-            }
-            p = p.stepUp()
+    private fun generateTransitions(botContext: BotContext): Sequence<Transition> {
+        val currentState = StatePath.parse(botContext.dialogContext.currentContext).resolve(".")
+        val states = generateSequence(currentState) { if (it.toString() == "/") null else it.stepUp() }
+        return states.flatMap {
+            transitions[it.toString()]?.asSequence() ?: emptySequence()
         }
-        return null
     }
-
-    private fun findState(path: String, predicate: (ActivationRule) -> Boolean): String? =
-        transitions[path]?.firstOrNull { predicate(it.first) }?.second
 }

@@ -2,7 +2,6 @@ package com.justai.jaicf.channel.yandexalice.activator
 
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.activator.intent.BaseIntentActivator
-import com.justai.jaicf.activator.intent.IntentActivationRule
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.yandexalice.api.AliceBotRequest
@@ -15,18 +14,11 @@ class AliceIntentActivator(model: ScenarioModel): BaseIntentActivator(model) {
 
     override fun canHandle(request: BotRequest) = request is AliceBotRequest
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
-        val aliceRequest = request as? AliceBotRequest ?: return null
-
-        val intent = aliceRequest.request?.let { req ->
-            req.nlu.intents.map { entry ->
-                findState(botContext) { (it as? IntentActivationRule)?.intent == entry.key } to entry
-            }.maxBy { it.first?.count { c -> c == '/'} ?: 0 }?.second
-        }
-
-        return intent?.let {
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
+        val aliceRequest = request as? AliceBotRequest ?: return emptyList()
+        return aliceRequest.request?.nlu?.intents?.map {
             AliceIntentActivatorContext(it.key, it.value)
-        }
+        } ?: emptyList()
     }
 
     companion object : ActivatorFactory {

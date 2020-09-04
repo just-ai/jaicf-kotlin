@@ -27,5 +27,5 @@ import com.justai.jaicf.context.BotContext
  * @see BaseIntentActivator
  */
 interface IntentActivator: Activator {
-    fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext?
+    fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext>
 }
