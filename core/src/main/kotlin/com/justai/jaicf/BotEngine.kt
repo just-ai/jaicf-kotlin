@@ -88,7 +88,7 @@ class BotEngine(
             var activation: ActivationContext? = null
             if (!botContext.isActiveSlotFilling()) {
                 activation = state
-                    ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
+                    ?.let { ActivationContext(null, Activation(state, StrictActivatorContext(), botContext.dialogContext.currentState)) }
                     ?: selectActivation(botContext, request, skippedActivators)
             }
 
@@ -158,13 +158,21 @@ class BotEngine(
             botContext.finishSlotFilling()
             activationContext = ActivationContext(
                 activator = getActivatorForName(slotFillingActivatorName),
-                activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
+                activation = Activation(
+                    botContext.dialogContext.nextState,
+                    res.activatorContext,
+                    botContext.dialogContext.currentState
+                )
             )
         }
         if (res is SlotFillingInterrupted) {
             botContext.finishSlotFilling()
             activationContext = state
-                ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
+                ?.let { ActivationContext(null, Activation(
+                    state,
+                    StrictActivatorContext(),
+                    botContext.dialogContext.currentState
+                )) }
                 ?: selectActivation(botContext, request, skippedActivators)
         }
         return shouldReturn to activationContext

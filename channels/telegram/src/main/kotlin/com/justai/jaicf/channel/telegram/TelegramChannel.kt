@@ -30,7 +30,7 @@ class TelegramChannel(
         apiUrl = telegramApiUrl
         token = telegramBotToken
         logLevel = telegramLogLevel
-        botUpdater = this.updater
+        botUpdater = updater
 
         dispatch {
             fun process(request: TelegramBotRequest, requestContext: RequestContext) {

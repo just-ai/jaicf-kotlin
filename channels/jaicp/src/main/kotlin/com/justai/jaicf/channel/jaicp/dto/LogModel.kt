@@ -57,7 +57,7 @@ internal class LogModel private constructor(
                     is IntentActivatorContext -> ctx.confidence.toDouble()
                     else -> null
                 },
-                fromState = "" // TODO
+                fromState = activationContext?.activation?.fromState ?: "/"
             )
         }
     }

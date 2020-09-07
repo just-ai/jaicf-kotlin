@@ -59,7 +59,7 @@ class JaicpPollingConnector(
         }.also {
             logger.info(
                 "Initializing ${it.size} factories:" +
-                        " ${it.joinToString { (factory, config) -> factory.channelType }}"
+                        " ${it.joinToString { (factory, _) -> factory.channelType }}"
             )
         }
     }
