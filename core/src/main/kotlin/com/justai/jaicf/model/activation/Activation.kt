@@ -12,5 +12,6 @@ import com.justai.jaicf.context.ActivatorContext
  */
 data class Activation(
     val state: String?,
-    val context: ActivatorContext
+    val context: ActivatorContext,
+    val fromState: String
 )

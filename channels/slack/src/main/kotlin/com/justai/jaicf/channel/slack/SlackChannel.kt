@@ -6,10 +6,12 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.kotlin.NoBackingFieldProperty
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
 import com.slack.api.bolt.AppConfig
+import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.request.RequestHeaders
 import com.slack.api.bolt.util.SlackRequestParser
 import kotlinx.coroutines.CoroutineScope
@@ -47,25 +49,25 @@ class SlackChannel private constructor(
         parser = SlackRequestParser(app.config())
 
         app.command(".*".toPattern()) { req, ctx ->
-            launch(SlackCommandRequest(req.payload), SlackReactions(ctx))
+            launch(SlackCommandRequest(req.payload), SlackReactions(ctx), ctx.httpBotRequest)
             ctx.ack()
         }
 
         app.message(".*".toPattern()) { payload, ctx ->
-            launch(SlackEventRequest(payload), SlackReactions(ctx))
+            launch(SlackEventRequest(payload), SlackReactions(ctx), ctx.httpBotRequest)
             ctx.ack()
         }
 
         app.blockAction(".*".toPattern()) { req, ctx ->
             if (!req.payload.responseUrl.isNullOrEmpty()) {
-                launch(SlackActionRequest(req.payload), SlackReactions(ctx))
+                launch(SlackActionRequest(req.payload), SlackReactions(ctx), ctx.httpBotRequest)
             }
             ctx.ack()
         }
 
         slackEvents.forEach {
             app.event(it) { payload, ctx ->
-                launch(SlackEventRequest(payload), SlackReactions(ctx))
+                launch(SlackEventRequest(payload), SlackReactions(ctx), ctx.httpBotRequest)
                 ctx.ack()
             }
         }
@@ -73,13 +75,14 @@ class SlackChannel private constructor(
         app.start()
     }
 
-    private fun launch(request: SlackBotRequest, reactions: SlackReactions) = launch {
-        botApi.process(request, reactions, RequestContext.DEFAULT) // TODO: fix http bot request for slack channel
+    private fun launch(request: SlackBotRequest, reactions: SlackReactions, httpBotRequest: HttpBotRequest) = launch {
+        botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val slackRequest = buildSlackRequest(request)
         val slackResponse = app.run(slackRequest)
+        slackRequest.context.httpBotRequest = request
 
         return HttpBotResponse(slackResponse.body ?: "", slackResponse.contentType).apply {
             headers.putAll(slackResponse.headers.mapValues { it.value.first() })
@@ -98,4 +101,8 @@ class SlackChannel private constructor(
         override val channelType = "slack"
         override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, apiUrl)
     }
+}
+
+internal var Context.httpBotRequest: HttpBotRequest by NoBackingFieldProperty {
+    HttpBotRequest("".byteInputStream())
 }
