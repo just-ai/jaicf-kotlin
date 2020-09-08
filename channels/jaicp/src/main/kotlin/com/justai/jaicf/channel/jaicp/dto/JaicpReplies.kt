@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-@Polymorphic
 internal sealed class Reply(val type: String)
 
 @Serializable
