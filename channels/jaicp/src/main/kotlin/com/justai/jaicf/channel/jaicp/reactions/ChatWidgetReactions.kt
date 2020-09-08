@@ -16,33 +16,23 @@ class ChatWidgetReactions : JaicpReactions() {
         return createImageReaction(url)
     }
 
-    fun image(imageUrl: String, caption: String? = null) {
+    fun image(imageUrl: String, caption: String? = null): ImageReaction {
         replies.add(ImageReply(imageUrl, caption))
+        return createImageReaction(imageUrl)
     }
 
-    fun button(text: String, transition: String? = null) {
-        replies.add(
-            ButtonsReply(
-                Button(
-                    text,
-                    transition
-                )
-            )
-        )
+    fun button(text: String, transition: String? = null): ButtonsReaction {
+        replies.add(ButtonsReply(Button(text, transition)))
+        return createButtonsReaction(listOf(text))
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
-        replies.add(ButtonsReply(buttons.map { b ->
-            Button(b)
-        }))
+        replies.add(ButtonsReply(buttons.map { Button(it) }))
         return createButtonsReaction(*buttons)
     }
 
-    fun buttons(buttons: List<String>) {
-        replies.add(ButtonsReply(buttons.map { b ->
-            Button(
-                b
-            )
-        }))
+    fun buttons(buttons: List<String>): ButtonsReaction {
+        replies.add(ButtonsReply(buttons.map { Button(it) }))
+        return createButtonsReaction(buttons)
     }
 }

@@ -6,9 +6,9 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import java.io.ByteArrayInputStream
 import java.time.OffsetDateTime
 
-fun String.asHttpBotRequest(jaicpBotRequest: JaicpBotRequest) = HttpBotRequest(
+internal fun String.asHttpBotRequest(jaicpBotRequest: JaicpBotRequest) = HttpBotRequest(
     stream = ByteArrayInputStream(this.toByteArray()),
     jaicpRawRequest = JSON.stringify(JaicpBotRequest.serializer(), jaicpBotRequest)
 )
 
-fun OffsetDateTime.toEpochMillis() = toEpochSecond() * 1000
+internal fun OffsetDateTime.toEpochMillis() = toEpochSecond() * 1000
