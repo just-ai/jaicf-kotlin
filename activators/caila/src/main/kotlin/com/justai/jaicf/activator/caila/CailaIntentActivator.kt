@@ -12,6 +12,7 @@ import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
+import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotReactor
@@ -53,7 +54,11 @@ class CailaIntentActivator(
                 }
             }
             // Sort all predicted intents by context relevance
-            .sortedByDescending { botContext.dialogContext.currentState.commonPrefixWith(it.first) }
+            .sortedByDescending {
+                StatePath.parse(botContext.dialogContext.currentState)
+                    .stepUp().toString()
+                    .commonPrefixWith(it.first)
+            }
             .groupBy { it.first }
 
         // From most relevant by context take intent with maximum confidence.
