@@ -5,6 +5,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.helpers.logging.WithLogger
+import com.justai.jaicf.reactions.Reaction
 
 /**
  * Main abstraction for class, which will perform dialog logging to any service or console.
@@ -23,6 +24,11 @@ interface ConversationLogger {
 
     /**
      * Produces log to console or external consumer.
+     *
+     * @param activationContext current request's [ActivationContext]
+     * @param botContext a current user's [BotContext]
+     * @param request a current user's [BotRequest]
+     * @param loggingContext current request's [LoggingContext]
      * */
     fun produce(
         activationContext: ActivationContext?,
@@ -50,16 +56,20 @@ class ConsoleConversationLogger(
 ) : ConversationLogger,
     WithLogger {
 
-    /*
-    * Produces log to console.
-    * */
+    /**
+     * Produces log to console.
+     * @param activationContext current request's [ActivationContext]
+     * @param botContext a current user's [BotContext]
+     * @param request a current user's [BotRequest]
+     * @param loggingContext current request's [LoggingContext]
+     * */
     override fun produce(
         activationContext: ActivationContext?,
         botContext: BotContext,
         request: BotRequest,
         loggingContext: LoggingContext
     ) {
-        val input = getObfuscatedInput(activationContext, botContext, request, loggingContext)
+        val input = extractObfuscatedInput(activationContext, botContext, request, loggingContext)
         val reactions = getObfuscatedReactions(activationContext, botContext, request, loggingContext)
         logger.debug(
             """
@@ -71,14 +81,24 @@ class ConsoleConversationLogger(
     }
 }
 
-
-fun ConversationLogger.getObfuscatedInput(
+/**
+ * Extracts input in [BotRequest] and obfuscates it.
+ *
+ * @return obfuscated input from [BotRequest].
+ * */
+fun ConversationLogger.extractObfuscatedInput(
     activationContext: ActivationContext?,
     botContext: BotContext,
     request: BotRequest,
     loggingContext: LoggingContext
 ) = logObfuscator?.obfuscateInput(activationContext, botContext, request, loggingContext) ?: request.input
 
+
+/**
+ * Obfuscates content in [Reaction]s.
+ *
+ * @return list of reactions with obfuscated content (text, imageUrl, or others)
+ * */
 fun ConversationLogger.getObfuscatedReactions(
     activationContext: ActivationContext?,
     botContext: BotContext,

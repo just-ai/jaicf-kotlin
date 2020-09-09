@@ -7,7 +7,6 @@ import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.LogModel
-import com.justai.jaicf.channel.jaicp.dto.jaicp
 import com.justai.jaicf.channel.jaicp.dto.native
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
@@ -18,7 +17,7 @@ import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
-import com.justai.jaicf.logging.getObfuscatedInput
+import com.justai.jaicf.logging.extractObfuscatedInput
 import com.justai.jaicf.logging.getObfuscatedReactions
 import io.ktor.client.*
 import io.ktor.client.features.logging.*
@@ -29,7 +28,8 @@ import kotlinx.coroutines.launch
 /**
  * Implements [ConversationLogger] for JAICP Application Console.
  *
- * This logging works for any channels, which are connected by [JaicpPollingConnector] or [JaicpWebhookConnector].
+ * Any channel connected via [JaicpWebhookConnector] or [JaicpPollingConnector] will produce logs to JAICP.
+ * If [JaicpConversationLogger] is added to array of loggers, but [BotRequest] is not received from JAICP, nothing will happen.
  *
  * @see [JaicpPollingConnector]
  * @see [JaicpWebhookConnector]
@@ -69,15 +69,15 @@ class JaicpConversationLogger(
         loggingContext: LoggingContext,
         activationContext: ActivationContext?
     ) {
-        val jaicpBotRequest = request.native?.jaicp ?: getJaicpRequest(loggingContext)?.jaicp ?: return
-        val input = getObfuscatedInput(activationContext, botContext, request, loggingContext)
+        val jaicpBotRequest = request.native?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
+        val input = extractObfuscatedInput(activationContext, botContext, request, loggingContext)
         val reactions = getObfuscatedReactions(activationContext, botContext, request, loggingContext)
         val logModel = LogModel.fromRequest(jaicpBotRequest, reactions, activationContext, input)
 
         connector.processLogAsync(logModel)
     }
 
-    private fun getJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
+    private fun extractJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
         return try {
             loggingContext.httpBotRequest?.jaicpRawRequest?.run {
                 JSON.parse(JaicpBotRequest.serializer(), loggingContext.httpBotRequest?.jaicpRawRequest!!)
