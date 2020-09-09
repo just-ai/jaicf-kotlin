@@ -9,7 +9,6 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.*
 
@@ -34,7 +33,7 @@ internal class CailaSlotFillingHelper(
         }
 
         val actionContext =
-            ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions, mutableListOf(), LoggingContext())
+            ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions, mutableListOf())
 
         val filled = fillSlots(ctx, botRequest.input)
         for (slot in required) {

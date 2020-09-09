@@ -18,8 +18,7 @@ class ActionAdapter(
                     activationContext.activation.context,
                     request,
                     reactions,
-                    skippedActivators,
-                    loggingContext
+                    skippedActivators
                 )
             )
         }
