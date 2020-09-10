@@ -57,7 +57,7 @@ class CailaIntentActivator(
             .sortedByDescending {
                 var currentState = botContext.dialogContext.currentState
                 if (currentState == it.first) {
-                    currentState = StatePath.parse(currentState).stepUp().toString()
+                    currentState = StatePath.parse(currentState).parent
                 }
                 currentState.commonPrefixWith(it.first)
             }
