@@ -55,9 +55,11 @@ class CailaIntentActivator(
             }
             // Sort all predicted intents by context relevance
             .sortedByDescending {
-                StatePath.parse(botContext.dialogContext.currentState)
-                    .stepUp().toString()
-                    .commonPrefixWith(it.first)
+                var currentState = botContext.dialogContext.currentState
+                if (currentState == it.first) {
+                    currentState = StatePath.parse(currentState).stepUp().toString()
+                }
+                currentState.commonPrefixWith(it.first)
             }
             .groupBy { it.first }
 
