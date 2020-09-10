@@ -22,9 +22,9 @@ open class BaseEventActivator(model: ScenarioModel) : StateMapActivator(model), 
 
     override fun canHandle(request: BotRequest) = request.hasEvent()
 
-    override fun canHandleRule(rule: ActivationRule) = rule is EventActivationRule
+    override fun canMatchRule(rule: ActivationRule) = rule is EventActivationRule
 
-    override fun getRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
+    override fun provideActivationRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
         val event = request.input
         return object : ActivationRuleMatcher {
             override fun match(rule: ActivationRule) =

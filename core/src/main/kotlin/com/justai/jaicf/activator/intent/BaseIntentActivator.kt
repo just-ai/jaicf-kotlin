@@ -23,9 +23,9 @@ open class BaseIntentActivator(model: ScenarioModel): StateMapActivator(model), 
 
     override fun canHandle(request: BotRequest) = request.hasIntent()
 
-    override fun canHandleRule(rule: ActivationRule) = rule is IntentActivationRule
+    override fun canMatchRule(rule: ActivationRule) = rule is IntentActivationRule
 
-    override fun getRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher? {
+    override fun provideActivationRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher? {
         val contexts = recogniseIntent(botContext, request)
         return object : ActivationRuleMatcher {
             override fun match(rule: ActivationRule) =

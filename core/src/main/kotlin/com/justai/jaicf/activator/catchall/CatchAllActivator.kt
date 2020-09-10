@@ -38,9 +38,9 @@ class CatchAllActivator(model: ScenarioModel) : StateMapActivator(model) {
 
     override fun canHandle(request: BotRequest) = request.hasQuery() || request.hasIntent()
 
-    override fun canHandleRule(rule: ActivationRule) = rule is CatchAllActivationRule
+    override fun canMatchRule(rule: ActivationRule) = rule is CatchAllActivationRule
 
-    override fun getRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher? {
+    override fun provideActivationRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher? {
         return object : ActivationRuleMatcher {
             override fun match(rule: ActivationRule): CatchAllActivatorContext? {
                 return (rule as? CatchAllActivationRule)?.let { CatchAllActivatorContext() }

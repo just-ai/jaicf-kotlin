@@ -16,14 +16,10 @@ import com.justai.jaicf.model.transition.Transition
  */
 abstract class StateMapActivator(model: ScenarioModel): Activator {
 
-    private val transitions = model.transitions.filter { canHandleRule(it.rule) }.groupBy { it.fromState }
-
-    protected abstract fun canHandleRule(rule: ActivationRule): Boolean
-
-    protected abstract fun getRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher?
+    private val transitions = model.transitions.filter { canMatchRule(it.rule) }.groupBy { it.fromState }
 
     override fun activate(botContext: BotContext, request: BotRequest): Activation? {
-        val matcher = getRuleMatcher(botContext, request) ?: return null
+        val matcher = provideActivationRuleMatcher(botContext, request) ?: return null
         val transitions = generateTransitions(botContext)
 
         return transitions.mapNotNull { transition ->
@@ -31,11 +27,13 @@ abstract class StateMapActivator(model: ScenarioModel): Activator {
         }.firstOrNull()
     }
 
-    private fun generateTransitions(botContext: BotContext): Sequence<Transition> {
+    protected abstract fun canMatchRule(rule: ActivationRule): Boolean
+
+    protected abstract fun provideActivationRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher?
+
+    protected fun generateTransitions(botContext: BotContext): Sequence<Transition> {
         val currentState = StatePath.parse(botContext.dialogContext.currentContext).resolve(".")
         val states = generateSequence(currentState) { if (it.toString() == "/") null else it.stepUp() }
-        return states.flatMap {
-            transitions[it.toString()]?.asSequence() ?: emptySequence()
-        }
+        return states.flatMap { transitions[it.toString()]?.asSequence() ?: emptySequence() }
     }
 }

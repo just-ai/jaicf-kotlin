@@ -26,9 +26,9 @@ class RegexActivator(model: ScenarioModel) : StateMapActivator(model) {
 
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
-    override fun canHandleRule(rule: ActivationRule) = rule is RegexActivationRule
+    override fun canMatchRule(rule: ActivationRule) = rule is RegexActivationRule
 
-    override fun getRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher? {
+    override fun provideActivationRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher? {
         return object : ActivationRuleMatcher {
             override fun match(rule: ActivationRule): ActivatorContext? {
                 val regex = (rule as? RegexActivationRule)?.regex ?: return null
