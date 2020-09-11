@@ -1,13 +1,10 @@
 package com.justai.jaicf.activator.event
 
-import com.justai.jaicf.activator.ActivationRuleMatcher
-import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.activator.StateMapActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasEvent
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.ScenarioModel
 
 /**
@@ -18,28 +15,16 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  * @see StateMapActivator
  */
 open class BaseEventActivator(model: ScenarioModel) : StateMapActivator(model), EventActivator {
+
     override val name = "baseEventActivator"
 
     override fun canHandle(request: BotRequest) = request.hasEvent()
 
-    override fun canMatchRule(rule: ActivationRule) = rule is EventActivationRule
-
-    override fun provideActivationRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
-        val event = request.input
-        return object : ActivationRuleMatcher {
-            override fun match(rule: ActivationRule) =
-                if ((rule as? EventActivationRule)?.event == event) {
-                    EventActivatorContext(event)
-                } else {
-                    null
-                }
-        }
+    override fun provideRuleMatcher(botContext: BotContext, request: BotRequest) = ruleMatcher<EventActivationRule> {
+        if (it.event == request.input) EventActivatorContext(request.input) else null
     }
 
     companion object : ActivatorFactory {
-        override fun create(model: ScenarioModel): Activator {
-            return BaseEventActivator(model)
-        }
+        override fun create(model: ScenarioModel) = BaseEventActivator(model)
     }
-
 }

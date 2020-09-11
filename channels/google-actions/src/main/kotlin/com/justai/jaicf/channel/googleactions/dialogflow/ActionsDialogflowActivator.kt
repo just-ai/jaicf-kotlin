@@ -20,7 +20,6 @@ class ActionsDialogflowActivator(model: ScenarioModel): BaseIntentActivator(mode
     }
 
     companion object : ActivatorFactory {
-        override fun create(model: ScenarioModel) =
-            ActionsDialogflowActivator(model)
+        override fun create(model: ScenarioModel) = ActionsDialogflowActivator(model)
     }
 }
