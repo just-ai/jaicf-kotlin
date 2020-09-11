@@ -9,7 +9,7 @@ dependencies {
     implementation(kotlin("stdlib", Version.stdLib))
 
     api("com.fasterxml.jackson.module:jackson-module-kotlin" version {jackson})
-    api("org.jetbrains.kotlinx:kotlinx-serialization-runtime" version { sertializationRuntime })
+    api("org.jetbrains.kotlinx:kotlinx-serialization-runtime" version { serializationRuntime })
     api("io.ktor:ktor-client-cio" version { ktor })
     api("io.ktor:ktor-client-serialization-jvm" version { ktor })
 }
