@@ -10,7 +10,7 @@ object Version {
     const val jetty = "9.4.3.v20170317"
 
     const val ktor = "1.3.1"
-    const val sertializationRuntime = "0.14.0"
+    const val serializationRuntime = "0.14.0"
     const val coroutinesCore = "1.3.3"
     const val javaxServletApi = "3.0.1"
 }
