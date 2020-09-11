@@ -23,12 +23,32 @@ abstract class StateMapActivator(model: ScenarioModel) : Activator {
         val matcher = provideRuleMatcher(botContext, request)
         val transitions = generateTransitions(botContext)
 
-        val possibleTransitions = transitions.mapNotNull { transition ->
+        val activations = transitions.mapNotNull { transition ->
             matcher.match(transition.rule)?.let { Activation(transition.toState, it) }
-        }
+        }.toList()
 
-        // TODO: implement transition selection algorithm
-        return possibleTransitions.firstOrNull()
+        if (activations.isEmpty()) return null
+        return selectActivation(botContext, activations)
+    }
+
+    /**
+     * This method is used for selection the most relevant activation.
+     *
+     * Default implementation at first tries to select an activation with the greatest confidence from all children
+     * of the current state, then from all siblings (including current state),
+     * then from all siblings of the parent (including the parent), and so on.
+     *
+     * @param botContext a current user's [BotContext]
+     * @param activations list of all available activations
+     * @return the most relevant [Activation] in terms of certain implementation of [StateMapActivator]
+     *
+     * @see Activation
+     */
+    protected fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
+        val first = StatePath.parse(activations.first().state!!)
+        return activations.takeWhile {
+            StatePath.parse(it.state!!).parent == first.parent
+        }.maxBy { it.context.confidence }!!
     }
 
     /**
