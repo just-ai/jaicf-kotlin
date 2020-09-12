@@ -107,6 +107,7 @@ class BotEngine(
                 processStates(context)
                 saveContext(cm, botContext, request, reactions)
             }
+            botContext.cleanTempData()
         }
     }
 
