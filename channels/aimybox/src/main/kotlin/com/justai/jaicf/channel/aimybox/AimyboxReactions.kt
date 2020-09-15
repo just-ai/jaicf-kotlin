@@ -22,7 +22,7 @@ class AimyboxReactions(
             response.text = text
         }
 
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     fun question(question: Boolean) {
@@ -31,22 +31,22 @@ class AimyboxReactions(
 
     override fun audio(url: String): AudioReaction {
         addReply(AudioReply(url))
-        return createAudioReaction(url)
+        return AudioReaction.create(url)
     }
 
     override fun image(url: String): ImageReaction {
         addReply(ImageReply(url))
-        return createImageReaction(url)
+        return ImageReaction.create(url)
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons(*buttons.map { TextButton(it) }.toTypedArray())
-        return createButtonsReaction(*buttons)
+        return ButtonsReaction.create(buttons.asList())
     }
 
     fun buttons(vararg buttons: Button): ButtonsReaction {
         addReply(ButtonsReply(buttons.toList()))
-        return createButtonsReaction(buttons.map { it.text })
+        return ButtonsReaction.create(buttons.map { it.text })
     }
 
     fun endConversation() = question(false)

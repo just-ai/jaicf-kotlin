@@ -6,9 +6,7 @@ import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.ReplyMarkup
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
-import com.justai.jaicf.reactions.ImageReaction
-import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.reactions.SayReaction
+import com.justai.jaicf.reactions.*
 
 val Reactions.telegram
     get() = this as? TelegramReactions
@@ -16,13 +14,13 @@ val Reactions.telegram
 class TelegramReactions(
     val api: Bot,
     val request: TelegramBotRequest
-): Reactions() {
+) : Reactions() {
 
     val chatId = request.chatId
 
     override fun say(text: String): SayReaction {
         api.sendMessage(chatId, text)
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     fun say(text: String, inlineButtons: List<String>) = api.sendMessage(
@@ -30,7 +28,10 @@ class TelegramReactions(
         text,
         replyMarkup = InlineKeyboardMarkup(
             listOf(inlineButtons.map { InlineKeyboardButton(it, callbackData = it) })
-        )
+        ).also {
+            SayReaction.create(text)
+            ButtonsReaction.create(inlineButtons)
+        }
     )
 
     fun say(
@@ -40,7 +41,9 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = sendMessage(text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup)
+    ) = sendMessage(text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup).also {
+        SayReaction.create(text)
+    }
 
     fun sendMessage(
         text: String,
@@ -49,11 +52,21 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendMessage(chatId, text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendMessage(
+        chatId,
+        text,
+        parseMode,
+        disableWebPagePreview,
+        disableNotification,
+        replyToMessageId,
+        replyMarkup
+    ).also {
+        SayReaction.create(text)
+    }
 
     override fun image(url: String): ImageReaction {
         api.sendPhoto(chatId, url)
-        return createImageReaction(url)
+        return ImageReaction.create(url)
     }
 
     fun image(
@@ -63,7 +76,9 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = sendPhoto(url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
+    ) = sendPhoto(url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup).also {
+        ImageReaction.create(url)
+    }
 
     fun sendPhoto(
         url: String,
@@ -101,7 +116,9 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendAudio(chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendAudio(chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup).also {
+        AudioReaction.create(url)
+    }
 
     fun sendDocument(
         url: String,
@@ -122,7 +139,18 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVenue(chatId, latitude, longitude, title, address, foursquareId, foursquareType, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendVenue(
+        chatId,
+        latitude,
+        longitude,
+        title,
+        address,
+        foursquareId,
+        foursquareType,
+        disableNotification,
+        replyToMessageId,
+        replyMarkup
+    )
 
     fun sendContact(
         phoneNumber: String,

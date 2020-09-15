@@ -109,7 +109,7 @@ abstract class Reactions {
      *
      * @return [ImageReaction] for logging purposes
      */
-    open fun image(url: String): ImageReaction = createImageReaction(url)
+    open fun image(url: String): ImageReaction = ImageReaction(url, currentState)
 
     /**
      * Appends buttons to the response.
@@ -119,7 +119,7 @@ abstract class Reactions {
      *
      * @return [ButtonsReaction] for logging purposes
      */
-    open fun buttons(vararg buttons: String): ButtonsReaction = createButtonsReaction(*buttons)
+    open fun buttons(vararg buttons: String): ButtonsReaction = ButtonsReaction(buttons.asList(), currentState)
 
     /**
      * Appends audio to the response
@@ -129,20 +129,32 @@ abstract class Reactions {
      *
      * @return [AudioReaction] for logging purposes
      * */
-    open fun audio(url: String): AudioReaction = createAudioReaction(url)
+    open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
 
-    protected fun createAudioReaction(audioUrl: String) =
-        AudioReaction(audioUrl, botContext.dialogContext.currentState, loggingContext)
+    protected fun registerReaction(reaction: Reaction) {
+        loggingContext.reactions.add(reaction)
+    }
 
-    protected fun createSayReaction(text: String) =
-        SayReaction(text, botContext.dialogContext.currentState, loggingContext)
+    protected fun SayReaction.Companion.create(text: String) =
+        SayReaction(text, currentState).also {
+            registerReaction(it)
+        }
 
-    protected fun createImageReaction(url: String) =
-        ImageReaction(url, botContext.dialogContext.currentState, loggingContext)
+    protected fun ImageReaction.Companion.create(imageUrl: String) =
+        ImageReaction(imageUrl, currentState).also {
+            registerReaction(it)
+        }
 
-    protected fun createButtonsReaction(vararg buttons: String) =
-        ButtonsReaction(buttons.asList(), botContext.dialogContext.currentState, loggingContext)
+    protected fun AudioReaction.Companion.create(audioUrl: String) =
+        AudioReaction(audioUrl, currentState).also {
+            registerReaction(it)
+        }
 
-    protected fun createButtonsReaction(buttons: List<String>) =
-        ButtonsReaction(buttons, botContext.dialogContext.currentState, loggingContext)
+    protected fun ButtonsReaction.Companion.create(buttons: List<String>) =
+        ButtonsReaction(buttons, currentState).also {
+            registerReaction(it)
+        }
 }
+
+private val Reactions.currentState: String
+    get() = botContext.dialogContext.currentState

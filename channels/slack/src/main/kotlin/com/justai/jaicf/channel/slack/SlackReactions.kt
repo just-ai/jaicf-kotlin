@@ -14,6 +14,7 @@ import com.slack.api.model.block.ImageBlock
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.block.composition.PlainTextObject
 import com.slack.api.model.block.element.ButtonElement
+import java.awt.Button
 import java.util.*
 
 val Reactions.slack
@@ -48,7 +49,7 @@ class SlackReactions(
             is SayUtility -> context.say(text)
             is ActionRespondUtility -> context.respond(text)
         }
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     override fun image(url: String): ImageReaction {
@@ -58,17 +59,17 @@ class SlackReactions(
                 .altText(url)
                 .build()
         )
-        return createImageReaction(url)
+        return ImageReaction.create(url)
     }
 
     fun image(image: ImageBlock) = respond(listOf(image))
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons(*buttons.map { it to it }.toTypedArray())
-        return createButtonsReaction(*buttons)
+        return ButtonsReaction.create(buttons.asList())
     }
 
-    fun buttons(vararg buttons: Pair<String, String>) {
+    fun buttons(vararg buttons: Pair<String, String>): ButtonsReaction {
         respond(listOf(
             ActionsBlock.builder().elements(
                 buttons.map {
@@ -80,5 +81,7 @@ class SlackReactions(
                 }
             ).build()
         ))
+
+        return ButtonsReaction.create(buttons.map { it.first })
     }
 }

@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.helpers.kotlin.NoBackingFieldProperty
+import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
@@ -103,6 +103,6 @@ class SlackChannel private constructor(
     }
 }
 
-internal var Context.httpBotRequest: HttpBotRequest by NoBackingFieldProperty {
+internal var Context.httpBotRequest: HttpBotRequest by PropertyWithBackingField {
     HttpBotRequest("".byteInputStream())
 }

@@ -17,7 +17,7 @@ open class JaicpReactions : Reactions() {
 
     override fun say(text: String): SayReaction {
         replies.add(TextReply(text))
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     fun collect(): JsonObject {

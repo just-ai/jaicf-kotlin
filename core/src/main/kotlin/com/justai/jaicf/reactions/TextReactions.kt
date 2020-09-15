@@ -23,7 +23,7 @@ class TextReactions(
             response.text.isNullOrBlank() -> text
             else -> "${response.text}\n$text"
         }
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
 }

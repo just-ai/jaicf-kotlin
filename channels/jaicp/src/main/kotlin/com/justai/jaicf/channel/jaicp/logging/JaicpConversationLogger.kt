@@ -1,24 +1,20 @@
 package com.justai.jaicf.channel.jaicp.logging
 
 
-import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.LogModel
-import com.justai.jaicf.channel.jaicp.dto.native
+import com.justai.jaicf.channel.jaicp.dto.jaicpNative
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
 import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
-import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
-import com.justai.jaicf.logging.extractObfuscatedInput
-import com.justai.jaicf.logging.getObfuscatedReactions
 import io.ktor.client.*
 import io.ktor.client.features.logging.*
 import kotlinx.coroutines.CoroutineScope
@@ -37,50 +33,42 @@ import kotlinx.coroutines.launch
  * */
 class JaicpConversationLogger(
     accessToken: String,
-    override val logObfuscator: ConversationLogObfuscator? = null,
+    logObfuscators: List<ConversationLogObfuscator> = emptyList(),
     url: String = DEFAULT_PROXY_URL,
     logLevel: LogLevel = LogLevel.INFO,
     httpClient: HttpClient? = null
-) : ConversationLogger,
+) : ConversationLogger(logObfuscators),
     WithLogger,
     CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
-    private val client = httpClient ?: HttpClientFactory.withLogLevel(logLevel)
+    private val client = httpClient ?: HttpClientFactory.create(logLevel)
     private val connector = ChatAdapterConnector(accessToken, url, client)
 
-    override fun produce(
-        activationContext: ActivationContext?,
-        botContext: BotContext,
-        request: BotRequest,
-        loggingContext: LoggingContext
-    ) {
+    override fun doLog(loggingContext: LoggingContext) {
         try {
             launch {
-                produceInternal(request, botContext, loggingContext, activationContext)
+                doLogAsync(loggingContext)
             }
         } catch (e: Exception) {
             logger.debug("Failed to produce JAICP LogRequest: ", e)
         }
     }
 
-    private suspend fun produceInternal(
-        request: BotRequest,
-        botContext: BotContext,
-        loggingContext: LoggingContext,
-        activationContext: ActivationContext?
-    ) {
-        val jaicpBotRequest = request.native?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
-        val input = extractObfuscatedInput(activationContext, botContext, request, loggingContext)
-        val reactions = getObfuscatedReactions(activationContext, botContext, request, loggingContext)
-        val logModel = LogModel.fromRequest(jaicpBotRequest, reactions, activationContext, input)
-
+    private suspend fun doLogAsync(loggingContext: LoggingContext) {
+        val jaicpBotRequest = loggingContext.request.jaicpNative?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
+        val logModel = LogModel.fromRequest(
+            jaicpBotRequest,
+            loggingContext.reactions,
+            loggingContext.activationContext,
+            loggingContext.input
+        )
         connector.processLogAsync(logModel)
     }
 
     private fun extractJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
         return try {
-            loggingContext.httpBotRequest?.jaicpRawRequest?.run {
-                JSON.parse(JaicpBotRequest.serializer(), loggingContext.httpBotRequest?.jaicpRawRequest!!)
+            loggingContext.httpBotRequest?.requestMetadata?.run {
+                JSON.parse(JaicpBotRequest.serializer(), loggingContext.httpBotRequest?.requestMetadata!!)
             }
         } catch (e: Exception) {
             return null

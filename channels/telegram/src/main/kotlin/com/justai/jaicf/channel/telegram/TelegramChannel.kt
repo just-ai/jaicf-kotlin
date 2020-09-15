@@ -12,7 +12,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.helpers.kotlin.NoBackingFieldProperty
+import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import okhttp3.logging.HttpLoggingInterceptor
 
 class TelegramChannel(
@@ -86,6 +86,6 @@ class TelegramChannel(
     }
 }
 
-internal var Update.httpBotRequest: HttpBotRequest by NoBackingFieldProperty {
+internal var Update.httpBotRequest: HttpBotRequest by PropertyWithBackingField {
     HttpBotRequest("".byteInputStream())
 }

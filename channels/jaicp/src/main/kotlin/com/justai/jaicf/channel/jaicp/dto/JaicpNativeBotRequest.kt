@@ -39,5 +39,5 @@ val BotRequest.chatwidget
 internal val BotRequest.jaicp
     get() = this as? JaicpBotRequest
 
-internal val BotRequest.native
+internal val BotRequest.jaicpNative
     get() = this as? JaicpNativeBotRequest

@@ -1,27 +1,27 @@
 package com.justai.jaicf.reactions
 
-import com.justai.jaicf.context.LoggingContext
-
 /**
  * Abstraction for result of performing some reaction.
  *
+ * @property fromState - state which invoked reaction
+ *
  * @see Reactions
  * */
-interface Reaction
+abstract class Reaction(
+    open val fromState: String
+)
 
 /**
  * Result of performing reactions.say()
  * */
 data class SayReaction internal constructor(
-    var text: String,
-    val state: String,
-    val loggingContext: LoggingContext
-) : Reaction {
-    init {
-        loggingContext.reactions.add(this)
-    }
+    val text: String,
+    override val fromState: String
+) : Reaction(fromState) {
 
-    override fun toString(): String = """answer "$text" from state $state"""
+    override fun toString(): String = """answer "$text" from state $fromState"""
+
+    companion object
 }
 
 /**
@@ -29,14 +29,12 @@ data class SayReaction internal constructor(
  * */
 data class ImageReaction internal constructor(
     val imageUrl: String,
-    val state: String,
-    val loggingContext: LoggingContext
-) : Reaction {
-    init {
-        loggingContext.reactions.add(this)
-    }
+    override val fromState: String
+) : Reaction(fromState) {
 
-    override fun toString(): String = "imageUrl $imageUrl from state $state"
+    override fun toString(): String = "imageUrl $imageUrl from state $fromState"
+
+    companion object
 }
 
 /**
@@ -44,14 +42,12 @@ data class ImageReaction internal constructor(
  * */
 data class ButtonsReaction internal constructor(
     val buttons: List<String>,
-    val state: String,
-    val loggingContext: LoggingContext
-) : Reaction {
-    init {
-        loggingContext.reactions.add(this)
-    }
+    override val fromState: String
+) : Reaction(fromState) {
 
-    override fun toString(): String = "buttons $buttons from state $state"
+    override fun toString(): String = "buttons $buttons from state $fromState"
+
+    companion object
 }
 
 /**
@@ -59,14 +55,12 @@ data class ButtonsReaction internal constructor(
  * */
 data class GoReaction internal constructor(
     val transition: String,
-    val state: String,
-    val loggingContext: LoggingContext
-) : Reaction {
-    init {
-        loggingContext.reactions.add(this)
-    }
+    override val fromState: String
+) : Reaction(fromState) {
 
-    override fun toString(): String = "transition from state $state to state $transition"
+    override fun toString(): String = "transition from state $fromState to state $transition"
+
+    companion object
 }
 
 /**
@@ -74,12 +68,10 @@ data class GoReaction internal constructor(
  * */
 data class AudioReaction internal constructor(
     val audioUrl: String,
-    val state: String,
-    val loggingContext: LoggingContext
-) : Reaction {
-    init {
-        loggingContext.reactions.add(this)
-    }
+    override val fromState: String
+) : Reaction(fromState) {
 
-    override fun toString(): String = "audio $audioUrl from state $state"
+    override fun toString(): String = "audio $audioUrl from state $fromState"
+
+    companion object
 }

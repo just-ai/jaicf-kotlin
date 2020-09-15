@@ -2,7 +2,6 @@ package com.justai.jaicf.activator.caila
 
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.logging.ConversationLogObfuscator
 
@@ -24,25 +23,13 @@ class CailaNamedEntityLogObfuscator private constructor(
      * */
     constructor(entities: List<String>) : this(false, entities)
 
-    override fun obfuscateInput(
-        activationContext: ActivationContext?,
-        botContext: BotContext,
-        request: BotRequest,
-        loggingContext: LoggingContext
-    ): String {
-        var out = request.input
-        getEntityTexts(activationContext).forEach { (text, entityName) ->
+    override fun obfuscateInput(loggingContext: LoggingContext): String {
+        var out = loggingContext.request.input
+        getEntityTexts(loggingContext.activationContext).forEach { (text, entityName) ->
             out = out.replace(text, entityName)
         }
         return out
     }
-
-    override fun obfuscateReactions(
-        activationContext: ActivationContext?,
-        botContext: BotContext,
-        request: BotRequest,
-        loggingContext: LoggingContext
-    ) = loggingContext.reactions
 
     private fun getEntityTexts(activationContext: ActivationContext?): Map<String, String> {
         val nerEntities = activationContext?.activation?.context?.caila?.entities ?: return mapOf()
