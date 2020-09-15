@@ -44,7 +44,7 @@ abstract class StateMapActivator(model: ScenarioModel) : Activator {
      *
      * @see Activation
      */
-    protected fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
+    protected open fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
         val first = StatePath.parse(activations.first().state!!)
         return activations.takeWhile {
             StatePath.parse(it.state!!).parent == first.parent
