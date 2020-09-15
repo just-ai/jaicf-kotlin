@@ -53,8 +53,15 @@ data class BotContext(
      * Cleans the session-scoped data: [result], [temp] and [session]
      */
     fun cleanSessionData() {
+        cleanTempData()
         result = null
-        temp.clear()
         session.clear()
+    }
+
+    /**
+     * Cleans the request-scoped data: [temp]
+     */
+    fun cleanTempData() {
+        temp.clear()
     }
 }
