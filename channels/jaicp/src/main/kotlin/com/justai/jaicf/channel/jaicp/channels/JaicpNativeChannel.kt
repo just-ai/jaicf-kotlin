@@ -10,11 +10,10 @@ import com.justai.jaicf.channel.jaicp.deserialized
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
-import com.justai.jaicf.channel.jaicp.logging.toEpochMillis
 import com.justai.jaicf.channel.jaicp.reactions.JaicpReactions
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.logging.WithLogger
-import java.time.OffsetDateTime
+import kotlin.system.measureTimeMillis
 
 
 abstract class JaicpNativeChannel(
@@ -31,15 +30,12 @@ abstract class JaicpNativeChannel(
     }
 
     override fun process(request: JaicpBotRequest): JaicpBotResponse {
-        val start = OffsetDateTime.now().toEpochMillis()
-
-        val channelRequest = createRequest(request)
-        logger.debug("Processing query: ${request.query} or event: ${request.event}")
-
         val reactions = createReactions()
-        botApi.process(channelRequest, reactions, RequestContext.DEFAULT)
-
-        val executionTime = OffsetDateTime.now().toEpochMillis() - start
+        val executionTime = measureTimeMillis {
+            val channelRequest = createRequest(request)
+            logger.debug("Processing query: ${request.query} or event: ${request.event}")
+            botApi.process(channelRequest, reactions, RequestContext.DEFAULT)
+        }
         return answer(reactions, request, reactions.getCurrentState(), executionTime)
     }
 

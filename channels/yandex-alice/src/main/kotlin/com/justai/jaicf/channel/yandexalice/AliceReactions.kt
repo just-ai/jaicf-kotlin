@@ -24,7 +24,7 @@ class AliceReactions(
 
     override fun say(text: String): SayReaction {
         say(text, text)
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     fun say(text: String, tts: String) {
@@ -34,23 +34,23 @@ class AliceReactions(
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons.forEach { buttons(Button(it, hide = true)) }
-        return createButtonsReaction(*buttons)
+        return ButtonsReaction.create(buttons.asList())
     }
 
     fun link(title: String, url: String) = buttons(Button(title, url = url))
 
-    fun links(vararg links: Pair<String, String>)
-            = links.forEach { link(it.first, it.second) }
+    fun links(vararg links: Pair<String, String>) = links.forEach { link(it.first, it.second) }
 
     fun buttons(vararg buttons: Button) = builder.buttons.addAll(buttons)
 
     override fun image(url: String): ImageReaction {
         builder.card = Image(requireNotNull(api).getImageId(url))
-        return createImageReaction(url)
+        return ImageReaction.create(url)
     }
 
     fun image(image: Image) {
         builder.card = image
+        ImageReaction.create(image.imageId)
     }
 
     fun image(
@@ -58,14 +58,16 @@ class AliceReactions(
         title: String? = null,
         description: String? = null,
         button: Button? = null
-    ) = Image(requireNotNull(api).getImageId(url), title, description, button).also { builder.card = it }
+    ) = Image(requireNotNull(api).getImageId(url), title, description, button).also { builder.card = it }.also {
+        ImageReaction.create(url)
+    }
 
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
 
     override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
-        return createAudioReaction(id)
+        return AudioReaction.create(id)
     }
 
     fun endSession() {

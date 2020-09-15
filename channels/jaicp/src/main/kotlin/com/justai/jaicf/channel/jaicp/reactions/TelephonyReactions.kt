@@ -14,7 +14,7 @@ val Reactions.telephony
 class TelephonyReactions : JaicpReactions() {
     override fun audio(url: String): AudioReaction {
         replies.add(AudioReply(url.toUrl()))
-        return createAudioReaction(url)
+        return AudioReaction.create(url)
     }
 
     fun hangup() {

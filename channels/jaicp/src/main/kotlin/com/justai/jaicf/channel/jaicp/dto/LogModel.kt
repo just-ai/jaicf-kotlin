@@ -6,14 +6,11 @@ import com.justai.jaicf.activator.event.EventActivatorContext
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.logging.toEpochMillis
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.reactions.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import java.time.OffsetDateTime
-import java.time.ZoneId
 
 
 @Serializable
@@ -43,7 +40,7 @@ internal class LogModel private constructor(
     ) {
         companion object Factory {
             fun fromActivation(activationContext: ActivationContext?) = NlpInfo(
-                nlpClass = activationContext?.activation?.state,
+                nlpClass = activationContext?.activation?.toState,
                 ruleType = activationContext?.activator?.name,
                 rule = when (val ctx = activationContext?.activation?.context) {
                     is RegexActivatorContext -> ctx.pattern.pattern()
@@ -125,18 +122,18 @@ internal class LogModel private constructor(
 
             private fun buildReplies(reactions: List<Reaction>): List<JsonElement?> = reactions.mapNotNull { r ->
                 when (r) {
-                    is SayReaction -> JSON.toJson(TextReply.serializer(), TextReply(text = r.text, state = r.state))
+                    is SayReaction -> JSON.toJson(TextReply.serializer(), TextReply(text = r.text, state = r.fromState))
                     is ImageReaction -> JSON.toJson(
                         ImageReply.serializer(),
-                        ImageReply(imageUrl = r.imageUrl, state = r.state)
+                        ImageReply(imageUrl = r.imageUrl, state = r.fromState)
                     )
                     is AudioReaction -> JSON.toJson(
                         AudioReply.serializer(),
-                        AudioReply(audioUrl = r.audioUrl, state = r.state)
+                        AudioReply(audioUrl = r.audioUrl, state = r.fromState)
                     )
                     is ButtonsReaction -> JSON.toJson(
                         ButtonsReply.serializer(),
-                        ButtonsReply(buttons = r.buttons.map { Button(it) }, state = r.state)
+                        ButtonsReply(buttons = r.buttons.map { Button(it) }, state = r.fromState)
                     )
                     else -> null
                 }
@@ -151,7 +148,7 @@ internal class LogModel private constructor(
             activationContext: ActivationContext?,
             input: String
         ): LogModel {
-            val currentTimeUTC = OffsetDateTime.now(ZoneId.of("UTC")).toEpochMillis()
+            val currentTimeUTC = System.currentTimeMillis()
             val request = Request.fromRequest(jaicpBotRequest, input)
             val user = User.fromRequest(jaicpBotRequest)
             val nlp = NlpInfo.fromActivation(activationContext)

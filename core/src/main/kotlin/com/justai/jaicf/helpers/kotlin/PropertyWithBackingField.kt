@@ -3,7 +3,7 @@ package com.justai.jaicf.helpers.kotlin
 import com.github.h0tk3y.kotlinFun.util.WeakIdentityHashMap
 import kotlin.reflect.KProperty
 
-class NoBackingFieldProperty<R, T : Any>(
+class PropertyWithBackingField<R, T : Any>(
     val initializer: (R) -> T = { throw IllegalStateException("Not initialized.") }
 ) {
     private val map = WeakIdentityHashMap<R, T>()

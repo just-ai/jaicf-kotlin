@@ -38,7 +38,7 @@ class AlexaReactions(
             .withSpeech(speech)
             .withReprompt(speech)
 
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     fun playAudio(
@@ -81,7 +81,7 @@ class AlexaReactions(
             .addDirective(playDirective)
             .withShouldEndSession(true)
 
-        return createAudioReaction(url)
+        return AudioReaction.create(url)
     }
 
     fun stopAudioPlayer() {

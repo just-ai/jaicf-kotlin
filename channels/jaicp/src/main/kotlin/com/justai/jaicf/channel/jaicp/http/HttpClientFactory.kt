@@ -7,7 +7,7 @@ import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 
 internal object HttpClientFactory {
-    fun withLogLevel(logLevel: LogLevel) = HttpClient(CIO) {
+    fun create(logLevel: LogLevel) = HttpClient(CIO) {
         expectSuccess = true
         engine {
             endpoint {

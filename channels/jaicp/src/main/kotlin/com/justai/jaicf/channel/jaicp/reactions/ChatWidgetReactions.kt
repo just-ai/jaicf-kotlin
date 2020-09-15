@@ -13,26 +13,26 @@ val Reactions.chatwidget
 class ChatWidgetReactions : JaicpReactions() {
     override fun image(url: String): ImageReaction {
         replies.add(ImageReply(url))
-        return createImageReaction(url)
+        return ImageReaction.create(url)
     }
 
     fun image(imageUrl: String, caption: String? = null): ImageReaction {
         replies.add(ImageReply(imageUrl, caption))
-        return createImageReaction(imageUrl)
+        return ImageReaction.create(imageUrl)
     }
 
     fun button(text: String, transition: String? = null): ButtonsReaction {
         replies.add(ButtonsReply(Button(text, transition)))
-        return createButtonsReaction(listOf(text))
+        return ButtonsReaction.create(listOf(text))
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         replies.add(ButtonsReply(buttons.map { Button(it) }))
-        return createButtonsReaction(*buttons)
+        return ButtonsReaction.create(buttons.asList())
     }
 
     fun buttons(buttons: List<String>): ButtonsReaction {
         replies.add(ButtonsReply(buttons.map { Button(it) }))
-        return createButtonsReaction(buttons)
+        return ButtonsReaction.create(buttons)
     }
 }

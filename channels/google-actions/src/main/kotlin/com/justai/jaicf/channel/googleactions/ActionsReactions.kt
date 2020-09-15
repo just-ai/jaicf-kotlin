@@ -31,7 +31,7 @@ class ActionsReactions(
 
     override fun say(text: String): SayReaction {
         addSimpleResponse(clean(text), text)
-        return createSayReaction(text)
+        return SayReaction.create(text)
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
@@ -40,13 +40,13 @@ class ActionsReactions(
                 it.title = title
             })
         }
-        return createButtonsReaction(buttons.asList())
+        return ButtonsReaction.create(buttons.asList())
     }
 
     override fun image(url: String): ImageReaction {
         response.builder.add(Image().setUrl(url))
         simpleResponse = null
-        return createImageReaction(url)
+        return ImageReaction.create(url)
     }
 
     fun endConversation() = response.builder.endConversation()

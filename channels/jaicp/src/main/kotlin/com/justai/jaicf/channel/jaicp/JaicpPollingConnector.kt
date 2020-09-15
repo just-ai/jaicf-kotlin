@@ -38,7 +38,7 @@ class JaicpPollingConnector(
 ) : JaicpConnector,
     WithLogger {
 
-    private val client = httpClient ?: HttpClientFactory.withLogLevel(logLevel)
+    private val client = httpClient ?: HttpClientFactory.create(logLevel)
 
     private val dispatcher = Dispatcher(proxyUrl, client)
     private val chatAdapterClient = ChatAdapterConnector(accessToken, url, client)
