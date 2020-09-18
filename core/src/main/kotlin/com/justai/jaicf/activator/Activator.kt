@@ -1,5 +1,9 @@
 package com.justai.jaicf.activator
 
+import com.justai.jaicf.activator.catchall.CatchAllActivator
+import com.justai.jaicf.activator.event.BaseEventActivator
+import com.justai.jaicf.activator.intent.BaseIntentActivator
+import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
@@ -16,11 +20,12 @@ import com.justai.jaicf.slotfilling.SlotReactor
  * It also returns an [com.justai.jaicf.context.ActivatorContext] instance that contains all activator-related properties (like recognised named entities) that is available in the action block of scenario through the [com.justai.jaicf.context.ActionContext].
  *
  * This abstraction is used by different NLU engine implementations.
- * There are some built-in activators available in SDK: CatchAllActivator, RegexActivator, BaseEventActivator and BaseIntentActivator.
+ * There are some built-in activators available in SDK: [CatchAllActivator], [RegexActivator], [BaseEventActivator] and [BaseIntentActivator].
  * SDK modules also contains a third-party activators like CailaActivator, DialogflowActivator, RasaActivator, AlexaActivator and others.
  *
  * @see com.justai.jaicf.context.ActivatorContext
  * @see com.justai.jaicf.context.ActionContext
+ * @see com.justai.jaicf.activator.BaseActivator
  * @see com.justai.jaicf.activator.catchall.CatchAllActivator
  * @see com.justai.jaicf.activator.event.EventActivator
  * @see com.justai.jaicf.activator.regex.RegexActivator

@@ -10,12 +10,13 @@ import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 
 /**
- * A helper abstraction for every [Activator] that should activate a state if it contains a particular rule like event or intent.
+ * A base abstraction for every [Activator] that should activate a state if it contains a particular rule like event or intent.
  *
+ * @see ActivationRule
  * @see com.justai.jaicf.activator.event.BaseEventActivator
  * @see com.justai.jaicf.activator.intent.BaseIntentActivator
  */
-abstract class StateMapActivator(model: ScenarioModel) : Activator {
+abstract class BaseActivator(model: ScenarioModel) : Activator {
 
     private val transitions = model.transitions.groupBy { it.fromState }
 
@@ -40,7 +41,7 @@ abstract class StateMapActivator(model: ScenarioModel) : Activator {
      *
      * @param botContext a current user's [BotContext]
      * @param activations list of all available activations
-     * @return the most relevant [Activation] in terms of certain implementation of [StateMapActivator]
+     * @return the most relevant [Activation] in terms of certain implementation of [BaseActivator]
      *
      * @see Activation
      */
@@ -52,7 +53,7 @@ abstract class StateMapActivator(model: ScenarioModel) : Activator {
     }
 
     /**
-     * Every custom [StateMapActivator] implementation must provide [ActivationRuleMatcher] object on each [BotRequest].
+     * Every custom [BaseActivator] implementation must provide [ActivationRuleMatcher] object on each [BotRequest].
      *
      * This method will be called once on each [BotRequest], and [ActivationRuleMatcher.match] method of a provided
      * matcher will be called multiple times with different activation rules, so you should perform all stateful
@@ -63,7 +64,7 @@ abstract class StateMapActivator(model: ScenarioModel) : Activator {
      * @return [ActivationRuleMatcher] to determine transitions that can be made from current context by this request.
      *
      * @see ActivationRuleMatcher
-     * @see StateMapActivator.activate
+     * @see BaseActivator.activate
      */
     protected abstract fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher
 

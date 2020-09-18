@@ -9,8 +9,8 @@ import com.justai.jaicf.model.activation.ActivationRule
  * Every transition in scenario graph has its own [ActivationRule], so [ActivationRuleMatcher] must determine
  * either it can activate certain transition and provide corresponding non-null [ActivatorContext] or it can't.
  *
- * @see [StateMapActivator.provideRuleMatcher]
- * @see [StateMapActivator.ruleMatcher]
+ * @see [BaseActivator.provideRuleMatcher]
+ * @see [BaseActivator.ruleMatcher]
  */
 interface ActivationRuleMatcher {
     /**

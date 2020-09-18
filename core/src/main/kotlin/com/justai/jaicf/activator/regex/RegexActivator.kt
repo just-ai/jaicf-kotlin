@@ -1,7 +1,7 @@
 package com.justai.jaicf.activator.regex
 
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.StateMapActivator
+import com.justai.jaicf.activator.BaseActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
@@ -16,7 +16,7 @@ import java.util.regex.Pattern
  *
  * @param model dialogue scenario model
  */
-class RegexActivator(model: ScenarioModel) : StateMapActivator(model) {
+class RegexActivator(model: ScenarioModel) : BaseActivator(model) {
 
     override val name = "regexActivator"
 

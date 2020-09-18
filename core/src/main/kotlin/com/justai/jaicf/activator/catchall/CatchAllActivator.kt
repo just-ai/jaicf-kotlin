@@ -1,7 +1,7 @@
 package com.justai.jaicf.activator.catchall
 
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.StateMapActivator
+import com.justai.jaicf.activator.BaseActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasIntent
 import com.justai.jaicf.api.hasQuery
@@ -29,7 +29,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  *
  * @see CatchAllActivatorContext
  */
-class CatchAllActivator(model: ScenarioModel) : StateMapActivator(model) {
+class CatchAllActivator(model: ScenarioModel) : BaseActivator(model) {
 
     override val name = "catchAllActivator"
 

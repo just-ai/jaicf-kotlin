@@ -1,7 +1,7 @@
 package com.justai.jaicf.activator.event
 
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.StateMapActivator
+import com.justai.jaicf.activator.BaseActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasEvent
 import com.justai.jaicf.context.BotContext
@@ -12,9 +12,9 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  * Handles event requests and activates a state if it contains an event with name that equals to the request's input.
  *
  * @param model dialogue scenario model
- * @see StateMapActivator
+ * @see BaseActivator
  */
-open class BaseEventActivator(model: ScenarioModel) : StateMapActivator(model), EventActivator {
+open class BaseEventActivator(model: ScenarioModel) : BaseActivator(model), EventActivator {
 
     override val name = "baseEventActivator"
 
