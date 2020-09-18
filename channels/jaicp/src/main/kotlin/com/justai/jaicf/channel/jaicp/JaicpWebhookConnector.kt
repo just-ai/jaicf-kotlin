@@ -1,13 +1,10 @@
 package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.http.HttpBotChannel
-import com.justai.jaicf.channel.http.HttpBotRequest
-import com.justai.jaicf.channel.http.HttpBotResponse
-import com.justai.jaicf.channel.http.asJsonHttpBotResponse
+import com.justai.jaicf.channel.http.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
-import com.justai.jaicf.channel.jaicp.logging.asHttpBotRequest
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.helpers.logging.WithLogger
 
 
@@ -67,9 +64,8 @@ class JaicpWebhookConnector(
         return when (val channel = channelMap[botRequest.channelType]) {
             is JaicpNativeBotChannel -> channel.process(botRequest).deserialized().asJsonHttpBotResponse()
             is JaicpCompatibleBotChannel -> channel.processCompatible(botRequest).deserialized().asJsonHttpBotResponse()
-            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.rawRequest.toString().asHttpBotRequest(botRequest))
+            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.rawRequest.toString().asHttpBotRequest(request.receiveText()))
             else -> throw RuntimeException("Channel ${botRequest.channelType} is not configured or not supported")
         }
     }
-
 }

@@ -6,6 +6,10 @@ import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
 import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.ReplyMarkup
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.*
 
 val Reactions.telegram
@@ -18,9 +22,9 @@ class TelegramReactions(
 
     val chatId = request.chatId
 
-    override fun say(text: String): SayReaction {
+    override fun say(text: String) {
         api.sendMessage(chatId, text)
-        return SayReaction.create(text)
+        SayReaction.register(text)
     }
 
     fun say(text: String, inlineButtons: List<String>) = api.sendMessage(
@@ -29,8 +33,8 @@ class TelegramReactions(
         replyMarkup = InlineKeyboardMarkup(
             listOf(inlineButtons.map { InlineKeyboardButton(it, callbackData = it) })
         ).also {
-            SayReaction.create(text)
-            ButtonsReaction.create(inlineButtons)
+            SayReaction.register(text)
+            ButtonsReaction.register(inlineButtons)
         }
     )
 
@@ -42,7 +46,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = sendMessage(text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup).also {
-        SayReaction.create(text)
+        SayReaction.register(text)
     }
 
     fun sendMessage(
@@ -61,12 +65,12 @@ class TelegramReactions(
         replyToMessageId,
         replyMarkup
     ).also {
-        SayReaction.create(text)
+        SayReaction.register(text)
     }
 
-    override fun image(url: String): ImageReaction {
+    override fun image(url: String) {
         api.sendPhoto(chatId, url)
-        return ImageReaction.create(url)
+        ImageReaction.register(url)
     }
 
     fun image(
@@ -77,7 +81,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = sendPhoto(url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup).also {
-        ImageReaction.create(url)
+        ImageReaction.register(url)
     }
 
     fun sendPhoto(
@@ -87,7 +91,9 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendPhoto(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendPhoto(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup).also {
+        ImageReaction.register(url)
+    }
 
     fun sendVideo(
         url: String,
@@ -117,7 +123,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendAudio(chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup).also {
-        AudioReaction.create(url)
+        AudioReaction.register(url)
     }
 
     fun sendDocument(

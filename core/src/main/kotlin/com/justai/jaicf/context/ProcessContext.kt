@@ -2,6 +2,7 @@ package com.justai.jaicf.context
 
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.reactions.Reactions
 
 /**

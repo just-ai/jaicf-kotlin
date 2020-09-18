@@ -7,10 +7,10 @@ import com.amazon.ask.model.services.DefaultApiConfiguration
 import com.amazon.ask.model.services.directive.*
 import com.amazon.ask.services.ApacheHttpApiClient
 import com.amazon.ask.util.JacksonSerializer
-import com.justai.jaicf.reactions.AudioReaction
+import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
-import com.justai.jaicf.reactions.SayReaction
+import com.justai.jaicf.logging.SayReaction
 
 val Reactions.alexa
     get() = this as? AlexaReactions
@@ -31,14 +31,14 @@ class AlexaReactions(
             .build()
     )
 
-    override fun say(text: String): SayReaction {
+    override fun say(text: String) {
         speeches.add(text)
         val speech = speeches.joinToString(" ")
         response.builder
             .withSpeech(speech)
             .withReprompt(speech)
 
-        return SayReaction.create(text)
+        SayReaction.register(text)
     }
 
     fun playAudio(
@@ -51,7 +51,7 @@ class AlexaReactions(
         background: Image? = null,
         title: String? = null,
         subtitle: String? = null
-    ): AudioReaction {
+    ) {
 
         val stream = Stream.builder()
             .withOffsetInMilliseconds(offsetInMillis)
@@ -81,7 +81,7 @@ class AlexaReactions(
             .addDirective(playDirective)
             .withShouldEndSession(true)
 
-        return AudioReaction.create(url)
+        AudioReaction.register(url)
     }
 
     fun stopAudioPlayer() {

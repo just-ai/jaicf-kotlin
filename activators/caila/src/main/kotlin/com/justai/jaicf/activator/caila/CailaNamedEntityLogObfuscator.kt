@@ -2,26 +2,25 @@ package com.justai.jaicf.activator.caila
 
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.context.LoggingContext
+import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.ConversationLogObfuscator
 
 /**
  * Hides named entities in client [BotRequest] text and uses [CailaIntentActivator] for named entity recognition.
  * */
 class CailaNamedEntityLogObfuscator private constructor(
-    private val hideAll: Boolean = true,
-    private val entityNames: List<String> = emptyList()
+    private val predicate: (String) -> Boolean
 ) : ConversationLogObfuscator {
 
     /**
      * Default constructor, which hides all named entities
      * */
-    constructor() : this(true, emptyList())
+    constructor() : this({ true })
 
     /**
      * Constructor to hide only entities with specified names
      * */
-    constructor(entities: List<String>) : this(false, entities)
+    constructor(entities: List<String>) : this({ it in entities })
 
     override fun obfuscateInput(loggingContext: LoggingContext): String {
         var out = loggingContext.request.input
@@ -31,11 +30,8 @@ class CailaNamedEntityLogObfuscator private constructor(
         return out
     }
 
-    private fun getEntityTexts(activationContext: ActivationContext?): Map<String, String> {
-        val nerEntities = activationContext?.activation?.context?.caila?.entities ?: return mapOf()
-        return when (hideAll) {
-            true -> nerEntities.map { it.text to it.entity }.toMap()
-            false -> nerEntities.filter { it.entity in entityNames }.map { it.text to it.entity }.toMap()
-        }
-    }
+    private fun getEntityTexts(activationContext: ActivationContext?) =
+        activationContext?.activation?.context?.caila?.entities
+            ?.filter { predicate(it.entity) }
+            ?.map { it.text to it.entity }?.toMap() ?: mapOf()
 }

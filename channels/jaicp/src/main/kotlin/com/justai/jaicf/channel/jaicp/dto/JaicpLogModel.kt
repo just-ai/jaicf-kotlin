@@ -1,20 +1,19 @@
 package com.justai.jaicf.channel.jaicp.dto
 
-import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.activator.catchall.CatchAllActivatorContext
 import com.justai.jaicf.activator.event.EventActivatorContext
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.context.StrictActivatorContext
-import com.justai.jaicf.reactions.*
+import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 
 @Serializable
-internal class LogModel private constructor(
+internal class JaicpLogModel private constructor(
     val bot: String,
     val channel: String,
     val userId: String,
@@ -39,22 +38,22 @@ internal class LogModel private constructor(
         val ruleType: String?
     ) {
         companion object Factory {
-            fun fromActivation(activationContext: ActivationContext?) = NlpInfo(
-                nlpClass = activationContext?.activation?.toState,
-                ruleType = activationContext?.activator?.name,
-                rule = when (val ctx = activationContext?.activation?.context) {
+            fun create(lc: LoggingContext) = NlpInfo(
+                nlpClass = lc.activationContext?.activation?.state,
+                ruleType = lc.activationContext?.activator?.name,
+                rule = when (val ctx = lc.activationContext?.activation?.context) {
                     is RegexActivatorContext -> ctx.pattern.pattern()
                     is EventActivatorContext -> ctx.event
                     is CatchAllActivatorContext -> "catchAll"
                     is IntentActivatorContext -> ctx.intent
                     else -> null
                 },
-                confidence = when (val ctx = activationContext?.activation?.context) {
+                confidence = when (val ctx = lc.activationContext?.activation?.context) {
                     is StrictActivatorContext -> 1.0
                     is IntentActivatorContext -> ctx.confidence.toDouble()
                     else -> null
                 },
-                fromState = activationContext?.activation?.fromState ?: "/"
+                fromState = lc.firstState
             )
         }
     }
@@ -105,22 +104,22 @@ internal class LogModel private constructor(
         val sessionId: String?
     ) {
         companion object Factory {
-            fun create(reactions: List<Reaction>, activationContext: ActivationContext?): ResponseData {
-                val nlpInfo = NlpInfo.fromActivation(activationContext)
+            fun create(lc: LoggingContext): ResponseData {
+                val nlpInfo = NlpInfo.create(lc)
                 return ResponseData(
-                    answer = buildAnswer(reactions),
-                    replies = buildReplies(reactions),
+                    answer = buildAnswer(lc.reactions),
+                    replies = buildReplies(lc.reactions),
                     sessionId = null,
                     confidence = nlpInfo.confidence,
                     nlpClass = nlpInfo.nlpClass
                 )
             }
 
-            private fun buildAnswer(reactions: List<Reaction>) = reactions
+            private fun buildAnswer(reactions: List<LoggingReaction>) = reactions
                 .filterIsInstance<SayReaction>()
                 .joinToString(separator = "\n\n")
 
-            private fun buildReplies(reactions: List<Reaction>): List<JsonElement?> = reactions.mapNotNull { r ->
+            private fun buildReplies(reactions: List<LoggingReaction>): List<JsonElement?> = reactions.mapNotNull { r ->
                 when (r) {
                     is SayReaction -> JSON.toJson(TextReply.serializer(), TextReply(text = r.text, state = r.fromState))
                     is ImageReaction -> JSON.toJson(
@@ -142,26 +141,21 @@ internal class LogModel private constructor(
     }
 
     companion object Factory {
-        fun fromRequest(
-            jaicpBotRequest: JaicpBotRequest,
-            reactions: MutableList<Reaction>,
-            activationContext: ActivationContext?,
-            input: String
-        ): LogModel {
+        fun fromRequest(jaicpBotRequest: JaicpBotRequest, loggingContext: LoggingContext): JaicpLogModel {
             val currentTimeUTC = System.currentTimeMillis()
-            val request = Request.fromRequest(jaicpBotRequest, input)
+            val request = Request.fromRequest(jaicpBotRequest, loggingContext.input)
             val user = User.fromRequest(jaicpBotRequest)
-            val nlp = NlpInfo.fromActivation(activationContext)
-            val response = ResponseData.create(reactions, activationContext)
+            val nlp = NlpInfo.create(loggingContext)
+            val response = ResponseData.create(loggingContext)
 
-            return LogModel(
+            return JaicpLogModel(
                 botId = jaicpBotRequest.botId,
                 bot = jaicpBotRequest.botId,
                 channel = jaicpBotRequest.channelType,
                 userId = jaicpBotRequest.channelUserId,
                 questionId = jaicpBotRequest.questionId,
                 request = request,
-                query = input,
+                query = loggingContext.input,
                 timestamp = currentTimeUTC,
                 processingTime = currentTimeUTC - jaicpBotRequest.startProcessingTime,
                 answer = response.answer,

@@ -1,9 +1,9 @@
 package com.justai.jaicf.channel.slack
 
-import com.justai.jaicf.reactions.ButtonsReaction
-import com.justai.jaicf.reactions.ImageReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.reactions.SayReaction
+import com.justai.jaicf.logging.SayReaction
 import com.slack.api.bolt.context.ActionRespondUtility
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.context.SayUtility
@@ -14,7 +14,6 @@ import com.slack.api.model.block.ImageBlock
 import com.slack.api.model.block.LayoutBlock
 import com.slack.api.model.block.composition.PlainTextObject
 import com.slack.api.model.block.element.ButtonElement
-import java.awt.Button
 import java.util.*
 
 val Reactions.slack
@@ -44,32 +43,31 @@ class SlackReactions(
         }
     }
 
-    override fun say(text: String): SayReaction {
+    override fun say(text: String) {
         when (context) {
             is SayUtility -> context.say(text)
             is ActionRespondUtility -> context.respond(text)
         }
-        return SayReaction.create(text)
+        SayReaction.register(text)
     }
 
-    override fun image(url: String): ImageReaction {
+    override fun image(url: String) {
         image(
             ImageBlock.builder()
                 .imageUrl(url)
                 .altText(url)
                 .build()
         )
-        return ImageReaction.create(url)
+        ImageReaction.register(url)
     }
 
     fun image(image: ImageBlock) = respond(listOf(image))
 
-    override fun buttons(vararg buttons: String): ButtonsReaction {
+    override fun buttons(vararg buttons: String) {
         buttons(*buttons.map { it to it }.toTypedArray())
-        return ButtonsReaction.create(buttons.asList())
     }
 
-    fun buttons(vararg buttons: Pair<String, String>): ButtonsReaction {
+    fun buttons(vararg buttons: Pair<String, String>) {
         respond(listOf(
             ActionsBlock.builder().elements(
                 buttons.map {
@@ -82,6 +80,6 @@ class SlackReactions(
             ).build()
         ))
 
-        return ButtonsReaction.create(buttons.map { it.first })
+        ButtonsReaction.register(buttons.map { it.first })
     }
 }

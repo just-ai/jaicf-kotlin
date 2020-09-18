@@ -1,12 +1,12 @@
 package com.justai.jaicf.reactions
 
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.LoggingContext
+import com.justai.jaicf.logging.*
 import com.justai.jaicf.model.state.StatePath
 
 /**
  * A base abstraction for channel-related reactions.
- * This class contains a collection of base methods for scenario state managing and methods to create [Reaction] objects.
+ * This class contains a collection of base methods for scenario state managing and methods to create [LoggingReaction] objects.
  * Also there is a place for response building methods that should be implemented by every channel-related reactions class.
  *
  * Usage example:
@@ -25,13 +25,13 @@ import com.justai.jaicf.model.state.StatePath
  * ```
  * @see BotContext
  * @see ResponseReactions
- * @see Reaction
+ * @see LoggingReaction
  */
-abstract class Reactions {
+abstract class Reactions : LoggingReactionRegistrar() {
 
-    lateinit var botContext: BotContext
+    override lateinit var botContext: BotContext
 
-    internal lateinit var loggingContext: LoggingContext
+    override lateinit var loggingContext: LoggingContext
 
     /**
      * Changes the state of scenario and executes it's action block immediately.
@@ -48,6 +48,7 @@ abstract class Reactions {
         callbackState?.let {
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
+        GoReaction.register(path)
     }
 
     /**
@@ -63,6 +64,7 @@ abstract class Reactions {
             val currentState = StatePath.parse(dialogContext.currentState)
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
+        ChangeStateReaction.register(path)
     }
 
     /**
@@ -75,7 +77,10 @@ abstract class Reactions {
         val dialogContext = botContext.dialogContext
         val state = dialogContext.backStateStack.poll()
         result?.let { botContext.result = it }
-        return state?.also { go(it) }
+        return state?.also {
+            go(it)
+            GoReaction.register(it)
+        }
     }
 
     /**
@@ -88,7 +93,10 @@ abstract class Reactions {
         val dialogContext = botContext.dialogContext
         val state = dialogContext.backStateStack.poll()
         result?.let { botContext.result = it }
-        return state?.also { changeState(it) }
+        return state?.also {
+            changeState(it)
+            ChangeStateReaction.register(it)
+        }
     }
 
     /**
@@ -96,65 +104,31 @@ abstract class Reactions {
      * This method should be implemented by every particular channel-related [Reactions].
      *
      * @param text a raw text to append to the response
-     *
-     * @return [ImageReaction] for logging purposes
      */
-    abstract fun say(text: String): SayReaction
+    abstract fun say(text: String)
 
     /**
      * Appends image to the response.
      * Not every channel supports this type of reply.
      *
      * @param url a full URL of the image file
-     *
-     * @return [ImageReaction] for logging purposes
      */
-    open fun image(url: String): ImageReaction = ImageReaction(url, currentState)
+    open fun image(url: String) {}
 
     /**
      * Appends buttons to the response.
      * Not every channel supports this type of reply.
      *
      * @param buttons a collection of text buttons
-     *
-     * @return [ButtonsReaction] for logging purposes
      */
-    open fun buttons(vararg buttons: String): ButtonsReaction = ButtonsReaction(buttons.asList(), currentState)
+    open fun buttons(vararg buttons: String) {}
 
     /**
      * Appends audio to the response
      * Not every channels supports this type of reply.
      *
      * @param url of audio
-     *
-     * @return [AudioReaction] for logging purposes
      * */
-    open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
-
-    protected fun registerReaction(reaction: Reaction) {
-        loggingContext.reactions.add(reaction)
-    }
-
-    protected fun SayReaction.Companion.create(text: String) =
-        SayReaction(text, currentState).also {
-            registerReaction(it)
-        }
-
-    protected fun ImageReaction.Companion.create(imageUrl: String) =
-        ImageReaction(imageUrl, currentState).also {
-            registerReaction(it)
-        }
-
-    protected fun AudioReaction.Companion.create(audioUrl: String) =
-        AudioReaction(audioUrl, currentState).also {
-            registerReaction(it)
-        }
-
-    protected fun ButtonsReaction.Companion.create(buttons: List<String>) =
-        ButtonsReaction(buttons, currentState).also {
-            registerReaction(it)
-        }
+    open fun audio(url: String) {}
 }
 
-private val Reactions.currentState: String
-    get() = botContext.dialogContext.currentState

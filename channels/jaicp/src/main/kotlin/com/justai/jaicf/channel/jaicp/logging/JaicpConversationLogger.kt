@@ -5,13 +5,13 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
-import com.justai.jaicf.channel.jaicp.dto.LogModel
+import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.dto.jaicpNative
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
 import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
-import com.justai.jaicf.context.LoggingContext
+import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
@@ -56,12 +56,7 @@ class JaicpConversationLogger(
 
     private suspend fun doLogAsync(loggingContext: LoggingContext) {
         val jaicpBotRequest = loggingContext.request.jaicpNative?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
-        val logModel = LogModel.fromRequest(
-            jaicpBotRequest,
-            loggingContext.reactions,
-            loggingContext.activationContext,
-            loggingContext.input
-        )
+        val logModel = JaicpLogModel.fromRequest(jaicpBotRequest, loggingContext)
         connector.processLogAsync(logModel)
     }
 
