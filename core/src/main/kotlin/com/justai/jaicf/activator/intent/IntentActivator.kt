@@ -27,5 +27,18 @@ import com.justai.jaicf.context.BotContext
  * @see BaseIntentActivator
  */
 interface IntentActivator: Activator {
-    fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext?
+    /**
+     * Process a given [BotRequest] aware of a current [BotContext] and returns all intents that were recognized
+     * by this [IntentActivator] in the request.
+     *
+     * This function will be called once on single [BotRequest].
+     *
+     * @param botContext a current [BotContext]
+     * @param request a current user's [BotRequest]
+     * @return list of recognized intents represented as [IntentActivatorContext]
+     *
+     * @see IntentActivatorContext
+     * @see BaseIntentActivator
+     */
+    fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext>
 }

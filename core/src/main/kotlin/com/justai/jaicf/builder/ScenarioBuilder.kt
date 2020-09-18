@@ -1,13 +1,16 @@
 package com.justai.jaicf.builder
 
+import com.justai.jaicf.activator.catchall.CatchAllActivationRule
+import com.justai.jaicf.activator.event.EventActivationRule
+import com.justai.jaicf.activator.intent.IntentActivationRule
+import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.model.*
-import com.justai.jaicf.model.activation.ActivationRule
-import com.justai.jaicf.model.activation.ActivationRuleType
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
+import com.justai.jaicf.model.transition.Transition
 import java.util.*
 
 /**
@@ -213,7 +216,7 @@ abstract class ScenarioBuilder(
     inner class BindBuilder(private val fromState: String) {
         private val toState = currentState.path.toString()
 
-        private fun add(rule: ActivationRule) = model.activations.add(rule)
+        private fun add(transition: Transition) = model.transitions.add(transition)
 
         /**
          * Appends catch-all activator to this state. Means that any text can activate this state.
@@ -222,11 +225,11 @@ abstract class ScenarioBuilder(
          * @see com.justai.jaicf.activator.catchall.CatchAllActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        fun catchAll() = add(ActivationRule(
+        fun catchAll() = add(Transition(
             fromState,
             toState,
-            ActivationRuleType.anytext,
-            "*"))
+            CatchAllActivationRule()
+        ))
 
         /**
          * Appends regex activator to this state. Means that any text that matches to the pattern can activate this state.
@@ -235,11 +238,11 @@ abstract class ScenarioBuilder(
          * @see com.justai.jaicf.activator.regex.RegexActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        fun regex(pattern: Regex) = add(ActivationRule(
+        fun regex(pattern: Regex) = add(Transition(
             fromState,
             toState,
-            ActivationRuleType.regexp,
-            pattern.pattern))
+            RegexActivationRule(pattern.pattern)
+        ))
 
         /**
          * Appends regex activator to this state. Means that any text that matches to the pattern can activate this state.
@@ -257,11 +260,11 @@ abstract class ScenarioBuilder(
          * @see com.justai.jaicf.activator.event.EventActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        fun event(event: String) = add(ActivationRule(
+        fun event(event: String) = add(Transition(
                 fromState,
                 toState,
-                ActivationRuleType.event,
-                event))
+                EventActivationRule(event)
+        ))
 
         /**
          * Appends intent activator to this state. Means that an intent with such name can activate this state.
@@ -270,11 +273,11 @@ abstract class ScenarioBuilder(
          * @see com.justai.jaicf.activator.intent.IntentActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        fun intent(intent: String) = add(ActivationRule(
+        fun intent(intent: String) = add(Transition(
             fromState,
             toState,
-            ActivationRuleType.intent,
-            intent))
+            IntentActivationRule(intent)
+        ))
     }
 
 }

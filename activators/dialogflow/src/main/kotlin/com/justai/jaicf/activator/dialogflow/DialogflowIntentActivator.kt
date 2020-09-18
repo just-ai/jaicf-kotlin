@@ -19,7 +19,7 @@ class DialogflowIntentActivator(
 
     override fun canHandle(request: BotRequest) = request.hasQuery() || request.hasEvent()
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): DialogflowActivatorContext? {
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<DialogflowActivatorContext> {
 //        val params = QueryParameters.newBuilder().addSessionEntityTypes(
 //            SessionEntityType.newBuilder().setName("")
 //                .addEntities(
@@ -41,7 +41,7 @@ class DialogflowIntentActivator(
             else -> null
         }
 
-        return intent?.let { DialogflowActivatorContext(intent, qr) }
+        return intent?.let { listOf(DialogflowActivatorContext(intent, qr)) } ?: emptyList()
     }
 
     class Factory(private val connector: DialogflowConnector): ActivatorFactory {

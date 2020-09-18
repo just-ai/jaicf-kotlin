@@ -1,17 +1,14 @@
 package com.justai.jaicf.activator.regex
 
-import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
+import com.justai.jaicf.activator.BaseActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationRuleType
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.state.StatePath
+import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import java.util.*
 
 /**
  * This activator handles query requests and activates a state if it contains pattern that matches the request's input.
@@ -19,62 +16,25 @@ import java.util.*
  *
  * @param model dialogue scenario model
  */
-class RegexActivator(model: ScenarioModel) : Activator {
+class RegexActivator(model: ScenarioModel) : BaseActivator(model) {
 
     override val name = "regexActivator"
 
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
-    private val transitions = model.activations
-        .filter { a -> a.type == ActivationRuleType.regexp }
-        .map { a -> Pair(a.fromState, Pair(Pattern.compile(a.rule, Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE), a.toState)) }
-        .groupBy {a -> a.first}
-        .mapValues { l -> l.value.map { v -> v.second } }
-
-    override fun activate(
-        botContext: BotContext,
-        request: BotRequest
-    ): Activation? {
-        val path = StatePath.parse(botContext.dialogContext.currentContext)
-        return checkWithParents(path, request.input)
-    }
-
-    private fun checkWithParents(
-        path: StatePath,
-        query: String
-    ): Activation? {
-        var p = path
-        while (true) {
-            val res = check(p.toString(), query)
-            if (res != null) {
-                return res
-            }
-            if (p.toString() == "/") {
-                break
-            }
-            p = p.stepUp()
-        }
-        return null
-    }
-
-    private fun check(
-        path: String,
-        query: String
-    ): Activation? {
-        val rules = transitions[path]
-        rules?.forEach { r ->
-            val m = r.first.matcher(query)
-            if (m.matches()) {
-                val context = RegexActivatorContext(r.first)
-                storeVariables(context, m)
-                return Activation(r.second, context)
+    override fun provideRuleMatcher(botContext: BotContext, request: BotRequest) =
+        ruleMatcher<RegexActivationRule> { rule ->
+            val pattern = Pattern.compile(rule.regex, Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE)
+            val matcher = pattern.matcher(request.input)
+            if (matcher.matches()) {
+                RegexActivatorContext(pattern).also { storeVariables(it, matcher) }
+            } else {
+                null
             }
         }
-        return null
-    }
 
     private fun storeVariables(context: RegexActivatorContext, m: Matcher) {
-        for (i in 0 .. m.groupCount()) {
+        for (i in 0..m.groupCount()) {
             context.groups.add(m.group(i))
         }
 
@@ -99,9 +59,6 @@ class RegexActivator(model: ScenarioModel) : Activator {
     }
 
     companion object : ActivatorFactory {
-        override fun create(model: ScenarioModel): Activator {
-            return RegexActivator(model)
-        }
+        override fun create(model: ScenarioModel) = RegexActivator(model)
     }
-
 }

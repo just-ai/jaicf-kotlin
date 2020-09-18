@@ -13,8 +13,8 @@ internal class AlexaIntentActivator(model: ScenarioModel): BaseIntentActivator(m
 
     override fun canHandle(request: BotRequest) = request is AlexaIntentRequest
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
-        val alexaRequest = request as? AlexaIntentRequest ?: return null
-        return AlexaIntentActivatorContext(alexaRequest.intentRequest)
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
+        val alexaRequest = request as? AlexaIntentRequest ?: return emptyList()
+        return listOf(AlexaIntentActivatorContext(alexaRequest.intentRequest))
     }
 }

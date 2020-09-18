@@ -14,16 +14,12 @@ class ActionsDialogflowActivator(model: ScenarioModel): BaseIntentActivator(mode
 
     override fun canHandle(request: BotRequest) = request is ActionsIntentRequest
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
-        val actionRequest = request as? ActionsIntentRequest
-            ?: return null
-        return ActionsDialogflowActivatorContext(
-            actionRequest.request
-        )
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
+        val actionRequest = request as? ActionsIntentRequest ?: return emptyList()
+        return listOf(ActionsDialogflowActivatorContext(actionRequest.request))
     }
 
     companion object : ActivatorFactory {
-        override fun create(model: ScenarioModel) =
-            ActionsDialogflowActivator(model)
+        override fun create(model: ScenarioModel) = ActionsDialogflowActivator(model)
     }
 }

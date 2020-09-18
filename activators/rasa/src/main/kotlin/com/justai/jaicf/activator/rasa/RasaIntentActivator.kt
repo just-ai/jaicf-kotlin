@@ -20,12 +20,12 @@ class RasaIntentActivator(
 
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
-        val response = api.parseMessage(RasaParseMessageRequest(request.input)) ?: return null
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
+        val response = api.parseMessage(RasaParseMessageRequest(request.input)) ?: return emptyList()
 
         return when {
-            response.intent.confidence > confidenceThreshold -> RasaActivatorContext(response)
-            else -> null
+            response.intent.confidence > confidenceThreshold -> listOf(RasaActivatorContext(response))
+            else -> emptyList()
         }
     }
 

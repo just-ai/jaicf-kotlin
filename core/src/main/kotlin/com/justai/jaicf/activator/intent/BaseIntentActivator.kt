@@ -1,13 +1,11 @@
 package com.justai.jaicf.activator.intent
 
-import com.justai.jaicf.activator.Activator
+import com.justai.jaicf.activator.ActivationRuleMatcher
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.StateMapActivator
+import com.justai.jaicf.activator.BaseActivator
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasIntent
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationRuleType
 import com.justai.jaicf.model.scenario.ScenarioModel
 
 /**
@@ -16,31 +14,24 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  *
  * @param model dialogue scenario model
  *
- * @see StateMapActivator
+ * @see BaseActivator
  */
 open class BaseIntentActivator(
     model: ScenarioModel
-): StateMapActivator(ActivationRuleType.intent, model), IntentActivator {
-
+) : BaseActivator(model), IntentActivator {
     override val name = "baseIntentActivator"
 
     override fun canHandle(request: BotRequest) = request.hasIntent()
 
-    override fun activate(botContext: BotContext, request: BotRequest): Activation? {
-        val context = recogniseIntent(botContext, request)
-        return context?.let {
-            val state = findState(it.intent, botContext)
-            Activation(state, it)
-        }
+    override fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
+        val intents = recogniseIntent(botContext, request)
+        return ruleMatcher<IntentActivationRule> { rule -> intents.firstOrNull { it.intent == rule.intent } }
     }
 
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): IntentActivatorContext? {
-        return IntentActivatorContext(1f, request.input)
-    }
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest) =
+        listOf(IntentActivatorContext(1f, request.input))
 
     companion object : ActivatorFactory {
-        override fun create(model: ScenarioModel): Activator {
-            return BaseIntentActivator(model)
-        }
+        override fun create(model: ScenarioModel) = BaseIntentActivator(model)
     }
 }
