@@ -4,17 +4,16 @@ import com.justai.jaicf.channel.jaicp.dto.AudioReply
 import com.justai.jaicf.channel.jaicp.dto.HangupReply
 import com.justai.jaicf.channel.jaicp.dto.SwitchReply
 import com.justai.jaicf.helpers.http.toUrl
-import com.justai.jaicf.reactions.AudioReaction
-import com.justai.jaicf.reactions.Reaction
+import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.reactions.Reactions
 
 val Reactions.telephony
     get() = this as? TelephonyReactions
 
 class TelephonyReactions : JaicpReactions() {
-    override fun audio(url: String): AudioReaction {
+    override fun audio(url: String) {
         replies.add(AudioReply(url.toUrl()))
-        return AudioReaction.create(url)
+        AudioReaction.register(url)
     }
 
     fun hangup() {

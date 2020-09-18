@@ -1,8 +1,5 @@
 package com.justai.jaicf.logging
 
-import com.justai.jaicf.context.LoggingContext
-import com.justai.jaicf.reactions.Reaction
-
 /**
  * Main abstraction for class, which will perform dialog logging to any service or console.
  * It supports log obfuscation by [ConversationLogObfuscator] to hide sensitive data.
@@ -17,7 +14,7 @@ abstract class ConversationLogger(private val logObfuscators: List<ConversationL
      *
      * @param loggingContext current request's [LoggingContext] with obfuscated input and reactions
      *
-     * @see Reaction
+     * @see LoggingReaction
      * @see LoggingContext
      * @see ConversationLogObfuscator
      * */
@@ -30,21 +27,15 @@ abstract class ConversationLogger(private val logObfuscators: List<ConversationL
         )
     )
 
-    private fun obfuscateInput(loggingContext: LoggingContext): String {
-        var lc = loggingContext
-        logObfuscators.forEach {
-            lc = lc.copy(input = it.obfuscateInput(lc))
-        }
-        return lc.input
-    }
+    private fun obfuscateInput(loggingContext: LoggingContext) =
+        logObfuscators.fold(loggingContext) { context, obfuscator ->
+            context.copy(input = obfuscator.obfuscateInput(context))
+        }.input
 
 
-    private fun obfuscateReactions(loggingContext: LoggingContext): MutableList<Reaction> {
-        var lc = loggingContext
-        logObfuscators.forEach {
-            lc = lc.copy(reactions = it.obfuscateReactions(lc))
-        }
-        return lc.reactions
-    }
+    private fun obfuscateReactions(loggingContext: LoggingContext) =
+        logObfuscators.fold(loggingContext) { context, obfuscator ->
+            context.copy(reactions = obfuscator.obfuscateReactions(context))
+        }.reactions
 }
 

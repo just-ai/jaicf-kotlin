@@ -1,9 +1,9 @@
 package com.justai.jaicf.channel.jaicp
 
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
-import com.justai.jaicf.channel.jaicp.logging.asHttpBotRequest
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.json
 import kotlinx.serialization.json.jsonArray
@@ -12,7 +12,8 @@ internal fun JaicpCompatibleBotChannel.processCompatible(
     botRequest: JaicpBotRequest
 ): JaicpBotResponse {
     val startTime = System.currentTimeMillis()
-    val request = botRequest.rawRequest.toString().asHttpBotRequest(botRequest)
+    val request =
+        botRequest.rawRequest.toString().asHttpBotRequest(JSON.stringify(JaicpBotRequest.serializer(), botRequest))
     val response = process(request)?.let { response ->
         val rawJson = JSON.parseJson(response.output.toString())
         addRawReply(rawJson)

@@ -1,11 +1,11 @@
 package com.justai.jaicf.channel.jaicp.polling
 
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
-import com.justai.jaicf.channel.jaicp.logging.asHttpBotRequest
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
@@ -60,7 +60,9 @@ internal class Dispatcher(private val proxyUrl: String, client: HttpClient) :
     private fun processAsyncChannel(
         channel: JaicpCompatibleAsyncBotChannel,
         request: JaicpBotRequest
-    ) = channel.process(request.rawRequest.toString().asHttpBotRequest(request))
+    ) = channel.process(
+        request.rawRequest.toString().asHttpBotRequest(JSON.stringify(JaicpBotRequest.serializer(), request))
+    )
 
     private fun processNativeChannel(
         channel: JaicpNativeBotChannel,

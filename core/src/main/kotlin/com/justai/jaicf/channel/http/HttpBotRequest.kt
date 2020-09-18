@@ -26,4 +26,7 @@ data class HttpBotRequest(
     fun firstParameter(name: String) = parameters[name]?.first()
 }
 
-fun String.asHttpBotRequest() = HttpBotRequest(ByteArrayInputStream(this.toByteArray()))
+fun String.asHttpBotRequest(requestMetadata: String? = null) = HttpBotRequest(
+    ByteArrayInputStream(this.toByteArray()),
+    requestMetadata = requestMetadata
+)

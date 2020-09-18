@@ -1,6 +1,7 @@
 package com.justai.jaicf.reactions
 
 import com.justai.jaicf.api.TextResponse
+import com.justai.jaicf.logging.SayReaction
 
 /**
  * A simple [Reactions] implementation that builds a [TextResponse].
@@ -18,12 +19,12 @@ class TextReactions(
      *
      * @param text a raw text to append to the response
      */
-    override fun say(text: String): SayReaction {
+    override fun say(text: String) {
         response.text = when {
             response.text.isNullOrBlank() -> text
             else -> "${response.text}\n$text"
         }
-        return SayReaction.create(text)
+        SayReaction.register(text)
     }
 
 }

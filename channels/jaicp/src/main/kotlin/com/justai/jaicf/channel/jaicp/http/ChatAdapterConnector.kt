@@ -2,7 +2,7 @@ package com.justai.jaicf.channel.jaicp.http
 
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
-import com.justai.jaicf.channel.jaicp.dto.LogModel
+import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.features.*
@@ -27,11 +27,11 @@ internal class ChatAdapterConnector(
         }
     }
 
-    fun processLog(logModel: LogModel) = runBlocking {
+    fun processLog(logModel: JaicpLogModel) = runBlocking {
         processLogAsync(logModel)
     }
 
-    suspend fun processLogAsync(logModel: LogModel) {
+    suspend fun processLogAsync(logModel: JaicpLogModel) {
         try {
             httpClient.post<String>("$baseUrl/processLogs") {
                 contentType(ContentType.Application.Json)

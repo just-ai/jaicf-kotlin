@@ -10,10 +10,10 @@ import com.github.messenger4j.send.message.richmedia.RichMediaAsset
 import com.github.messenger4j.send.message.richmedia.UrlRichMediaAsset
 import com.justai.jaicf.channel.facebook.api.FacebookBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
-import com.justai.jaicf.reactions.AudioReaction
-import com.justai.jaicf.reactions.ImageReaction
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.reactions.SayReaction
+import com.justai.jaicf.logging.SayReaction
 import java.net.URL
 
 val Reactions.facebook
@@ -35,23 +35,23 @@ class FacebookReactions(
 
     fun queryUserProfile() = messenger.queryUserProfile(request.event.senderId())
 
-    override fun say(text: String): SayReaction {
+    override fun say(text: String) {
         sendResponse(TextMessage.create(text))
-        return SayReaction.create(text)
+        SayReaction.register(text)
     }
 
-    override fun image(url: String): ImageReaction {
+    override fun image(url: String) {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.IMAGE)
-        return ImageReaction.create(url)
+        ImageReaction.register(url)
     }
 
     fun video(url: String) {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.VIDEO)
     }
 
-    override fun audio(url: String): AudioReaction {
+    override fun audio(url: String) {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.AUDIO)
-        return AudioReaction.create(url)
+        AudioReaction.register(url)
     }
 
     fun file(url: String) {

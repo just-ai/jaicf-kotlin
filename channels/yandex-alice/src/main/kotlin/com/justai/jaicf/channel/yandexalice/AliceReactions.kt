@@ -6,6 +6,10 @@ import com.justai.jaicf.channel.yandexalice.api.AliceBotResponse
 import com.justai.jaicf.channel.yandexalice.api.model.Button
 import com.justai.jaicf.channel.yandexalice.api.model.Image
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.*
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -22,9 +26,9 @@ class AliceReactions(
     private val builder = response.response ?: AliceBotResponse.Response()
     private val skillId = request.session.skillId
 
-    override fun say(text: String): SayReaction {
+    override fun say(text: String) {
         say(text, text)
-        return SayReaction.create(text)
+        SayReaction.register(text)
     }
 
     fun say(text: String, tts: String) {
@@ -32,9 +36,9 @@ class AliceReactions(
         builder.tts += " $tts"
     }
 
-    override fun buttons(vararg buttons: String): ButtonsReaction {
+    override fun buttons(vararg buttons: String) {
         buttons.forEach { buttons(Button(it, hide = true)) }
-        return ButtonsReaction.create(buttons.asList())
+        ButtonsReaction.register(buttons.asList())
     }
 
     fun link(title: String, url: String) = buttons(Button(title, url = url))
@@ -43,14 +47,14 @@ class AliceReactions(
 
     fun buttons(vararg buttons: Button) = builder.buttons.addAll(buttons)
 
-    override fun image(url: String): ImageReaction {
+    override fun image(url: String) {
         builder.card = Image(requireNotNull(api).getImageId(url))
-        return ImageReaction.create(url)
+        ImageReaction.register(url)
     }
 
     fun image(image: Image) {
         builder.card = image
-        ImageReaction.create(image.imageId)
+        ImageReaction.register(image.imageId)
     }
 
     fun image(
@@ -59,15 +63,15 @@ class AliceReactions(
         description: String? = null,
         button: Button? = null
     ) = Image(requireNotNull(api).getImageId(url), title, description, button).also { builder.card = it }.also {
-        ImageReaction.create(url)
+        ImageReaction.register(url)
     }
 
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
 
-    override fun audio(id: String): AudioReaction {
+    override fun audio(id: String) {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
-        return AudioReaction.create(id)
+        AudioReaction.register(id)
     }
 
     fun endSession() {

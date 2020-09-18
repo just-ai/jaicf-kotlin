@@ -1,8 +1,6 @@
 package com.justai.jaicf.logging
 
-import com.justai.jaicf.context.LoggingContext
 import com.justai.jaicf.helpers.logging.WithLogger
-import com.justai.jaicf.reactions.Reaction
 
 /**
  * Simple implementation of [ConversationLogger]. It logs basic scenario activity information after request is processed.
@@ -30,7 +28,7 @@ class ConsoleConversationLogger(
             """
             |
             |Processing ${loggingContext.request::class.simpleName} with input "${loggingContext.input}" finished
-            |SelectedActivator: ${loggingContext.activationContext?.activator?.name} with state ${loggingContext.activationContext?.activation?.toState}
+            |SelectedActivator: ${loggingContext.activationContext?.activator?.name} with state ${loggingContext.activationContext?.activation?.state}
             |Reactions: ${loggingContext.reactions}""".trimMargin()
         )
     }
