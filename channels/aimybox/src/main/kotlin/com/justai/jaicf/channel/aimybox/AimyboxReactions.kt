@@ -45,11 +45,11 @@ class AimyboxReactions(
 
     override fun buttons(vararg buttons: String) {
         buttons(*buttons.map { TextButton(it) }.toTypedArray())
-        ButtonsReaction.register(buttons.asList())
     }
 
     fun buttons(vararg buttons: Button) {
         addReply(ButtonsReply(buttons.toList()))
+        ButtonsReaction.register(buttons.toList().map { it.text })
     }
 
     fun endConversation() = question(false)

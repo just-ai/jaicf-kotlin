@@ -12,8 +12,7 @@ val Reactions.chatwidget
 
 class ChatWidgetReactions : JaicpReactions() {
     override fun image(url: String) {
-        replies.add(ImageReply(url))
-        ImageReaction.register(url)
+        image(imageUrl = url, caption = null)
     }
 
     fun image(imageUrl: String, caption: String? = null) {

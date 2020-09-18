@@ -28,28 +28,28 @@ class AliceReactions(
 
     override fun say(text: String) {
         say(text, text)
-        SayReaction.register(text)
     }
 
     fun say(text: String, tts: String) {
         builder.text += " $text"
         builder.tts += " $tts"
+        SayReaction.register(text)
     }
 
     override fun buttons(vararg buttons: String) {
         buttons.forEach { buttons(Button(it, hide = true)) }
-        ButtonsReaction.register(buttons.asList())
     }
 
     fun link(title: String, url: String) = buttons(Button(title, url = url))
 
     fun links(vararg links: Pair<String, String>) = links.forEach { link(it.first, it.second) }
 
-    fun buttons(vararg buttons: Button) = builder.buttons.addAll(buttons)
+    fun buttons(vararg buttons: Button) = builder.buttons.addAll(buttons).also {
+        ButtonsReaction.register(buttons.asList().map { it.title })
+    }
 
     override fun image(url: String) {
-        builder.card = Image(requireNotNull(api).getImageId(url))
-        ImageReaction.register(url)
+        image(Image(requireNotNull(api).getImageId(url)))
     }
 
     fun image(image: Image) {
@@ -62,9 +62,7 @@ class AliceReactions(
         title: String? = null,
         description: String? = null,
         button: Button? = null
-    ) = Image(requireNotNull(api).getImageId(url), title, description, button).also { builder.card = it }.also {
-        ImageReaction.register(url)
-    }
+    ) = image(Image(requireNotNull(api).getImageId(url), title, description, button))
 
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }

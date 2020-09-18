@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.googleactions
 import com.google.actions.api.ActionRequest
 import com.google.actions.api.Capability
 import com.google.api.services.actions_fulfillment.v2.model.*
+import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
@@ -90,5 +91,7 @@ class ActionsReactions(
                     }
                 )
             })
+    }.also {
+        AudioReaction.register(url)
     }
 }

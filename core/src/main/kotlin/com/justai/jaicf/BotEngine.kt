@@ -40,12 +40,16 @@ import com.justai.jaicf.slotfilling.*
  * @param model bot scenario model. Every bot should serve some scenario that implements a business logic of the bot.
  * @param defaultContextManager the default manager that manages a bot's context during the request execution. Can be overriden by the channel itself fot every user's request.
  * @param activators an array of used activator that can handle a request. Note that an order is matter: lower activators won't be called if top-level activator handles a request and a corresponding state is found in scenario.
+ * @param slotReactor an entity to react to filling specified slot.
+ * @param conversationLoggers an array conversation loggers, all of which will log conversation information after request is processed.
  *
  * @see BotApi
  * @see com.justai.jaicf.builder.ScenarioBuilder
  * @see BotContextManager
  * @see BotContext
  * @see ActivatorFactory
+ * @see SlotReactor
+ * @see ConversationLogger
  */
 class BotEngine(
     val model: ScenarioModel,
@@ -77,6 +81,8 @@ class BotEngine(
     ) {
         val cm = contextManager ?: defaultContextManager
         val botContext = cm.loadContext(request)
+        val loggingContext = LoggingContext(requestContext.httpBotRequest, null, botContext, request)
+        reactions.loggingContext = loggingContext
         reactions.botContext = botContext
 
         processContext(botContext, requestContext)
@@ -91,13 +97,10 @@ class BotEngine(
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
                     ?: selectActivation(botContext, request, skippedActivators)
             }
-
-            val loggingContext = LoggingContext(requestContext.httpBotRequest, activation, botContext, request)
-            reactions.loggingContext = loggingContext
-
             activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
                 if (first) return
             }.second
+            loggingContext.activationContext = activation
 
             if (activation?.activation == null) {
                 logger.warn("No state selected to handle a request $request")
