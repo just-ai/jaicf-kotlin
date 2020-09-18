@@ -51,17 +51,15 @@ class SlackReactions(
         SayReaction.register(text)
     }
 
-    override fun image(url: String) {
-        image(
+    override fun image(url: String) = image(
             ImageBlock.builder()
                 .imageUrl(url)
                 .altText(url)
                 .build()
         )
-        ImageReaction.register(url)
-    }
 
-    fun image(image: ImageBlock) = respond(listOf(image))
+
+    fun image(image: ImageBlock) = respond(listOf(image)).also { ImageReaction.register(image.imageUrl) }
 
     override fun buttons(vararg buttons: String) {
         buttons(*buttons.map { it to it }.toTypedArray())

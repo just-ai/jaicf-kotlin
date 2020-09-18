@@ -15,7 +15,7 @@ import com.justai.jaicf.context.BotContext
  * */
 data class LoggingContext(
     val httpBotRequest: HttpBotRequest? = null,
-    val activationContext: ActivationContext?,
+    var activationContext: ActivationContext?,
     val botContext: BotContext,
     val request: BotRequest,
     val firstState: String = botContext.dialogContext.currentState,

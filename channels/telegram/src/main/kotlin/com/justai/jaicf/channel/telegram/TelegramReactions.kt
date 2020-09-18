@@ -23,8 +23,7 @@ class TelegramReactions(
     val chatId = request.chatId
 
     override fun say(text: String) {
-        api.sendMessage(chatId, text)
-        SayReaction.register(text)
+        sendMessage(text)
     }
 
     fun say(text: String, inlineButtons: List<String>) = api.sendMessage(
@@ -45,9 +44,7 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = sendMessage(text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup).also {
-        SayReaction.register(text)
-    }
+    ) = sendMessage(text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendMessage(
         text: String,
@@ -69,8 +66,7 @@ class TelegramReactions(
     }
 
     override fun image(url: String) {
-        api.sendPhoto(chatId, url)
-        ImageReaction.register(url)
+        sendPhoto(url)
     }
 
     fun image(
@@ -80,9 +76,7 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = sendPhoto(url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup).also {
-        ImageReaction.register(url)
-    }
+    ) = sendPhoto(url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
 
     fun sendPhoto(
         url: String,
@@ -113,6 +107,10 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVoice(chatId, url, duration, disableNotification, replyToMessageId, replyMarkup)
+
+    override fun audio(url: String) {
+        sendAudio(url)
+    }
 
     fun sendAudio(
         url: String,
