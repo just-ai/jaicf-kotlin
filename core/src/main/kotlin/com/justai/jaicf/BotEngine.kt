@@ -1,8 +1,7 @@
 package com.justai.jaicf
 
-import com.justai.jaicf.activator.ActivationContext
-import com.justai.jaicf.activator.Activator
-import com.justai.jaicf.activator.ActivatorFactory
+import com.justai.jaicf.activator.*
+import com.justai.jaicf.activator.strategy.ActivationByConfidence
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -12,6 +11,7 @@ import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.model.activation.Activation
+import com.justai.jaicf.model.activation.ActivationStrategy
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -48,7 +48,8 @@ class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
-    private val slotReactor: SlotReactor? = null
+    private val slotReactor: SlotReactor? = null,
+    private val activationStrategy: ActivationStrategy = ActivationByConfidence
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
@@ -198,7 +199,7 @@ class BotEngine(
     ): ActivationContext? {
 
         activators.filter { it.canHandle(request) }.forEach { a ->
-            val activation = a.activate(botContext, request)
+            val activation = a.activate(botContext, request, activationStrategy)
             if (activation != null) {
                 if (activation.state != null) {
                     return ActivationContext(a, activation)

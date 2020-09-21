@@ -5,6 +5,7 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
+import com.justai.jaicf.model.activation.ActivationStrategy
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
@@ -15,12 +16,17 @@ import com.justai.jaicf.model.transition.Transition
  * @see ActivationRule
  * @see com.justai.jaicf.activator.event.BaseEventActivator
  * @see com.justai.jaicf.activator.intent.BaseIntentActivator
+ * @see com.justai.jaicf.model.activation.ActivationStrategy
  */
 abstract class BaseActivator(model: ScenarioModel) : Activator {
 
     private val transitions = model.transitions.groupBy { it.fromState }
 
-    override fun activate(botContext: BotContext, request: BotRequest): Activation? {
+    override fun activate(
+        botContext: BotContext,
+        request: BotRequest,
+        activationStrategy: ActivationStrategy
+    ): Activation? {
         val matcher = provideRuleMatcher(botContext, request)
         val transitions = generateTransitions(botContext)
 
@@ -29,27 +35,7 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
         }.toList()
 
         if (activations.isEmpty()) return null
-        return selectActivation(botContext, activations)
-    }
-
-    /**
-     * This method is used for selection the most relevant activation.
-     *
-     * Default implementation at first tries to select an activation with the greatest confidence from all children
-     * of the current state, then from all siblings (including current state),
-     * then from all siblings of the parent (including the parent), and so on.
-     *
-     * @param botContext a current user's [BotContext]
-     * @param activations list of all available activations
-     * @return the most relevant [Activation] in terms of certain implementation of [BaseActivator]
-     *
-     * @see Activation
-     */
-    protected open fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
-        val first = StatePath.parse(activations.first().state!!)
-        return activations.takeWhile {
-            StatePath.parse(it.state!!).parent == first.parent
-        }.maxBy { it.context.confidence }!!
+        return activationStrategy.selectActivation(botContext, activations)
     }
 
     /**

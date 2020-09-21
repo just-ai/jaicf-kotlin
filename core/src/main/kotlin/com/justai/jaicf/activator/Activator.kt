@@ -8,6 +8,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
+import com.justai.jaicf.model.activation.ActivationStrategy
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.SlotFillingResult
@@ -54,15 +55,18 @@ interface Activator {
      *
      * @param botContext a current user's [BotContext]
      * @param request a current [BotRequest]
+     * @param activationStrategy a strategy to select activation
      * @return [Activation] that contains an optional state of scenario and [com.justai.jaicf.context.ActivatorContext] or null if activator cannot handle a request at all.
      *
      * @see BotContext
      * @see BotRequest
      * @see com.justai.jaicf.context.ActivatorContext
+     * @see ActivationStrategy
      */
     fun activate(
         botContext: BotContext,
-        request: BotRequest
+        request: BotRequest,
+        activationStrategy: ActivationStrategy
     ): Activation?
 
 
