@@ -1,43 +1,37 @@
-package com.justai.jaicf.activator.strategy
+package com.justai.jaicf.activator.selection
 
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationStrategy
+import com.justai.jaicf.model.activation.ActivationSelector
 import com.justai.jaicf.model.state.StatePath
 
 /**
- * Implementation of [ActivationStrategy] by analogy with JAICP DSL.
- *
- * This activation strategy calculates penalty for each activation,
+ * This activation selector calculates penalty for each activation,
  * applies penalties for every activation and selects single activation with highest adjusted confidence.
  *
  * Penalty increases with difference level between current state and activation target state.
+ * Difference level is a number of transitions from current state to activation target state.
  *
  * @property stepUpPenaltyBase penalty base for context stepUp.
  * @see calculatePenalty method with formula
  * */
 class ActivationByContextPenalty(
     private val stepUpPenaltyBase: Double = 0.2
-) : ActivationStrategy, WithLogger {
+) : ActivationSelector, WithLogger {
 
     internal data class ActivationWithScore(val activation: Activation, val adjustedConfidence: Double)
 
     /**
-     * Selects activation by context similarity level and activation confidence.
-     *
      * @param botContext a current user's [BotContext]
      * @param activations list of all available activations
-     * @return the most relevant [Activation] in terms of certain implementation of [BaseActivator]
+     * @return the most relevant [Activation]
      *
      * @see Activation
-     * @see ActivationStrategy
+     * @see ActivationSelector
      * @see com.justai.jaicf.BotEngine
      */
-    override fun selectActivation(
-        botContext: BotContext,
-        activations: List<Activation>
-    ): Activation {
+    override fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
         val currentState = StatePath.parse(botContext.dialogContext.currentContext).resolve(".")
         val activationsByPenalty = rankActivationsByPenalty(activations, currentState)
         return activationsByPenalty.first().activation.also {
@@ -54,7 +48,6 @@ class ActivationByContextPenalty(
      *
      * @param activations a list of possible activations
      * @param currentState a state to find activations from
-     * @param activationStrategy configuration
      *
      * @return list of [ActivationWithScore], where score = activation.confidence * penalty
      * */
@@ -84,14 +77,7 @@ class ActivationByContextPenalty(
     private fun getStatesDiffLevel(targetState: StatePath, currentContext: StatePath): Int {
         val toState = targetState.components
         val fromState = currentContext.components
-        var i = 0
-        while (i < fromState.size && i < toState.size) {
-            if (fromState[i] != toState[i]) {
-                break
-            }
-            i++
-        }
-        return fromState.size - i
+        return fromState.size - fromState.zip(toState).takeWhile { it.first == it.second }.count()
     }
 
     /**

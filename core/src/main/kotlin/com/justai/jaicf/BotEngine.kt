@@ -1,7 +1,7 @@
 package com.justai.jaicf
 
 import com.justai.jaicf.activator.*
-import com.justai.jaicf.activator.strategy.ActivationByConfidence
+import com.justai.jaicf.activator.selection.ActivationByConfidence
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -11,7 +11,7 @@ import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.ActivationStrategy
+import com.justai.jaicf.model.activation.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -37,19 +37,22 @@ import com.justai.jaicf.slotfilling.*
  * @param model bot scenario model. Every bot should serve some scenario that implements a business logic of the bot.
  * @param defaultContextManager the default manager that manages a bot's context during the request execution. Can be overriden by the channel itself fot every user's request.
  * @param activators an array of used activator that can handle a request. Note that an order is matter: lower activators won't be called if top-level activator handles a request and a corresponding state is found in scenario.
+ * @param slotReactor to react to filling slots in custom way
+ * @param activationSelector to select activation. Default selector is [ActivationByConfidence].
  *
  * @see BotApi
  * @see com.justai.jaicf.builder.ScenarioBuilder
  * @see BotContextManager
  * @see BotContext
  * @see ActivatorFactory
+ * @see ActivationSelector
  */
 class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
     private val slotReactor: SlotReactor? = null,
-    private val activationStrategy: ActivationStrategy = ActivationByConfidence
+    private val activationSelector: ActivationSelector = ActivationByConfidence()
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
@@ -199,7 +202,7 @@ class BotEngine(
     ): ActivationContext? {
 
         activators.filter { it.canHandle(request) }.forEach { a ->
-            val activation = a.activate(botContext, request, activationStrategy)
+            val activation = a.activate(botContext, request, activationSelector)
             if (activation != null) {
                 if (activation.state != null) {
                     return ActivationContext(a, activation)

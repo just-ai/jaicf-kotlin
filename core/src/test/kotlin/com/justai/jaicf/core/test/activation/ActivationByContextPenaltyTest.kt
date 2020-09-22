@@ -1,7 +1,7 @@
-package com.justai.jaicf.core.test.strategy
+package com.justai.jaicf.core.test.activation
 
 import com.justai.jaicf.activator.intent.IntentActivatorContext
-import com.justai.jaicf.activator.strategy.ActivationByContextPenalty
+import com.justai.jaicf.activator.selection.ActivationByContextPenalty
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.context.StrictActivatorContext
@@ -22,7 +22,7 @@ internal class ActivationByContextPenaltyTest {
     private val bc = BotContext("", DialogContext().apply { currentContext = currentNode })
 
     @Test
-    fun shouldRankStrictActivations() {
+    fun `should rank strict activations`() {
         val activations = listOf(
             Activation(childNode, StrictActivatorContext()),
             Activation(otherContextNode, StrictActivatorContext()),
@@ -48,7 +48,7 @@ internal class ActivationByContextPenaltyTest {
     }
 
     @Test
-    fun shouldRankActivationsWithConfidence() {
+    fun `should rank activations with confidence`() {
         val activations = listOf(
             Activation(childNode, IntentActivatorContext(0.6F, "")),
             Activation(otherContextNode, IntentActivatorContext(0.9F, "")),

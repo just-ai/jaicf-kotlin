@@ -5,7 +5,7 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
-import com.justai.jaicf.model.activation.ActivationStrategy
+import com.justai.jaicf.model.activation.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
@@ -16,7 +16,7 @@ import com.justai.jaicf.model.transition.Transition
  * @see ActivationRule
  * @see com.justai.jaicf.activator.event.BaseEventActivator
  * @see com.justai.jaicf.activator.intent.BaseIntentActivator
- * @see com.justai.jaicf.model.activation.ActivationStrategy
+ * @see com.justai.jaicf.model.activation.ActivationSelector
  */
 abstract class BaseActivator(model: ScenarioModel) : Activator {
 
@@ -25,7 +25,7 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
     override fun activate(
         botContext: BotContext,
         request: BotRequest,
-        activationStrategy: ActivationStrategy
+        activationSelector: ActivationSelector
     ): Activation? {
         val matcher = provideRuleMatcher(botContext, request)
         val transitions = generateTransitions(botContext)
@@ -35,7 +35,7 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
         }.toList()
 
         if (activations.isEmpty()) return null
-        return activationStrategy.selectActivation(botContext, activations)
+        return activationSelector.selectActivation(botContext, activations)
     }
 
     /**
