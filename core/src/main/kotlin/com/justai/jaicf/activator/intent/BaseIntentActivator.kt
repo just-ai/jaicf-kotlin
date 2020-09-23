@@ -10,7 +10,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 
 /**
  * A base implementation of [IntentActivator].
- * This activator handles intent requests and activates a state if it contains an intent with name that equals to the request's input.
+ * This activator handles intent requests and activates a state if its activation rule matches intent name from the request's input.
  *
  * @param model dialogue scenario model
  *
@@ -25,7 +25,7 @@ open class BaseIntentActivator(
 
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
         val intents = recogniseIntent(botContext, request)
-        return ruleMatcher<IntentActivationRule> { rule -> intents.firstOrNull { it.intent == rule.intent } }
+        return ruleMatcher<IntentActivationRule> { rule -> intents.firstOrNull { rule.intentMatches(it.intent) } }
     }
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest) =
