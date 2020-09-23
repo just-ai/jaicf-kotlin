@@ -24,11 +24,10 @@ class ActivationByConfidence : ActivationSelector {
      * @see ActivationSelector
      */
     override fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
-        val first = StatePath.parse(activations.first().state!!)
-        return activations
-            .sortedByDescending { it.context.confidence }
-            .takeWhile {
-                StatePath.parse(it.state!!).parent == first.parent
-            }.maxBy { it.context.confidence }!!
+        val sorted = activations.sortedByDescending { it.context.confidence }
+        val first = StatePath.parse(sorted.first().state!!)
+        return sorted.takeWhile {
+            StatePath.parse(it.state!!).parent == first.parent
+        }.maxBy { it.context.confidence }!!
     }
 }
