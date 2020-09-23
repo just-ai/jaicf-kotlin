@@ -25,7 +25,9 @@ open class BaseIntentActivator(
 
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
         val intents = recogniseIntent(botContext, request)
-        return ruleMatcher<IntentActivationRule> { rule -> intents.firstOrNull { rule.intentMatches(it.intent) } }
+        return ruleMatcher<IntentActivationRule> { rule ->
+            intents.sortedByDescending { it.confidence }.firstOrNull { rule.intentMatches(it.intent) }
+        }
     }
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest) =
