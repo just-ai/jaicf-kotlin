@@ -15,9 +15,9 @@ open class JaicpReactions : Reactions() {
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         replies.add(TextReply(text))
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
 
     fun collect(): JsonObject {

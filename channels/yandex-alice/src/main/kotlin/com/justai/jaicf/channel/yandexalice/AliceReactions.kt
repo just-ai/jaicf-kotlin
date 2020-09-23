@@ -26,35 +26,36 @@ class AliceReactions(
     private val builder = response.response ?: AliceBotResponse.Response()
     private val skillId = request.session.skillId
 
-    override fun say(text: String) {
-        say(text, text)
+    override fun say(text: String): SayReaction {
+        return say(text, text)
     }
 
-    fun say(text: String, tts: String) {
+    fun say(text: String, tts: String): SayReaction {
         builder.text += " $text"
         builder.tts += " $tts"
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
 
-    override fun buttons(vararg buttons: String) {
-        buttons.forEach { buttons(Button(it, hide = true)) }
+    override fun buttons(vararg buttons: String): ButtonsReaction {
+        return buttons(*buttons.map { Button(it, hide = true) }.toTypedArray())
     }
 
     fun link(title: String, url: String) = buttons(Button(title, url = url))
 
     fun links(vararg links: Pair<String, String>) = links.forEach { link(it.first, it.second) }
 
-    fun buttons(vararg buttons: Button) = builder.buttons.addAll(buttons).also {
-        ButtonsReaction.register(buttons.asList().map { it.title })
+    fun buttons(vararg buttons: Button): ButtonsReaction {
+        builder.buttons.addAll(buttons)
+        return ButtonsReaction.createAndRegister(buttons.asList().map { it.title })
     }
 
-    override fun image(url: String) {
-        image(Image(requireNotNull(api).getImageId(url)))
+    override fun image(url: String): ImageReaction {
+        return image(Image(requireNotNull(api).getImageId(url)))
     }
 
-    fun image(image: Image) {
+    fun image(image: Image): ImageReaction {
         builder.card = image
-        ImageReaction.register(image.imageId)
+        return ImageReaction.createAndRegister(image.imageId)
     }
 
     fun image(
@@ -67,9 +68,9 @@ class AliceReactions(
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
 
-    override fun audio(id: String) {
+    override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
-        AudioReaction.register(id)
+        return AudioReaction.createAndRegister(id)
     }
 
     fun endSession() {

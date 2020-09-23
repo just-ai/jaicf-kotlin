@@ -19,14 +19,13 @@ class TextReactions(
      *
      * @param text a raw text to append to the response
      */
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         response.text = when {
             response.text.isNullOrBlank() -> text
             else -> "${response.text}\n$text"
         }
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
-
 }
 
 val Reactions.text

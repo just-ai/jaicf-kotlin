@@ -26,7 +26,7 @@ interface ConversationLogObfuscator {
      *
      * @param loggingContext current request's [LoggingContext]
      *
-     * @return list of obfuscated [LoggingReaction]
+     * @return list of obfuscated [Reaction]
      * */
-    fun obfuscateReactions(loggingContext: LoggingContext): MutableList<LoggingReaction> = loggingContext.reactions
+    fun obfuscateReactions(loggingContext: LoggingContext): MutableList<Reaction> = loggingContext.reactions
 }

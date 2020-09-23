@@ -31,14 +31,18 @@ class AlexaReactions(
             .build()
     )
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         speeches.add(text)
         val speech = speeches.joinToString(" ")
         response.builder
             .withSpeech(speech)
             .withReprompt(speech)
 
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
+    }
+
+    override fun audio(url: String): AudioReaction {
+        return playAudio(url)
     }
 
     fun playAudio(
@@ -51,7 +55,7 @@ class AlexaReactions(
         background: Image? = null,
         title: String? = null,
         subtitle: String? = null
-    ) {
+    ): AudioReaction {
 
         val stream = Stream.builder()
             .withOffsetInMilliseconds(offsetInMillis)
@@ -81,7 +85,7 @@ class AlexaReactions(
             .addDirective(playDirective)
             .withShouldEndSession(true)
 
-        AudioReaction.register(url)
+        return AudioReaction.createAndRegister(url)
     }
 
     fun stopAudioPlayer() {

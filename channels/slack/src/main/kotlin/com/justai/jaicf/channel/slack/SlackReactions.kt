@@ -43,12 +43,12 @@ class SlackReactions(
         }
     }
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         when (context) {
             is SayUtility -> context.say(text)
             is ActionRespondUtility -> context.respond(text)
         }
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
 
     override fun image(url: String) = image(
@@ -59,13 +59,16 @@ class SlackReactions(
         )
 
 
-    fun image(image: ImageBlock) = respond(listOf(image)).also { ImageReaction.register(image.imageUrl) }
-
-    override fun buttons(vararg buttons: String) {
-        buttons(*buttons.map { it to it }.toTypedArray())
+    fun image(image: ImageBlock): ImageReaction {
+        respond(listOf(image))
+        return ImageReaction.createAndRegister(image.imageUrl)
     }
 
-    fun buttons(vararg buttons: Pair<String, String>) {
+    override fun buttons(vararg buttons: String): ButtonsReaction {
+        return buttons(*buttons.map { it to it }.toTypedArray())
+    }
+
+    fun buttons(vararg buttons: Pair<String, String>): ButtonsReaction {
         respond(listOf(
             ActionsBlock.builder().elements(
                 buttons.map {
@@ -78,6 +81,6 @@ class SlackReactions(
             ).build()
         ))
 
-        ButtonsReaction.register(buttons.map { it.first })
+        return ButtonsReaction.createAndRegister(buttons.map { it.first })
     }
 }
