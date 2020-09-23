@@ -1,6 +1,7 @@
 package com.justai.jaicf.core.test.activation
 
 import com.justai.jaicf.activator.intent.IntentActivatorContext
+import com.justai.jaicf.activator.selection.ActivationByConfidence
 import com.justai.jaicf.activator.selection.ActivationByContextPenalty
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
@@ -10,8 +11,9 @@ import com.justai.jaicf.model.state.StatePath
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
-internal class ActivationByContextPenaltyTest {
-    private val strategy = ActivationByContextPenalty(0.2)
+internal class ActivationSelectorTest {
+    private val selectorByContext = ActivationByContextPenalty(0.2)
+    private val selectorByConfidence = ActivationByConfidence()
 
     private val currentNode = "/some/current/state"
     private val childNode = "/some/current/state/child"
@@ -30,10 +32,10 @@ internal class ActivationByContextPenaltyTest {
             Activation(siblingNode, StrictActivatorContext())
         )
 
-        val selected = strategy.selectActivation(bc, activations)
+        val selected = selectorByContext.selectActivation(bc, activations)
         assertEquals(childNode, selected.state)
 
-        val ranked = strategy.rankActivationsByPenalty(
+        val ranked = selectorByContext.rankActivationsByPenalty(
             activations,
             StatePath.parse(currentNode)
         )
@@ -48,7 +50,7 @@ internal class ActivationByContextPenaltyTest {
     }
 
     @Test
-    fun `should rank activations with confidence`() {
+    fun `should rank activations with confidence and context`() {
         val activations = listOf(
             Activation(childNode, IntentActivatorContext(0.6F, "")),
             Activation(otherContextNode, IntentActivatorContext(0.9F, "")),
@@ -56,10 +58,10 @@ internal class ActivationByContextPenaltyTest {
             Activation(siblingNode, IntentActivatorContext(0.8F, ""))
         )
 
-        val selected = strategy.selectActivation(bc, activations)
+        val selected = selectorByContext.selectActivation(bc, activations)
         assertEquals(siblingNode, selected.state)
 
-        val ranked = strategy.rankActivationsByPenalty(
+        val ranked = selectorByContext.rankActivationsByPenalty(
             activations,
             StatePath.parse(currentNode)
         )
@@ -71,5 +73,18 @@ internal class ActivationByContextPenaltyTest {
         val second = ranked[1]
         assertEquals(childNode, second.activation.state)
         assertEquals(0.6F, second.adjustedConfidence.toFloat())
+    }
+
+    @Test
+    fun `should rank activations only with confidence`() {
+        val activations = listOf(
+            Activation(childNode, IntentActivatorContext(0.6F, "")),
+            Activation(otherContextNode, IntentActivatorContext(0.9F, "")),
+            Activation(rootNode, IntentActivatorContext(0.7F, "")),
+            Activation(siblingNode, IntentActivatorContext(0.8F, ""))
+        )
+
+        val selected = selectorByConfidence.selectActivation(bc, activations)
+        assertEquals(childNode, selected.state)
     }
 }

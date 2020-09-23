@@ -13,7 +13,7 @@ import com.justai.jaicf.model.state.StatePath
  * @see com.justai.jaicf.BotEngine
  * @see com.justai.jaicf.activator.Activator
  * */
-class ActivationByConfidence : ActivationSelector {
+class ActivationByConfidence : ActivationSelector() {
 
     /**
      * @param botContext a current user's [BotContext]
@@ -24,7 +24,7 @@ class ActivationByConfidence : ActivationSelector {
      * @see ActivationSelector
      */
     override fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
-        val sorted = activations.sortedByDescending { it.context.confidence }
+        val sorted = activations.sortedByContext(StatePath.parse(botContext.dialogContext.currentContext))
         val first = StatePath.parse(sorted.first().state!!)
         return sorted.takeWhile {
             StatePath.parse(it.state!!).parent == first.parent

@@ -18,7 +18,7 @@ import com.justai.jaicf.model.state.StatePath
  * */
 class ActivationByContextPenalty(
     private val stepUpPenaltyBase: Double = 0.2
-) : ActivationSelector, WithLogger {
+) : ActivationSelector(), WithLogger {
 
     internal data class ActivationWithScore(val activation: Activation, val adjustedConfidence: Double)
 
@@ -57,27 +57,12 @@ class ActivationByContextPenalty(
     ): List<ActivationWithScore> {
         return activations.mapNotNull { activation ->
             activation.state?.let { targetState ->
-                val statesDiff = getStatesDiffLevel(StatePath.parse(targetState), currentState)
+                val statesDiff = calculateStatesDifference(StatePath.parse(targetState), currentState)
                 val changeContextPenalty = calculatePenalty(statesDiff)
                 val score = activation.context.confidence * changeContextPenalty
                 ActivationWithScore(activation, score)
             }
         }.sortedByDescending { it.adjustedConfidence }
-    }
-
-    /**
-     * Calculates context difference (number of transitions) between targetState and currentState
-     * e.g.: currentState = "/root/child1/child2/child3", targetState = "/root/child1"; diff level = 2
-     *
-     * @param targetState possible target state by activation
-     * @param currentContext current context
-     *
-     * @return number of transitions between current and target state
-     * */
-    private fun getStatesDiffLevel(targetState: StatePath, currentContext: StatePath): Int {
-        val toState = targetState.components
-        val fromState = currentContext.components
-        return fromState.size - fromState.zip(toState).takeWhile { it.first == it.second }.count()
     }
 
     /**
