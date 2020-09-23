@@ -2,11 +2,14 @@ package com.justai.jaicf.builder
 
 import com.justai.jaicf.activator.catchall.CatchAllActivationRule
 import com.justai.jaicf.activator.event.EventActivationRule
-import com.justai.jaicf.activator.intent.IntentActivationRule
+import com.justai.jaicf.activator.intent.AnyIntentActivationRule
+import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.context.ActionContext
-import com.justai.jaicf.hook.*
-import com.justai.jaicf.model.*
+import com.justai.jaicf.hook.BotHook
+import com.justai.jaicf.hook.BotHookAction
+import com.justai.jaicf.hook.BotHookException
+import com.justai.jaicf.model.ActionAdapter
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
@@ -276,7 +279,21 @@ abstract class ScenarioBuilder(
         fun intent(intent: String) = add(Transition(
             fromState,
             toState,
-            IntentActivationRule(intent)
+            IntentByNameActivationRule(intent)
+        ))
+
+        /**
+         * Appends any-intent activator to this state. Means that any intent can activate this state.
+         * Requires a [com.justai.jaicf.activator.intent.IntentActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
+         *
+         * @see com.justai.jaicf.activator.intent.IntentActivator
+         * @see com.justai.jaicf.api.BotApi
+         */
+        fun anyIntent() = add(
+            Transition(
+            fromState,
+            toState,
+            AnyIntentActivationRule()
         ))
     }
 
