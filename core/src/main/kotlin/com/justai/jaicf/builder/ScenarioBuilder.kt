@@ -121,6 +121,37 @@ abstract class ScenarioBuilder(
     }
 
     /**
+     * Appends an any-intent state to the scenario.
+     * This state will be activated for every request that has any intent in its input, recognized by
+     * any registered IntentActivator.
+     *
+     * The current dialogue's context won't be changed.
+     * This builder requires an IntentActivator to be added to the activators list of your BotEngine instance.
+     *
+     * ```
+     * anyIntent {
+     *   activator.caila?.topIntent?.answer?.let {
+     *       reactions.say(it)
+     *   }
+     * }
+     * ```
+     *
+     * @param state an optional state name ("anyIntent" by default)
+     * @param action an action block that will be executed
+     */
+    fun anyIntent(
+        state: String = "anyIntent",
+        action: ActionContext.() -> Unit
+    ) = state(
+        name = state,
+        noContext = true,
+        body = {
+            activators { anyIntent() }
+            action(action)
+        }
+    )
+
+    /**
      * Appends a fallback state to the scenario.
      * This state will be activated for every request that doesn't match to any other state.
      * The current dialogue's context won't be changed.
@@ -289,8 +320,7 @@ abstract class ScenarioBuilder(
          * @see com.justai.jaicf.activator.intent.IntentActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        fun anyIntent() = add(
-            Transition(
+        internal fun anyIntent() = add(Transition(
             fromState,
             toState,
             AnyIntentActivationRule()
