@@ -35,23 +35,23 @@ class FacebookReactions(
 
     fun queryUserProfile() = messenger.queryUserProfile(request.event.senderId())
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         sendResponse(TextMessage.create(text))
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
 
-    override fun image(url: String) {
+    override fun image(url: String): ImageReaction {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.IMAGE)
-        ImageReaction.register(url)
+        return ImageReaction.createAndRegister(url)
     }
 
     fun video(url: String) {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.VIDEO)
     }
 
-    override fun audio(url: String) {
+    override fun audio(url: String): AudioReaction {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.AUDIO)
-        AudioReaction.register(url)
+        return AudioReaction.createAndRegister(url)
     }
 
     fun file(url: String) {

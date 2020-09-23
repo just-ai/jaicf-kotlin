@@ -20,36 +20,36 @@ class AimyboxReactions(
 
     override fun say(text: String) = say(text, null, null)
 
-    fun say(text: String, tts: String? = null, lang: String? = null) {
+    fun say(text: String, tts: String? = null, lang: String? = null): SayReaction {
         addReply(TextReply(text, tts, lang))
         if (response.text.isNullOrEmpty()) {
             response.text = text
         }
 
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
 
     fun question(question: Boolean) {
         response.question = question
     }
 
-    override fun audio(url: String) {
+    override fun audio(url: String): AudioReaction {
         addReply(AudioReply(url))
-        AudioReaction.register(url)
+        return AudioReaction.createAndRegister(url)
     }
 
-    override fun image(url: String) {
+    override fun image(url: String): ImageReaction {
         addReply(ImageReply(url))
-        ImageReaction.register(url)
+        return ImageReaction.createAndRegister(url)
     }
 
-    override fun buttons(vararg buttons: String) {
-        buttons(*buttons.map { TextButton(it) }.toTypedArray())
+    override fun buttons(vararg buttons: String): ButtonsReaction {
+        return buttons(*buttons.map { TextButton(it) }.toTypedArray())
     }
 
-    fun buttons(vararg buttons: Button) {
+    fun buttons(vararg buttons: Button): ButtonsReaction {
         addReply(ButtonsReply(buttons.toList()))
-        ButtonsReaction.register(buttons.toList().map { it.text })
+        return ButtonsReaction.createAndRegister(buttons.toList().map { it.text })
     }
 
     fun endConversation() = question(false)

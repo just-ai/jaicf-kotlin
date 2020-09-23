@@ -14,7 +14,7 @@ abstract class ConversationLogger(private val logObfuscators: List<ConversationL
      *
      * @param loggingContext current request's [LoggingContext] with obfuscated input and reactions
      *
-     * @see LoggingReaction
+     * @see Reaction
      * @see LoggingContext
      * @see ConversationLogObfuscator
      * */

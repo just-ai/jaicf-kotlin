@@ -115,11 +115,11 @@ internal class JaicpLogModel private constructor(
                 )
             }
 
-            private fun buildAnswer(reactions: List<LoggingReaction>) = reactions
+            private fun buildAnswer(reactions: List<Reaction>) = reactions
                 .filterIsInstance<SayReaction>()
                 .joinToString(separator = "\n\n")
 
-            private fun buildReplies(reactions: List<LoggingReaction>): List<JsonElement?> = reactions.mapNotNull { r ->
+            private fun buildReplies(reactions: List<Reaction>): List<JsonElement?> = reactions.mapNotNull { r ->
                 when (r) {
                     is SayReaction -> JSON.toJson(TextReply.serializer(), TextReply(text = r.text, state = r.fromState))
                     is ImageReaction -> JSON.toJson(

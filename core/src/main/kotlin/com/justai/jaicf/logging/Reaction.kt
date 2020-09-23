@@ -5,9 +5,9 @@ package com.justai.jaicf.logging
  *
  * @property fromState - state which invoked reaction
  *
- * @see Reactions
+ * @see com.justai.jaicf.reactions.Reactions
  * */
-abstract class LoggingReaction(
+abstract class Reaction(
     open val fromState: String
 )
 
@@ -20,7 +20,7 @@ abstract class LoggingReaction(
 data class SayReaction internal constructor(
     val text: String,
     override val fromState: String
-) : LoggingReaction(fromState) {
+) : Reaction(fromState) {
 
     override fun toString(): String = """answer "$text" from state $fromState"""
 
@@ -36,7 +36,7 @@ data class SayReaction internal constructor(
 data class ImageReaction internal constructor(
     val imageUrl: String,
     override val fromState: String
-) : LoggingReaction(fromState) {
+) : Reaction(fromState) {
 
     override fun toString(): String = "imageUrl $imageUrl from state $fromState"
 
@@ -52,7 +52,7 @@ data class ImageReaction internal constructor(
 data class ButtonsReaction internal constructor(
     val buttons: List<String>,
     override val fromState: String
-) : LoggingReaction(fromState) {
+) : Reaction(fromState) {
 
     override fun toString(): String = "buttons $buttons from state $fromState"
 
@@ -68,7 +68,7 @@ data class ButtonsReaction internal constructor(
 data class GoReaction internal constructor(
     val transition: String,
     override val fromState: String
-) : LoggingReaction(fromState) {
+) : Reaction(fromState) {
 
     override fun toString(): String = "transition from state $fromState to state $transition"
 
@@ -81,7 +81,7 @@ data class GoReaction internal constructor(
 data class ChangeStateReaction internal constructor(
     val transition: String,
     override val fromState: String
-) : LoggingReaction(fromState) {
+) : Reaction(fromState) {
 
     override fun toString(): String = "change state from $fromState to state $transition"
 
@@ -97,7 +97,7 @@ data class ChangeStateReaction internal constructor(
 data class AudioReaction internal constructor(
     val audioUrl: String,
     override val fromState: String
-) : LoggingReaction(fromState) {
+) : Reaction(fromState) {
 
     override fun toString(): String = "audio $audioUrl from state $fromState"
 

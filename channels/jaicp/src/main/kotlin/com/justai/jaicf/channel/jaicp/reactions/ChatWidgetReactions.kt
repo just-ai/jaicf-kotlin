@@ -11,26 +11,26 @@ val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
 
 class ChatWidgetReactions : JaicpReactions() {
-    override fun image(url: String) {
-        image(imageUrl = url, caption = null)
+    override fun image(url: String): ImageReaction {
+        return image(imageUrl = url, caption = null)
     }
 
-    fun image(imageUrl: String, caption: String? = null) {
+    fun image(imageUrl: String, caption: String? = null): ImageReaction {
         replies.add(ImageReply(imageUrl, caption))
-        ImageReaction.register(imageUrl)
+        return ImageReaction.createAndRegister(imageUrl)
     }
 
-    fun button(text: String, transition: String? = null) {
+    fun button(text: String, transition: String? = null): ButtonsReaction {
         replies.add(ButtonsReply(Button(text, transition)))
-        ButtonsReaction.register(listOf(text))
+        return ButtonsReaction.createAndRegister(listOf(text))
     }
 
-    override fun buttons(vararg buttons: String) {
-        buttons(buttons.asList())
+    override fun buttons(vararg buttons: String): ButtonsReaction {
+        return buttons(buttons.asList())
     }
 
-    fun buttons(buttons: List<String>) {
+    fun buttons(buttons: List<String>): ButtonsReaction {
         replies.add(ButtonsReply(buttons.map { Button(it) }))
-        ButtonsReaction.register(buttons)
+        return ButtonsReaction.createAndRegister(buttons)
     }
 }

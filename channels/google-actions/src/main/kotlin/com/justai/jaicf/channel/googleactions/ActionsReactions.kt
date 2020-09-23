@@ -33,24 +33,24 @@ class ActionsReactions(
 
     private fun clean(text: String) = text.replace(ssmlRegex, " ")
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         addSimpleResponse(clean(text), text)
-        SayReaction.register(text)
+        return SayReaction.createAndRegister(text)
     }
 
-    override fun buttons(vararg buttons: String) {
+    override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons.forEach { title ->
             response.builder.add(Suggestion().also {
                 it.title = title
             })
         }
-        ButtonsReaction.register(buttons.asList())
+        return ButtonsReaction.createAndRegister(buttons.asList())
     }
 
-    override fun image(url: String) {
+    override fun image(url: String): ImageReaction {
         response.builder.add(Image().setUrl(url))
         simpleResponse = null
-        ImageReaction.register(url)
+        return ImageReaction.createAndRegister(url)
     }
 
     fun endConversation() = response.builder.endConversation()
@@ -92,6 +92,6 @@ class ActionsReactions(
                 )
             })
     }.also {
-        AudioReaction.register(url)
+        AudioReaction.createAndRegister(url)
     }
 }

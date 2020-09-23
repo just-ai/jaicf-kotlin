@@ -6,7 +6,7 @@ import com.justai.jaicf.model.state.StatePath
 
 /**
  * A base abstraction for channel-related reactions.
- * This class contains a collection of base methods for scenario state managing and methods to create [LoggingReaction] objects.
+ * This class contains a collection of base methods for scenario state managing and methods to create [Reaction] objects.
  * Also there is a place for response building methods that should be implemented by every channel-related reactions class.
  *
  * Usage example:
@@ -25,9 +25,9 @@ import com.justai.jaicf.model.state.StatePath
  * ```
  * @see BotContext
  * @see ResponseReactions
- * @see LoggingReaction
+ * @see Reaction
  */
-abstract class Reactions : LoggingReactionRegistrar() {
+abstract class Reactions : ReactionRegistrar() {
 
     override lateinit var botContext: BotContext
 
@@ -48,7 +48,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
         callbackState?.let {
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
-        GoReaction.register(path)
+        GoReaction.createAndRegister(path)
     }
 
     /**
@@ -64,7 +64,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
             val currentState = StatePath.parse(dialogContext.currentState)
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
-        ChangeStateReaction.register(path)
+        ChangeStateReaction.createAndRegister(path)
     }
 
     /**
@@ -79,7 +79,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
         result?.let { botContext.result = it }
         return state?.also {
             go(it)
-            GoReaction.register(it)
+            GoReaction.createAndRegister(it)
         }
     }
 
@@ -95,7 +95,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
         result?.let { botContext.result = it }
         return state?.also {
             changeState(it)
-            ChangeStateReaction.register(it)
+            ChangeStateReaction.createAndRegister(it)
         }
     }
 
@@ -105,7 +105,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
      *
      * @param text a raw text to append to the response
      */
-    abstract fun say(text: String)
+    abstract fun say(text: String): SayReaction
 
     /**
      * Appends image to the response.
@@ -113,7 +113,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
      *
      * @param url a full URL of the image file
      */
-    open fun image(url: String) {}
+    open fun image(url: String): ImageReaction = ImageReaction(url, currentState)
 
     /**
      * Appends buttons to the response.
@@ -121,7 +121,7 @@ abstract class Reactions : LoggingReactionRegistrar() {
      *
      * @param buttons a collection of text buttons
      */
-    open fun buttons(vararg buttons: String) {}
+    open fun buttons(vararg buttons: String): ButtonsReaction = ButtonsReaction(buttons.asList(), currentState)
 
     /**
      * Appends audio to the response
@@ -129,6 +129,6 @@ abstract class Reactions : LoggingReactionRegistrar() {
      *
      * @param url of audio
      * */
-    open fun audio(url: String) {}
+    open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
 }
 

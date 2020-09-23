@@ -11,7 +11,7 @@ import com.justai.jaicf.context.BotContext
  * This information is further passed to [ConversationLogger] to perform logging.
  *
  * @see ConversationLogger
- * @see LoggingReaction
+ * @see Reaction
  * */
 data class LoggingContext(
     val httpBotRequest: HttpBotRequest? = null,
@@ -19,6 +19,6 @@ data class LoggingContext(
     val botContext: BotContext,
     val request: BotRequest,
     val firstState: String = botContext.dialogContext.currentState,
-    val reactions: MutableList<LoggingReaction> = mutableListOf(),
+    val reactions: MutableList<Reaction> = mutableListOf(),
     val input: String = request.input
 )
