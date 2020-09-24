@@ -1,6 +1,5 @@
 package com.justai.jaicf.channel.jaicp.dto
 
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 

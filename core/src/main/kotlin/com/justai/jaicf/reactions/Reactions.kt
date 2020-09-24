@@ -48,7 +48,7 @@ abstract class Reactions : ReactionRegistrar() {
         callbackState?.let {
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
-        GoReaction.createAndRegister(path)
+        GoReaction.create(path)
     }
 
     /**
@@ -64,7 +64,7 @@ abstract class Reactions : ReactionRegistrar() {
             val currentState = StatePath.parse(dialogContext.currentState)
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
-        ChangeStateReaction.createAndRegister(path)
+        ChangeStateReaction.create(path)
     }
 
     /**
@@ -79,7 +79,7 @@ abstract class Reactions : ReactionRegistrar() {
         result?.let { botContext.result = it }
         return state?.also {
             go(it)
-            GoReaction.createAndRegister(it)
+            GoReaction.create(it)
         }
     }
 
@@ -95,7 +95,7 @@ abstract class Reactions : ReactionRegistrar() {
         result?.let { botContext.result = it }
         return state?.also {
             changeState(it)
-            ChangeStateReaction.createAndRegister(it)
+            ChangeStateReaction.create(it)
         }
     }
 

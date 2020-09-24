@@ -33,7 +33,7 @@ class AliceReactions(
     fun say(text: String, tts: String): SayReaction {
         builder.text += " $text"
         builder.tts += " $tts"
-        return SayReaction.createAndRegister(text)
+        return SayReaction.create(text)
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
@@ -46,7 +46,7 @@ class AliceReactions(
 
     fun buttons(vararg buttons: Button): ButtonsReaction {
         builder.buttons.addAll(buttons)
-        return ButtonsReaction.createAndRegister(buttons.asList().map { it.title })
+        return ButtonsReaction.create(buttons.asList().map { it.title })
     }
 
     override fun image(url: String): ImageReaction {
@@ -55,7 +55,7 @@ class AliceReactions(
 
     fun image(image: Image): ImageReaction {
         builder.card = image
-        return ImageReaction.createAndRegister(image.imageId)
+        return ImageReaction.create(image.imageId)
     }
 
     fun image(
@@ -70,7 +70,7 @@ class AliceReactions(
 
     override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
-        return AudioReaction.createAndRegister(id)
+        return AudioReaction.create(id)
     }
 
     fun endSession() {

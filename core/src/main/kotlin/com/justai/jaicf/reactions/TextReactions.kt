@@ -24,7 +24,7 @@ class TextReactions(
             response.text.isNullOrBlank() -> text
             else -> "${response.text}\n$text"
         }
-        return SayReaction.createAndRegister(text)
+        return SayReaction.create(text)
     }
 }
 

@@ -4,7 +4,6 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.helpers.logging.WithLogger
 
 

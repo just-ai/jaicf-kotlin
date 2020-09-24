@@ -1,7 +1,6 @@
 package com.justai.jaicf.reactions
 
 import com.justai.jaicf.api.BotResponse
-import com.justai.jaicf.model.state.StatePath
 
 /**
  * A base abstraction for reactions that hold a particular channel-related [BotResponse] that could be filled with some replies.

@@ -26,7 +26,7 @@ class AimyboxReactions(
             response.text = text
         }
 
-        return SayReaction.createAndRegister(text)
+        return SayReaction.create(text)
     }
 
     fun question(question: Boolean) {
@@ -35,12 +35,12 @@ class AimyboxReactions(
 
     override fun audio(url: String): AudioReaction {
         addReply(AudioReply(url))
-        return AudioReaction.createAndRegister(url)
+        return AudioReaction.create(url)
     }
 
     override fun image(url: String): ImageReaction {
         addReply(ImageReply(url))
-        return ImageReaction.createAndRegister(url)
+        return ImageReaction.create(url)
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
@@ -49,7 +49,7 @@ class AimyboxReactions(
 
     fun buttons(vararg buttons: Button): ButtonsReaction {
         addReply(ButtonsReply(buttons.toList()))
-        return ButtonsReaction.createAndRegister(buttons.toList().map { it.text })
+        return ButtonsReaction.create(buttons.toList().map { it.text })
     }
 
     fun endConversation() = question(false)

@@ -37,12 +37,12 @@ class FacebookReactions(
 
     override fun say(text: String): SayReaction {
         sendResponse(TextMessage.create(text))
-        return SayReaction.createAndRegister(text)
+        return SayReaction.create(text)
     }
 
     override fun image(url: String): ImageReaction {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.IMAGE)
-        return ImageReaction.createAndRegister(url)
+        return ImageReaction.create(url)
     }
 
     fun video(url: String) {
@@ -51,7 +51,7 @@ class FacebookReactions(
 
     override fun audio(url: String): AudioReaction {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.AUDIO)
-        return AudioReaction.createAndRegister(url)
+        return AudioReaction.create(url)
     }
 
     fun file(url: String) {
