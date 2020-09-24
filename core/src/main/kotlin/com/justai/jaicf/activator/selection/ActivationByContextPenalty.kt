@@ -4,6 +4,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationSelector
+import com.justai.jaicf.model.activation.calculateStatesDifference
 import com.justai.jaicf.model.state.StatePath
 
 /**
@@ -18,7 +19,7 @@ import com.justai.jaicf.model.state.StatePath
  * */
 class ActivationByContextPenalty(
     private val stepUpPenaltyBase: Double = 0.2
-) : ActivationSelector(), WithLogger {
+) : ActivationSelector, WithLogger {
 
     internal data class ActivationWithScore(val activation: Activation, val adjustedConfidence: Double)
 
@@ -81,6 +82,4 @@ class ActivationByContextPenalty(
         (0 until similarityLevel).fold(1.0) { penalty, level ->
             penalty - stepUpPenaltyBase / (level + 1)
         }
-
 }
-

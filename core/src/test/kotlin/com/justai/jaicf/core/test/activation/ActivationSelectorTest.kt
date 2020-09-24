@@ -20,6 +20,7 @@ internal class ActivationSelectorTest {
     private val otherContextNode = "/another/target/state"
     private val rootNode = "/"
     private val siblingNode = "/some/current/sibling"
+    private val indirectChild = "/some/current/state/child/some/substate"
 
     private val bc = BotContext("", DialogContext().apply { currentContext = currentNode })
 
@@ -27,9 +28,11 @@ internal class ActivationSelectorTest {
     fun `should rank strict activations`() {
         val activations = listOf(
             Activation(childNode, StrictActivatorContext()),
+            Activation(currentNode, StrictActivatorContext()),
             Activation(otherContextNode, StrictActivatorContext()),
             Activation(rootNode, StrictActivatorContext()),
-            Activation(siblingNode, StrictActivatorContext())
+            Activation(siblingNode, StrictActivatorContext()),
+            Activation(indirectChild, StrictActivatorContext())
         )
 
         val selected = selectorByContext.selectActivation(bc, activations)
@@ -46,7 +49,11 @@ internal class ActivationSelectorTest {
 
         val second = ranked[1]
         assertEquals(0.8, second.adjustedConfidence)
-        assertEquals(siblingNode, second.activation.state)
+        assertEquals(currentNode, second.activation.state)
+
+        val third = ranked[2]
+        assertEquals(0.8, third.adjustedConfidence)
+        assertEquals(siblingNode, third.activation.state)
     }
 
     @Test
@@ -55,7 +62,8 @@ internal class ActivationSelectorTest {
             Activation(childNode, IntentActivatorContext(0.6F, "")),
             Activation(otherContextNode, IntentActivatorContext(0.9F, "")),
             Activation(rootNode, IntentActivatorContext(0.7F, "")),
-            Activation(siblingNode, IntentActivatorContext(0.8F, ""))
+            Activation(siblingNode, IntentActivatorContext(0.8F, "")),
+            Activation(indirectChild, IntentActivatorContext(0.8F, ""))
         )
 
         val selected = selectorByContext.selectActivation(bc, activations)
@@ -81,7 +89,8 @@ internal class ActivationSelectorTest {
             Activation(childNode, IntentActivatorContext(0.6F, "")),
             Activation(otherContextNode, IntentActivatorContext(0.9F, "")),
             Activation(rootNode, IntentActivatorContext(0.7F, "")),
-            Activation(siblingNode, IntentActivatorContext(0.8F, ""))
+            Activation(siblingNode, IntentActivatorContext(0.8F, "")),
+            Activation(indirectChild, IntentActivatorContext(0.8F, ""))
         )
 
         val selected = selectorByConfidence.selectActivation(bc, activations)

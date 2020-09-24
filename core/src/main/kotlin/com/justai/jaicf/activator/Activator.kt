@@ -4,6 +4,7 @@ import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.activator.event.BaseEventActivator
 import com.justai.jaicf.activator.intent.BaseIntentActivator
 import com.justai.jaicf.activator.regex.RegexActivator
+import com.justai.jaicf.activator.selection.ActivationByConfidence
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
@@ -66,7 +67,7 @@ interface Activator {
     fun activate(
         botContext: BotContext,
         request: BotRequest,
-        activationSelector: ActivationSelector
+        activationSelector: ActivationSelector = ActivationByConfidence()
     ): Activation?
 
 
