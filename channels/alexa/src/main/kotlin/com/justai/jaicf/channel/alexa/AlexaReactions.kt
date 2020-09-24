@@ -38,7 +38,7 @@ class AlexaReactions(
             .withSpeech(speech)
             .withReprompt(speech)
 
-        return SayReaction.createAndRegister(text)
+        return SayReaction.create(text)
     }
 
     override fun audio(url: String): AudioReaction {
@@ -85,7 +85,7 @@ class AlexaReactions(
             .addDirective(playDirective)
             .withShouldEndSession(true)
 
-        return AudioReaction.createAndRegister(url)
+        return AudioReaction.create(url)
     }
 
     fun stopAudioPlayer() {

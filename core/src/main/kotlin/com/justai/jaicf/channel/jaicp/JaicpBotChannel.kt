@@ -1,10 +1,8 @@
 package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.http.HttpBotChannel
-import com.justai.jaicf.channel.http.HttpBotRequest
 
 /**
  * Basic interface for all (native or compatible) JAICP channels.

@@ -38,7 +38,7 @@ internal class ChatAdapterConnector(
                 body = logModel
             }
         } catch (e: Exception) {
-            logger.debug("Failed to produce logs to JAICP", e);
+            logger.debug("Failed to produce logs to JAICP", e)
         }
     }
 }

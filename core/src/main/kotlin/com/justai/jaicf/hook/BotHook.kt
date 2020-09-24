@@ -3,10 +3,8 @@ package com.justai.jaicf.hook
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
-import java.lang.Exception
 
 /**
  * A base interface for every bot hook.

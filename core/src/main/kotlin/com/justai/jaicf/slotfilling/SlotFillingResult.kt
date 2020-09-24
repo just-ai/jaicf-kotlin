@@ -1,8 +1,6 @@
 package com.justai.jaicf.slotfilling
 
-import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.context.ActivatorContext
-import com.justai.jaicf.reactions.Reactions
 
 /**
  * Set of available results of slotfilling processing.

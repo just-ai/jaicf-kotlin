@@ -2,7 +2,6 @@ package com.justai.jaicf.activator.caila
 
 import com.justai.jaicf.activator.caila.dto.CailaAnalyzeResponseData
 import com.justai.jaicf.activator.caila.dto.CailaInferenceResultData
-import com.justai.jaicf.activator.caila.dto.CailaIntentData
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.context.ActivatorContext
 

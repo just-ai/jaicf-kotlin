@@ -17,12 +17,12 @@ class ChatWidgetReactions : JaicpReactions() {
 
     fun image(imageUrl: String, caption: String? = null): ImageReaction {
         replies.add(ImageReply(imageUrl, caption))
-        return ImageReaction.createAndRegister(imageUrl)
+        return ImageReaction.create(imageUrl)
     }
 
     fun button(text: String, transition: String? = null): ButtonsReaction {
         replies.add(ButtonsReply(Button(text, transition)))
-        return ButtonsReaction.createAndRegister(listOf(text))
+        return ButtonsReaction.create(listOf(text))
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
@@ -31,6 +31,6 @@ class ChatWidgetReactions : JaicpReactions() {
 
     fun buttons(buttons: List<String>): ButtonsReaction {
         replies.add(ButtonsReply(buttons.map { Button(it) }))
-        return ButtonsReaction.createAndRegister(buttons)
+        return ButtonsReaction.create(buttons)
     }
 }

@@ -12,9 +12,9 @@ const val DEFAULT_PROXY_URL = "https://bot.jaicp.com"
  * @see JaicpWebhookConnector
  * @see JaicpPollingConnector
  *
- * @param botApi the [BotApi] implementation used to process the requests for all channels
- * @param channels is a list of channels which will be managed by connector
- * @param accessToken can be configured in JAICP Web Interface
+ * @property botApi the [BotApi] implementation used to process the requests for all channels
+ * @property channels is a list of channels which will be managed by connector
+ * @property accessToken can be configured in JAICP Web Interface
  *
  * */
 interface JaicpConnector {

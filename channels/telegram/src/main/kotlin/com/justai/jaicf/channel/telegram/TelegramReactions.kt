@@ -3,7 +3,6 @@ package com.justai.jaicf.channel.telegram
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
-import com.github.kotlintelegrambot.network.Response
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -30,8 +29,8 @@ class TelegramReactions(
         replyMarkup = InlineKeyboardMarkup(
             listOf(inlineButtons.map { InlineKeyboardButton(it, callbackData = it) })
         ).also {
-            SayReaction.createAndRegister(text)
-            ButtonsReaction.createAndRegister(inlineButtons)
+            SayReaction.create(text)
+            ButtonsReaction.create(inlineButtons)
         }
     )
 
@@ -61,7 +60,7 @@ class TelegramReactions(
             replyToMessageId,
             replyMarkup
         )
-        return SayReaction.createAndRegister(text)
+        return SayReaction.create(text)
     }
 
     override fun image(url: String): ImageReaction {
@@ -86,7 +85,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ): ImageReaction {
         api.sendPhoto(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
-        return ImageReaction.createAndRegister(url)
+        return ImageReaction.create(url)
     }
 
     fun sendVideo(
@@ -122,7 +121,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ): AudioReaction {
         api.sendAudio(chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup)
-        return AudioReaction.createAndRegister(url)
+        return AudioReaction.create(url)
     }
 
     fun sendDocument(
