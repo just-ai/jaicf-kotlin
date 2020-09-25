@@ -6,7 +6,7 @@ package com.justai.jaicf.logging
  *
  * @property logObfuscators implementations of [ConversationLogObfuscator], hiding sensitive data in request and reactions.
  *
- * @see ConsoleConversationLogger
+ * @see Slf4jConversationLogger
  * */
 abstract class ConversationLogger(private val logObfuscators: List<ConversationLogObfuscator>) {
     /**

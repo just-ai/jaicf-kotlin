@@ -11,7 +11,7 @@ import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
-import com.justai.jaicf.logging.ConsoleConversationLogger
+import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.model.activation.Activation
@@ -56,7 +56,7 @@ class BotEngine(
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
     private val slotReactor: SlotReactor? = null,
-    private val conversationLoggers: Array<ConversationLogger> = arrayOf(ConsoleConversationLogger())
+    private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
