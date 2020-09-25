@@ -15,7 +15,7 @@ import com.justai.jaicf.helpers.logging.WithLogger
  * @see [ConversationLogger]
  * @see [ConversationLogObfuscator]
  * */
-class ConsoleConversationLogger(
+class Slf4jConversationLogger(
     logObfuscators: List<ConversationLogObfuscator> = listOf()
 ) : ConversationLogger(logObfuscators),
     WithLogger {

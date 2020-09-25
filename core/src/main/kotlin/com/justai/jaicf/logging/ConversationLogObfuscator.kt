@@ -8,7 +8,7 @@ import com.justai.jaicf.api.BotRequest
  * Implementations of this interface should be used to hide sensitive data during logging in [ConversationLogger].
  *
  * @see com.justai.jaicf.logging.ConversationLogger
- * @see com.justai.jaicf.logging.ConsoleConversationLogger
+ * @see com.justai.jaicf.logging.Slf4jConversationLogger
  * */
 interface ConversationLogObfuscator {
 
