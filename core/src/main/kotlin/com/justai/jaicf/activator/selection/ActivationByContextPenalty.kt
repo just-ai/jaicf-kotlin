@@ -4,7 +4,6 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationSelector
-import com.justai.jaicf.model.activation.calculateStatesDifference
 import com.justai.jaicf.model.state.StatePath
 
 /**
@@ -32,39 +31,27 @@ class ActivationByContextPenalty(
      * @see ActivationSelector
      * @see com.justai.jaicf.BotEngine
      */
-    override fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
-        val currentState = StatePath.parse(botContext.dialogContext.currentContext).resolve(".")
-        val activationsByPenalty = rankActivationsByPenalty(activations, currentState)
-        return activationsByPenalty.first().activation.also {
-            logActivationResults(activationsByPenalty)
-        }
-    }
+    override fun selectActivation(botContext: BotContext, activations: List<Activation>) =
+        rankActivationsByPenalty(activations).apply { logActivationResults(this) }.first().activation
 
     private fun logActivationResults(activationsByPenalty: List<ActivationWithScore>) = activationsByPenalty.take(5)
-        .joinToString("\n") { "to ${it.activation.state} with confidence ${it.adjustedConfidence}" }
+        .joinToString("\n") { "to ${it.activation.transition?.toState} with confidence ${it.adjustedConfidence}" }
         .let { logger.debug("Possible transitions:\n$it") }
 
     /**
      * Applies context difference penalty for each activation.
      *
      * @param activations a list of possible activations
-     * @param currentState a state to find activations from
      *
      * @return list of [ActivationWithScore], where score = activation.confidence * penalty
      * */
-    internal fun rankActivationsByPenalty(
-        activations: List<Activation>,
-        currentState: StatePath
-    ): List<ActivationWithScore> {
-        return activations.mapNotNull { activation ->
-            activation.state?.let { targetState ->
-                val statesDiff = calculateStatesDifference(StatePath.parse(targetState), currentState)
-                val changeContextPenalty = calculatePenalty(statesDiff)
-                val score = activation.context.confidence * changeContextPenalty
-                ActivationWithScore(activation, score)
-            }
-        }.sortedByDescending { it.adjustedConfidence }
-    }
+    internal fun rankActivationsByPenalty(activations: List<Activation>) = activations.mapNotNull { activation ->
+        activation.transition?.let { transition ->
+            val changeContextPenalty = calculatePenalty(transition.distance)
+            val score = activation.context.confidence * changeContextPenalty
+            ActivationWithScore(activation, score)
+        }
+    }.sortedByDescending { it.adjustedConfidence }
 
     /**
      * Calculates penalty from [similarityLevel] number of transitions.

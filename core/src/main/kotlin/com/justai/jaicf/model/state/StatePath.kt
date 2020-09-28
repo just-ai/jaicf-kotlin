@@ -101,10 +101,3 @@ class StatePath {
         }
     }
 }
-
-fun StatePath.isIndirectChildOf(other: StatePath): Boolean {
-    if (parent == other.toString()) {
-        return false
-    }
-    return toString().commonPrefixWith(other.toString()) == other.toString()
-}

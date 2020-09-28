@@ -3,7 +3,6 @@ package com.justai.jaicf.activator.selection
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationSelector
-import com.justai.jaicf.model.activation.sortedByContext
 import com.justai.jaicf.model.state.StatePath
 
 /**
@@ -25,10 +24,8 @@ class ActivationByConfidence : ActivationSelector {
      * @see ActivationSelector
      */
     override fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
-        val sorted = activations.sortedByContext(botContext.dialogContext.currentContext)
-        val first = StatePath.parse(sorted.first().state!!)
-        return sorted.takeWhile {
-            StatePath.parse(it.state!!).parent == first.parent
-        }.maxBy { it.context.confidence }!!
+        return activations
+            .groupBy { it.transition?.distance }.entries.first().value
+            .maxBy { it.context.confidence }!!
     }
 }

@@ -6,94 +6,99 @@ import com.justai.jaicf.activator.selection.ActivationByContextPenalty
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.context.StrictActivatorContext
+import com.justai.jaicf.core.test.BaseTest
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.state.StatePath
+import com.justai.jaicf.model.state.StatesTransition
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
-internal class ActivationSelectorTest {
+internal class ActivationSelectorTest : BaseTest() {
     private val selectorByContext = ActivationByContextPenalty(0.2)
     private val selectorByConfidence = ActivationByConfidence()
 
     private val currentNode = "/some/current/state"
-    private val childNode = "/some/current/state/child"
-    private val otherContextNode = "/another/target/state"
-    private val rootNode = "/"
-    private val siblingNode = "/some/current/sibling"
-    private val indirectChild = "/some/current/state/child/some/substate"
+    private val sameState = transitionToState(currentNode)
+    private val child = transitionToState("/some/current/state/child")
+    private val otherContext = transitionToState("/another/target/state")
+    private val root = transitionToState("/")
+    private val sibling = transitionToState("/some/current/sibling")
+    private val indirectChild = transitionToState("/some/current/state/child/some/substate")
 
     private val bc = BotContext("", DialogContext().apply { currentContext = currentNode })
 
     @Test
     fun `should rank strict activations`() {
         val activations = listOf(
-            Activation(childNode, StrictActivatorContext()),
-            Activation(currentNode, StrictActivatorContext()),
-            Activation(otherContextNode, StrictActivatorContext()),
-            Activation(rootNode, StrictActivatorContext()),
-            Activation(siblingNode, StrictActivatorContext()),
+            Activation(child, StrictActivatorContext()),
+            Activation(sameState, StrictActivatorContext()),
+            Activation(otherContext, StrictActivatorContext()),
+            Activation(root, StrictActivatorContext()),
+            Activation(sibling, StrictActivatorContext()),
             Activation(indirectChild, StrictActivatorContext())
         )
 
         val selected = selectorByContext.selectActivation(bc, activations)
-        assertEquals(childNode, selected.state)
+        assertEquals(child, selected.transition)
 
-        val ranked = selectorByContext.rankActivationsByPenalty(
-            activations,
-            StatePath.parse(currentNode)
-        )
-
+        val ranked = selectorByContext.rankActivationsByPenalty(activations)
         val predicted = ranked.first()
+        assertEquals(child, predicted.activation.transition)
         assertEquals(1.0, predicted.adjustedConfidence)
-        assertEquals(childNode, predicted.activation.state)
 
         val second = ranked[1]
-        assertEquals(0.8, second.adjustedConfidence)
-        assertEquals(currentNode, second.activation.state)
+        assertEquals(indirectChild, second.activation.transition)
+        assertEquals(1.0, second.adjustedConfidence)
 
         val third = ranked[2]
+        assertEquals(sameState, third.activation.transition)
         assertEquals(0.8, third.adjustedConfidence)
-        assertEquals(siblingNode, third.activation.state)
+
+        val forth = ranked[3]
+        assertEquals(sibling, forth.activation.transition)
+        assertEquals(0.8, forth.adjustedConfidence)
     }
 
     @Test
     fun `should rank activations with confidence and context`() {
         val activations = listOf(
-            Activation(childNode, IntentActivatorContext(0.6F, "")),
-            Activation(otherContextNode, IntentActivatorContext(0.9F, "")),
-            Activation(rootNode, IntentActivatorContext(0.7F, "")),
-            Activation(siblingNode, IntentActivatorContext(0.8F, "")),
+            Activation(child, IntentActivatorContext(0.6F, "")),
+            Activation(otherContext, IntentActivatorContext(0.9F, "")),
+            Activation(root, IntentActivatorContext(0.7F, "")),
+            Activation(sibling, IntentActivatorContext(0.8F, "")),
             Activation(indirectChild, IntentActivatorContext(0.8F, ""))
         )
 
+        step("Check strict activations. Expect transition to child state.")
         val selected = selectorByContext.selectActivation(bc, activations)
-        assertEquals(siblingNode, selected.state)
+        assertEquals(indirectChild, selected.transition)
 
-        val ranked = selectorByContext.rankActivationsByPenalty(
-            activations,
-            StatePath.parse(currentNode)
-        )
-
+        val ranked = selectorByContext.rankActivationsByPenalty(activations)
         val predicted = ranked.first()
-        assertEquals(siblingNode, predicted.activation.state)
-        assertEquals(0.64F, predicted.adjustedConfidence.toFloat())
+        assertEquals(indirectChild, predicted.activation.transition)
+        assertEquals(0.8F, predicted.adjustedConfidence.toFloat())
 
         val second = ranked[1]
-        assertEquals(childNode, second.activation.state)
-        assertEquals(0.6F, second.adjustedConfidence.toFloat())
+        assertEquals(sibling, second.activation.transition)
+        assertEquals(0.64F, second.adjustedConfidence.toFloat())
     }
 
     @Test
     fun `should rank activations only with confidence`() {
         val activations = listOf(
-            Activation(childNode, IntentActivatorContext(0.6F, "")),
-            Activation(otherContextNode, IntentActivatorContext(0.9F, "")),
-            Activation(rootNode, IntentActivatorContext(0.7F, "")),
-            Activation(siblingNode, IntentActivatorContext(0.8F, "")),
+            Activation(child, IntentActivatorContext(0.6F, "")),
+            Activation(otherContext, IntentActivatorContext(0.9F, "")),
+            Activation(root, IntentActivatorContext(0.7F, "")),
+            Activation(sibling, IntentActivatorContext(0.8F, "")),
             Activation(indirectChild, IntentActivatorContext(0.8F, ""))
         )
 
+        step("Check activation selection by confidence. Indirect child (transition by fromState modifier) should be selected.")
         val selected = selectorByConfidence.selectActivation(bc, activations)
-        assertEquals(childNode, selected.state)
+        assertEquals(indirectChild, selected.transition)
     }
+
+    private fun transitionToState(toState: String) = StatesTransition(
+        fromState = currentNode,
+        toState = toState
+    )
 }

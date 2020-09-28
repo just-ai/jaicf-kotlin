@@ -8,6 +8,7 @@ import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.activation.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
+import com.justai.jaicf.model.state.StatesTransition
 import com.justai.jaicf.model.transition.Transition
 
 /**
@@ -31,7 +32,9 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
         val transitions = generateTransitions(botContext)
 
         val activations = transitions.mapNotNull { transition ->
-            matcher.match(transition.rule)?.let { Activation(transition.toState, it) }
+            matcher.match(transition.rule)?.let {
+                Activation(StatesTransition(transition.fromState, transition.toState), it)
+            }
         }.toList()
 
         if (activations.isEmpty()) return null
