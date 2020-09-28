@@ -3,7 +3,7 @@ package com.justai.jaicf.logging
 /**
  * Abstraction for result of performing some reaction.
  *
- * @property fromState - a state which had invoked a reaction
+ * @property fromState - state a reaction was invoked from
  *
  * @see com.justai.jaicf.reactions.Reactions
  * */
