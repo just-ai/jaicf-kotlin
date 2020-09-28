@@ -7,7 +7,7 @@ import com.justai.jaicf.context.BotContext
 
 /**
  * Internal class used by [ConversationLogger] implementations.
- * This class will accumulate all supported reactions for single requests, also containing [HttpBotRequest] if possible.
+ * This class will accumulate all reactions returned by scenario, also containing [HttpBotRequest] if possible.
  * This information is further passed to [ConversationLogger] to perform logging.
  *
  * @see ConversationLogger

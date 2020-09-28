@@ -3,7 +3,7 @@ package com.justai.jaicf.logging
 /**
  * Abstraction for result of performing some reaction.
  *
- * @property fromState - state which invoked reaction
+ * @property fromState - a state which had invoked a reaction
  *
  * @see com.justai.jaicf.reactions.Reactions
  * */
@@ -22,7 +22,7 @@ data class SayReaction internal constructor(
     override val fromState: String
 ) : Reaction(fromState) {
 
-    override fun toString(): String = """answer "$text" from state $fromState"""
+    override fun toString(): String = """reply "$text" from state $fromState"""
 
     companion object
 }
