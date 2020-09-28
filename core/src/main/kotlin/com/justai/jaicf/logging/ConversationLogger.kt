@@ -20,7 +20,7 @@ abstract class ConversationLogger(private val logObfuscators: List<ConversationL
      * */
     abstract fun doLog(loggingContext: LoggingContext)
 
-    internal fun doLogInternal(loggingContext: LoggingContext) = doLog(
+    internal fun obfuscateAndLog(loggingContext: LoggingContext) = doLog(
         loggingContext.copy(
             input = obfuscateInput(loggingContext),
             reactions = obfuscateReactions(loggingContext)

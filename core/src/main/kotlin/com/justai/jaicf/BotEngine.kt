@@ -119,7 +119,7 @@ class BotEngine(
                 saveContext(cm, botContext, request, reactions)
 
             }
-            conversationLoggers.forEach { it.doLogInternal(loggingContext) }
+            conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
             botContext.cleanTempData()
         }
     }
@@ -155,7 +155,7 @@ class BotEngine(
                 saveContext(cm, botContext, request, reactions)
             }
             saveContext(cm, botContext, request, reactions)
-            conversationLoggers.forEach { it.doLog(reactions.loggingContext) }
+            conversationLoggers.forEach { it.obfuscateAndLog(reactions.loggingContext) }
             shouldReturn = true
         }
         if (res is SlotFillingFinished) {

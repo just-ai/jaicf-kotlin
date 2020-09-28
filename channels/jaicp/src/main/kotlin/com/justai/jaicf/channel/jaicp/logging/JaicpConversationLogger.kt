@@ -2,15 +2,13 @@ package com.justai.jaicf.channel.jaicp.logging
 
 
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
+import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.dto.jaicpNative
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
-import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
-import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
