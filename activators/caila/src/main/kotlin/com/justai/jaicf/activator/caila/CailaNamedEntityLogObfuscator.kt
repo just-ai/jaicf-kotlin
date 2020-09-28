@@ -7,6 +7,8 @@ import com.justai.jaicf.logging.ConversationLogObfuscator
 
 /**
  * Hides named entities in client [BotRequest] text and uses [CailaIntentActivator] for named entity recognition.
+ *
+ * @property predicate to filter found entities in [ActivationContext]. If class is created with list of entities to obfuscate, predicate will be used to filter entities.
  * */
 class CailaNamedEntityLogObfuscator private constructor(
     private val predicate: (String) -> Boolean
