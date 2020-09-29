@@ -1,7 +1,7 @@
 package com.justai.jaicf.model.activation
 
 import com.justai.jaicf.context.ActivatorContext
-import com.justai.jaicf.model.state.StatesTransition
+import com.justai.jaicf.model.state.ActivationTransition
 
 /**
  * The instance of this class produced by every [com.justai.jaicf.activator.Activator] once it handled a request.
@@ -12,6 +12,6 @@ import com.justai.jaicf.model.state.StatesTransition
  * @property context an [ActivatorContext] that contains an activator-related details like named entities, confidence and etc.
  */
 data class Activation(
-    val transition: StatesTransition?,
+    val transition: ActivationTransition?,
     val context: ActivatorContext
 )

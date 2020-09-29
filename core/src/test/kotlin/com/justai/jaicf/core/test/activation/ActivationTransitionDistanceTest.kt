@@ -1,15 +1,15 @@
 package com.justai.jaicf.core.test.activation
 
 import com.justai.jaicf.core.test.BaseTest
-import com.justai.jaicf.model.state.StatesTransition
+import com.justai.jaicf.model.state.ActivationTransition
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
-class StatesTransitionDistanceTest : BaseTest() {
+class ActivationTransitionDistanceTest : BaseTest() {
 
     @Test
     fun `should calculate distance from root`() {
-        fun fromRootDistance(state: String) = StatesTransition("/", state).distance
+        fun fromRootDistance(state: String) = ActivationTransition("/", state).distance
 
         step("Check distance from root to top level state")
         assertEquals(0, fromRootDistance("/child"))
@@ -20,7 +20,7 @@ class StatesTransitionDistanceTest : BaseTest() {
 
     @Test
     fun `should calculate distance to root`() {
-        fun toRootDistance(state: String) = StatesTransition(state, "/").distance
+        fun toRootDistance(state: String) = ActivationTransition(state, "/").distance
 
         step("Check distance of transition to root")
         assertEquals(2, toRootDistance("/some/state"))
@@ -31,7 +31,7 @@ class StatesTransitionDistanceTest : BaseTest() {
 
     @Test
     fun `should calculate distance between two states`() {
-        fun distance(from: String, to: String) = StatesTransition(from, to).distance
+        fun distance(from: String, to: String) = ActivationTransition(from, to).distance
 
         step("Check distance to child state. Child states and transitions by fromState should have least distance.")
         assertEquals(0, distance("/some/state", "/some/state/child"))

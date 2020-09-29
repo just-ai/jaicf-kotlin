@@ -13,7 +13,7 @@ import com.justai.jaicf.hook.*
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.state.StatesTransition
+import com.justai.jaicf.model.state.ActivationTransition
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import com.justai.jaicf.slotfilling.*
@@ -144,7 +144,7 @@ class BotEngine(
         }
         if (res is SlotFillingFinished) {
             botContext.finishSlotFilling()
-            val transition = StatesTransition(
+            val transition = ActivationTransition(
                 botContext.dialogContext.currentState,
                 botContext.dialogContext.nextState!!
             )

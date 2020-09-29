@@ -8,7 +8,7 @@ import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.activation.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
-import com.justai.jaicf.model.state.StatesTransition
+import com.justai.jaicf.model.state.ActivationTransition
 import com.justai.jaicf.model.transition.Transition
 
 /**
@@ -29,13 +29,15 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
         activationSelector: ActivationSelector
     ): Activation? {
         val matcher = provideRuleMatcher(botContext, request)
-        val transitions = generateTransitions(botContext)
+        val stateTransitions = generateTransitions(botContext)
 
-        val activations = transitions.mapNotNull { transition ->
-            matcher.match(transition.rule)?.let {
-                Activation(StatesTransition(transition.fromState, transition.toState), it)
+        val activations = stateTransitions.map { (state, transitions) ->
+            transitions.mapNotNull { transition ->
+                matcher.match(transition.rule)?.let {
+                    Activation(ActivationTransition(state.toString(), transition.toState), it)
+                }
             }
-        }.toList()
+        }.flatten().toList()
 
         if (activations.isEmpty()) return null
         return activationSelector.selectActivation(botContext, activations)
@@ -70,9 +72,11 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
             override fun match(rule: ActivationRule) = (rule as? R)?.let(matcher)
         }
 
-    private fun generateTransitions(botContext: BotContext): Sequence<Transition> {
+    private fun generateTransitions(botContext: BotContext): Map<StatePath, List<Transition>> {
         val currentState = StatePath.parse(botContext.dialogContext.currentContext).resolve(".")
-        val states = generateSequence(currentState) { if (it.toString() == "/") null else it.stepUp() }
-        return states.flatMap { transitions[it.toString()]?.asSequence() ?: emptySequence() }
+        return generateSequence(currentState) { if (it.toString() == "/") null else it.stepUp() }.map { statePath ->
+            val transitions = transitions[statePath.toString()] ?: emptyList()
+            statePath to transitions
+        }.toMap()
     }
 }

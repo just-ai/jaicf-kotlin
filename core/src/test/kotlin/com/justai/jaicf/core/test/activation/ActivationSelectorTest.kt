@@ -8,7 +8,7 @@ import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.core.test.BaseTest
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.state.StatesTransition
+import com.justai.jaicf.model.state.ActivationTransition
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 
@@ -97,7 +97,7 @@ internal class ActivationSelectorTest : BaseTest() {
         assertEquals(indirectChild, selected.transition)
     }
 
-    private fun transitionToState(toState: String) = StatesTransition(
+    private fun transitionToState(toState: String) = ActivationTransition(
         fromState = currentNode,
         toState = toState
     )

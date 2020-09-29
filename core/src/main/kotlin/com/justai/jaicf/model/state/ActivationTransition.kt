@@ -1,6 +1,6 @@
 package com.justai.jaicf.model.state
 
-data class StatesTransition(val fromState: StatePath, val toState: StatePath) {
+data class ActivationTransition(val fromState: StatePath, val toState: StatePath) {
 
     constructor(fromState: String, toState: String) : this(
         StatePath.parse(fromState), StatePath.parse(toState)
