@@ -235,7 +235,6 @@ class BotEngine(
                                 withHook(AfterActionHook(botContext, request, reactions, activator, state))
                             } catch (e: Exception) {
                                 hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, e))
-                                throw RuntimeException("Error on state " + dc.currentState, e)
                             }
                         }
                     }
