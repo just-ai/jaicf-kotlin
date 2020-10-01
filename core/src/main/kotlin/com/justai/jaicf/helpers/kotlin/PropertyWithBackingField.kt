@@ -1,6 +1,6 @@
 package com.justai.jaicf.helpers.kotlin
 
-import com.github.h0tk3y.kotlinFun.util.WeakIdentityHashMap
+import com.justai.jaicf.helpers.java.WeakIdentityHashMap
 import kotlin.reflect.KProperty
 
 class PropertyWithBackingField<R, T : Any>(

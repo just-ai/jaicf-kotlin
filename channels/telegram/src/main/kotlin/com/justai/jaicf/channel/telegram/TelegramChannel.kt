@@ -2,7 +2,10 @@ package com.justai.jaicf.channel.telegram
 
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.*
+import com.github.kotlintelegrambot.dispatcher.callbackQuery
+import com.github.kotlintelegrambot.dispatcher.contact
+import com.github.kotlintelegrambot.dispatcher.location
+import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.updater.Updater
 import com.google.gson.Gson
@@ -13,13 +16,11 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
-import okhttp3.logging.HttpLoggingInterceptor
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/",
-    private val telegramLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC
+    private val telegramApiUrl: String = "https://api.telegram.org/"
 ) : JaicpCompatibleAsyncBotChannel {
 
     private val gson = Gson()
@@ -29,7 +30,6 @@ class TelegramChannel(
     private val bot = bot {
         apiUrl = telegramApiUrl
         token = telegramBotToken
-        logLevel = telegramLogLevel
         botUpdater = updater
 
         dispatch {
