@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.alexa
 
 import com.amazon.ask.dispatcher.request.handler.HandlerInput
 import com.amazon.ask.model.IntentRequest
+import com.amazon.ask.model.interfaces.conversations.APIInvocationRequest
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.IntentBotRequest
@@ -35,4 +36,6 @@ data class AlexaEventRequest(
 ): AlexaBotRequest, EventBotRequest(
     clientId = handlerInput.requestEnvelope.context.system.user.userId,
     input = event
-)
+) {
+    val apiRequest = (handlerInput.request as? APIInvocationRequest)?.apiRequest
+}

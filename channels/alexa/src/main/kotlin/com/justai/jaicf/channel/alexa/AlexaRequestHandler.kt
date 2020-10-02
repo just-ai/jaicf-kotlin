@@ -6,6 +6,7 @@ import com.amazon.ask.model.IntentRequest
 import com.amazon.ask.model.LaunchRequest
 import com.amazon.ask.model.Response
 import com.amazon.ask.model.SessionEndedRequest
+import com.amazon.ask.model.interfaces.conversations.APIInvocationRequest
 import com.amazon.ask.model.interfaces.playbackcontroller.NextCommandIssuedRequest
 import com.amazon.ask.model.interfaces.playbackcontroller.PauseCommandIssuedRequest
 import com.amazon.ask.model.interfaces.playbackcontroller.PlayCommandIssuedRequest
@@ -47,6 +48,7 @@ class AlexaRequestHandler(
             is NextCommandIssuedRequest -> AlexaEvent.NEXT
             is PreviousCommandIssuedRequest -> AlexaEvent.PREV
             is PlayCommandIssuedRequest -> AlexaEvent.PLAY
+            is APIInvocationRequest -> (input.request as APIInvocationRequest).apiRequest.name
 
             else -> null
         }?.let {
