@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
 
-    api("com.amazon.alexa:ask-sdk:2.27.1")
+    api("com.amazon.alexa:ask-sdk:2.35.0")
 }
 
 tasks {

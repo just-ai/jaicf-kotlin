@@ -103,6 +103,10 @@ class AlexaReactions(
         SpeakDirective.builder().withSpeech(text).build()
     )
 
+    fun sendAPIResponse(data: Map<String, Any?>) {
+        response.builder.withApiResponse(data)
+    }
+
     fun sendDirective(directive: Directive) {
         val header = Header.builder()
             .withRequestId(handlerInput.requestEnvelope.request.requestId)
