@@ -13,13 +13,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.coroutineContext
 
-class RequestPoller(private val client: HttpClient) : WithLogger {
+internal class RequestPoller(private val client: HttpClient) : WithLogger {
     fun getUpdates(url: String): Flow<String> = flow {
         while (coroutineContext.isActive) {
             try {
                 client.get<HttpResponse>("$url/getUpdates".toUrl()).let { response ->
                     if (response.status == HttpStatusCode.OK) {
-                        emit(response.receive<String>())
+                        emit(response.receive())
                     } else {
                         delay(500)
                     }

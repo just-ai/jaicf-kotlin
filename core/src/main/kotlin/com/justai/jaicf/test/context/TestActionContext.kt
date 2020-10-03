@@ -10,7 +10,7 @@ import com.justai.jaicf.context.ProcessContext
  */
 data class TestActionContext(
     private val processContext: ProcessContext
-): ActionContext(
+) : ActionContext(
     context = processContext.botContext,
     activator = processContext.activationContext.activation.context,
     request = processContext.request,

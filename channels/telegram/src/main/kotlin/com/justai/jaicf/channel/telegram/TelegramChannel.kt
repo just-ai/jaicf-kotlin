@@ -6,64 +6,86 @@ import com.github.kotlintelegrambot.dispatcher.callbackQuery
 import com.github.kotlintelegrambot.dispatcher.contact
 import com.github.kotlintelegrambot.dispatcher.location
 import com.github.kotlintelegrambot.dispatcher.text
+import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.updater.Updater
+import com.google.gson.Gson
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.BotChannel
-import com.justai.jaicf.channel.jaicp.JaicpExternalPollingChannelFactory
-import okhttp3.logging.HttpLoggingInterceptor
+import com.justai.jaicf.channel.http.HttpBotRequest
+import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
+import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/",
-    private val telegramLogLevel: HttpLoggingInterceptor.Level = HttpLoggingInterceptor.Level.BASIC
-) : BotChannel {
+    private val telegramApiUrl: String = "https://api.telegram.org/"
+) : JaicpCompatibleAsyncBotChannel {
 
-    fun run() {
-        bot {
-            apiUrl = telegramApiUrl
-            token = telegramBotToken
-            logLevel = telegramLogLevel
+    private val gson = Gson()
 
-            dispatch {
+    private lateinit var botUpdater: Updater
 
-                fun process(request: TelegramBotRequest) {
-                    botApi.process(request, TelegramReactions(bot, request))
-                }
+    private val bot = bot {
+        apiUrl = telegramApiUrl
+        token = telegramBotToken
+        botUpdater = updater
 
-                text { _, update ->
-                    update.message?.let {
-                        process(TelegramTextRequest(it))
-                    }
-                }
+        dispatch {
+            fun process(request: TelegramBotRequest, requestContext: RequestContext) {
+                botApi.process(request, TelegramReactions(bot, request), requestContext)
+            }
 
-                callbackQuery { _, update ->
-                    update.callbackQuery?.let {
-                        process(TelegramQueryRequest(it.message!!, it.data))
-                    }
-                }
-
-                location { _, update, location ->
-                    update.message?.let {
-                        process(TelegramLocationRequest(it, location))
-                    }
-                }
-
-                contact { _, update, contact ->
-                    update.message?.let {
-                        process(TelegramContactRequest(it, contact))
-                    }
+            text { _, update ->
+                update.message?.let {
+                    process(TelegramTextRequest(it), RequestContext.fromHttp(update.httpBotRequest))
                 }
             }
-        }.startPolling()
+
+            callbackQuery { _, update ->
+                update.callbackQuery?.let {
+                    process(
+                        TelegramQueryRequest(it.message!!, it.data),
+                        RequestContext.fromHttp(update.httpBotRequest)
+                    )
+                }
+            }
+
+            location { _, update, location ->
+                update.message?.let {
+                    process(TelegramLocationRequest(it, location), RequestContext.fromHttp(update.httpBotRequest))
+                }
+            }
+
+            contact { _, update, contact ->
+                update.message?.let {
+                    process(TelegramContactRequest(it, contact), RequestContext.fromHttp(update.httpBotRequest))
+                }
+            }
+        }
     }
 
-    companion object : JaicpExternalPollingChannelFactory {
-        override val channelType = "telegram"
-        override fun createAndRun(botApi: BotApi, apiUrl: String) = TelegramChannel(
-            botApi = botApi,
-            telegramBotToken = "",
-            telegramApiUrl = apiUrl,
-            telegramLogLevel = HttpLoggingInterceptor.Level.BASIC
-        ).apply { run() }
+    override fun process(request: HttpBotRequest): HttpBotResponse? {
+        val update = gson.fromJson(request.receiveText(), Update::class.java)
+        update.httpBotRequest = request
+        bot.processUpdate(update)
+        return null
     }
+
+    fun run() {
+        bot.startPolling()
+    }
+
+    companion object : JaicpCompatibleAsyncChannelFactory {
+        override val channelType = "telegram"
+        override fun create(botApi: BotApi, apiUrl: String) =
+            TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").also {
+                it.botUpdater.startCheckingUpdates()
+            }
+    }
+}
+
+internal var Update.httpBotRequest: HttpBotRequest by PropertyWithBackingField {
+    HttpBotRequest("".byteInputStream())
 }

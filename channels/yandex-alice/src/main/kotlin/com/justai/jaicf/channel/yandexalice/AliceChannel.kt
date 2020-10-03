@@ -34,7 +34,7 @@ class AliceChannel(
                 request = botRequest,
                 reactions = reactions,
                 contextManager = contextManager,
-                requestContext = RequestContext(newSession = botRequest.session.newSession)
+                requestContext = RequestContext(newSession = botRequest.session.newSession, httpBotRequest = request)
             )
         }
 

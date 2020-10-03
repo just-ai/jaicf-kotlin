@@ -7,11 +7,10 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.helpers.action.smartRandom
 import com.justai.jaicf.reactions.TextReactions
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
-import java.util.*
-
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.RepeatedTest
+import java.util.*
 
 class SmartRandomTest {
 
@@ -24,7 +23,8 @@ class SmartRandomTest {
             StrictActivatorContext(),
             QueryBotRequest("", ""),
             TextReactions(TextResponse()),
-            listOf())
+            listOf()
+        )
     }
 
     @RepeatedTest(100)

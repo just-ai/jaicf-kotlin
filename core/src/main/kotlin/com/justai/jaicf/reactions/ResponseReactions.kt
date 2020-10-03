@@ -11,6 +11,6 @@ import com.justai.jaicf.api.BotResponse
  * @see [Reactions]
  * @see [BotResponse]
  */
-abstract class ResponseReactions<TResponse: BotResponse>(
+abstract class ResponseReactions<TResponse : BotResponse>(
     open val response: TResponse
-): Reactions()
+) : Reactions()

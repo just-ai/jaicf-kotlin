@@ -48,7 +48,7 @@ internal class CailaSlotFillingHelper(
                             botRequest,
                             botContext,
                             reactions,
-                            initialActivationContext,
+                            ctx.initialActivatorContext,
                             slot.name,
                             slot.prompts ?: emptyList()
                         )

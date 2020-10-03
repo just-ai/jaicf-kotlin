@@ -7,8 +7,10 @@ import com.amazon.ask.model.services.DefaultApiConfiguration
 import com.amazon.ask.model.services.directive.*
 import com.amazon.ask.services.ApacheHttpApiClient
 import com.amazon.ask.util.JacksonSerializer
+import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
+import com.justai.jaicf.logging.SayReaction
 
 val Reactions.alexa
     get() = this as? AlexaReactions
@@ -16,7 +18,7 @@ val Reactions.alexa
 class AlexaReactions(
     override val response: AlexaBotResponse,
     private val handlerInput: HandlerInput
-): ResponseReactions<AlexaBotResponse>(response) {
+) : ResponseReactions<AlexaBotResponse>(response) {
 
     private val speeches = mutableListOf<String>()
 
@@ -26,14 +28,21 @@ class AlexaReactions(
             .withSerializer(JacksonSerializer())
             .withApiEndpoint(handlerInput.requestEnvelope.context.system.apiEndpoint)
             .withAuthorizationValue(handlerInput.requestEnvelope.context.system.apiAccessToken)
-            .build())
+            .build()
+    )
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         speeches.add(text)
         val speech = speeches.joinToString(" ")
         response.builder
             .withSpeech(speech)
             .withReprompt(speech)
+
+        return SayReaction.create(text)
+    }
+
+    override fun audio(url: String): AudioReaction {
+        return playAudio(url)
     }
 
     fun playAudio(
@@ -46,14 +55,14 @@ class AlexaReactions(
         background: Image? = null,
         title: String? = null,
         subtitle: String? = null
-    ) {
+    ): AudioReaction {
 
         val stream = Stream.builder()
-                .withOffsetInMilliseconds(offsetInMillis)
-                .withExpectedPreviousToken(previousToken)
-                .withToken(token)
-                .withUrl(url)
-                .build()
+            .withOffsetInMilliseconds(offsetInMillis)
+            .withExpectedPreviousToken(previousToken)
+            .withToken(token)
+            .withUrl(url)
+            .build()
 
         val meta = AudioItemMetadata.builder()
             .withArt(art)
@@ -75,6 +84,8 @@ class AlexaReactions(
         response.builder
             .addDirective(playDirective)
             .withShouldEndSession(true)
+
+        return AudioReaction.create(url)
     }
 
     fun stopAudioPlayer() {

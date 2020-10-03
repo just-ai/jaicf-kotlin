@@ -10,7 +10,7 @@ dependencies {
 
     implementation("javax.servlet:javax.servlet-api" version { javaxServletApi })
 
-    api("org.jetbrains.kotlinx:kotlinx-serialization-runtime" version { sertializationRuntime })
+    api("org.jetbrains.kotlinx:kotlinx-serialization-runtime" version { serializationRuntime })
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core" version { coroutinesCore })
     api("io.ktor:ktor-client-cio" version { ktor })
     api("io.ktor:ktor-client-logging-jvm" version { ktor })

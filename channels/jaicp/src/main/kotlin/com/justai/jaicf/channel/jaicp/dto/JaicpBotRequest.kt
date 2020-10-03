@@ -18,7 +18,8 @@ data class JaicpBotRequest(
     val query: String? = null,
     val rawRequest: JsonObject,
     val userFrom: JsonElement,
-    val event: String? = null
+    val event: String? = null,
+    val startProcessingTime: Long = System.currentTimeMillis()
 ) : BotRequest {
     override val type: BotRequestType = if (query != null) BotRequestType.QUERY else BotRequestType.EVENT
     override val clientId = channelUserId

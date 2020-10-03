@@ -11,6 +11,9 @@ import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
+import com.justai.jaicf.logging.Slf4jConversationLogger
+import com.justai.jaicf.logging.ConversationLogger
+import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
@@ -37,18 +40,23 @@ import com.justai.jaicf.slotfilling.*
  * @param model bot scenario model. Every bot should serve some scenario that implements a business logic of the bot.
  * @param defaultContextManager the default manager that manages a bot's context during the request execution. Can be overriden by the channel itself fot every user's request.
  * @param activators an array of used activator that can handle a request. Note that an order is matter: lower activators won't be called if top-level activator handles a request and a corresponding state is found in scenario.
+ * @param slotReactor an entity to react to filling specified slot.
+ * @param conversationLoggers an array conversation loggers, all of which will log conversation information after request is processed.
  *
  * @see BotApi
  * @see com.justai.jaicf.builder.ScenarioBuilder
  * @see BotContextManager
  * @see BotContext
  * @see ActivatorFactory
+ * @see SlotReactor
+ * @see ConversationLogger
  */
 class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
-    private val slotReactor: SlotReactor? = null
+    private val slotReactor: SlotReactor? = null,
+    private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
     private val activators = activators.map { a ->
@@ -73,6 +81,8 @@ class BotEngine(
     ) {
         val cm = contextManager ?: defaultContextManager
         val botContext = cm.loadContext(request)
+        val loggingContext = LoggingContext(requestContext.httpBotRequest, null, botContext, request)
+        reactions.loggingContext = loggingContext
         reactions.botContext = botContext
 
         processContext(botContext, requestContext)
@@ -87,10 +97,10 @@ class BotEngine(
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
                     ?: selectActivation(botContext, request, skippedActivators)
             }
-
             activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
                 if (first) return
             }.second
+            loggingContext.activationContext = activation
 
             if (activation?.activation == null) {
                 logger.warn("No state selected to handle a request $request")
@@ -101,12 +111,15 @@ class BotEngine(
                     requestContext,
                     botContext,
                     activation,
-                    skippedActivators
+                    skippedActivators,
+                    loggingContext
                 )
 
                 processStates(context)
                 saveContext(cm, botContext, request, reactions)
+
             }
+            conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
             botContext.cleanTempData()
         }
     }
@@ -142,19 +155,26 @@ class BotEngine(
                 saveContext(cm, botContext, request, reactions)
             }
             saveContext(cm, botContext, request, reactions)
+            conversationLoggers.forEach { it.obfuscateAndLog(reactions.loggingContext) }
             shouldReturn = true
         }
         if (res is SlotFillingFinished) {
             botContext.finishSlotFilling()
             activationContext = ActivationContext(
                 activator = getActivatorForName(slotFillingActivatorName),
-                activation = Activation(botContext.dialogContext.nextState, res.activatorContext)
+                activation = Activation(
+                    botContext.dialogContext.nextState,
+                    res.activatorContext
+                )
             )
         }
         if (res is SlotFillingInterrupted) {
             botContext.finishSlotFilling()
             activationContext = state
-                ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
+                ?.let { ActivationContext(null, Activation(
+                    state,
+                    StrictActivatorContext()
+                )) }
                 ?: selectActivation(botContext, request, skippedActivators)
         }
         return shouldReturn to activationContext
@@ -234,8 +254,8 @@ class BotEngine(
                                 state.action.execute(this)
                                 withHook(AfterActionHook(botContext, request, reactions, activator, state))
                             } catch (e: Exception) {
+                                logger.error("Action exception on state ${dc.currentState}", e)
                                 hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, e))
-                                throw RuntimeException("Error on state " + dc.currentState, e)
                             }
                         }
                     }

@@ -3,7 +3,6 @@ package com.justai.jaicf.channel.jaicp.dto
 import com.justai.jaicf.api.BotResponse
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import java.time.OffsetDateTime
 
 @Serializable
 data class JaicpBotResponse(
@@ -22,7 +21,7 @@ data class JaicpBotResponse(
     val version: Int = 1
 ) : BotResponse
 
-fun JaicpBotResponse.Companion.create(
+fun JaicpBotResponse.Companion.fromRequest(
     jaicpBotRequest: JaicpBotRequest,
     rawResponse: JsonElement,
     processingTime: Long = 0,
@@ -36,7 +35,7 @@ fun JaicpBotResponse.Companion.create(
     channelUserId = jaicpBotRequest.channelUserId,
     questionId = jaicpBotRequest.questionId,
     query = jaicpBotRequest.query,
-    timestamp = OffsetDateTime.now().toEpochSecond(),
+    timestamp = System.currentTimeMillis(),
     currentState = currentState,
     processingTime = processingTime
 )

@@ -1,6 +1,9 @@
 package com.justai.jaicf.channel.slack
 
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.logging.SayReaction
 import com.slack.api.bolt.context.ActionRespondUtility
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.context.SayUtility
@@ -18,7 +21,7 @@ val Reactions.slack
 
 class SlackReactions(
     val context: Context
-): Reactions() {
+) : Reactions() {
 
     val client = context.client()
 
@@ -40,26 +43,32 @@ class SlackReactions(
         }
     }
 
-    override fun say(text: String) {
+    override fun say(text: String): SayReaction {
         when (context) {
             is SayUtility -> context.say(text)
             is ActionRespondUtility -> context.respond(text)
         }
+        return SayReaction.create(text)
     }
 
     override fun image(url: String) = image(
-        ImageBlock.builder()
-            .imageUrl(url)
-            .altText(url)
-            .build()
-    )
+            ImageBlock.builder()
+                .imageUrl(url)
+                .altText(url)
+                .build()
+        )
 
-    fun image(image: ImageBlock) = respond(listOf(image))
 
-    override fun buttons(vararg buttons: String)
-            = buttons(*buttons.map { it to it }.toTypedArray())
+    fun image(image: ImageBlock): ImageReaction {
+        respond(listOf(image))
+        return ImageReaction.create(image.imageUrl)
+    }
 
-    fun buttons(vararg buttons: Pair<String, String>) {
+    override fun buttons(vararg buttons: String): ButtonsReaction {
+        return buttons(*buttons.map { it to it }.toTypedArray())
+    }
+
+    fun buttons(vararg buttons: Pair<String, String>): ButtonsReaction {
         respond(listOf(
             ActionsBlock.builder().elements(
                 buttons.map {
@@ -71,5 +80,7 @@ class SlackReactions(
                 }
             ).build()
         ))
+
+        return ButtonsReaction.create(buttons.map { it.first })
     }
 }

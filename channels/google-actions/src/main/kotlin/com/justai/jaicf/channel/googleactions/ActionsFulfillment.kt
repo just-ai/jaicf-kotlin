@@ -9,6 +9,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
+import com.justai.jaicf.context.RequestContext
 import java.util.*
 
 class ActionsFulfillment private constructor(
@@ -22,7 +23,7 @@ class ActionsFulfillment private constructor(
         }
 
         val responseBuilder = app.getResponseBuilder(actionRequest)
-        val botRequest = when(actionRequest.intent) {
+        val botRequest = when (actionRequest.intent) {
             TEXT_INTENT -> ActionsTextRequest(actionRequest)
             else -> ActionsIntentRequest(actionRequest)
         }
@@ -30,7 +31,7 @@ class ActionsFulfillment private constructor(
         val response = ActionsBotResponse(responseBuilder)
         val reactions = ActionsReactions(actionRequest, response)
 
-        botApi.process(botRequest, reactions)
+        botApi.process(botRequest, reactions, RequestContext.fromHttp(request))
 
         return reactions.response.builder.build().toJson().asJsonHttpBotResponse()
     }

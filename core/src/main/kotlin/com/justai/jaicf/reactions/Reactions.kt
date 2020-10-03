@@ -1,11 +1,12 @@
 package com.justai.jaicf.reactions
 
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.logging.*
 import com.justai.jaicf.model.state.StatePath
 
 /**
  * A base abstraction for channel-related reactions.
- * This class contains a collection of base methods for scenario state managing.
+ * This class contains a collection of base methods for scenario state managing and methods to create [Reaction] objects.
  * Also there is a place for response building methods that should be implemented by every channel-related reactions class.
  *
  * Usage example:
@@ -24,10 +25,13 @@ import com.justai.jaicf.model.state.StatePath
  * ```
  * @see BotContext
  * @see ResponseReactions
+ * @see Reaction
  */
-abstract class Reactions {
+abstract class Reactions : ReactionRegistrar() {
 
-    lateinit var botContext: BotContext
+    override lateinit var botContext: BotContext
+
+    override lateinit var loggingContext: LoggingContext
 
     /**
      * Changes the state of scenario and executes it's action block immediately.
@@ -44,6 +48,7 @@ abstract class Reactions {
         callbackState?.let {
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
+        GoReaction.create(path)
     }
 
     /**
@@ -59,6 +64,7 @@ abstract class Reactions {
             val currentState = StatePath.parse(dialogContext.currentState)
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
+        ChangeStateReaction.create(path)
     }
 
     /**
@@ -71,7 +77,10 @@ abstract class Reactions {
         val dialogContext = botContext.dialogContext
         val state = dialogContext.backStateStack.poll()
         result?.let { botContext.result = it }
-        return state?.also { go(it) }
+        return state?.also {
+            go(it)
+            GoReaction.create(it)
+        }
     }
 
     /**
@@ -84,7 +93,10 @@ abstract class Reactions {
         val dialogContext = botContext.dialogContext
         val state = dialogContext.backStateStack.poll()
         result?.let { botContext.result = it }
-        return state?.also { changeState(it) }
+        return state?.also {
+            changeState(it)
+            ChangeStateReaction.create(it)
+        }
     }
 
     /**
@@ -93,7 +105,7 @@ abstract class Reactions {
      *
      * @param text a raw text to append to the response
      */
-    abstract fun say(text: String)
+    abstract fun say(text: String): SayReaction
 
     /**
      * Appends image to the response.
@@ -101,7 +113,7 @@ abstract class Reactions {
      *
      * @param url a full URL of the image file
      */
-    open fun image(url: String) {}
+    open fun image(url: String): ImageReaction = ImageReaction(url, currentState)
 
     /**
      * Appends buttons to the response.
@@ -109,5 +121,14 @@ abstract class Reactions {
      *
      * @param buttons a collection of text buttons
      */
-    open fun buttons(vararg buttons: String) {}
+    open fun buttons(vararg buttons: String): ButtonsReaction = ButtonsReaction(buttons.asList(), currentState)
+
+    /**
+     * Appends audio to the response
+     * Not every channels supports this type of reply.
+     *
+     * @param url of audio
+     * */
+    open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
 }
+

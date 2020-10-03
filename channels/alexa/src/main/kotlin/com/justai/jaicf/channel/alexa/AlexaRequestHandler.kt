@@ -14,6 +14,7 @@ import com.amazon.ask.model.interfaces.playbackcontroller.PreviousCommandIssuedR
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
+import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.context.RequestContext
 import java.util.*
 
@@ -26,11 +27,12 @@ class AlexaRequestHandler(
     override fun handle(input: HandlerInput?): Optional<Response> {
         val request = createRequest(input!!) ?: return Optional.empty()
         val response = AlexaBotResponse(input.responseBuilder)
+        val httpBotRequest = (input.context as HttpBotRequest)
 
         botApi.process(
             request,
             AlexaReactions(response, input),
-            RequestContext(newSession = input.requestEnvelope.session != null && input.requestEnvelope.session.new)
+            RequestContext(newSession = input.requestEnvelope.session != null && input.requestEnvelope.session.new, httpBotRequest = httpBotRequest)
         )
 
         return response.builder.build()

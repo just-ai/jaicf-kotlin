@@ -12,7 +12,15 @@ class ActionAdapter(
         if (context.requestContext is TestRequestContext) {
             action.invoke(TestActionContext(this))
         } else {
-            action.invoke(ActionContext(botContext, activationContext.activation.context, request, reactions, skippedActivators))
+            action.invoke(
+                ActionContext(
+                    botContext,
+                    activationContext.activation.context,
+                    request,
+                    reactions,
+                    skippedActivators
+                )
+            )
         }
     }
 }

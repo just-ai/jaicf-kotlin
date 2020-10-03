@@ -63,9 +63,8 @@ class JaicpWebhookConnector(
         return when (val channel = channelMap[botRequest.channelType]) {
             is JaicpNativeBotChannel -> channel.process(botRequest).deserialized().asJsonHttpBotResponse()
             is JaicpCompatibleBotChannel -> channel.processCompatible(botRequest).deserialized().asJsonHttpBotResponse()
-            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.rawRequest.toString().asHttpBotRequest())
+            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.rawRequest.toString().asHttpBotRequest(request.receiveText()))
             else -> throw RuntimeException("Channel ${botRequest.channelType} is not configured or not supported")
         }
     }
-
 }

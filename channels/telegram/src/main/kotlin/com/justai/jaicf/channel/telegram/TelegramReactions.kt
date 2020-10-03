@@ -1,13 +1,13 @@
 package com.justai.jaicf.channel.telegram
 
 import com.github.kotlintelegrambot.Bot
-import com.github.kotlintelegrambot.entities.InlineKeyboardButton
-import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
-import com.github.kotlintelegrambot.entities.ParseMode
-import com.github.kotlintelegrambot.entities.ReplyMarkup
-import com.github.kotlintelegrambot.entities.inputmedia.InputMedia
+import com.github.kotlintelegrambot.entities.*
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
-import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.*
 
 val Reactions.telegram
     get() = this as? TelegramReactions
@@ -15,12 +15,12 @@ val Reactions.telegram
 class TelegramReactions(
     val api: Bot,
     val request: TelegramBotRequest
-): Reactions() {
+) : Reactions() {
 
     val chatId = request.chatId
 
-    override fun say(text: String) {
-        api.sendMessage(chatId, text)
+    override fun say(text: String): SayReaction {
+        return sendMessage(text)
     }
 
     fun say(text: String, inlineButtons: List<String>) = api.sendMessage(
@@ -28,7 +28,10 @@ class TelegramReactions(
         text,
         replyMarkup = InlineKeyboardMarkup(
             listOf(inlineButtons.map { InlineKeyboardButton(it, callbackData = it) })
-        )
+        ).also {
+            SayReaction.create(text)
+            ButtonsReaction.create(inlineButtons)
+        }
     )
 
     fun say(
@@ -47,10 +50,21 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendMessage(chatId, text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup)
+    ): SayReaction {
+        api.sendMessage(
+            chatId,
+            text,
+            parseMode,
+            disableWebPagePreview,
+            disableNotification,
+            replyToMessageId,
+            replyMarkup
+        )
+        return SayReaction.create(text)
+    }
 
-    override fun image(url: String) {
-        api.sendPhoto(chatId, url)
+    override fun image(url: String): ImageReaction {
+        return sendPhoto(url)
     }
 
     fun image(
@@ -69,7 +83,10 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendPhoto(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
+    ): ImageReaction {
+        api.sendPhoto(chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup)
+        return ImageReaction.create(url)
+    }
 
     fun sendVideo(
         url: String,
@@ -90,6 +107,10 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVoice(chatId, url, duration, disableNotification, replyToMessageId, replyMarkup)
 
+    override fun audio(url: String): AudioReaction {
+        return sendAudio(url)
+    }
+
     fun sendAudio(
         url: String,
         duration: Int? = null,
@@ -98,7 +119,10 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendAudio(chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup)
+    ): AudioReaction {
+        api.sendAudio(chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup)
+        return AudioReaction.create(url)
+    }
 
     fun sendDocument(
         url: String,
@@ -119,7 +143,18 @@ class TelegramReactions(
         disableNotification: Boolean? = null,
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVenue(chatId, latitude, longitude, title, address, foursquareId, foursquareType, disableNotification, replyToMessageId, replyMarkup)
+    ) = api.sendVenue(
+        chatId,
+        latitude,
+        longitude,
+        title,
+        address,
+        foursquareId,
+        foursquareType,
+        disableNotification,
+        replyToMessageId,
+        replyMarkup
+    )
 
     fun sendContact(
         phoneNumber: String,
