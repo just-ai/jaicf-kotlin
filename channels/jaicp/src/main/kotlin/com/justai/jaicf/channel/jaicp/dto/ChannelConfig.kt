@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-internal data class ChannelConfig(
+data class ChannelConfig(
     val channel: String,
     val accountId: String,
     val channelType: String,

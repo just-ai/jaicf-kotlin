@@ -2,8 +2,6 @@ package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
-import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
-import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.polling.Dispatcher
@@ -29,61 +27,26 @@ import io.ktor.client.features.logging.LogLevel
  * @param channels is a list of channels which will be managed by connector
  * */
 class JaicpPollingConnector(
-    override val botApi: BotApi,
-    override val accessToken: String,
-    override val url: String = DEFAULT_PROXY_URL,
-    override val channels: List<JaicpChannelFactory>,
+    botApi: BotApi,
+    accessToken: String,
+    url: String = DEFAULT_PROXY_URL,
+    channels: List<JaicpChannelFactory>,
     logLevel: LogLevel = LogLevel.INFO,
-    httpClient: HttpClient? = null
-) : JaicpConnector,
+    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel)
+) : JaicpConnector(botApi, channels, accessToken, url, httpClient),
     WithLogger {
 
-    private val client = httpClient ?: HttpClientFactory.create(logLevel)
+    private val dispatcher = Dispatcher(httpClient)
 
-    private val dispatcher = Dispatcher(proxyUrl, client)
-    private val chatAdapterClient = ChatAdapterConnector(accessToken, url, client)
-    private val registeredChannels = parseChannels()
-
-    private fun parseChannels(): List<Pair<JaicpChannelFactory, ChannelConfig>> {
-        val registeredChannels: List<ChannelConfig> = chatAdapterClient.listChannels()
-        logger.info("Retrieved ${registeredChannels.size} channels configuration")
-        return registeredChannels.mapNotNull { registeredChannelConfig ->
-            val factoryForChannel: JaicpChannelFactory? = channels.find {
-                it.channelType.toUpperCase() == registeredChannelConfig.channelType
-            }
-            if (factoryForChannel != null) {
-                factoryForChannel to registeredChannelConfig
-            } else {
-                null
-            }
-        }.also {
-            logger.info(
-                "Initializing ${it.size} factories:" +
-                        " ${it.joinToString { (factory, _) -> factory.channelType }}"
-            )
-        }
+    init {
+        super.registerChannels()
     }
 
     fun runBlocking() {
-        registeredChannels.forEach { (factory, channelConfig) ->
-            val token = channelConfig.channel
-            when (factory) {
-                is JaicpCompatibleChannelFactory -> {
-                    dispatcher.registerPolling(factory, factory.create(botApi), token)
-                }
-                is JaicpNativeChannelFactory -> {
-                    dispatcher.registerPolling(factory, factory.create(botApi), token)
-                }
-                is JaicpCompatibleAsyncChannelFactory -> {
-                    dispatcher.registerPolling(
-                        factory = factory,
-                        channel = factory.create(botApi, "$proxyUrl/${token}/${factory.channelType}"),
-                        channelToken = token
-                    )
-                }
-            }
-        }
-
         dispatcher.startPollingBlocking()
+    }
+
+    override fun registerChannel(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
+        dispatcher.registerPolling(channel, getChannelProxyUrl(channelConfig))
     }
 }

@@ -3,8 +3,11 @@ package com.justai.jaicf.channel.jaicp
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
-import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
+import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
+import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.helpers.logging.WithLogger
+import io.ktor.client.HttpClient
+import io.ktor.client.features.logging.LogLevel
 
 
 /**
@@ -24,46 +27,35 @@ import com.justai.jaicf.helpers.logging.WithLogger
  * @param channels is a list of channels which will be managed by connector
  * */
 class JaicpWebhookConnector(
-    override val botApi: BotApi,
-    override val accessToken: String,
-    override val url: String = DEFAULT_PROXY_URL,
-    override val channels: List<JaicpChannelFactory>
+    botApi: BotApi,
+    accessToken: String,
+    url: String = DEFAULT_PROXY_URL,
+    channels: List<JaicpChannelFactory>,
+    logLevel: LogLevel = LogLevel.INFO,
+    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel)
 ) : WithLogger,
     HttpBotChannel,
-    JaicpConnector {
+    JaicpConnector(botApi, channels, accessToken, url, httpClient) {
 
-    private val channelMap: MutableMap<String, HttpBotChannel> = mutableMapOf()
+    private val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
 
     init {
-        channels.forEach { channelFactory ->
-            when (channelFactory) {
-                is JaicpCompatibleChannelFactory -> {
-                    channelMap[channelFactory.channelType] = channelFactory.create(botApi)
-                        .also { logger.info("JAICP-compatible channel has been created for $it") }
-                }
+        super.registerChannels()
+    }
 
-                is JaicpNativeChannelFactory -> {
-                    channelMap[channelFactory.channelType] = channelFactory.create(botApi)
-                        .also { logger.info("JAICP-native channel has been created for $it") }
-                }
-
-                is JaicpCompatibleAsyncChannelFactory -> {
-                    channelMap[channelFactory.channelType] = channelFactory.create(botApi, proxyUrl)
-                        .also { logger.info("JAICP-compatible async channel has been created for $it") }
-                }
-
-                else -> logger.info("Channel type ${channelFactory.channelType} is not supported by JAICP webhook channel")
-            }
-        }
+    override fun registerChannel(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
+        channelMap[channelConfig.channel] = channel
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
-        val botRequest = request.receiveText().asJaicpBotRequest()
+        val botRequest = request.receiveText()
+            .also { logger.debug("Received botRequest: $it") }
+            .asJaicpBotRequest()
 
-        return when (val channel = channelMap[botRequest.channelType]) {
+        return when (val channel = channelMap[botRequest.channelBotId]) {
             is JaicpNativeBotChannel -> channel.process(botRequest).deserialized().asJsonHttpBotResponse()
             is JaicpCompatibleBotChannel -> channel.processCompatible(botRequest).deserialized().asJsonHttpBotResponse()
-            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.rawRequest.toString().asHttpBotRequest(request.receiveText()))
+            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.raw.asHttpBotRequest(botRequest.stringify()))
             else -> throw RuntimeException("Channel ${botRequest.channelType} is not configured or not supported")
         }
     }

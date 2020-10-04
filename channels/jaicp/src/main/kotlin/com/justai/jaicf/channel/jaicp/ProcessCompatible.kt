@@ -12,8 +12,7 @@ internal fun JaicpCompatibleBotChannel.processCompatible(
     botRequest: JaicpBotRequest
 ): JaicpBotResponse {
     val startTime = System.currentTimeMillis()
-    val request =
-        botRequest.rawRequest.toString().asHttpBotRequest(JSON.stringify(JaicpBotRequest.serializer(), botRequest))
+    val request = botRequest.raw.asHttpBotRequest(botRequest.stringify())
     val response = process(request)?.let { response ->
         val rawJson = JSON.parseJson(response.output.toString())
         addRawReply(rawJson)

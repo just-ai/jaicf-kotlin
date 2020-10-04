@@ -6,14 +6,13 @@ import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
-import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 
 
-internal class Dispatcher(private val proxyUrl: String, client: HttpClient) :
+internal class Dispatcher(client: HttpClient) :
     WithLogger,
     CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
@@ -21,18 +20,10 @@ internal class Dispatcher(private val proxyUrl: String, client: HttpClient) :
     private val poller = RequestPoller(client)
     private val sender = ResponseSender(client)
 
-    fun registerPolling(
-        factory: JaicpChannelFactory,
-        channel: JaicpBotChannel,
-        channelToken: String
-    ) = pollingChannels.add(
-        PollingChannel(
-            "$proxyUrl/$channelToken/${factory.channelType}".toUrl(),
-            channel
-        ).also {
-            logger.info("Registered polling for channel $channel")
-        }
-    )
+    fun registerPolling(channel: JaicpBotChannel, proxyUrl: String) {
+        pollingChannels.add(PollingChannel(proxyUrl, channel))
+            .also { logger.info("Registered polling for channel $channel") }
+    }
 
     fun startPollingBlocking() {
         val jobs = pollingChannels.map { channel ->
@@ -43,7 +34,6 @@ internal class Dispatcher(private val proxyUrl: String, client: HttpClient) :
         }
         runBlocking { jobs.joinAll() }
     }
-
 
     private suspend fun runPollingForChannel(channel: PollingChannel) {
         poller.getUpdates(channel.url).collect { rawRequest ->
@@ -57,39 +47,23 @@ internal class Dispatcher(private val proxyUrl: String, client: HttpClient) :
         }
     }
 
-    private fun processAsyncChannel(
-        channel: JaicpCompatibleAsyncBotChannel,
-        request: JaicpBotRequest
-    ) = channel.process(
-        request.rawRequest.toString().asHttpBotRequest(JSON.stringify(JaicpBotRequest.serializer(), request))
-    )
+    private fun processAsyncChannel(channel: JaicpCompatibleAsyncBotChannel, request: JaicpBotRequest) =
+        channel.process(request.raw.asHttpBotRequest(request.stringify()))
 
     private fun processNativeChannel(
         channel: JaicpNativeBotChannel,
         url: String,
         request: JaicpBotRequest
-    ) = sendResponse(
-        botResponse = channel.process(request),
-        url = url
-    )
+    ) = sendResponse(channel.process(request), url)
 
     private fun processCompatibleChannel(
         channel: JaicpCompatibleBotChannel,
         url: String,
         request: JaicpBotRequest
-    ) = sendResponse(
-        botResponse = channel.processCompatible(request),
-        url = url
-    )
+    ) = sendResponse(channel.processCompatible(request), url)
 
-    private fun sendResponse(
-        botResponse: JaicpBotResponse,
-        url: String
-    ) = launch {
-        sender.processResponse(
-            url,
-            JaicpPollingResponse(botResponse.questionId, botResponse)
-        )
+    private fun sendResponse(botResponse: JaicpBotResponse, url: String) = launch {
+        sender.processResponse(url, JaicpPollingResponse(botResponse.questionId, botResponse))
     }
 }
 
