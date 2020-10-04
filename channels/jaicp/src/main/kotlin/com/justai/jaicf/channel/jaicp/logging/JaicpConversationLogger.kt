@@ -64,9 +64,8 @@ class JaicpConversationLogger(
                 JSON.parse(JaicpBotRequest.serializer(), loggingContext.httpBotRequest?.requestMetadata!!)
             }
         } catch (e: Exception) {
+            logger.debug("Logging skipped as loggingContext does not have valid JAICP Request")
             return null
-        }.also {
-            if (it == null) logger.debug("Logging skipped as loggingContext does not have valid JAICP Request")
         }
     }
 }
