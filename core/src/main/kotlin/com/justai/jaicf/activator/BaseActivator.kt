@@ -60,8 +60,9 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
 
     private fun generateTransitions(botContext: BotContext): List<Transition> {
         val currentState = botContext.dialogContext.currentContext
+        val isModal = model.states[currentState]?.modal ?: error("State $currentState is not registered in model")
         return model.transitions.filter {
-            it.fromState == currentState || it.toState == currentState || it.fromState == "/"
+            it.fromState == currentState || it.toState == currentState || (isModal && it.fromState == "/")
         }.distinct()
     }
 }
