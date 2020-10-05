@@ -6,7 +6,6 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 
 /**
@@ -16,19 +15,16 @@ import com.justai.jaicf.model.transition.Transition
  * @see com.justai.jaicf.activator.event.BaseEventActivator
  * @see com.justai.jaicf.activator.intent.BaseIntentActivator
  */
-abstract class BaseActivator(model: ScenarioModel) : Activator {
-
-    private val transitions = model.transitions.groupBy { it.fromState }
+abstract class BaseActivator(private val model: ScenarioModel) : Activator {
 
     override fun activate(botContext: BotContext, request: BotRequest): Activation? {
-        val matcher = provideRuleMatcher(botContext, request)
         val transitions = generateTransitions(botContext)
+        val matcher = provideRuleMatcher(botContext, request)
 
         val activations = transitions.mapNotNull { transition ->
-            matcher.match(transition.rule)?.let { Activation(transition.toState, it) }
-        }.toList()
+            matcher.match(transition.rule)?.let { transition to it }
+        }
 
-        if (activations.isEmpty()) return null
         return selectActivation(botContext, activations)
     }
 
@@ -45,11 +41,18 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
      *
      * @see Activation
      */
-    protected open fun selectActivation(botContext: BotContext, activations: List<Activation>): Activation {
-        val first = StatePath.parse(activations.first().state!!)
-        return activations.takeWhile {
-            StatePath.parse(it.state!!).parent == first.parent
-        }.maxBy { it.context.confidence }!!
+    protected open fun selectActivation(
+        botContext: BotContext,
+        activations: List<Pair<Transition, ActivatorContext>>
+    ): Activation? {
+        val current = botContext.dialogContext.currentContext
+
+        val toChildren = activations.filter { it.first.fromState == current }.maxBy { it.second.confidence }
+        val toCurrent = activations.filter { it.first.toState == current }.maxBy { it.second.confidence }
+        val fromRoot = activations.filter { it.first.fromState == "/" }.maxBy { it.second.confidence }
+
+        val best = toChildren ?: toCurrent ?: fromRoot
+        return best?.let { Activation(it.first.toState, it.second) }
     }
 
     /**
@@ -81,9 +84,10 @@ abstract class BaseActivator(model: ScenarioModel) : Activator {
             override fun match(rule: ActivationRule) = (rule as? R)?.let(matcher)
         }
 
-    private fun generateTransitions(botContext: BotContext): Sequence<Transition> {
-        val currentState = StatePath.parse(botContext.dialogContext.currentContext).resolve(".")
-        val states = generateSequence(currentState) { if (it.toString() == "/") null else it.stepUp() }
-        return states.flatMap { transitions[it.toString()]?.asSequence() ?: emptySequence() }
+    private fun generateTransitions(botContext: BotContext): List<Transition> {
+        val currentState = botContext.dialogContext.currentContext
+        return model.transitions.filter {
+            it.fromState == currentState || it.toState == currentState || it.fromState == "/"
+        }.distinct()
     }
 }
