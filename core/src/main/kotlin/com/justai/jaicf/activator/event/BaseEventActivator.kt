@@ -21,7 +21,7 @@ open class BaseEventActivator(model: ScenarioModel) : BaseActivator(model), Even
     override fun canHandle(request: BotRequest) = request.hasEvent()
 
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest) = ruleMatcher<EventActivationRule> {
-        if (it.event == request.input) EventActivatorContext(request.input) else null
+        if (it.eventMatches(request.input)) EventActivatorContext(request.input) else null
     }
 
     companion object : ActivatorFactory {

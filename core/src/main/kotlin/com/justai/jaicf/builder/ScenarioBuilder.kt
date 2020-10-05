@@ -1,7 +1,8 @@
 package com.justai.jaicf.builder
 
 import com.justai.jaicf.activator.catchall.CatchAllActivationRule
-import com.justai.jaicf.activator.event.EventActivationRule
+import com.justai.jaicf.activator.event.AnyEventActivationRule
+import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
@@ -111,7 +112,7 @@ abstract class ScenarioBuilder(
         sb.body()
 
         if (model.states[sb.path.toString()] != null) {
-            throw IllegalStateException("Dublicated declaration of state with path: ${sb.path}")
+            throw IllegalStateException("Duplicated declaration of state with path: ${sb.path}")
         }
 
         model.states[sb.path.toString()] = sb.build()
@@ -119,37 +120,6 @@ abstract class ScenarioBuilder(
         statesStack.removeLast()
         currentState = statesStack.last
     }
-
-    /**
-     * Appends an any-intent state to the scenario.
-     * This state will be activated for every request that has any intent in its input, recognized by
-     * any registered IntentActivator.
-     *
-     * The current dialogue's context won't be changed.
-     * This builder requires an IntentActivator to be added to the activators list of your BotEngine instance.
-     *
-     * ```
-     * anyIntent {
-     *   activator.caila?.topIntent?.answer?.let {
-     *       reactions.say(it)
-     *   }
-     * }
-     * ```
-     *
-     * @param state an optional state name ("anyIntent" by default)
-     * @param action an action block that will be executed
-     */
-    fun anyIntent(
-        state: String = "anyIntent",
-        action: ActionContext.() -> Unit
-    ) = state(
-        name = state,
-        noContext = true,
-        body = {
-            activators { anyIntent() }
-            action(action)
-        }
-    )
 
     /**
      * Appends a fallback state to the scenario.
@@ -297,7 +267,20 @@ abstract class ScenarioBuilder(
         fun event(event: String) = add(Transition(
                 fromState,
                 toState,
-                EventActivationRule(event)
+                EventByNameActivationRule(event)
+        ))
+
+        /**
+         * Appends any-event activator to this state. Means that any intent can activate this state.
+         * Requires a [com.justai.jaicf.activator.event.EventActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
+         *
+         * @see com.justai.jaicf.activator.event.EventActivator
+         * @see com.justai.jaicf.api.BotApi
+         */
+        fun anyEvent() = add(Transition(
+            fromState,
+            toState,
+            AnyEventActivationRule()
         ))
 
         /**
@@ -320,7 +303,7 @@ abstract class ScenarioBuilder(
          * @see com.justai.jaicf.activator.intent.IntentActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        internal fun anyIntent() = add(Transition(
+        fun anyIntent() = add(Transition(
             fromState,
             toState,
             AnyIntentActivationRule()
