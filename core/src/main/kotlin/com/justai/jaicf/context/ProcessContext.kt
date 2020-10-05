@@ -14,6 +14,5 @@ data class ProcessContext(
     val requestContext: RequestContext,
     val botContext: BotContext,
     val activationContext: ActivationContext,
-    val skippedActivators: List<ActivatorContext>,
     val loggingContext: LoggingContext
 )
