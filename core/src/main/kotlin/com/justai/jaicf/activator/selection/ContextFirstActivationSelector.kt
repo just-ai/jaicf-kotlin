@@ -1,4 +1,4 @@
-package com.justai.jaicf.model.activation.selection
+package com.justai.jaicf.activator.selection
 
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
