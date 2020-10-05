@@ -33,7 +33,7 @@ internal class CailaSlotFillingHelper(
         }
 
         val actionContext =
-            ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions, mutableListOf())
+            ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions)
 
         val filled = fillSlots(ctx, botRequest.input)
         for (slot in required) {

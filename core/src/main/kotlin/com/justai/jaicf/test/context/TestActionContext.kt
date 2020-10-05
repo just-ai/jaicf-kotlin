@@ -14,8 +14,7 @@ data class TestActionContext(
     context = processContext.botContext,
     activator = processContext.activationContext.activation.context,
     request = processContext.request,
-    reactions = processContext.reactions,
-    skippedActivators = processContext.skippedActivators
+    reactions = processContext.reactions
 ) {
     private val requestContext = processContext.requestContext as TestRequestContext
 
