@@ -4,13 +4,11 @@ import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.activator.selection.ActivationSelector
+import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
-import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.ProcessContext
-import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.context.StrictActivatorContext
+import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -65,8 +63,13 @@ class BotEngine(
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
-    private val activators = activators.map { a ->
-        a.create(model)
+    private val activators = activators.map { it.create(model) }.let {
+        val catchAllActivator = CatchAllActivator.create(model)
+        if (it.none { a -> a.name ==  catchAllActivator.name }) {
+            it + catchAllActivator
+        } else {
+            it
+        }
     }
 
     /**
