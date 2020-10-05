@@ -1,4 +1,4 @@
-package com.justai.jaicf.model.activation.selection
+package com.justai.jaicf.activator.selection
 
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
@@ -15,7 +15,8 @@ import com.justai.jaicf.model.transition.Transition
  * 2. The current state itself;
  * 3. States available from the root of scenario.
  */
-open class ContextRankingActivationSelector : ActivationSelector {
+open class ContextRankingActivationSelector :
+    ActivationSelector {
     override fun selectActivation(
         botContext: BotContext,
         activations: List<Pair<Transition, ActivatorContext>>

@@ -15,7 +15,7 @@ import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.model.activation.selection.ActivationSelector
+import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions

@@ -5,7 +5,7 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
-import com.justai.jaicf.model.activation.selection.ActivationSelector
+import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.transition.Transition
 
