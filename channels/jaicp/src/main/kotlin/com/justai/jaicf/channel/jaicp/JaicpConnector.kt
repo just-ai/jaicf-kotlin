@@ -39,17 +39,17 @@ abstract class JaicpConnector(
             when (factory) {
                 is JaicpCompatibleChannelFactory -> {
                     registerChannel(factory.create(botApi), cfg)
-                        .also { logger.info("JAICP-compatible channel has been created for $it") }
+                        .also { logger.info("JAICP-compatible channel has been created for ${factory.channelType}") }
                 }
 
                 is JaicpNativeChannelFactory -> {
                     registerChannel(factory.create(botApi), cfg)
-                        .also { logger.info("JAICP-native channel has been created for $it") }
+                        .also { logger.info("JAICP-native channel has been created for ${factory.channelType}") }
                 }
 
                 is JaicpCompatibleAsyncChannelFactory -> {
                     registerChannel(factory.create(botApi, getChannelProxyUrl(cfg)), cfg)
-                        .also { logger.info("JAICP-compatible async channel has been created for $it") }
+                        .also { logger.info("JAICP-compatible async channel has been created for ${factory.channelType}") }
                 }
                 else -> logger.info("Channel type ${factory.channelType} is not added to list of channels in BotEngine")
             }
@@ -62,7 +62,7 @@ abstract class JaicpConnector(
 
         return channels.flatMap { factory ->
             registeredChannels.mapNotNull {
-                if (factory.channelType.toUpperCase() == it.channelType) {
+                if (factory.channelType.equals(it.channelType, ignoreCase = true)) {
                     factory to it
                 } else
                     null
