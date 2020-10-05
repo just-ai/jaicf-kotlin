@@ -8,6 +8,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
+import com.justai.jaicf.model.activation.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.SlotFillingResult
@@ -24,8 +25,9 @@ class AlexaActivator private constructor(
     override fun canHandle(request: BotRequest) =
         intentActivator.canHandle(request) || eventActivator.canHandle(request)
 
-    override fun activate(botContext: BotContext, request: BotRequest): Activation? {
-        return intentActivator.activate(botContext, request) ?: eventActivator.activate(botContext, request)
+    override fun activate(botContext: BotContext, request: BotRequest, selector: ActivationSelector): Activation? {
+        return intentActivator.activate(botContext, request, selector)
+            ?: eventActivator.activate(botContext, request, selector)
     }
 
     override fun fillSlots(

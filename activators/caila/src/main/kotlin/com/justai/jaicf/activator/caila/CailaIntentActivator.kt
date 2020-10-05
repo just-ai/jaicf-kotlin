@@ -44,7 +44,9 @@ class CailaIntentActivator(
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
         val results = client.analyze(request.input) ?: return emptyList()
-        return results.inference.variants.map { CailaIntentActivatorContext(results, it) }
+        return results.inference.variants.filter {
+            it.confidence >= settings.confidenceThreshold
+        }.map { CailaIntentActivatorContext(results, it) }
     }
 
     class Factory(private val settings: CailaNLUSettings) : ActivatorFactory {

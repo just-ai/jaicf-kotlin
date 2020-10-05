@@ -11,10 +11,11 @@ import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
-import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.activation.Activation
+import com.justai.jaicf.model.activation.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -40,6 +41,7 @@ import com.justai.jaicf.slotfilling.*
  * @param model bot scenario model. Every bot should serve some scenario that implements a business logic of the bot.
  * @param defaultContextManager the default manager that manages a bot's context during the request execution. Can be overriden by the channel itself fot every user's request.
  * @param activators an array of used activator that can handle a request. Note that an order is matter: lower activators won't be called if top-level activator handles a request and a corresponding state is found in scenario.
+ * @param activationSelector a selector that is used for selecting the most relevant [ActivationSelector] from all possible.
  * @param slotReactor an entity to react to filling specified slot.
  * @param conversationLoggers an array conversation loggers, all of which will log conversation information after request is processed.
  *
@@ -55,6 +57,7 @@ class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory>,
+    private val activationSelector: ActivationSelector = ActivationSelector.default,
     private val slotReactor: SlotReactor? = null,
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
@@ -218,7 +221,7 @@ class BotEngine(
     ): ActivationContext? {
 
         activators.filter { it.canHandle(request) }.forEach { a ->
-            val activation = a.activate(botContext, request)
+            val activation = a.activate(botContext, request, activationSelector)
             if (activation != null) {
                 if (activation.state != null) {
                     return ActivationContext(a, activation)
