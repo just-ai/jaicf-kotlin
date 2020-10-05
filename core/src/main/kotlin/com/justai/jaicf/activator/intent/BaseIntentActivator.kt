@@ -16,9 +16,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  *
  * @see BaseActivator
  */
-open class BaseIntentActivator(
-    model: ScenarioModel
-) : BaseActivator(model), IntentActivator {
+open class BaseIntentActivator(model: ScenarioModel) : BaseActivator(model), IntentActivator {
     override val name = "baseIntentActivator"
 
     override fun canHandle(request: BotRequest) = request.hasIntent()

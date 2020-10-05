@@ -5,6 +5,7 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
+import com.justai.jaicf.model.activation.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.transition.Transition
 
@@ -17,7 +18,7 @@ import com.justai.jaicf.model.transition.Transition
  */
 abstract class BaseActivator(private val model: ScenarioModel) : Activator {
 
-    override fun activate(botContext: BotContext, request: BotRequest): Activation? {
+    override fun activate(botContext: BotContext, request: BotRequest, selector: ActivationSelector): Activation? {
         val transitions = generateTransitions(botContext)
         val matcher = provideRuleMatcher(botContext, request)
 
@@ -25,34 +26,7 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
             matcher.match(transition.rule)?.let { transition to it }
         }
 
-        return selectActivation(botContext, activations)
-    }
-
-    /**
-     * This method is used for selection the most relevant activation.
-     *
-     * Default implementation at first tries to select an activation with the greatest confidence from all children
-     * of the current state, then from all siblings (including current state),
-     * then from all siblings of the parent (including the parent), and so on.
-     *
-     * @param botContext a current user's [BotContext]
-     * @param activations list of all available activations
-     * @return the most relevant [Activation] in terms of certain implementation of [BaseActivator]
-     *
-     * @see Activation
-     */
-    protected open fun selectActivation(
-        botContext: BotContext,
-        activations: List<Pair<Transition, ActivatorContext>>
-    ): Activation? {
-        val current = botContext.dialogContext.currentContext
-
-        val toChildren = activations.filter { it.first.fromState == current }.maxBy { it.second.confidence }
-        val toCurrent = activations.filter { it.first.toState == current }.maxBy { it.second.confidence }
-        val fromRoot = activations.filter { it.first.fromState == "/" }.maxBy { it.second.confidence }
-
-        val best = toChildren ?: toCurrent ?: fromRoot
-        return best?.let { Activation(it.first.toState, it.second) }
+        return selector.selectActivation(botContext, activations)
     }
 
     /**
