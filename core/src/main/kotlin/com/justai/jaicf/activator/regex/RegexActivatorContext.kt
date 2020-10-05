@@ -15,8 +15,8 @@ data class RegexActivatorContext(
     val pattern: Pattern
 ): StrictActivatorContext() {
 
-    val groups = mutableListOf<String>()
-    val namedGroups = mutableMapOf<String, String>()
+    val groups = mutableListOf<String?>()
+    val namedGroups = mutableMapOf<String, String?>()
 }
 
 val ActivatorContext.regex
