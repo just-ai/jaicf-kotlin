@@ -17,5 +17,6 @@ data class ChannelConfig(
     val tariffBlocked: Boolean?,
     val phraseCount: Long?,
     val knowledgeBasePhraseCount: Long?,
-    val externalBotToken: String?
+    val externalBotToken: String?,
+    val blocked: Boolean
 )
