@@ -59,9 +59,11 @@ abstract class Reactions : ReactionRegistrar() {
      */
     fun changeState(path: String, callbackState: String? = null) {
         val dialogContext = botContext.dialogContext
-        dialogContext.nextContext = path
+        val currentState = StatePath.parse(dialogContext.currentState)
+        val resolved = currentState.resolve(path).toString()
+        dialogContext.nextContext = resolved
+
         callbackState?.let {
-            val currentState = StatePath.parse(dialogContext.currentState)
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
         ChangeStateReaction.create(path)
