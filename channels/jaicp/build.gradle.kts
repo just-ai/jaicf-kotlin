@@ -9,6 +9,8 @@ dependencies {
     implementation(kotlin("stdlib", Version.stdLib))
 
     implementation("javax.servlet:javax.servlet-api" version { javaxServletApi })
+    implementation("de.appelgriepsch.logback:logback-gelf-appender" version { logbackGelfAppender })
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j" version { coroutinesCore })
 
     api("org.jetbrains.kotlinx:kotlinx-serialization-runtime" version { serializationRuntime })
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core" version { coroutinesCore })

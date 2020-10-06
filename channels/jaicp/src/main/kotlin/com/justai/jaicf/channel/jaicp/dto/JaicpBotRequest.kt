@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import org.slf4j.MDC
 
 @Serializable
 data class JaicpBotRequest(
@@ -25,6 +26,11 @@ data class JaicpBotRequest(
     override val type: BotRequestType = if (query != null) BotRequestType.QUERY else BotRequestType.EVENT
     override val clientId = channelUserId
     override val input: String = query ?: event ?: ""
+
+    init {
+        MDC.put("requestId", questionId)
+        MDC.put("channelId", channelBotId)
+    }
 
     val raw: String get() = rawRequest.toString()
 

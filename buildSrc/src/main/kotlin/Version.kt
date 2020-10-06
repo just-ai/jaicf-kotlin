@@ -13,6 +13,7 @@ object Version {
     const val serializationRuntime = "0.14.0"
     const val coroutinesCore = "1.3.3"
     const val javaxServletApi = "3.0.1"
+    const val logbackGelfAppender = "1.5"
 }
 
 infix fun String.version(versionProvider: Version.() -> String) =
