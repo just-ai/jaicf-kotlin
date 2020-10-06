@@ -6,8 +6,6 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
-import java.util.*
-import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /**
@@ -27,36 +25,11 @@ class RegexActivator(model: ScenarioModel) : BaseActivator(model) {
             val pattern = Pattern.compile(rule.regex, Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE)
             val matcher = pattern.matcher(request.input)
             if (matcher.matches()) {
-                RegexActivatorContext(pattern).also { storeVariables(it, matcher) }
+                RegexActivatorContext(pattern, matcher)
             } else {
                 null
             }
         }
-
-    private fun storeVariables(context: RegexActivatorContext, m: Matcher) {
-        for (i in 0..m.groupCount()) {
-            context.groups.add(m.group(i))
-        }
-
-        for (e in getGroupNames(m.pattern())) {
-            if (e.value < context.groups.size) {
-                context.namedGroups[e.key] = context.groups[e.value]
-            }
-        }
-    }
-
-    private fun getGroupNames(p: Pattern): Map<String, Int> {
-        val f = p.javaClass.getDeclaredField("namedGroups")
-        f.isAccessible = true
-        val v = f.get(p)
-        return if (v != null) {
-            @Suppress("UNCHECKED_CAST")
-            val namedGroups = v as Map<String, Int>
-            namedGroups
-        } else {
-            Collections.emptyMap()
-        }
-    }
 
     companion object : ActivatorFactory {
         override fun create(model: ScenarioModel) = RegexActivator(model)
