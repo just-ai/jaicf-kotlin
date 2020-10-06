@@ -3,6 +3,8 @@ package com.justai.jaicf
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
+import com.justai.jaicf.activator.selection.ActivationSelector
+import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -15,7 +17,6 @@ import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.activation.Activation
-import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -62,8 +63,13 @@ class BotEngine(
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
-    private val activators = activators.map { a ->
-        a.create(model)
+    private val activators = activators.map { it.create(model) }.let {
+        val catchAllActivator = CatchAllActivator.create(model)
+        if (it.none { a -> a.name ==  catchAllActivator.name }) {
+            it + catchAllActivator
+        } else {
+            it
+        }
     }
 
     /**
@@ -92,15 +98,14 @@ class BotEngine(
 
         withHook(BotRequestHook(botContext, request, reactions)) {
             val state = checkStrictTransitions(botContext, request)
-            val skippedActivators = mutableListOf<ActivatorContext>()
 
             var activation: ActivationContext? = null
             if (!botContext.isActiveSlotFilling()) {
                 activation = state
                     ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
-                    ?: selectActivation(botContext, request, skippedActivators)
+                    ?: selectActivation(botContext, request)
             }
-            activation = fillSlots(activation, botContext, request, reactions, cm, state, skippedActivators).apply {
+            activation = fillSlots(activation, botContext, request, reactions, cm, state).apply {
                 if (first) return
             }.second
             loggingContext.activationContext = activation
@@ -114,7 +119,6 @@ class BotEngine(
                     requestContext,
                     botContext,
                     activation,
-                    skippedActivators,
                     loggingContext
                 )
 
@@ -133,8 +137,7 @@ class BotEngine(
         request: BotRequest,
         reactions: Reactions,
         cm: BotContextManager,
-        state: String?,
-        skippedActivators: MutableList<ActivatorContext>
+        state: String?
     ): Pair<Boolean, ActivationContext?> {
         val slotFillingActivatorName = botContext.getSlotFillingActivator()
         val isSlotFillingSession = slotFillingActivatorName != null
@@ -178,7 +181,7 @@ class BotEngine(
                     state,
                     StrictActivatorContext()
                 )) }
-                ?: selectActivation(botContext, request, skippedActivators)
+                ?: selectActivation(botContext, request)
         }
         return shouldReturn to activationContext
     }
@@ -216,8 +219,7 @@ class BotEngine(
 
     private fun selectActivation(
         botContext: BotContext,
-        request: BotRequest,
-        skippedActivators: MutableList<ActivatorContext>
+        request: BotRequest
     ): ActivationContext? {
 
         activators.filter { it.canHandle(request) }.forEach { a ->
@@ -225,8 +227,6 @@ class BotEngine(
             if (activation != null) {
                 if (activation.state != null) {
                     return ActivationContext(a, activation)
-                } else {
-                    skippedActivators.add(activation.context)
                 }
             }
         }

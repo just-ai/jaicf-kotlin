@@ -14,7 +14,6 @@ import kotlin.random.Random
  * @property activator a particular [ActivatorContext] of the activator that handled the user's request
  * @property request a particular channel-related [BotRequest] that contains request's details
  * @property reactions a particular channel-related [Reactions] that contains methods for building and sending a response
- * @property skippedActivators a list of activators that returned some data but weren't selected by the bot engine because there is no related state in scenario
  *
  * @see [BotContext]
  * @see [ActivatorContext]
@@ -25,8 +24,7 @@ open class ActionContext(
     val context: BotContext,
     val activator: ActivatorContext,
     val request: BotRequest,
-    val reactions: Reactions,
-    val skippedActivators: List<ActivatorContext>
+    val reactions: Reactions
 ) {
 
     /**
