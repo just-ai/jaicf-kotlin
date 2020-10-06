@@ -7,6 +7,7 @@ import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
+import org.slf4j.MDC
 
 const val DEFAULT_PROXY_URL = "https://bot.jaicp.com"
 
@@ -31,8 +32,9 @@ abstract class JaicpConnector(
 ) : WithLogger {
 
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
-    private val registeredChannels = parseChannels()
-
+    private val registeredChannels = parseChannels().also {
+        MDC.put("accountId", it.first().second.accountId)
+    }
 
     protected fun registerChannels() {
         registeredChannels.forEach { (factory, cfg) ->

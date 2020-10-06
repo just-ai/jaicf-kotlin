@@ -10,6 +10,7 @@ import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.slf4j.MDCContext
 
 
 internal class Dispatcher(client: HttpClient) :
@@ -27,7 +28,7 @@ internal class Dispatcher(client: HttpClient) :
 
     fun startPollingBlocking() {
         val jobs = pollingChannels.map { channel ->
-            launch {
+            launch(MDCContext()) {
                 logger.info("Starting polling coroutine for channel ${channel.botChannel}")
                 runPollingForChannel(channel)
             }

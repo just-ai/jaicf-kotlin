@@ -18,6 +18,7 @@ import io.ktor.client.features.logging.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.slf4j.MDCContext
 
 /**
  * Implements [ConversationLogger] for JAICP Application Console.
@@ -44,7 +45,7 @@ class JaicpConversationLogger(
 
     override fun doLog(loggingContext: LoggingContext) {
         try {
-            launch {
+            launch(MDCContext()) {
                 doLogAsync(loggingContext)
             }
         } catch (e: Exception) {
