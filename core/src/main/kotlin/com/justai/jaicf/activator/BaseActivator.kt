@@ -1,11 +1,11 @@
 package com.justai.jaicf.activator
 
+import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
-import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.transition.Transition
 
@@ -63,7 +63,7 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         val isModal = currentState != "/" && model.states[currentState]?.modal
                 ?: error("State $currentState is not registered in model")
         return model.transitions.filter {
-            it.fromState == currentState || it.toState == currentState || (isModal && it.fromState == "/")
+            it.fromState == currentState || it.toState == currentState || (!isModal && it.fromState == "/")
         }.distinct()
     }
 }
