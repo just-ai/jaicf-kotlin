@@ -17,7 +17,28 @@ import java.util.regex.Pattern
 data class RegexActivatorContext(
     val pattern: Pattern,
     val matcher: Matcher
-): StrictActivatorContext()
+): StrictActivatorContext() {
+
+    /**
+     * Returns the input subsequence captured by the given group index.
+     *
+     * @param index The index of a capturing group in this matcher's pattern
+     *
+     * @return The (possibly empty) subsequence captured by the group,
+     *         or null if the group failed to match part of the input
+     */
+    fun group(index: Int): String? = matcher.group(index)
+
+    /**
+     * Returns the input subsequence captured by the given named-capturing group.
+     *
+     * @param name The name of a named-capturing group in this matcher's pattern
+     *
+     * @return The (possibly empty) subsequence captured by the named group,
+     *         or null if the group failed to match part of the input
+     */
+    fun group(name: String): String? = matcher.group(name)
+}
 
 val ActivatorContext.regex
     get() = this as? RegexActivatorContext
