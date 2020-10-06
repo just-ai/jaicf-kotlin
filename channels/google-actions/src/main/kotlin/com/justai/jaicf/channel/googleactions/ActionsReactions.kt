@@ -25,18 +25,17 @@ class ActionsReactions(
 
     private var simpleResponse: SimpleResponse? = null
 
-    private fun withCapability(capability: Capability, block: () -> Unit) {
-        if (request.hasCapability(capability.value)) {
+    private fun <T> withCapability(capability: Capability, block: () -> T): T? {
+        return if (request.hasCapability(capability.value)) {
             block.invoke()
+        } else {
+            null
         }
     }
 
     private fun clean(text: String) = text.replace(ssmlRegex, " ")
 
-    override fun say(text: String): SayReaction {
-        addSimpleResponse(clean(text), text)
-        return SayReaction.create(text)
-    }
+    override fun say(text: String) = addSimpleResponse(clean(text), text)
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons.forEach { title ->
@@ -55,7 +54,7 @@ class ActionsReactions(
 
     fun endConversation() = response.builder.endConversation()
 
-    fun addSimpleResponse(displayText: String, ssml: String = displayText) {
+    fun addSimpleResponse(displayText: String, ssml: String = displayText): SayReaction {
         val sr = simpleResponse ?: SimpleResponse()
         val fixedSsml = sr.ssml?.let {
             it.substring(7, it.length - 8)
@@ -68,6 +67,8 @@ class ActionsReactions(
 
         sr.displayText = sr.displayText?.plus(displayText) ?: displayText
         sr.ssml = "<speak>" + (fixedSsml?.plus(" $ssml ") ?: ssml) + "</speak>"
+
+        return SayReaction.create(displayText)
     }
 
     fun playAudio(
@@ -77,7 +78,7 @@ class ActionsReactions(
         icon: Image? = null,
         largeImage: Image? = null,
         vararg buttons: String
-    ) = withCapability(Capability.MEDIA_RESPONSE_AUDIO) {
+    ): AudioReaction? = withCapability(Capability.MEDIA_RESPONSE_AUDIO) {
         response.builder
             .add(MediaResponse().also { res ->
                 res.mediaType = "AUDIO"
@@ -91,7 +92,7 @@ class ActionsReactions(
                     }
                 )
             })
-    }.also {
-        AudioReaction.create(url)
+
+        return@withCapability AudioReaction.create(url)
     }
 }

@@ -41,9 +41,7 @@ class AlexaReactions(
         return SayReaction.create(text)
     }
 
-    override fun audio(url: String): AudioReaction {
-        return playAudio(url)
-    }
+    override fun audio(url: String) = playAudio(url)
 
     fun playAudio(
         url: String,
@@ -92,11 +90,11 @@ class AlexaReactions(
         response.builder.addAudioPlayerStopDirective()
     }
 
-    fun endSession(text: String? = null) {
-        text?.let { say(it) }
-
+    fun endSession(text: String? = null): SayReaction? {
         response.builder
             .withShouldEndSession(true)
+
+        return text?.let { say(it) }
     }
 
     fun sendProgressiveResponse(text: String) = sendDirective(
