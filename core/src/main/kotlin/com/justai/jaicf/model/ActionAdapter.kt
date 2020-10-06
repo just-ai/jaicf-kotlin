@@ -17,8 +17,7 @@ class ActionAdapter(
                     botContext,
                     activationContext.activation.context,
                     request,
-                    reactions,
-                    skippedActivators
+                    reactions
                 )
             )
         }

@@ -22,8 +22,7 @@ class SmartRandomTest {
             BotContext(UUID.randomUUID().toString()),
             StrictActivatorContext(),
             QueryBotRequest("", ""),
-            TextReactions(TextResponse()),
-            listOf()
+            TextReactions(TextResponse())
         )
     }
 
