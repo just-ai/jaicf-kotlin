@@ -32,8 +32,9 @@ abstract class JaicpConnector(
 ) : WithLogger {
 
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
-    private val registeredChannels = parseChannels().also {
-        MDC.put("accountId", it.first().second.accountId)
+    private val registeredChannels = parseChannels()
+    protected val accountId = registeredChannels.first().second.accountId.also {
+        MDC.put("accountId", it)
     }
 
     protected fun registerChannels() {
