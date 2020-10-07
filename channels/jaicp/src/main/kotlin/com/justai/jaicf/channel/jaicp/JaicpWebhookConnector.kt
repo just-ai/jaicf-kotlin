@@ -48,9 +48,11 @@ class JaicpWebhookConnector(
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
+        JaicpMDC.setAccountId(accountId)
         val botRequest = request.receiveText()
             .also { logger.debug("Received botRequest: $it") }
             .asJaicpBotRequest()
+            .also { JaicpMDC.setFromRequest(it) }
 
         return when (val channel = channelMap[botRequest.channelBotId]) {
             is JaicpNativeBotChannel -> channel.process(botRequest).deserialized().asJsonHttpBotResponse()

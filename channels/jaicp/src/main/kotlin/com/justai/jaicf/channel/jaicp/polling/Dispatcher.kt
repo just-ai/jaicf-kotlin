@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.polling
 
 import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
+import com.justai.jaicf.channel.jaicp.JaicpMDC
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
@@ -40,6 +41,7 @@ internal class Dispatcher(client: HttpClient) :
         poller.getUpdates(channel.url).collect { rawRequest ->
             logger.info("Received bot request: $rawRequest")
             val request = rawRequest.asJaicpPollingRequest().request
+            JaicpMDC.setFromRequest(request)
             when (val botChannel = channel.botChannel) {
                 is JaicpNativeBotChannel -> processNativeChannel(botChannel, channel.url, request)
                 is JaicpCompatibleBotChannel -> processCompatibleChannel(botChannel, channel.url, request)

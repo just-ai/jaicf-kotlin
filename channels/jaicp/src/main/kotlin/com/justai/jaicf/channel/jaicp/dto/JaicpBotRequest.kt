@@ -27,11 +27,6 @@ data class JaicpBotRequest(
     override val clientId = channelUserId
     override val input: String = query ?: event ?: ""
 
-    init {
-        MDC.put("requestId", questionId)
-        MDC.put("channelId", channelBotId)
-    }
-
     val raw: String get() = rawRequest.toString()
 
     fun stringify() = JSON.stringify(serializer(), this)
