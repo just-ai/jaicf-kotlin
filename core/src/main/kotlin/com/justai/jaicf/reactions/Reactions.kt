@@ -39,7 +39,7 @@ abstract class Reactions : ReactionRegistrar() {
      * @param path the path of the state to jump to. May be absolute or relative.
      * @param callbackState an optional callback state path. Bot engine activates this state once the sub-scenario returned some result through goBack or changeStateBack methods.
      */
-    fun go(path: String, callbackState: String? = null) {
+    fun go(path: String, callbackState: String? = null): GoReaction {
         val dialogContext = botContext.dialogContext
         val currentState = StatePath.parse(dialogContext.currentState)
         val resolved = currentState.resolve(path).toString()
@@ -48,7 +48,7 @@ abstract class Reactions : ReactionRegistrar() {
         callbackState?.let {
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
-        GoReaction.create(resolved)
+        return GoReaction.create(resolved)
     }
 
     /**
@@ -57,7 +57,7 @@ abstract class Reactions : ReactionRegistrar() {
      * @param path the path of the state to jump to. May be absolute or relative.
      * @param callbackState an optional callback state path. Bot engine activates this state once the sub-scenario returned some result through goBack or changeStateBack methods.
      */
-    fun changeState(path: String, callbackState: String? = null) {
+    fun changeState(path: String, callbackState: String? = null): ChangeStateReaction {
         val dialogContext = botContext.dialogContext
         val currentState = StatePath.parse(dialogContext.currentState)
         val resolved = currentState.resolve(path).toString()
@@ -66,7 +66,7 @@ abstract class Reactions : ReactionRegistrar() {
         callbackState?.let {
             dialogContext.backStateStack.push(currentState.resolve(it).toString())
         }
-        ChangeStateReaction.create(resolved)
+        return ChangeStateReaction.create(resolved)
     }
 
     /**
