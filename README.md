@@ -53,6 +53,7 @@ dependencies {
 * Contains a [JUnit-based test suite](https://github.com/just-ai/jaicf-kotlin/wiki/Testing) to automate dialogue scenarios testing.
 * Being a Kotlin app, JAICF driven bot can use any [Kotlin](https://kotlinlang.org/docs/reference/) or Java features and third-party libraries.
 * Can be ran and deployed to [any environment](https://github.com/just-ai/jaicf-kotlin/wiki/Environments) using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor) or [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot).
+* [Embeddable](https://github.com/just-ai/jaicf-kotlin/wiki/Android) to the Android-powered devices.
 
 ## How to start using
 
