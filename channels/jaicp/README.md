@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://just-ai.com/en/img/jaicp_black_v.svg" width="128" height="134"/>
+    <img src="https://raw.githubusercontent.com/just-ai/jaicf-kotlin/master/channels/jaicp/JACP-icon.svg" width="128" height="134"/>
 </p>
 
 <h1 align="center">JAICP Channel</h1>
