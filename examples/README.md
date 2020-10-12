@@ -8,7 +8,11 @@ Shows the basic features of JAICF.
 
 ### [Game clock](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/game-clock)
 
-An example of voice game adopted for Alexa and Google Assistant with support of audio player.
+An example of voice game adopted for Alexa and Google Assistant with support of audio player and screen.
+
+### [Android example](https://github.com/just-ai/aimybox-android-assistant/tree/jaicf/app)
+
+This example shows how it's easy to run your JAICF dialogue scenarios right on the Android devices like smartphones, with no needs to host it in the cloud.
 
 ## Documentation
 
