@@ -5,18 +5,17 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 
-internal val JSON = Json(JsonConfiguration.Stable.copy(strictMode = false, encodeDefaults = false))
+internal val JSON = Json { ignoreUnknownKeys = true }
 
-internal fun String.asJaicpBotRequest() = JSON.parse(JaicpBotRequest.serializer(), this)
+internal fun String.asJaicpBotRequest() = JSON.decodeFromString(JaicpBotRequest.serializer(), this)
 
-internal fun String.asJaicpBotResponse() = JSON.parse(JaicpBotResponse.serializer(), this)
+internal fun String.asJaicpBotResponse() = JSON.decodeFromString(JaicpBotResponse.serializer(), this)
 
-internal fun String.asJaicpPollingRequest() = JSON.parse(JaicpPollingRequest.serializer(), this)
+internal fun String.asJaicpPollingRequest() = JSON.decodeFromString(JaicpPollingRequest.serializer(), this)
 
-internal fun JaicpBotResponse.deserialized() = JSON.stringify(JaicpBotResponse.serializer(), this)
+internal fun JaicpBotResponse.deserialized() = JSON.encodeToString(JaicpBotResponse.serializer(), this)
 
-internal fun JaicpPollingResponse.deserialized() = JSON.stringify(JaicpPollingResponse.serializer(), this)
+internal fun JaicpPollingResponse.deserialized() = JSON.encodeToString(JaicpPollingResponse.serializer(), this)
 
-internal fun String.toJson() = JSON.parseJson(this).jsonObject
+internal fun String.toJson() = JSON.parseToJsonElement(this)

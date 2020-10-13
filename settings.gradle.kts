@@ -1,6 +1,6 @@
 rootProject.name = "jaicf"
 
-include("buildSrc")
+//include("buildSrc")
 include("core")
 
 include("examples:hello-world")

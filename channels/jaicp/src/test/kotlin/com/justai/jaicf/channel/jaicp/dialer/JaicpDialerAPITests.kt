@@ -8,7 +8,8 @@ import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.model.scenario.Scenario
-import kotlinx.serialization.json.json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.Instant
@@ -54,8 +55,8 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
         val scenario = echoWithAction {
             reactions.telephony?.setResult(
                 callResult = "call ended",
-                callResultPayload = json {
-                    "result" to "Ok"
+                callResultPayload = buildJsonObject {
+                    put("result", "Ok")
                 }.toString()
             )
             reactions.say("You said: ${request.input}")
@@ -74,8 +75,8 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
             reactions.telephony?.report("smoking", "i love it")
             reactions.telephony?.setResult(
                 callResult = "call ended",
-                callResultPayload = json {
-                    "result" to "Ok"
+                callResultPayload = buildJsonObject {
+                    put("result", "Ok")
                 }.toString()
             )
             reactions.say("You said: ${request.input}")

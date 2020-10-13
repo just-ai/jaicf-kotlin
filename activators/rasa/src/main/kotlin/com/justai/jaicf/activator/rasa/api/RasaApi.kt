@@ -14,13 +14,13 @@ import kotlinx.serialization.json.Json
 
 class RasaApi(
     private val uri: String
-): WithLogger {
+) : WithLogger {
 
     private val client = HttpClient(CIO) {
         expectSuccess = true
 
         install(JsonFeature) {
-            serializer = KotlinxSerializer(Json.nonstrict)
+            serializer = KotlinxSerializer(Json { ignoreUnknownKeys = true })
         }
     }
 

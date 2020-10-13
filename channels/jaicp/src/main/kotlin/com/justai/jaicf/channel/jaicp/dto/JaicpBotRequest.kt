@@ -29,5 +29,5 @@ data class JaicpBotRequest(
 
     val raw: String get() = rawRequest.toString()
 
-    fun stringify() = JSON.stringify(serializer(), this)
+    fun stringify() = JSON.encodeToString(serializer(), this)
 }

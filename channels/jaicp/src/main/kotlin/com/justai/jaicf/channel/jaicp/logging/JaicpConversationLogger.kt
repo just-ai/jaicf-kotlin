@@ -67,7 +67,7 @@ open class JaicpConversationLogger(
     private fun extractJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
         return try {
             loggingContext.requestContext.httpBotRequest?.requestMetadata?.let {
-                JSON.parse(JaicpBotRequest.serializer(), it)
+                JSON.decodeFromString(JaicpBotRequest.serializer(), it)
             }
         } catch (e: Exception) {
             logger.debug("Logging skipped as loggingContext does not have valid JAICP Request")

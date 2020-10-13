@@ -107,7 +107,7 @@ class JaicpDialerAPI {
     }
 
     internal fun getApiResponse(): JsonElement {
-        return JSON.toJson(serializer(), this)
+        return JSON.encodeToJsonElement(serializer(), this)
     }
 }
 

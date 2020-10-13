@@ -16,7 +16,7 @@ data class TextReply(
     val tts: String? = null,
     val state: String? = null
 ) : Reply("text") {
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
 @Serializable
@@ -32,7 +32,7 @@ data class ButtonsReply(
 ) : Reply("buttons") {
     constructor(button: Button) : this(arrayListOf(button))
 
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
 @Serializable
@@ -41,7 +41,7 @@ data class ImageReply(
     val text: String? = null,
     val state: String? = null
 ) : Reply("image") {
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
 @Serializable
@@ -50,12 +50,12 @@ data class AudioReply(
     val state: String? = null
 ) : Reply("audio") {
 
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
 @Serializable
 class HangupReply(val state: String? = null) : Reply("hangup") {
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
 @Serializable
@@ -69,5 +69,5 @@ data class SwitchReply(
     val destination: String? = null,
     val attributes: JsonObject? = null
 ) : Reply("switch") {
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
 }
