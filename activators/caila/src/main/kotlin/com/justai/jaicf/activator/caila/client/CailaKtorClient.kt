@@ -1,6 +1,7 @@
 package com.justai.jaicf.activator.caila.client
 
 import com.justai.jaicf.activator.caila.DEFAULT_CAILA_URL
+import com.justai.jaicf.activator.caila.JSON
 import com.justai.jaicf.activator.caila.dto.*
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
@@ -18,7 +19,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
+import kotlinx.serialization.json.jsonNull
+import kotlinx.serialization.json.jsonObject
 
 class CailaKtorClient(
     override val accessToken: String,
@@ -38,7 +40,6 @@ class CailaKtorClient(
             serializer = KotlinxSerializer()
         }
     }
-    private val json = Json(JsonConfiguration.Stable.copy(strictMode = false, encodeDefaults = false))
 
     override fun simpleInference(query: String): CailaInferenceResultData? {
         try {
@@ -54,11 +55,8 @@ class CailaKtorClient(
             parameter("query", query)
         }
         logger.info(response)
-        val intent = json.parseJson(response).jsonObject["intent"] ?: return null
-        if (intent.isNull) {
-            return null
-        }
-        return json.parse(CailaInferenceResultData.serializer(), response)
+        JSON.parseToJsonElement(response).jsonObject["intent"] ?: return null
+        return JSON.decodeFromString(CailaInferenceResultData.serializer(), response)
     }
 
     override fun entitiesLookup(query: String): CailaEntitiesLookupResults? {
@@ -76,7 +74,7 @@ class CailaKtorClient(
             parameter("showAll", showAll)
         }
         logger.info(response)
-        return json.parse(CailaEntitiesLookupResults.serializer(), response)
+        return JSON.decodeFromString(CailaEntitiesLookupResults.serializer(), response)
     }
 
 
@@ -104,6 +102,6 @@ class CailaKtorClient(
             body = requestData
         }
         logger.info(response)
-        return json.parse(CailaAnalyzeResponseData.serializer(), response)
+        return JSON.decodeFromString(CailaAnalyzeResponseData.serializer(), response)
     }
 }

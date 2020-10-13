@@ -12,7 +12,8 @@ import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
 
 
 @Serializable
@@ -77,8 +78,8 @@ internal data class JaicpLogModel private constructor(
             ) = Request(
                 type = req.type.toString().toLowerCase(),
                 query = input,
-                requestData = req.data?.jsonObject ?: json { },
-                data = req.data?.jsonObject ?: json { }
+                requestData = req.data?.jsonObject ?: buildJsonObject {  },
+                data = req.data?.jsonObject ?: buildJsonObject {  }
             )
         }
     }
@@ -96,7 +97,7 @@ internal data class JaicpLogModel private constructor(
         val username: String? = null
     ) {
         companion object Factory {
-            fun fromRequest(br: JaicpBotRequest) = JSON.parse(this.serializer(), br.userFrom.toString())
+            fun fromRequest(br: JaicpBotRequest) = JSON.decodeFromString(this.serializer(), br.userFrom.toString())
         }
     }
 

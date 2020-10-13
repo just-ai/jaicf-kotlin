@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.jaicp.http
 
+import com.justai.jaicf.channel.jaicp.JSON
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.engine.cio.endpoint
@@ -26,7 +27,7 @@ internal object HttpClientFactory {
             this.level = logLevel
         }
         install(JsonFeature) {
-            serializer = KotlinxSerializer(Json.nonstrict)
+            serializer = KotlinxSerializer(JSON)
         }
     }
 }

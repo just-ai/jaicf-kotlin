@@ -1,22 +1,19 @@
 package com.justai.jaicf.channel.yandexalice.api
 
+import com.justai.jaicf.channel.yandexalice.JSON
 import com.justai.jaicf.channel.yandexalice.api.storage.Image
 import com.justai.jaicf.channel.yandexalice.api.storage.Images
 import com.justai.jaicf.channel.yandexalice.api.storage.UploadedImage
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.defaultRequest
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonLiteral
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class AliceApi(
     oauthToken: String,
@@ -34,7 +31,7 @@ class AliceApi(
         expectSuccess = true
 
         install(JsonFeature) {
-            serializer = KotlinxSerializer(Json.nonstrict)
+            serializer = KotlinxSerializer(JSON)
         }
 
         defaultRequest {
@@ -45,7 +42,7 @@ class AliceApi(
     init {
         images.putAll(
             imageStorage.getOrPut(skillId) {
-                listImages().map {it.origUrl to it.id}.toMap().toMutableMap()
+                listImages().map { it.origUrl to it.id }.toMap().toMutableMap()
             }
         )
     }
@@ -55,7 +52,7 @@ class AliceApi(
     fun uploadImage(url: String): Image = runBlocking {
         client.post<UploadedImage>("$URL/skills/$skillId/images") {
             contentType(ContentType.Application.Json)
-            body = JsonObject(mapOf("url" to JsonLiteral(url)))
+            body = JsonObject(mapOf("url" to JsonPrimitive(url)))
         }.image
     }.also { image ->
         imageStorage[skillId]?.put(image.origUrl, image.id)

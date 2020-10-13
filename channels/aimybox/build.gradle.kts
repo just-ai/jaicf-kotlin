@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
 
-    api("org.jetbrains.kotlinx:kotlinx-serialization-runtime" version { serializationRuntime })
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json" version { serializationRuntime })
 }
 
 tasks {

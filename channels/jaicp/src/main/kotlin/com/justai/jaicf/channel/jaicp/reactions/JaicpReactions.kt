@@ -6,9 +6,7 @@ import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.json
-import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.*
 
 val Reactions.jaicp get() = this as? JaicpReactions
 
@@ -62,15 +60,16 @@ open class JaicpReactions : Reactions() {
                 ""
             }
         }
-
-        return json {
+        val obj = buildJsonObject {
             if (this@JaicpReactions is TelephonyReactions) {
-                "dialer" to dialer.getApiResponse()
+                put("dialer", dialer.getApiResponse())
             }
-            "replies" to jsonArray {
-                jsonReplies.forEach { +it }
-            }
-            "answer" to answer
+            put("replies", buildJsonArray {
+                jsonReplies.forEach { add(it) }
+            })
+            put("answer", answer)
         }
+
+        return obj
     }
 }

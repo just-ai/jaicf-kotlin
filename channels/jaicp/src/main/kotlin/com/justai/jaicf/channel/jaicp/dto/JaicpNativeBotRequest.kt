@@ -2,7 +2,8 @@ package com.justai.jaicf.channel.jaicp.dto
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
-import kotlinx.serialization.json.content
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 abstract class JaicpNativeBotRequest(
     val jaicp: JaicpBotRequest
@@ -15,9 +16,9 @@ abstract class JaicpNativeBotRequest(
 data class TelephonyBotRequest(
     private val request: JaicpBotRequest
 ) : JaicpNativeBotRequest(request) {
-    val caller: String? = request.rawRequest["caller"]?.content
-    val trunk: String? = request.rawRequest["extension"]?.content
-    val calleePayload = request.rawRequest.getObjectOrNull("originateData")?.getObjectOrNull("payload")
+    val caller: String? = request.rawRequest["caller"]?.jsonPrimitive?.content
+    val trunk: String? = request.rawRequest["extension"]?.jsonPrimitive?.content
+    val calleePayload = request.rawRequest.jsonObject["originateData"]?.jsonObject?.get("payload")?.jsonObject
 }
 
 data class ChatWidgetBotRequest(
