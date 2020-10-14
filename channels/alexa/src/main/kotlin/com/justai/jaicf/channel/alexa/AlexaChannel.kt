@@ -23,7 +23,7 @@ class AlexaChannel(
     }
 
     companion object : JaicpCompatibleChannelFactory {
-        override val channelType = "alexa"
+        override val channelType = "jaicp_alexa"
         override fun create(botApi: BotApi) = AlexaChannel(botApi)
     }
 }
