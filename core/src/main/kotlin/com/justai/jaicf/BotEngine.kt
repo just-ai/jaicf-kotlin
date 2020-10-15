@@ -32,9 +32,7 @@ import com.justai.jaicf.slotfilling.*
  *  val helloWorldBot = BotEngine(
  *    model = HelloWorldScenario.model,
  *    activators = arrayOf(
- *      RegexActivator,
- *      BaseEventActivator,
- *      CatchAllActivator
+ *      RegexActivator
  *    )
  *  )
  * ```
@@ -239,7 +237,7 @@ class BotEngine(
         val dc = botContext.dialogContext
         dc.nextState = activationContext.activation.state
 
-        withHook(BeforeProcessHook(context.botContext, request, reactions, activator)) {
+        withHook(BeforeProcessHook(botContext, request, reactions, activator)) {
             while (dc.nextState() != null) {
                 val state = model.states[dc.currentState]
 

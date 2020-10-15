@@ -8,7 +8,9 @@ package com.justai.jaicf.logging
  *
  * @see Slf4jConversationLogger
  * */
-abstract class ConversationLogger(private val logObfuscators: List<ConversationLogObfuscator>) {
+abstract class ConversationLogger(
+    private val logObfuscators: List<ConversationLogObfuscator> = emptyList()
+) {
     /**
      * Logs to console or external service.
      *
