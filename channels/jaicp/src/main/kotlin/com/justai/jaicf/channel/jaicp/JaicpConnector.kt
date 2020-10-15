@@ -32,9 +32,6 @@ abstract class JaicpConnector(
 
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
     private val registeredChannels = parseChannels()
-    protected val accountId = registeredChannels.first().second.accountId.also {
-        JaicpMDC.setAccountId(it)
-    }
 
     protected fun registerChannels() {
         registeredChannels.forEach { (factory, cfg) ->

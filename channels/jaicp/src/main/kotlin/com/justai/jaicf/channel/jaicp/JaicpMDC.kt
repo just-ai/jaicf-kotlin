@@ -7,10 +7,6 @@ object JaicpMDC {
     fun setFromRequest(request: JaicpBotRequest) {
         MDC.put("requestId", request.questionId)
         MDC.put("channelId", request.channelBotId)
-    }
-
-    fun setAccountId(accountId: String) {
-        MDC.put("accountId", accountId)
+        MDC.put("accountId", request.channelBotId.split("-").first())
     }
 }
-
