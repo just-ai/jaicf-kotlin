@@ -67,15 +67,15 @@ class BotEngine(
 
     private fun List<Activator>.addBuiltinActivators(): List<Activator> {
         fun MutableList<Activator>.removeIfPresent(a: Activator) = removeIf { it.name == a.name }
-        fun MutableList<Activator>.addIfAbsent(a: Activator) = find { it.name == a.name } ?: add(a)
+        fun MutableList<Activator>.pushToTheEnd(a: Activator) = find { it.name == a.name } ?: add(a)
 
-        val catchAll = CatchAllActivator.create(model)
-        val builtinActivators = listOf(BaseEventActivator, BaseIntentActivator).map { it.create(model) }
+        val builtinActivators = listOf(BaseEventActivator, BaseIntentActivator, CatchAllActivator).map { it.create(model) }
 
         return toMutableList().apply {
-            removeIfPresent(catchAll)
-            builtinActivators.forEach { addIfAbsent(it) }
-            addIfAbsent(catchAll)
+            builtinActivators.forEach {
+                removeIfPresent(it)
+                pushToTheEnd(it)
+            }
         }
     }
 
