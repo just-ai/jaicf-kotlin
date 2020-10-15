@@ -48,7 +48,6 @@ class JaicpWebhookConnector(
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
-        JaicpMDC.setAccountId(accountId)
         val botRequest = request.receiveText()
             .also { logger.debug("Received botRequest: $it") }
             .asJaicpBotRequest()
