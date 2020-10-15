@@ -5,6 +5,8 @@ import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
 import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.catchall.CatchAllActivator
+import com.justai.jaicf.activator.event.BaseEventActivator
+import com.justai.jaicf.activator.intent.BaseIntentActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -63,12 +65,19 @@ class BotEngine(
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
-    private val activators = activators.map { it.create(model) }.let {
-        val catchAllActivator = CatchAllActivator.create(model)
-        if (it.none { a -> a.name ==  catchAllActivator.name }) {
-            it + catchAllActivator
-        } else {
-            it
+    private val activators = activators.map { it.create(model) }.addBuiltinActivators()
+
+    private fun List<Activator>.addBuiltinActivators(): List<Activator> {
+        fun MutableList<Activator>.removeIfPresent(a: Activator) = removeIf { it.name == a.name }
+        fun MutableList<Activator>.addIfAbsent(a: Activator) = find { it.name == a.name } ?: add(a)
+
+        val catchAll = CatchAllActivator.create(model)
+        val builtinActivators = listOf(BaseEventActivator, BaseIntentActivator).map { it.create(model) }
+
+        return toMutableList().apply {
+            removeIfPresent(catchAll)
+            builtinActivators.forEach { addIfAbsent(it) }
+            addIfAbsent(catchAll)
         }
     }
 

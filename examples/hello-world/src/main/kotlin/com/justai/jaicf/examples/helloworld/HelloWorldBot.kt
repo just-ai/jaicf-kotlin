@@ -21,8 +21,6 @@ val helloWorldBot = BotEngine(
     activators = arrayOf(
         AlexaActivator,
         dialogflowActivator,
-        RegexActivator,
-        BaseEventActivator,
-        CatchAllActivator
+        RegexActivator
     )
 )
