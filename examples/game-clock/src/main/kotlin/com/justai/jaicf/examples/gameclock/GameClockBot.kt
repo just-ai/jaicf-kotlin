@@ -10,7 +10,6 @@ val gameClockBot = BotEngine(
     model = MainScenario.model,
     activators = arrayOf(
         AlexaActivator,
-        ActionsDialogflowActivator,
-        CatchAllActivator
+        ActionsDialogflowActivator
     )
 )
