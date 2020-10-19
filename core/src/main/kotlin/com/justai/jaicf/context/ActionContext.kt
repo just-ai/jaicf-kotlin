@@ -21,10 +21,10 @@ import kotlin.random.Random
  * @see [Reactions]
  */
 open class ActionContext(
-    val context: BotContext,
-    val activator: ActivatorContext,
-    val request: BotRequest,
-    val reactions: Reactions
+    open val context: BotContext,
+    open val activator: ActivatorContext,
+    open val request: BotRequest,
+    open val reactions: Reactions
 ) {
 
     /**

@@ -3,6 +3,7 @@ package com.justai.jaicf.examples.helloworld
 import com.justai.jaicf.channel.aimybox.AimyboxEvent
 import com.justai.jaicf.channel.aimybox.aimybox
 import com.justai.jaicf.channel.alexa.*
+import com.justai.jaicf.channel.alexa.activator.alexaIntent
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.facebook.api.facebook
@@ -78,7 +79,9 @@ object HelloWorldScenario: Scenario(
             }
 
             action {
-                reactions.alexa?.endSession("See you latter! Bye bye!")
+                withAlexa {
+                    reactions.endSession("See you latter! Bye bye!")
+                }
             }
         }
 
