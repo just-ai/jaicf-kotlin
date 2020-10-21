@@ -4,7 +4,7 @@ plugins {
     `java-gradle-plugin`
 }
 
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 
 gradlePlugin {
     plugins {
