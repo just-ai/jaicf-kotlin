@@ -39,8 +39,8 @@ open class JaicpBuild : DefaultTask() {
             jar.archiveFileName.set(jarFileName)
 
             val mainClass = mainClassName ?: jar.manifest.attributes["Main-Class"]
+            mainClass?.let { jar.manifest.attributes["Main-Class"] = it }
                 ?: project.logger.warn("Main class name was not provided")
-            jar.manifest.attributes["Main-Class"] = mainClass
         }
     }
 }
