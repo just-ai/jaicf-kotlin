@@ -1,59 +1,57 @@
 package com.justai.jaicf.plugins.jaicpdeploy
 
+import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
-import java.io.File
+import org.gradle.api.tasks.TaskAction
 
 class JaicpDeployPlugin : Plugin<Project> {
 
-    override fun apply(project: Project) = with(project) {
+    override fun apply(project: Project): Unit = with(project) {
         if (!isRootProject) {
             logger.warn("JAICP deploy plugin should only be applied on a root project")
             return
         }
 
-        val config = extensions.create(JAICP_DEPLOY_EXTENSION_NAME, JaicpDeployExtension::class.java, project)
+        applyPluginSafely(JavaPlugin::class)
+        applyPluginSafely(ShadowPlugin::class)
 
-        if (config.isJaicpDeploy) {
-            val jaicpDeployTask = tasks.register(JAICP_DEPLOY_TASK_NAME)
-
-
-            applyPluginSafely(JavaPlugin::class)
-            applyPluginSafely(ShadowPlugin::class)
-
-            afterEvaluate {
-                tasks.withType(ShadowJar::class.java) { jar ->
-                    jar.destinationDirectory.set(File(config.jarDestinationDir))
-                    jar.archiveFileName.set(config.jarFileName)
-
-                    config.mainClassName?.let { jar.manifest.attributes["Main-Class"] = it }
-                        ?: logger.warn("Main class name was not provided")
-                }
-
-                jaicpDeployTask.configure {
-                    it.dependsOn(tasks.withType(ShadowJar::class.java))
-                }
-            }
+        tasks.register(JAICP_BUILD_TASK_NAME, JaicpBuild::class.java) {
+            it.finalizedBy(tasks.withType(ShadowJar::class.java).named(SHADOW_JAR_TASK_NAME))
         }
     }
 
 }
 
-open class JaicpDeployExtension(private val project: Project) {
-    val isJaicpDeploy: Boolean = project.prop(IS_JAICP_DEPLOY) { it == "true" } ?: false
-    val jarDestinationDir: String = project.prop(JAR_DESTINATION_DIR) ?: "build/libs"
-    val jarFileName: String = project.prop(JAR_FILE_NAME) ?: "jaicp-deploy.jar"
+open class JaicpBuild : DefaultTask() {
+    private val jarDestinationDir: String = project.prop(JAR_DESTINATION_DIR) ?: JAR_DESTINATION_DIR_DEFAULT
+    private val jarFileName: String = project.prop(JAR_FILE_NAME) ?: JAR_FILE_NAME_DEFAULT
     var mainClassName: String? = null
+
+    @TaskAction
+    fun action() {
+        project.tasks.withType(ShadowJar::class.java).named(SHADOW_JAR_TASK_NAME) { jar ->
+            jar.destinationDirectory.set(project.file(jarDestinationDir))
+            jar.archiveFileName.set(jarFileName)
+
+            val mainClass = mainClassName ?: jar.manifest.attributes["Main-Class"]
+                ?: project.logger.warn("Main class name was not provided")
+            jar.manifest.attributes["Main-Class"] = mainClass
+        }
+    }
 }
 
-const val JAICP_DEPLOY_TASK_NAME = "jaicpDeploy"
-const val JAICP_DEPLOY_EXTENSION_NAME = "jaicpDeploy"
+internal const val JAICP_BUILD_TASK_NAME = "jaicpBuild"
+internal const val JAICP_PROPS_NAMESPACE = "com.justai.jaicf.jaicp.deploy"
 
-const val JAICP_PROPS_NAMESPACE = "com.justai.jaicf.jaicp.deploy"
+internal const val JAR_DESTINATION_DIR = "jarDestinationDir"
+internal const val JAR_DESTINATION_DIR_DEFAULT = "build/libs"
 
-const val IS_JAICP_DEPLOY = "isJaicpDeploy"
-const val JAR_DESTINATION_DIR = "jarDestinationDir"
-const val JAR_FILE_NAME = "jarFileName"
+internal const val JAR_FILE_NAME = "jarFileName"
+internal const val JAR_FILE_NAME_DEFAULT = "jaicp-deploy.jar"
+
+internal val SHADOW_JAR_TASK_NAME = ShadowJavaPlugin.getSHADOW_JAR_TASK_NAME()
