@@ -8,9 +8,9 @@ version = "0.1.0"
 
 gradlePlugin {
     plugins {
-        create("jaicp-deploy-plugin") {
-            id = "com.justai.jaicf.jaicp-deploy-plugin"
-            implementationClass = "com.justai.jaicf.plugins.jaicpdeploy.JaicpDeployPlugin"
+        create("jaicp-build-plugin") {
+            id = "com.justai.jaicf.jaicp-build-plugin"
+            implementationClass = "com.justai.jaicf.plugins.jaicp.build.JaicpBuildPlugin"
         }
     }
 }
