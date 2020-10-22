@@ -1,1 +1,1 @@
-include("jaicp-deploy-plugin")
+include("jaicp-build-plugin")
