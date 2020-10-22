@@ -7,6 +7,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.ScenarioModel
+import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 
 /**
@@ -62,8 +63,13 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         val currentState = botContext.dialogContext.currentContext
         val isModal = currentState != "/" && model.states[currentState]?.modal
                 ?: error("State $currentState is not registered in model")
-        return model.transitions.filter {
-            it.fromState == currentState || it.toState == currentState || (!isModal && it.fromState == "/")
-        }.distinct()
+
+        val currentPath = StatePath.parse(currentState)
+        val availableStates = mutableListOf(currentPath.toString()).apply {
+            if (isModal) addAll(currentPath.parents)
+        }
+
+        val transitionsMap = model.transitions.groupBy { it.fromState }
+        return availableStates.flatMap { transitionsMap[it] ?: emptyList() }
     }
 }
