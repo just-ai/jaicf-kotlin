@@ -1,4 +1,4 @@
-package com.justai.jaicf.plugins.jaicpdeploy
+package com.justai.jaicf.plugins.jaicp.build
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project

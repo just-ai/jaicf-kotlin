@@ -1,4 +1,4 @@
-package com.justai.jaicf.plugins.jaicpdeploy
+package com.justai.jaicf.plugins.jaicp.build
 
 import com.github.jengelman.gradle.plugins.shadow.ShadowJavaPlugin
 import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
@@ -9,7 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskAction
 
-class JaicpDeployPlugin : Plugin<Project> {
+class JaicpBuildPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
         if (!isRootProject) {
