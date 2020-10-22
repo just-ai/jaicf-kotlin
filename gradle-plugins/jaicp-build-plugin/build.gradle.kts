@@ -39,3 +39,5 @@ publishing {
         }
     }
 }
+
+apply(from = rootProject.file("release/bintray.gradle"))
