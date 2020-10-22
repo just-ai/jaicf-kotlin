@@ -18,8 +18,4 @@ subprojects {
         mavenLocal()
         maven(uri("https://jitpack.io"))
     }
-
-    afterEvaluate {
-        apply(from = rootProject.file("release/bintray.gradle"))
-    }
 }
