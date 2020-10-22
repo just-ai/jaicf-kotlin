@@ -29,16 +29,16 @@ class SlackChannel private constructor(
     private lateinit var app: App
     private lateinit var parser: SlackRequestParser
 
-    constructor(botApi: BotApi, config: SlackChannelConfig): this(botApi) {
-        app = App(AppConfig.builder()
+    constructor(botApi: BotApi, config: SlackChannelConfig) : this(botApi) {
+        val appConfig = AppConfig.builder()
             .singleTeamBotToken(config.botToken)
             .signingSecret(config.signingSecret)
             .build()
-        )
+        app = App(appConfig, config.middleware)
         start()
     }
 
-    private constructor(botApi: BotApi, urlPrefix: String): this(botApi) {
+    private constructor(botApi: BotApi, urlPrefix: String) : this(botApi) {
         val config = SlackConfig().apply {
             methodsEndpointUrlPrefix = "$urlPrefix/".toUrl()
             methodsConfig = MethodsConfig().apply {
@@ -47,12 +47,13 @@ class SlackChannel private constructor(
         }
 
         val slack = Slack.getInstance(config)
-        app = App(AppConfig.builder()
-            .slack(slack)
-            .alwaysRequestUserTokenNeeded(false)
-            .singleTeamBotToken("empty")
-            .signingSecret("empty")
-            .build(),
+        app = App(
+            AppConfig.builder()
+                .slack(slack)
+                .alwaysRequestUserTokenNeeded(false)
+                .singleTeamBotToken("empty")
+                .signingSecret("empty")
+                .build(),
             listOf(IgnoringSelfEvents(config))
         )
 
