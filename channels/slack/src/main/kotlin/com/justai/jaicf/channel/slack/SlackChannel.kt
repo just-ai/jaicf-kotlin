@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
@@ -39,7 +40,7 @@ class SlackChannel private constructor(
 
     private constructor(botApi: BotApi, urlPrefix: String): this(botApi) {
         val config = SlackConfig().apply {
-            methodsEndpointUrlPrefix = urlPrefix
+            methodsEndpointUrlPrefix = "$urlPrefix/".toUrl()
             methodsConfig = MethodsConfig().apply {
                 isStatsEnabled = false
             }
@@ -112,7 +113,7 @@ class SlackChannel private constructor(
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "slack"
-        override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, "$apiUrl/")
+        override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, apiUrl)
     }
 }
 
