@@ -12,8 +12,10 @@ import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
 import com.slack.api.bolt.AppConfig
 import com.slack.api.bolt.context.Context
+import com.slack.api.bolt.middleware.builtin.IgnoringSelfEvents
 import com.slack.api.bolt.request.RequestHeaders
 import com.slack.api.bolt.util.SlackRequestParser
+import com.slack.api.methods.MethodsConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,10 +40,21 @@ class SlackChannel private constructor(
     private constructor(botApi: BotApi, urlPrefix: String): this(botApi) {
         val config = SlackConfig().apply {
             methodsEndpointUrlPrefix = urlPrefix
+            methodsConfig = MethodsConfig().apply {
+                isStatsEnabled = false
+            }
         }
 
         val slack = Slack.getInstance(config)
-        app = App(AppConfig.builder().slack(slack).build())
+        app = App(AppConfig.builder()
+            .slack(slack)
+            .alwaysRequestUserTokenNeeded(false)
+            .singleTeamBotToken("empty")
+            .signingSecret("empty")
+            .build(),
+            listOf(IgnoringSelfEvents(config))
+        )
+
         start()
     }
 
@@ -99,7 +112,7 @@ class SlackChannel private constructor(
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "slack"
-        override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, apiUrl)
+        override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, "$apiUrl/")
     }
 }
 
