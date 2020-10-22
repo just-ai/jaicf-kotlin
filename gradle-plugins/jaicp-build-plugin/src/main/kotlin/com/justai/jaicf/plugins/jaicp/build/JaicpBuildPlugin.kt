@@ -49,12 +49,12 @@ open class JaicpBuild : DefaultTask() {
 }
 
 internal const val JAICP_BUILD_TASK_NAME = "jaicpBuild"
-internal const val JAICP_PROPS_NAMESPACE = "com.justai.jaicf.jaicp.deploy"
+internal const val JAICP_PROPS_NAMESPACE = "com.justai.jaicf.jaicp.build"
 
 internal const val JAR_DESTINATION_DIR = "jarDestinationDir"
 internal const val JAR_DESTINATION_DIR_DEFAULT = "build/libs"
 
 internal const val JAR_FILE_NAME = "jarFileName"
-internal const val JAR_FILE_NAME_DEFAULT = "jaicp-deploy.jar"
+internal const val JAR_FILE_NAME_DEFAULT = "jaicp-build.jar"
 
 internal val SHADOW_JAR_TASK_NAME = ShadowJavaPlugin.getSHADOW_JAR_TASK_NAME()
