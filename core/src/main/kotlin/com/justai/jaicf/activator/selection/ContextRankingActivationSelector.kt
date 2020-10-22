@@ -15,8 +15,8 @@ import com.justai.jaicf.model.transition.Transition
  * 2. The current state itself;
  * 3. States available from the root of scenario.
  */
-open class ContextRankingActivationSelector :
-    ActivationSelector {
+// Let it be private while we don't fix it after step-ups enabled
+private open class ContextRankingActivationSelector : ActivationSelector {
     override fun selectActivation(
         botContext: BotContext,
         activations: List<Pair<Transition, ActivatorContext>>
