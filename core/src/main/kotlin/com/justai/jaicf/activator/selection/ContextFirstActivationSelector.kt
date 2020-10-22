@@ -19,12 +19,14 @@ class ContextFirstActivationSelector : ActivationSelector {
     ): Activation? {
         val current = botContext.dialogContext.currentContext
 
-        val toChildren = activations.filter { it.first.isFrom(current) }.maxBy { it.second.confidence }
-        val toCurrent = activations.filter { it.first.isTo(current) }.maxBy { it.second.confidence }
-        val fromRoot = activations.filter { it.first.isFromRoot }.maxBy { it.second.confidence }
+        val (transition, activatorContext) = activations.sortedWith(
+            compareByDescending<Pair<Transition, ActivatorContext>> {
+                it.first.fromState.commonPrefixWith(current).length
+            }.thenByDescending {
+                it.second.confidence
+            }
+        ).firstOrNull() ?: return null
 
-        val best = toChildren ?: toCurrent ?: fromRoot
-        return best?.let { Activation(it.first.toState, it.second) }
+        return Activation(transition.toState, activatorContext)
     }
-
 }
