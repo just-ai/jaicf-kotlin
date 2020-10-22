@@ -66,7 +66,7 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
 
         val currentPath = StatePath.parse(currentState)
         val availableStates = mutableListOf(currentPath.toString()).apply {
-            if (!isModal) addAll(currentPath.parents)
+            if (!isModal) addAll(currentPath.parents.reversedArray())
         }
 
         val transitionsMap = model.transitions.groupBy { it.fromState }
