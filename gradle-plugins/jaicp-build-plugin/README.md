@@ -66,6 +66,9 @@ you can use custom values for this properties for local `shadowJar` builds.
 tasks.withType<ShadowJar> {
     configurations = listOf(project.configurations.compile.get())
 
+    destinationDirectory.set(project.file("build/libs/local"))
+    archiveFileName.set("filename-for-local-development.jar")
+
     manifest {
         attributes["Main-Class"] = "org.example.BotKt"
         attributes["Description"] = "This bot is built with JAICF"
