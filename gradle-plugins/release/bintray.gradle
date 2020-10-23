@@ -22,16 +22,34 @@ ext {
 }
 
 apply plugin: 'com.jfrog.bintray'
+apply plugin: 'org.jetbrains.dokka'
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
 
+task dokkaJavadoc(type: dokka.getClass()) {
+    outputFormat = 'javadoc'
+    outputDirectory = "$buildDir/javadoc"
+
+    configuration {
+        noStdlibLink = true
+        noJdkLink = true
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from "$buildDir/javadoc"
+}
+
 bintrayUpload.dependsOn assemble
 bintrayUpload.dependsOn sourcesJar
+bintrayUpload.dependsOn javadocJar
 
 artifacts {
+    archives javadocJar
     archives sourcesJar
 }
 
