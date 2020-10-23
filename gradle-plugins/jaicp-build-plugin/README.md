@@ -58,10 +58,6 @@ pluginManagement {
 The plugin uses the `shadowJar` task for building a `.jar` file, so if you want to customize your `.jar` file
 that will run in _JAICP Cloud_, you should just configure the `shadowJar` task.
 
-**Note:** `archiveFileName` and `destinationDirectory` of the `shadowJar` task will be reconfigured 
-during the `jaicpBuild` task execution, but will remain unchanged if the `jaicpBuild` isn't called, so 
-you can use custom values for this properties for local `shadowJar` builds.
-
 ```kotlin
 tasks.withType<ShadowJar> {
     configurations = listOf(project.configurations.compile.get())
@@ -75,6 +71,17 @@ tasks.withType<ShadowJar> {
     }
 }
 ```
+
+**Note:** `archiveFileName` and `destinationDirectory` of the `shadowJar` task will be reconfigured 
+during the `jaicpBuild` task execution, but will remain unchanged if the `jaicpBuild` isn't called, so 
+you can use custom values for these properties for local `shadowJar` builds. 
+
+During _JAICP Cloud_ build these properties values can be accesed via the following project properties:
+```
+com.justai.jaicf.jaicp.build.jarFileName
+com.justai.jaicf.jaicp.build.jarDestinationDir
+```
+
 
 If you don't need to customize the `shadowJar` or if you want to use different main classes for local development 
 and _JAICP Cloud_, you can provide `mainClassName` to the `jaicpBuld` task. In this case `mainClassName` will be 
