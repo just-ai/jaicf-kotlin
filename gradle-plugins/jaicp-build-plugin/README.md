@@ -1,5 +1,7 @@
 <h1 align="center">JAICP Cloud build plugin</h1>
 
+[![Download](https://api.bintray.com/packages/just-ai/jaicf/jaicp-build-plugin/images/download.svg) ](https://bintray.com/just-ai/jaicf/jaicp-build-plugin/_latestVersion)
+
 **This Gradle plugin must be used for deploying your JAICF project in a _JAICP Cloud_.**
 
 It provides a `jaicpBuild` Gradle task that will be called during a _JAICP Cloud_ build process.
