@@ -76,7 +76,7 @@ tasks.withType<ShadowJar> {
 during the `jaicpBuild` task execution, but will remain unchanged if the `jaicpBuild` isn't called, so 
 you can use custom values for these properties for local `shadowJar` builds. 
 
-During _JAICP Cloud_ build these properties values can be accesed via the following project properties:
+During _JAICP Cloud_ build these properties values can be accessed via the following project properties:
 ```
 com.justai.jaicf.jaicp.build.jarFileName
 com.justai.jaicf.jaicp.build.jarDestinationDir
