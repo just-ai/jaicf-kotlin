@@ -37,24 +37,18 @@ implementation("ch.qos.logback:logback-classic:1.2.3")
 
 ![Create first project in JAICP](https://i.imgur.com/5r35CCv.gif)
 
-#### 3. Create suitable `JaicpWebhookConnector` or `JaicpPollingConnector` to connect your bot to JAICP infrastructure
-Webhook can be created using [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot). Here is Ktor implementation example:
+#### 3. Create suitable `JaicpServer` or `JaicpPollingConnector` to connect your bot to JAICP infrastructure
+Webhook can be created using [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot). Here is implementation example which uses provided Ktor Server:
  ```kotlin
- embeddedServer(Netty, 8000) {
-     routing {
-         httpBotRouting(
-             "/" to JaicpWebhookConnector(
-                 botApi = citiesGameBot,
-                 accessToken = accessToken,
-                 channels = listOf(
-                     ChatWidgetChannel,
-                     TelephonyChannel,
-                     ChatApiChannel
-                 )
-             )
-         )
-     }
- }.start(wait = true)
+JaicpServer(
+    telephonyCallScenario,
+    accessToken,
+    channels = listOf(
+        ChatWidgetChannel,
+        TelephonyChannel,
+        ChatApiChannel
+     )
+).start(wait = true)
  ```
 And Spring Boot example:
 ```kotlin
