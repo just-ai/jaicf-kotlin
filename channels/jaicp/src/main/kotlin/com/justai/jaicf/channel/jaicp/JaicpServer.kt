@@ -3,9 +3,9 @@ package com.justai.jaicf.channel.jaicp
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.httpBotRouting
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
-import com.justai.jaicf.channel.jaicp.ktor.routing.channelCheckEndpoint
-import com.justai.jaicf.channel.jaicp.ktor.routing.healthCheckEndpoint
-import com.justai.jaicf.channel.jaicp.ktor.routing.reloadConfigEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.channelCheckEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.healthCheckEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -20,7 +20,7 @@ import io.ktor.server.netty.*
  * fun main() {
  *  JaicpServer(
  *      exampleBot,
- *      "<YOUR_TOKEN>",
+ *      "<JAICP_PROJECT_TOKEN>",
  *      channels = listOf(
  *          ChatWidgetChannel,
  *          ChatApiChannel,
@@ -43,7 +43,7 @@ open class JaicpServer(
     botApi: BotApi,
     accessToken: String,
     channels: List<JaicpChannelFactory>,
-    port: Int = System.getenv("PORT")?.toInt() ?: 8080,
+    port: Int = System.getenv(PORT_PROP_NAME)?.toInt() ?: 8080,
     url: String = System.getenv(PROXY_PROP_NAME) ?: DEFAULT_PROXY_URL
 ) {
     open val connector = JaicpWebhookConnector(
@@ -68,5 +68,6 @@ open class JaicpServer(
 
     companion object {
         private const val PROXY_PROP_NAME = "CA_URL"
+        private const val PORT_PROP_NAME = "PORT"
     }
 }

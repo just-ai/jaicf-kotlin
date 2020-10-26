@@ -1,7 +1,10 @@
-package com.justai.jaicf.channel.jaicp.ktor.routing
+package com.justai.jaicf.channel.jaicp.endpoints.ktor
 
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
+import com.justai.jaicf.channel.jaicp.endpoints.CHANNEL_CHECK_URL
+import com.justai.jaicf.channel.jaicp.endpoints.HEALTH_CHECK_URL
+import com.justai.jaicf.channel.jaicp.endpoints.RELOAD_CONFIGS_URL
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
@@ -13,7 +16,7 @@ import io.ktor.routing.*
  * @param connector [JaicpWebhookConnector] for processing incoming [HttpBotRequest]
  * */
 fun Routing.healthCheckEndpoint(connector: JaicpWebhookConnector) {
-    get("/health-check") {
+    get(HEALTH_CHECK_URL) {
         connector.getRunningChannels()
         call.respond(HttpStatusCode.OK, "OK")
     }
@@ -25,7 +28,7 @@ fun Routing.healthCheckEndpoint(connector: JaicpWebhookConnector) {
  * @param connector [JaicpWebhookConnector] for processing incoming [HttpBotRequest]
  * */
 fun Routing.channelCheckEndpoint(connector: JaicpWebhookConnector) {
-    route("/channel-check") {
+    route(CHANNEL_CHECK_URL) {
         get("{channelId}") {
             val channelId = call.parameters["channelId"]
             if (connector.getRunningChannels().contains(channelId)) {
@@ -43,7 +46,7 @@ fun Routing.channelCheckEndpoint(connector: JaicpWebhookConnector) {
  * @param connector [JaicpWebhookConnector] for processing incoming [HttpBotRequest]
  * */
 fun Routing.reloadConfigEndpoint(connector: JaicpWebhookConnector) {
-    put("/reload-configs") {
+    put(RELOAD_CONFIGS_URL) {
         connector.reload()
         call.respond(HttpStatusCode.OK, "OK")
     }

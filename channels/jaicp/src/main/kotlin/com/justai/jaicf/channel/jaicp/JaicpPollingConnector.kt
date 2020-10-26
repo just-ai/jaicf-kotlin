@@ -52,6 +52,6 @@ class JaicpPollingConnector(
     }
 
     override fun evict(channelConfig: ChannelConfig) {
-        logger.debug("Eviction for polling connector is not configured yet.")
+        logger.debug("Eviction for polling connector is not supported yet.")
     }
 }

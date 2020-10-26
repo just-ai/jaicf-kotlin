@@ -8,9 +8,9 @@ import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
 import io.ktor.client.features.logging.LogLevel
-import com.justai.jaicf.channel.jaicp.ktor.routing.channelCheckEndpoint
-import com.justai.jaicf.channel.jaicp.ktor.routing.healthCheckEndpoint
-import com.justai.jaicf.channel.jaicp.ktor.routing.reloadConfigEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.channelCheckEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.healthCheckEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
 
 
 /**
