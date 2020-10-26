@@ -27,7 +27,7 @@ open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotC
         if (req?.requestURI?.startsWith(CHANNEL_CHECK_URL) == true) {
             val channelId = req.requestURI.removePrefix("$CHANNEL_CHECK_URL/").split("/").firstOrNull()
             if (connector.getRunningChannels().contains(channelId)) resp?.ok()
-            else resp?.notFound()
+            else resp?.notFound("Channel $channelId is not configured.")
         }
         if (req?.requestURI == HEALTH_CHECK_URL) {
             connector.getRunningChannels()
@@ -41,9 +41,9 @@ open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotC
         writer.flush()
     }
 
-    private fun HttpServletResponse.notFound() {
+    private fun HttpServletResponse.notFound(message: String) {
         status = HttpServletResponse.SC_NOT_FOUND
-        writer.write("NOT_FOUND")
+        writer.write(message)
         writer.flush()
     }
 }

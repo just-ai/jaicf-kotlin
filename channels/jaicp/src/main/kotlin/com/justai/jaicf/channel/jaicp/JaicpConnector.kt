@@ -48,14 +48,14 @@ abstract class JaicpConnector(
 
     protected fun reloadConfig() {
         val fetched = fetchChannels()
+        val stillRegistered = registeredChannels.map { it.second.channel }.intersect(fetched.map { it.second.channel })
 
-        registeredChannels.filter { (_, regCfg) ->
-            fetched.none { (_, fetCfg) -> regCfg.channel == fetCfg.channel }
-        }.forEach { evict(it.second) }
-
-        fetched.filter { (_, regCfg) ->
-            registeredChannels.none { (_, fetCfg) -> regCfg.channel == fetCfg.channel }
-        }.forEach { createChannel(it.first, it.second) }
+        registeredChannels.filter { it.second.channel !in stillRegistered }.forEach {
+            evict(it.second)
+        }
+        fetched.filter { it.second.channel !in stillRegistered }.forEach {
+            createChannel(it.first, it.second)
+        }
 
         registeredChannels = fetched
     }
