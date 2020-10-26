@@ -54,7 +54,7 @@ And Spring Boot example:
 ```kotlin
 @Bean
 fun jaicpServlet() = ServletRegistrationBean(
-    HttpBotChannelServlet(
+    JaicpServlet(
         JaicpWebhookConnector(
             botApi = citiesGameBot,
             accessToken = accessToken,
