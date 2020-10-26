@@ -5,7 +5,6 @@ import com.justai.jaicf.channel.http.HttpBotChannelServlet
 import com.justai.jaicf.channel.jaicp.endpoints.CHANNEL_CHECK_URL
 import com.justai.jaicf.channel.jaicp.endpoints.HEALTH_CHECK_URL
 import com.justai.jaicf.channel.jaicp.endpoints.RELOAD_CONFIGS_URL
-import com.justai.jaicf.helpers.logging.WithLogger
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -15,38 +14,36 @@ import javax.servlet.http.HttpServletResponse
  * @param connector an [JaicpWebhookConnector]
  * @see HttpBotChannel
  */
-open class JaicpServlet(
-    private val connector: JaicpWebhookConnector
-) : HttpBotChannelServlet(connector), WithLogger {
+open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotChannelServlet(connector) {
 
     override fun doPut(req: HttpServletRequest?, resp: HttpServletResponse?) {
         if (req?.requestURI == RELOAD_CONFIGS_URL) {
             connector.reload()
-            ok(resp)
+            resp?.ok()
         }
     }
 
     override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse?) {
         if (req?.requestURI?.startsWith(CHANNEL_CHECK_URL) == true) {
             val channelId = req.requestURI.removePrefix("$CHANNEL_CHECK_URL/").split("/").firstOrNull()
-            if (connector.getRunningChannels().contains(channelId)) ok(resp)
-            else notFound(resp)
+            if (connector.getRunningChannels().contains(channelId)) resp?.ok()
+            else resp?.notFound()
         }
         if (req?.requestURI == HEALTH_CHECK_URL) {
             connector.getRunningChannels()
-            ok(resp)
+            resp?.ok()
         }
     }
 
-    private fun ok(resp: HttpServletResponse?) = resp?.run {
+    private fun HttpServletResponse.ok() {
         status = HttpServletResponse.SC_OK
-        resp.writer.write("OK")
-        resp.writer.flush()
+        writer.write("OK")
+        writer.flush()
     }
 
-    private fun notFound(resp: HttpServletResponse?) = resp?.run {
+    private fun HttpServletResponse.notFound() {
         status = HttpServletResponse.SC_NOT_FOUND
-        resp.writer.write("NOT_FOUND")
-        resp.writer.flush()
+        writer.write("NOT_FOUND")
+        writer.flush()
     }
 }
