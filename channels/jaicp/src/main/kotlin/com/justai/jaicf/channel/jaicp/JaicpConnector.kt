@@ -31,31 +31,36 @@ abstract class JaicpConnector(
 ) : WithLogger {
 
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
-    private val registeredChannels = parseChannels()
+    private var registeredChannels = fetchChannels()
 
-    protected fun registerChannels() {
+    protected fun loadConfig() {
         registeredChannels.forEach { (factory, cfg) ->
-            when (factory) {
-                is JaicpCompatibleChannelFactory -> {
-                    registerChannel(factory.create(botApi), cfg)
-                        .also { logger.info("JAICP-compatible channel has been created for ${factory.channelType}") }
-                }
-
-                is JaicpNativeChannelFactory -> {
-                    registerChannel(factory.create(botApi), cfg)
-                        .also { logger.info("JAICP-native channel has been created for ${factory.channelType}") }
-                }
-
-                is JaicpCompatibleAsyncChannelFactory -> {
-                    registerChannel(factory.create(botApi, getChannelProxyUrl(cfg)), cfg)
-                        .also { logger.info("JAICP-compatible async channel has been created for ${factory.channelType}") }
-                }
-                else -> logger.info("Channel type ${factory.channelType} is not added to list of channels in BotEngine")
-            }
+            createChannel(factory, cfg)
         }
     }
 
-    private fun parseChannels(): List<Pair<JaicpChannelFactory, ChannelConfig>> {
+    private fun createChannel(factory: JaicpChannelFactory, cfg: ChannelConfig) = when (factory) {
+        is JaicpCompatibleChannelFactory -> register(factory.create(botApi), cfg)
+        is JaicpNativeChannelFactory -> register(factory.create(botApi), cfg)
+        is JaicpCompatibleAsyncChannelFactory -> register(factory.create(botApi, getChannelProxyUrl(cfg)), cfg)
+        else -> logger.info("Channel type ${factory.channelType} is not added to list of channels in BotEngine")
+    }
+
+    protected fun reloadConfig() {
+        val fetched = fetchChannels()
+
+        registeredChannels.filter { (_, regCfg) ->
+            fetched.none { (_, fetCfg) -> regCfg.channel == fetCfg.channel }
+        }.forEach { evict(it.second) }
+
+        fetched.filter { (_, regCfg) ->
+            registeredChannels.none { (_, fetCfg) -> regCfg.channel == fetCfg.channel }
+        }.forEach { createChannel(it.first, it.second) }
+
+        registeredChannels = fetched
+    }
+
+    private fun fetchChannels(): List<Pair<JaicpChannelFactory, ChannelConfig>> {
         val registeredChannels: List<ChannelConfig> = chatAdapterConnector.listChannels()
         logger.info("Retrieved ${registeredChannels.size} channels configuration")
 
@@ -69,7 +74,9 @@ abstract class JaicpConnector(
         }
     }
 
-    abstract fun registerChannel(channel: JaicpBotChannel, channelConfig: ChannelConfig)
+    abstract fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig)
+
+    abstract fun evict(channelConfig: ChannelConfig)
 
     protected fun getChannelProxyUrl(config: ChannelConfig) =
         "$proxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
