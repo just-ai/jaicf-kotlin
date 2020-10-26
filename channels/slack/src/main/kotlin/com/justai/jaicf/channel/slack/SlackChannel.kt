@@ -6,14 +6,17 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
 import com.slack.api.bolt.AppConfig
 import com.slack.api.bolt.context.Context
+import com.slack.api.bolt.middleware.builtin.IgnoringSelfEvents
 import com.slack.api.bolt.request.RequestHeaders
 import com.slack.api.bolt.util.SlackRequestParser
+import com.slack.api.methods.MethodsConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,22 +29,34 @@ class SlackChannel private constructor(
     private lateinit var app: App
     private lateinit var parser: SlackRequestParser
 
-    constructor(botApi: BotApi, config: SlackChannelConfig): this(botApi) {
-        app = App(AppConfig.builder()
+    constructor(botApi: BotApi, config: SlackChannelConfig) : this(botApi) {
+        val appConfig = AppConfig.builder()
             .singleTeamBotToken(config.botToken)
             .signingSecret(config.signingSecret)
             .build()
-        )
+        app = App(appConfig, config.middleware)
         start()
     }
 
-    private constructor(botApi: BotApi, urlPrefix: String): this(botApi) {
+    private constructor(botApi: BotApi, urlPrefix: String) : this(botApi) {
         val config = SlackConfig().apply {
-            methodsEndpointUrlPrefix = urlPrefix
+            methodsEndpointUrlPrefix = "$urlPrefix/".toUrl()
+            methodsConfig = MethodsConfig().apply {
+                isStatsEnabled = false
+            }
         }
 
         val slack = Slack.getInstance(config)
-        app = App(AppConfig.builder().slack(slack).build())
+        app = App(
+            AppConfig.builder()
+                .slack(slack)
+                .alwaysRequestUserTokenNeeded(false)
+                .singleTeamBotToken("empty")
+                .signingSecret("empty")
+                .build(),
+            listOf(IgnoringSelfEvents(config))
+        )
+
         start()
     }
 

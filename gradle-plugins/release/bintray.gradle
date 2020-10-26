@@ -1,0 +1,71 @@
+ext {
+    bintrayOrg = 'just-ai'
+    bintrayRepo = 'jaicf'
+    bintrayName = project.name
+
+    publishedGroupId = rootProject.getGroup()
+    libraryName = 'JAICF'
+
+    artifact = project.name
+    packagingType = 'jar'
+
+    siteUrl = 'https://framework.just-ai.com'
+    gitUrl = 'https://github.com/just-ai'
+
+    libraryVersion = project.getVersion()
+
+    developerId = 'just-ai'
+    developerName = 'Just AI'
+    developerEmail = 'contact@just-ai.com'
+
+    allLicenses = ["Apache-2.0"]
+}
+
+apply plugin: 'com.jfrog.bintray'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+bintrayUpload.dependsOn assemble
+bintrayUpload.dependsOn sourcesJar
+
+artifacts {
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+File propsFile = rootProject.file('../local.properties')
+
+if (propsFile.exists()) {
+    properties.load(propsFile.newDataInputStream())
+}
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        userOrg = bintrayOrg
+        repo = bintrayRepo
+        name = bintrayName
+
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = allLicenses
+
+        publish = true
+        override = true
+        publicDownloadNumbers = true
+
+        publications = [project.name]
+
+        version {
+            gpg {
+                sign = false
+            }
+        }
+    }
+}
