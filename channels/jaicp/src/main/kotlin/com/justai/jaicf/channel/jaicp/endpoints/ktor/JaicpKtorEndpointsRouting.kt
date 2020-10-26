@@ -28,14 +28,12 @@ fun Routing.healthCheckEndpoint(connector: JaicpWebhookConnector) {
  * @param connector [JaicpWebhookConnector] for processing incoming [HttpBotRequest]
  * */
 fun Routing.channelCheckEndpoint(connector: JaicpWebhookConnector) {
-    route(CHANNEL_CHECK_URL) {
-        get("{channelId}") {
-            val channelId = call.parameters["channelId"]
-            if (connector.getRunningChannels().contains(channelId)) {
-                call.respond(HttpStatusCode.OK, "OK")
-            } else {
-                call.respond(HttpStatusCode.NotFound, "Channel $channelId is not configured")
-            }
+    get("$CHANNEL_CHECK_URL/{channelId}") {
+        val channelId = call.parameters["channelId"]
+        if (connector.getRunningChannels().contains(channelId)) {
+            call.respond(HttpStatusCode.OK, "OK")
+        } else {
+            call.respond(HttpStatusCode.NotFound, "Channel $channelId is not configured.")
         }
     }
 }
