@@ -184,14 +184,10 @@ class BotEngine(
         if (res is SlotFillingInterrupted) {
             botContext.finishSlotFilling()
             activationContext = state
-                ?.let {
-                    ActivationContext(
-                        null, Activation(
-                            state,
-                            StrictActivatorContext()
-                        )
-                    )
-                }
+                ?.let { ActivationContext(null, Activation(
+                    state,
+                    StrictActivatorContext()
+                )) }
                 ?: selectActivation(botContext, request)
         }
         return shouldReturn to activationContext
