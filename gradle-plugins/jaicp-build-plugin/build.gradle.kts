@@ -1,7 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.3.61"
-    `maven-publish`
-    `java-gradle-plugin`
+    kotlin("jvm")
 }
 
 version = "0.1.0"
@@ -10,7 +8,9 @@ gradlePlugin {
     plugins {
         create("jaicp-build-plugin") {
             id = "com.justai.jaicf.jaicp-build-plugin"
+            displayName = "JAICP Cloud build plugin"
             implementationClass = "com.justai.jaicf.plugins.jaicp.build.JaicpBuildPlugin"
+            description = "Is used for deploying JAICF projects in a JAICP Cloud."
         }
     }
 }
@@ -32,12 +32,3 @@ tasks {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>(project.name) {
-            from(components["java"])
-        }
-    }
-}
-
-apply(from = rootProject.file("release/bintray.gradle"))
