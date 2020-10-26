@@ -59,4 +59,20 @@ open class ActionContext(
      * @param texts a vararg of texts to select random from
      */
     fun Reactions.sayRandom(vararg texts: String) = say(random(*texts))
+
+
+    /**
+     * Returns random element from List.
+     * Works the same as fun <T> random(vararg elements: T)
+     * @param elements a list of elements to select random from
+     * @return a random element
+     */
+    private fun <T> random(elements: List<T>) = elements[smartRandom(elements.size, this) % elements.size]
+
+
+    /**
+     * A helper function that puts a randomized phrase into the response.
+     * @param texts a list of texts to select random from
+     */
+    fun Reactions.sayRandom(texts: List<String>) = say(random(texts))
 }
