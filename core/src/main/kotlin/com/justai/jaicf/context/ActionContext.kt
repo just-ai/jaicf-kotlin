@@ -30,10 +30,19 @@ open class ActionContext(
     /**
      * Returns random element.
      * Works as a smart random preserving previous calls results to guarantee that there are no two equal results in two consecutive calls.
+     * @param elements a list of elements to select random from
+     * @return a random element
+     */
+    private fun <T> random(elements: List<T>) = elements[smartRandom(elements.size, this) % elements.size]
+
+
+    /**
+     * Returns random element.
      * @param elements a vararg of elements to select random from
      * @return a random element
      */
-    fun <T> random(vararg elements: T) = elements[smartRandom(elements.size, this) % elements.size]
+    fun <T> random(vararg elements: T) = random(elements.asList())
+
 
     /**
      * Returns random [Int] between 0 (inclusive) and [max] (exclusive).
@@ -42,6 +51,7 @@ open class ActionContext(
      * @return a random [Int]
      */
     open fun random(max: Int) = smartRandom(max, this)
+
 
     /**
      * Returns random [Int] between [min] (inclusive) and [max] (exclusive).
@@ -53,26 +63,19 @@ open class ActionContext(
      */
     open fun random(min: Int, max: Int) = Random.nextInt(min, max)
 
+
     /**
      * A helper function that puts a randomized phrase into the response.
      * Utilizes smart random function to guarantee that there are no two equal phrases was returned to the user in two consecutive requests.
      * @param texts a vararg of texts to select random from
      */
-    fun Reactions.sayRandom(vararg texts: String) = say(random(*texts))
-
-
-    /**
-     * Returns random element from List.
-     * Works the same as fun <T> random(vararg elements: T)
-     * @param elements a list of elements to select random from
-     * @return a random element
-     */
-    private fun <T> random(elements: List<T>) = elements[smartRandom(elements.size, this) % elements.size]
+    fun Reactions.sayRandom(vararg texts: String) = sayRandom(texts.asList())
 
 
     /**
      * A helper function that puts a randomized phrase into the response.
-     * @param texts a list of texts to select random from
+     * Utilizes smart random function to guarantee that there are no two equal phrases was returned to the user in two consecutive requests.
+     * @param texts a list of String to select random from
      */
     fun Reactions.sayRandom(texts: List<String>) = say(random(texts))
 }
