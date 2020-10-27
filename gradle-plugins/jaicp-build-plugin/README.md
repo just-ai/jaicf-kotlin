@@ -17,7 +17,7 @@ with some _JAICP Cloud_ related configurations for building executable `.jar` fi
 _build.gradle.kts_
 ```kotlin
 plugins {
-    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
+    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.1"
 }
 ```
 
@@ -31,7 +31,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.justai.jaicf", "jaicp-build-plugin", "0.1.0")
+        classpath("com.justai.jaicf", "jaicp-build-plugin", "0.1.1")
     }
 }
 
@@ -86,6 +86,6 @@ If you want to use a custom `ShadowJar` version, just apply the `ShadowJar` plug
 ```
 plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
+    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.1"
 }
 ```
