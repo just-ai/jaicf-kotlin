@@ -64,21 +64,28 @@ you can use custom values for these properties for local `shadowJar` builds.
 During _JAICP Cloud_ build these properties values can be accessed via the following project properties:
 `com.justai.jaicf.jaicp.build.jarFileName` and `com.justai.jaicf.jaicp.build.jarDestinationDir`.
 
-By default the latest verion of the `ShadowPlugin` applies, but any versions greater than `5.0.0` are also supported.
+
+## jaicpBuild task configuration
+
+The only property of `jaicpBuild` task is `mainClassName`.
+By default, it will be inherited from `shadowJar` configuration, but if you don't need to customize the `shadowJar` 
+or if you want to use different main classes for local development  and _JAICP Cloud_, you can provide `mainClassName` 
+directly to the `jaicpBuld` task. 
+In this case `mainClassName` will be set to provided one during the `jaicpBuild` execution.
+
+```kotlin
+tasks.withType<JaicpBuild> {
+    mainClassName.set("org.example.BotKt")
+}
+```
+
+## ShadowJar versions support
+
+By default, the latest verion of the `ShadowPlugin` applies, but any versions greater than `5.0.0` are also supported.
 If you want to use a custom `ShadowJar` version, just apply the `ShadowJar` plugin with version specified:
 ```
 plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
-}
-```
-
-If you don't need to customize the `shadowJar` or if you want to use different main classes for local development 
-and _JAICP Cloud_, you can provide `mainClassName` to the `jaicpBuld` task. In this case `mainClassName` will be 
-set to provided one during the `jaicpBuild` execution.
-
-```kotlin
-tasks.withType<JaicpBuild> {
-    mainClassName.set("org.example.BotKt")
 }
 ```
