@@ -34,7 +34,7 @@ open class JaicpBuild : DefaultTask() {
     private val jarDestinationDir: String = project.prop(JAR_DESTINATION_DIR) ?: JAR_DESTINATION_DIR_DEFAULT
     private val jarFileName: String = project.prop(JAR_FILE_NAME) ?: JAR_FILE_NAME_DEFAULT
     @Input @Optional
-    var mainClassName: Property<String> = project.objects.property(String::class.java)
+    val mainClassName: Property<String> = project.objects.property(String::class.java)
 
     @TaskAction
     fun action() {
