@@ -17,7 +17,7 @@ gradlePlugin {
 
 dependencies {
     implementation(kotlin("stdlib", "1.3.61"))
-    implementation("com.github.jengelman.gradle.plugins", "shadow", "6.1.0")
+    implementation("com.github.jengelman.gradle.plugins", "shadow", "[5.0.0,)")
 }
 
 tasks {
