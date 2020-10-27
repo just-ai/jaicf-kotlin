@@ -12,6 +12,15 @@ with some _JAICP Cloud_ related configurations for building executable `.jar` fi
 
 ### 1. Add plugin to your Gradle build
 
+- Using `plugins` block
+
+_build.gradle.kts_
+```kotlin
+plugins {
+    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
+}
+```
+
 - Using `buildscript` block
 
 _build.gradle.kts_
@@ -27,32 +36,6 @@ buildscript {
 }
 
 apply(plugin = "com.justai.jaicf.jaicp-build-plugin")
-```
-
-- Using `plugins` and `pluginManagement` blocks
-
-_build.gradle.kts_
-```kotlin
-plugins {
-    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
-}
-```
-
-_settings.gradle.kts_
-```kotlin
-pluginManagement {
-    repositories {
-        maven(url = "https://dl.bintray.com/just-ai/jaicf")
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "com.justai.jaicf.jaicp-build-plugin") {
-                useModule("com.justai.jaicf:jaicp-build-plugin:${requested.version}")
-            }
-        }
-    }
-}
 ```
 
 ### 2. Configure your build
@@ -86,6 +69,7 @@ If you want to use a custom `ShadowJar` version, just apply the `ShadowJar` plug
 ```
 plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
 }
 ```
 
