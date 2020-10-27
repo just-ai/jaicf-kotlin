@@ -18,6 +18,7 @@ dependencies {
     api("io.ktor:ktor-client-logging-jvm" version { ktor })
     api("io.ktor:ktor-client-json-jvm" version { ktor })
     api("io.ktor:ktor-client-serialization-jvm" version { ktor })
+    api("io.ktor:ktor-server-netty" version { ktor })
 
 }
 

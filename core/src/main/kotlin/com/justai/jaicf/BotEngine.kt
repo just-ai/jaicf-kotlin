@@ -57,7 +57,7 @@ import com.justai.jaicf.slotfilling.*
 class BotEngine(
     val model: ScenarioModel,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
-    activators: Array<ActivatorFactory>,
+    activators: Array<ActivatorFactory> = emptyArray(),
     private val activationSelector: ActivationSelector = ActivationSelector.default,
     private val slotReactor: SlotReactor? = null,
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())

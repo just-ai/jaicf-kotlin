@@ -39,14 +39,19 @@ class JaicpPollingConnector(
     private val dispatcher = Dispatcher(httpClient)
 
     init {
-        super.registerChannels()
+        loadConfig()
     }
 
     fun runBlocking() {
         dispatcher.startPollingBlocking()
     }
 
-    override fun registerChannel(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
+    override fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
+        logger.debug("Register channel ${channelConfig.channelType}")
         dispatcher.registerPolling(channel, getChannelProxyUrl(channelConfig))
+    }
+
+    override fun evict(channelConfig: ChannelConfig) {
+        logger.debug("Eviction for polling connector is not supported yet.")
     }
 }

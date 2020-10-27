@@ -4,7 +4,7 @@
 
 <h1 align="center">JAICP Channel</h1>
 
-This channel is created to provide full [JAICP](https://just-ai.com/en/platform.php) infrastructural support for JAICF. You can find quickstart guide [here](https://github.com/just-ai/jaicf-kotlin/wiki/Quick-Start-With-JAICP).
+This channel is created to provide full [JAICP](https://just-ai.com/en/platform.php) infrastructural support for JAICF. You can find quickstart guide [here](https://github.com/just-ai/jaicf-kotlin/wiki/Quick-Start).
  
 ## About
 JAICP is used to connect your bots to JAICP infrastructure. This infrastructure will provide:  
@@ -37,30 +37,24 @@ implementation("ch.qos.logback:logback-classic:1.2.3")
 
 ![Create first project in JAICP](https://i.imgur.com/5r35CCv.gif)
 
-#### 3. Create suitable `JaicpWebhookConnector` or `JaicpPollingConnector` to connect your bot to JAICP infrastructure
-Webhook can be created using [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot). Here is Ktor implementation example:
+#### 3. Create suitable `JaicpServer` or `JaicpPollingConnector` to connect your bot to JAICP infrastructure
+Webhook can be created using [Ktor](https://ktor.io) or [Spring Boot](https://spring.io/projects/spring-boot). Here is implementation example which uses provided Ktor Server:
  ```kotlin
- embeddedServer(Netty, 8000) {
-     routing {
-         httpBotRouting(
-             "/" to JaicpWebhookConnector(
-                 botApi = citiesGameBot,
-                 accessToken = accessToken,
-                 channels = listOf(
-                     ChatWidgetChannel,
-                     TelephonyChannel,
-                     ChatApiChannel
-                 )
-             )
-         )
-     }
- }.start(wait = true)
+JaicpServer(
+    telephonyCallScenario,
+    accessToken,
+    channels = listOf(
+        ChatWidgetChannel,
+        TelephonyChannel,
+        ChatApiChannel
+     )
+).start(wait = true)
  ```
 And Spring Boot example:
 ```kotlin
 @Bean
 fun jaicpServlet() = ServletRegistrationBean(
-    HttpBotChannelServlet(
+    JaicpServlet(
         JaicpWebhookConnector(
             botApi = citiesGameBot,
             accessToken = accessToken,

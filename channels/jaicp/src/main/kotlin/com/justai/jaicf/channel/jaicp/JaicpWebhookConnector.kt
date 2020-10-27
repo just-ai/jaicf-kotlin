@@ -8,19 +8,37 @@ import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
 import io.ktor.client.features.logging.LogLevel
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.channelCheckEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.healthCheckEndpoint
+import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
 
 
 /**
- * This class is used to process webhook requests from JAICP.
+ * This class is used to process [HttpBotRequest] with [JaicpCompatibleBotChannel] channels.
+ * Supported channels are [JaicpCompatibleBotChannel], [JaicpNativeBotChannel], [JaicpCompatibleAsyncBotChannel].
  *
- * Supported channels are [JaicpCompatibleBotChannel], [JaicpNativeBotChannel], [JaicpCompatibleAsyncBotChannel]
+ * NOTE:
+ * In general cases, you should use [JaicpServer] to establish webhook connection between JAICP and your bot,
+ * as it provides required endpoints: [channelCheckEndpoint], [healthCheckEndpoint], [reloadConfigEndpoint].
  *
- * See example at
- * examples/jaicp-telephony/src/main/kotlin/com/justai/jaicf/examples/jaicptelephony/channels/WebhookConnection.kt
+ * Usage example:
+ * ```kotlin
+ * embeddedServer(Netty, 8000) {
+ *  routing {
+ *      httpBotRouting(
+ *          "/" to JaicpWebhookConnector(
+ *              botApi = telephonyCallScenario,
+ *              accessToken = accessToken,
+ *              channels = listOf(TelephonyChannel)
+ *          ))
+ *      }
+ *  }.start(wait = true)
+ * ```
  *
  * @see JaicpNativeBotChannel
  * @see JaicpCompatibleBotChannel
  * @see JaicpCompatibleAsyncBotChannel
+ * @see JaicpServer
  *
  * @param botApi the [BotApi] implementation used to process the requests for all channels
  * @param accessToken can be configured in JAICP Web Interface
@@ -40,12 +58,24 @@ class JaicpWebhookConnector(
     private val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
 
     init {
-        super.registerChannels()
+        loadConfig()
     }
 
-    override fun registerChannel(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
-        channelMap[channelConfig.channel] = channel
+    override fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
+        if (!channelMap.containsKey(channelConfig.channel)) {
+            channelMap[channelConfig.channel] = channel
+            logger.debug("Register channel ${channelConfig.channelType}")
+        }
     }
+
+    override fun evict(channelConfig: ChannelConfig) {
+        logger.debug("Evict channel ${channelConfig.channelType}")
+        channelMap.remove(channelConfig.channel)
+    }
+
+    fun reload() = reloadConfig()
+
+    fun getRunningChannels() = channelMap.map { it.key }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val botRequest = request.receiveText()
