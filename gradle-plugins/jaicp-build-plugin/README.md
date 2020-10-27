@@ -79,11 +79,15 @@ during the `jaicpBuild` task execution, but will remain unchanged if the `jaicpB
 you can use custom values for these properties for local `shadowJar` builds. 
 
 During _JAICP Cloud_ build these properties values can be accessed via the following project properties:
-```
-com.justai.jaicf.jaicp.build.jarFileName
-com.justai.jaicf.jaicp.build.jarDestinationDir
-```
+`com.justai.jaicf.jaicp.build.jarFileName` and `com.justai.jaicf.jaicp.build.jarDestinationDir`.
 
+By default the latest verion of the `ShadowPlugin` applies, but any versions greater than `5.0.0` are also supported.
+If you want to use a custom `ShadowJar` version, just apply the `ShadowJar` plugin with version specified:
+```
+plugins {
+    id("com.github.johnrengelman.shadow") version "5.2.0"
+}
+```
 
 If you don't need to customize the `shadowJar` or if you want to use different main classes for local development 
 and _JAICP Cloud_, you can provide `mainClassName` to the `jaicpBuld` task. In this case `mainClassName` will be 
