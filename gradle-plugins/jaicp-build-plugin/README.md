@@ -12,6 +12,15 @@ with some _JAICP Cloud_ related configurations for building executable `.jar` fi
 
 ### 1. Add plugin to your Gradle build
 
+- Using `plugins` block
+
+_build.gradle.kts_
+```kotlin
+plugins {
+    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.1"
+}
+```
+
 - Using `buildscript` block
 
 _build.gradle.kts_
@@ -22,37 +31,11 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.justai.jaicf", "jaicp-build-plugin", "0.1.0")
+        classpath("com.justai.jaicf", "jaicp-build-plugin", "0.1.1")
     }
 }
 
 apply(plugin = "com.justai.jaicf.jaicp-build-plugin")
-```
-
-- Using `plugins` and `pluginManagement` blocks
-
-_build.gradle.kts_
-```kotlin
-plugins {
-    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.0"
-}
-```
-
-_settings.gradle.kts_
-```kotlin
-pluginManagement {
-    repositories {
-        maven(url = "https://dl.bintray.com/just-ai/jaicf")
-    }
-
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "com.justai.jaicf.jaicp-build-plugin") {
-                useModule("com.justai.jaicf:jaicp-build-plugin:${requested.version}")
-            }
-        }
-    }
-}
 ```
 
 ### 2. Configure your build
@@ -79,18 +62,30 @@ during the `jaicpBuild` task execution, but will remain unchanged if the `jaicpB
 you can use custom values for these properties for local `shadowJar` builds. 
 
 During _JAICP Cloud_ build these properties values can be accessed via the following project properties:
-```
-com.justai.jaicf.jaicp.build.jarFileName
-com.justai.jaicf.jaicp.build.jarDestinationDir
-```
+`com.justai.jaicf.jaicp.build.jarFileName` and `com.justai.jaicf.jaicp.build.jarDestinationDir`.
 
 
-If you don't need to customize the `shadowJar` or if you want to use different main classes for local development 
-and _JAICP Cloud_, you can provide `mainClassName` to the `jaicpBuld` task. In this case `mainClassName` will be 
-set to provided one during the `jaicpBuild` execution.
+## jaicpBuild task configuration
+
+The only property of `jaicpBuild` task is `mainClassName`.
+By default, it will be inherited from `shadowJar` configuration, but if you don't need to customize the `shadowJar` 
+or if you want to use different main classes for local development  and _JAICP Cloud_, you can provide `mainClassName` 
+directly to the `jaicpBuld` task. 
+In this case `mainClassName` will be set to provided one during the `jaicpBuild` execution.
 
 ```kotlin
 tasks.withType<JaicpBuild> {
     mainClassName.set("org.example.BotKt")
+}
+```
+
+## ShadowJar versions support
+
+By default, the latest verion of the `ShadowPlugin` applies, but any versions greater than `5.0.0` are also supported.
+If you want to use a custom `ShadowJar` version, just apply the `ShadowJar` plugin with version specified:
+```
+plugins {
+    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.justai.jaicf.jaicp-build-plugin") version "0.1.1"
 }
 ```

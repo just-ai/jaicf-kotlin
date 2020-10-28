@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
 class JaicpBuildPlugin : Plugin<Project> {
@@ -32,8 +33,8 @@ class JaicpBuildPlugin : Plugin<Project> {
 open class JaicpBuild : DefaultTask() {
     private val jarDestinationDir: String = project.prop(JAR_DESTINATION_DIR) ?: JAR_DESTINATION_DIR_DEFAULT
     private val jarFileName: String = project.prop(JAR_FILE_NAME) ?: JAR_FILE_NAME_DEFAULT
-    @Input
-    var mainClassName: Property<String> = project.objects.property(String::class.java)
+    @Input @Optional
+    val mainClassName: Property<String> = project.objects.property(String::class.java)
 
     @TaskAction
     fun action() {

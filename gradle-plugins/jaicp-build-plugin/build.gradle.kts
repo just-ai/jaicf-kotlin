@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
 }
 
-version = "0.1.0"
+version = "0.1.1"
 
 gradlePlugin {
     plugins {
@@ -17,7 +17,7 @@ gradlePlugin {
 
 dependencies {
     implementation(kotlin("stdlib", "1.3.61"))
-    implementation("com.github.jengelman.gradle.plugins", "shadow", "6.1.0")
+    implementation("com.github.jengelman.gradle.plugins", "shadow", "[5.0.0,)")
 }
 
 tasks {
