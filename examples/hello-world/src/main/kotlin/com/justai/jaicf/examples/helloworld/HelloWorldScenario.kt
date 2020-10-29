@@ -1,5 +1,6 @@
 package com.justai.jaicf.examples.helloworld
 
+import com.justai.jaicf.activator.dialogflow.dialogflow
 import com.justai.jaicf.channel.aimybox.AimyboxEvent
 import com.justai.jaicf.channel.aimybox.aimybox
 import com.justai.jaicf.channel.alexa.*
@@ -90,6 +91,20 @@ object HelloWorldScenario: Scenario(
             action {
                 reactions.image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
                 reactions.slack?.buttons("Show more" to "/mew")
+            }
+        }
+
+        state("wakeup") {
+            activators {
+                intent("wake_up")
+            }
+            action {
+                activator.dialogflow?.run {
+                    when (val dt = slots["date-time"]) {
+                        null -> reactions.say(queryResult.fulfillmentText)
+                        else -> reactions.say("Okay! I'll wake you up ${dt.stringValue}")
+                    }
+                }
             }
         }
     }
