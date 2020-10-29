@@ -44,7 +44,7 @@ class ActionsFulfillment private constructor(
     }
 
     object ActionsFulfillmentDialogflow : JaicpCompatibleChannelFactory {
-        override val channelType = "google"
+        override val channelType = "dialogflow"
         override fun create(botApi: BotApi) = dialogflow(botApi)
     }
 

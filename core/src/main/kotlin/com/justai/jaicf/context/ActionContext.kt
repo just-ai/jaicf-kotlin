@@ -30,10 +30,17 @@ open class ActionContext(
     /**
      * Returns random element.
      * Works as a smart random preserving previous calls results to guarantee that there are no two equal results in two consecutive calls.
+     * @param elements a list of elements to select random from
+     * @return a random element
+     */
+    fun <T> random(elements: List<T>) = elements[smartRandom(elements.size, this) % elements.size]
+
+    /**
+     * Returns random element.
      * @param elements a vararg of elements to select random from
      * @return a random element
      */
-    fun <T> random(vararg elements: T) = elements[smartRandom(elements.size, this) % elements.size]
+    fun <T> random(vararg elements: T) = random(elements.asList())
 
     /**
      * Returns random [Int] between 0 (inclusive) and [max] (exclusive).
@@ -58,5 +65,12 @@ open class ActionContext(
      * Utilizes smart random function to guarantee that there are no two equal phrases was returned to the user in two consecutive requests.
      * @param texts a vararg of texts to select random from
      */
-    fun Reactions.sayRandom(vararg texts: String) = say(random(*texts))
+    fun Reactions.sayRandom(vararg texts: String) = sayRandom(texts.asList())
+
+    /**
+     * A helper function that puts a randomized phrase into the response.
+     * Utilizes smart random function to guarantee that there are no two equal phrases was returned to the user in two consecutive requests.
+     * @param texts a list of String to select random from
+     */
+    fun Reactions.sayRandom(texts: List<String>) = say(random(texts))
 }
