@@ -1,11 +1,9 @@
 package com.justai.jaicf.examples.helloworld
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.activator.dialogflow.DialogflowAgentConfig
 import com.justai.jaicf.activator.dialogflow.DialogflowConnector
 import com.justai.jaicf.activator.dialogflow.DialogflowIntentActivator
-import com.justai.jaicf.activator.event.BaseEventActivator
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.channel.alexa.activator.AlexaActivator
 

@@ -74,9 +74,12 @@ class DialogflowIntentActivator(
         }
     }
 
-    class Factory(private val connector: DialogflowConnector): ActivatorFactory {
+    class Factory(
+        private val connector: DialogflowConnector,
+        private val queryParametersProvider: QueryParametersProvider = QueryParametersProvider.default
+    ): ActivatorFactory {
         override fun create(model: ScenarioModel): Activator {
-            return DialogflowIntentActivator(model, connector)
+            return DialogflowIntentActivator(model, connector, queryParametersProvider)
         }
     }
 
