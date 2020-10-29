@@ -12,7 +12,7 @@ data class DialogflowActivatorContext(
     confidence = queryResult.intentDetectionConfidence,
     intent = intent
 ) {
-    val slots = queryResult.parameters
+    val slots = queryResult.parameters.fieldsMap
     val messages = queryResult.fulfillmentMessagesList
 
     val textResponses: List<String> = messages

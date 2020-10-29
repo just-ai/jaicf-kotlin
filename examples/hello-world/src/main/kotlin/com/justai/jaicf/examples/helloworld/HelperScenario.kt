@@ -21,7 +21,7 @@ object HelperScenario : Scenario() {
                     var name: String? = null
 
                     activator.dialogflow?.run {
-                        name = slots.fieldsMap["name"]?.stringValue
+                        name = slots["name"]?.stringValue
                     }
 
                     activator.alexaIntent?.run {
