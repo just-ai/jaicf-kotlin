@@ -73,3 +73,44 @@ val helloWorldBot = BotEngine(
     )
 )
 ```
+
+## Slot filling
+
+Dialogflow provides [slot filling feature](https://cloud.google.com/dialogflow/es/docs/intents-actions-parameters#required) enabling your JAICF scenario to resolve an intent after all required intent's parameters (slots) were retrieved from the user.
+You don't need to make some special changes in your scenarios to use this feature - JAICF handles all slot filling related logic for you.
+
+> Please note that Dialogflow may cancel a slot filling process once the user says "Cancel" command in the middle.
+In this case your JAICF activates an intent related action with empty slots.
+
+## Query parameters and session entities
+
+Dialogflow can accept arbitrary parameters and list of [session entities](https://cloud.google.com/dialogflow/es/docs/entities-session) with every user's request to recognise intent properly.
+
+To use this feature you have to provide your own `QueryParametersProvider` implementation to the `DialogflowIntentActivator`:
+
+```kotlin
+val dialogflowActivator = DialogflowIntentActivator.Factory(
+    connector = DialogflowConnector(DialogflowAgentConfig(
+        language = "en",
+        credentialsResourcePath = "/dialogflow_account.json"
+    )),
+    queryParametersProvider = object : QueryParametersProvider {
+        override fun provideParameters(botContext: BotContext, request: BotRequest): QueryParameters {
+            return QueryParameters.newBuilder().addSessionEntityTypes(
+               SessionEntityType.newBuilder().setName("color")
+                   .addEntities(
+                       EntityType.Entity.newBuilder().setValue("#000").addAllSynonyms(listOf("black", "none", "empty"))
+                   )
+                   .addEntities(
+                       EntityType.Entity.newBuilder().setValue("#fff").addAllSynonyms(listOf("white", "bright"))
+                   )
+            ).build()
+        }
+    }
+)
+```
+
+This shows how you can dynamically append `color` session entity to the request.
+Dialogflow will use this entity recognising an intent from the user's query.
+
+> `provideParameters` function invoked each time the JAICF bot receives a user's request right before to send a request to the Dialogflow API
