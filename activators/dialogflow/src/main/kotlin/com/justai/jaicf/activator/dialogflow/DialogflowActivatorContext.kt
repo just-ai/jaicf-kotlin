@@ -13,7 +13,6 @@ data class DialogflowActivatorContext(
     intent = intent
 ) {
     val slots = queryResult.parameters.fieldsMap
-    val allRequiredSlotsPresent = queryResult.allRequiredParamsPresent
     val messages = queryResult.fulfillmentMessagesList
 
     val textResponses: List<String> = messages
