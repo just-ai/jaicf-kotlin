@@ -27,7 +27,12 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
             matcher.match(transition.rule)?.let { transition to it }
         }
 
-        return selector.selectActivation(botContext, activations)
+        val activation = selector.selectActivation(botContext, activations)
+        if (activation == null) {
+            cleanSession(botContext, request)
+        }
+
+        return activation
     }
 
     /**
@@ -45,6 +50,19 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
      * @see BaseActivator.activate
      */
     protected abstract fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher
+
+    /**
+     * If an activator is stateful (e.g. persists user's context between requests) it should implement this method.
+     *
+     * This method will be called once on each [BotRequest], if there is no [Activation] returned from [activate] for the current [BotRequest].
+     * Here an activator could clean-up all persisted data to properly catch the next user's request.
+     *
+     * @param botContext a current user's [BotContext]
+     * @param request a current request
+     *
+     * @see BaseActivator.activate
+     */
+    protected open fun cleanSession(botContext: BotContext, request: BotRequest) {}
 
     /**
      * Helper method for building an [ActivationRuleMatcher] that can only match rules of a certain type.
