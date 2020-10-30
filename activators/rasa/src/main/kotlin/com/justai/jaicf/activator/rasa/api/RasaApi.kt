@@ -10,6 +10,7 @@ import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 
 class RasaApi(
     private val uri: String
@@ -19,7 +20,7 @@ class RasaApi(
         expectSuccess = true
 
         install(JsonFeature) {
-            serializer = KotlinxSerializer()
+            serializer = KotlinxSerializer(Json.nonstrict)
         }
     }
 
