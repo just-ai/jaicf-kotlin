@@ -75,6 +75,7 @@ class DialogflowIntentActivator(
         }.also { result ->
             if (result !is SlotFillingInProgress) {
                 botContext.session.remove(INTENT_NAME)
+                cleanSession(botContext, request)
             }
         }
     }
@@ -99,7 +100,7 @@ class DialogflowIntentActivator(
             = context.intent != botContext.session[INTENT_NAME] || context.slots.isEmpty()
 
         private fun canFinishSlotFilling(context: DialogflowActivatorContext)
-            = context.allRequiredSlotsPresent
+            = context.queryResult.allRequiredParamsPresent
     }
 
 }
