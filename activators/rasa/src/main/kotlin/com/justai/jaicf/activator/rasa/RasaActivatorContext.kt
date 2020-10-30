@@ -1,16 +1,18 @@
 package com.justai.jaicf.activator.rasa
 
 import com.justai.jaicf.activator.intent.IntentActivatorContext
-import com.justai.jaicf.activator.rasa.api.RasaParseMessageResponse
+import com.justai.jaicf.activator.rasa.api.Entity
+import com.justai.jaicf.activator.rasa.api.Intent
 import com.justai.jaicf.context.ActivatorContext
 
 data class RasaActivatorContext(
-    val response: RasaParseMessageResponse
+    private val rasaIntent: Intent,
+    private val entities: List<Entity>
 ): IntentActivatorContext(
-    confidence = response.intent.confidence,
-    intent = response.intent.name
+    confidence = rasaIntent.confidence,
+    intent = rasaIntent.name
 ) {
-    val slots = response.entities.map { it.entity to it }.toMap()
+    val slots = entities.map { it.entity to it }.toMap()
 }
 
 val ActivatorContext.rasa

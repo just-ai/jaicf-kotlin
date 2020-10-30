@@ -27,7 +27,7 @@ class RasaIntentActivator(
 
         return response.ranking
                 .filter { it.confidence > confidenceThreshold }
-                .map { IntentActivatorContext(it.confidence, it.name) }
+                .map { RasaActivatorContext(it, response.entities) }
     }
 
     class Factory(
