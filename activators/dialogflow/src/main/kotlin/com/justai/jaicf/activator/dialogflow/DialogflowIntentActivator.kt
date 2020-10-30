@@ -25,10 +25,7 @@ class DialogflowIntentActivator(
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<DialogflowActivatorContext> {
         val params = queryParametersProvider.provideParameters(botContext, request)
 
-        val qr = when {
-            request.hasQuery() -> connector.detectIntentByQuery(request, params)
-            else -> connector.detectIntentByEvent(request, params)
-        }
+        val qr = connector.detectIntent(request, params) ?: return emptyList()
 
         val intent = when {
             qr.intent.displayName.isNotEmpty() -> qr.intent.displayName
@@ -49,14 +46,18 @@ class DialogflowIntentActivator(
         var context = activatorContext?.dialogflow?.apply {
             if (queryResult.allRequiredParamsPresent) {
                 return SlotFillingSkipped
+            } else {
+                botContext.session[INTENT_NAME] = intent
             }
         }
+
         if (context == null) {
             context = recogniseIntent(botContext, request).firstOrNull()
         }
+
         return when {
-            context == null -> SlotFillingInterrupted
-            context.queryResult.allRequiredParamsPresent -> SlotFillingFinished(context)
+            context == null || canInterruptSlotFilling(context, botContext) -> SlotFillingInterrupted
+            canFinishSlotFilling(context) -> SlotFillingFinished(context)
 
             else -> SlotFillingInProgress.also {
                 val prompt = context.queryResult.fulfillmentText
@@ -71,7 +72,15 @@ class DialogflowIntentActivator(
                     reactions.say(prompt)
                 }
             }
+        }.also { result ->
+            if (result !is SlotFillingInProgress) {
+                botContext.session.remove(INTENT_NAME)
+            }
         }
+    }
+
+    override fun cleanSession(botContext: BotContext, request: BotRequest) {
+        connector.deleteAllContexts(request)
     }
 
     class Factory(
@@ -81,6 +90,16 @@ class DialogflowIntentActivator(
         override fun create(model: ScenarioModel): Activator {
             return DialogflowIntentActivator(model, connector, queryParametersProvider)
         }
+    }
+
+    companion object {
+        private const val INTENT_NAME = "dialogflow/intent"
+
+        private fun canInterruptSlotFilling(context: DialogflowActivatorContext, botContext: BotContext)
+            = context.intent != botContext.session[INTENT_NAME] || context.slots.isEmpty()
+
+        private fun canFinishSlotFilling(context: DialogflowActivatorContext)
+            = context.allRequiredSlotsPresent
     }
 
 }

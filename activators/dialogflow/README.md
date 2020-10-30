@@ -80,7 +80,7 @@ Dialogflow provides [slot filling feature](https://cloud.google.com/dialogflow/e
 You don't need to make some special changes in your scenarios to use this feature - JAICF handles all slot filling related logic for you.
 
 > Please note that Dialogflow may cancel a slot filling process once the user says "Cancel" command in the middle.
-In this case your JAICF activates an intent related action with empty slots.
+In this case JAICF sends the cancelling user's phrase back to the Dialogflow to recognise a new intent.
 
 ## Query parameters and session entities
 

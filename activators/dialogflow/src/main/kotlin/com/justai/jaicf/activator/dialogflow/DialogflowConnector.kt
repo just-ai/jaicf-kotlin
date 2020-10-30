@@ -4,6 +4,7 @@ import com.google.api.gax.core.FixedCredentialsProvider
 import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.dialogflow.v2.*
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotRequestType
 import java.io.InputStream
 
 data class DialogflowAgentConfig(
@@ -14,42 +15,42 @@ data class DialogflowAgentConfig(
             : this(language, DialogflowAgentConfig::class.java.getResourceAsStream(credentialsResourcePath))
 }
 
-internal enum class QueryType {
-    QUERY, EVENT
-}
-
 class DialogflowConnector(private val config: DialogflowAgentConfig) {
 
     private val sessionSettings: SessionsSettings
+    private val contextsSettings: ContextsSettings
     private val projectId: String
 
     init {
         val credentials = ServiceAccountCredentials.fromStream(config.credentials)
         projectId = credentials.projectId
         sessionSettings = SessionsSettings.newBuilder()
-                .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
-                .build()
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .build()
+        contextsSettings = ContextsSettings.newBuilder()
+            .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+            .build()
     }
 
-    private fun createQuery(input: String, type: QueryType): QueryInput {
+    private fun createQuery(request: BotRequest): QueryInput.Builder? {
         val query = QueryInput.newBuilder()
 
-        when (type) {
-            QueryType.EVENT -> query.setEvent(
+        return when (request.type) {
+            BotRequestType.EVENT -> query.setEvent(
                 EventInput.newBuilder()
-                    .setName(input)
+                    .setName(request.input)
                     .setLanguageCode(config.language).build()
             )
-            QueryType.QUERY -> query.setText(TextInput.newBuilder()
-                .setText(input)
-                .setLanguageCode(config.language))
-        }
 
-        return query.build()
+            BotRequestType.QUERY -> query.setText(TextInput.newBuilder()
+                .setText(request.input)
+                .setLanguageCode(config.language))
+
+            else -> null
+        }
     }
 
-    private fun detectIntent(query: QueryInput, sessionId: String, params: QueryParameters): QueryResult {
-        val session = SessionName.of(projectId, sessionId)
+    private fun detectIntent(query: QueryInput, session: SessionName, params: QueryParameters): QueryResult {
         val client = SessionsClient.create(sessionSettings)
         try {
             return client.detectIntent(
@@ -64,9 +65,19 @@ class DialogflowConnector(private val config: DialogflowAgentConfig) {
         }
     }
 
-    fun detectIntentByQuery(request: BotRequest, params: QueryParameters) =
-        detectIntent(createQuery(request.input, QueryType.QUERY), request.clientId, params)
+    fun detectIntent(request: BotRequest, params: QueryParameters) = createQuery(request)?.let {
+        detectIntent(it.build(), request.sessionName, params)
+    }
 
-    fun detectIntentByEvent(request: BotRequest, params: QueryParameters) =
-        detectIntent(createQuery(request.input, QueryType.EVENT), request.clientId, params)
+    fun deleteAllContexts(request: BotRequest) {
+        val client = ContextsClient.create(contextsSettings)
+        try {
+            client.deleteAllContexts(request.sessionName)
+        } finally {
+            client.close()
+        }
+    }
+
+    private val BotRequest.sessionName
+        get() = SessionName.of(projectId, clientId)
 }
