@@ -24,7 +24,7 @@ data class ChatWidgetBotRequest(
 ) : JaicpNativeBotRequest(request)
 
 data class ChatApiBotRequest(
-    val request: JaicpBotRequest
+    private val request: JaicpBotRequest
 ) : JaicpNativeBotRequest(request)
 
 val BotRequest.telephony
