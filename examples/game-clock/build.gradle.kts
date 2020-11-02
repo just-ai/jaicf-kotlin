@@ -10,6 +10,7 @@ dependencies {
     implementation(kotlin("stdlib", Version.stdLib))
 
     implementation(project(":core"))
+    implementation(project(":channels:jaicp"))
     implementation(project(":channels:alexa"))
     implementation(project(":channels:google-actions"))
 
