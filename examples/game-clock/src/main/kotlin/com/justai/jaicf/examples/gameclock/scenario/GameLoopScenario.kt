@@ -13,16 +13,14 @@ import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.googleactions.ActionsReactions
 import com.justai.jaicf.channel.googleactions.actions
 import com.justai.jaicf.examples.gameclock.GameController
-import com.justai.jaicf.examples.gameclock.model.supportedColors
-import com.justai.jaicf.examples.gameclock.scenario.GameLoopScenario.playStream
+import com.justai.jaicf.examples.gameclock.model.colorLink
 import com.justai.jaicf.helpers.ssml.*
 import com.justai.jaicf.model.scenario.Scenario
 import kotlin.math.floor
 
 object GameLoopScenario: Scenario() {
 
-    private const val AUDIO_URL = "https://dl.dropboxusercontent.com/s/66qaqu67vg1rj3u/game-timer-1.mp3"
-    private const val BG_URL = "https://dl.dropboxusercontent.com/s/a9kai87bzcfvwl0/1024x640.jpg"
+    private const val AUDIO_URL = "https://bitbucket.org/just-ai/examples/downloads/game-timer-1.mp3"
     private const val STARTED_AT = "started_at"
 
     const val play = "/play"
@@ -224,19 +222,11 @@ object GameLoopScenario: Scenario() {
     }
 
     private fun AlexaReactions.playStream(color: String?, offset: Long = 0) {
-
         playAudio(
             url = AUDIO_URL,
             offsetInMillis = offset,
             title = "$color player's turn",
-            subtitle = "Say NEXT to pass a turn",
-            art = Image.builder().addSourcesItem(
-                    ImageInstance.builder()
-                        .withUrl(supportedColors[color]).build()).build(),
-            background = Image.builder()
-                .addSourcesItem(
-                    ImageInstance.builder().withUrl(BG_URL).build())
-                .build()
+            subtitle = "Say NEXT to pass a turn"
         )
     }
 
@@ -252,7 +242,7 @@ object GameLoopScenario: Scenario() {
             name = "$color player's turn",
             description = "Say \"Next\" once you've finished",
             icon = com.google.api.services.actions_fulfillment.v2.model.Image()
-                .setUrl(supportedColors[color]).setAccessibilityText(color)
+                .setUrl(colorLink(color)).setAccessibilityText(color)
         )
     }
 }

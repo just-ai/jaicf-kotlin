@@ -1,0 +1,33 @@
+package com.justai.jaicf.examples.helloworld.channel
+
+import com.justai.jaicf.channel.aimybox.AimyboxChannel
+import com.justai.jaicf.channel.alexa.AlexaChannel
+import com.justai.jaicf.channel.facebook.FacebookChannel
+import com.justai.jaicf.channel.googleactions.ActionsFulfillment
+import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
+import com.justai.jaicf.channel.jaicp.channels.ChatWidgetChannel
+import com.justai.jaicf.channel.telegram.TelegramChannel
+import com.justai.jaicf.examples.helloworld.helloWorldBot
+
+fun main() {
+    val accessToken =
+        System.getenv("JAICP_API_TOKEN")
+            ?: print("Enter your JAICP project API key: ").run { readLine() }
+
+    accessToken?.let {
+        JaicpPollingConnector(
+            botApi = helloWorldBot,
+            accessToken = accessToken,
+            channels = listOf(
+                ChatWidgetChannel,
+                TelegramChannel,
+                FacebookChannel,
+                AimyboxChannel,
+                AlexaChannel,
+                ActionsFulfillment.ActionsFulfillmentDialogflow
+            )
+        ).runBlocking()
+    }
+
+
+}

@@ -29,7 +29,7 @@ object GamersColorsScenario: Scenario() {
                 reactions.say("$break200ms ${ordinal(game.currentGamer!!)} player! " +
                         random("What is your color?", "Pick your color.", "Say me your color."))
 
-                reactions.buttons(*supportedColors.keys.subtract(game.colors).toTypedArray())
+                reactions.buttons(*supportedColors.subtract(game.colors).toTypedArray())
             }
 
             state("color") {
@@ -66,8 +66,8 @@ object GamersColorsScenario: Scenario() {
                         reactions.say("Looks like a $color color is already taken!" +
                                 "Please choose another color.")
 
-                    } else if (!supportedColors.containsKey(color!!)) {
-                        reactions.say("Sorry, but I support only ${fast(supportedColors.keys.joinToString())} $break500ms" +
+                    } else if (!supportedColors.contains(color!!)) {
+                        reactions.say("Sorry, but I support only ${fast(supportedColors.joinToString())} $break500ms" +
                                 "Please pick one of these.")
 
                     } else {

@@ -8,7 +8,7 @@ import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.facebook.api.facebook
 import com.justai.jaicf.channel.facebook.facebook
-import com.justai.jaicf.channel.slack.slack
+import com.justai.jaicf.channel.googleactions.dialogflow.DialogflowIntent
 import com.justai.jaicf.channel.telegram.telegram
 import com.justai.jaicf.model.scenario.Scenario
 
@@ -22,6 +22,7 @@ object HelloWorldScenario: Scenario(
             activators {
                 catchAll()
                 event(AlexaEvent.LAUNCH)
+                event(DialogflowIntent.WELCOME)
                 event(AimyboxEvent.START)
             }
 
@@ -34,9 +35,6 @@ object HelloWorldScenario: Scenario(
                     }
                     request.facebook?.run {
                         name = reactions.facebook?.queryUserProfile()?.firstName()
-                    }
-                    request.slack?.run {
-                        name = reactions.slack?.getUserProfile(request.clientId)?.realName
                     }
                 }
 
@@ -90,7 +88,6 @@ object HelloWorldScenario: Scenario(
 
             action {
                 reactions.image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
-                reactions.slack?.buttons("Show more" to "/mew")
             }
         }
 
@@ -100,10 +97,8 @@ object HelloWorldScenario: Scenario(
             }
             action {
                 activator.dialogflow?.run {
-                    when (val dt = slots["date-time"]) {
-                        null -> reactions.say(queryResult.fulfillmentText)
-                        else -> reactions.say("Okay! I'll wake you up ${dt.stringValue}")
-                    }
+                    val dt = slots["date-time"]
+                    reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
                 }
             }
         }
