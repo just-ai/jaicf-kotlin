@@ -9,9 +9,9 @@ import com.justai.jaicf.model.scenario.Scenario
 object TelephonyBotScenario : Scenario(), WithLogger {
     init {
 
-        state("/ringing") {
-            globalActivators {
-                event(TelephonyEvents.ringing)
+        state("ringing") {
+            activators {
+                event(TelephonyEvents.RINGING)
             }
             action {
                 request.telephony?.let {
@@ -20,49 +20,38 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             }
         }
 
-        state("/start") {
-            globalActivators {
-                regex("start")
-                intent("/start")
+        state("start") {
+            activators {
+                regex("/start")
+                intent("hello")
             }
             action {
-                reactions.say("Hello from telephony channel! Say audio to play some audio example.")
-                reactions.say("Or you can say enough to end this conversation.")
-            }
-        }
-        state("/playAudio") {
-            globalActivators {
-                regex("audio")
-            }
-            action {
-                reactions.telephony?.audio("https://248305.selcdn.ru/demo_bot_static/1M.wav")
+                reactions.say("Hello! Please say something to test speech recognition.")
             }
         }
 
-        state("/hangup") {
-            globalActivators {
-                regex("Enough")
+        state("hangup") {
+            activators {
+                intent("bye")
             }
             action {
-                reactions.say("Fine!")
+                reactions.say("Bye-bye!")
                 reactions.telephony?.hangup()
             }
         }
 
-        state("/speechNotRecognized") {
-            globalActivators {
-                event(TelephonyEvents.speechNotRecognized)
+        state("speechNotRecognized") {
+            activators {
+                event(TelephonyEvents.SPEECH_NOT_RECOGNISED)
             }
             action {
-                reactions.say("I'm sorry, I can't hear you!")
-                logger.debug("Transferring call from ${request.telephony?.caller} to operator")
-                reactions.telephony?.transferCall("+79999999999")
+                reactions.say("Sorry, I can't hear you! Could you repeat please?")
             }
         }
 
-        state("/catchHangup") {
-            globalActivators {
-                event(TelephonyEvents.hangup)
+        state("hangup") {
+            activators {
+                event(TelephonyEvents.HANGUP)
             }
             action {
                 request.telephony?.let {
@@ -72,7 +61,7 @@ object TelephonyBotScenario : Scenario(), WithLogger {
         }
 
         fallback {
-            reactions.say("You said: ${request.input}")
+            reactions.say("You said ${request.input}")
             request.telephony?.let {
                 logger.info("Unrecognized message from caller: ${it.caller}")
             }
