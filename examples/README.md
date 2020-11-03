@@ -4,11 +4,15 @@ This folder contains a set of examples that show how to use JAICF in practice to
 
 ### [Hello world](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/hello-world)
 
-Shows the basic features of JAICF.
+Shows the basic features of [JAICF](https://github.com/just-ai/jaicf-kotlin).
 
 ### [Game clock](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/game-clock)
 
 An example of voice game adopted for Alexa and Google Assistant with support of audio player and screen.
+
+### [Telephony example](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/jaicp-telephony)
+
+Shows how to create voice assistant using [JAICP telephony](https://help.just-ai.com/#/docs/en/telephony/telephony) to process incoming and outgoing calls.
 
 ### [Android example](https://github.com/just-ai/aimybox-android-assistant/tree/jaicf/app)
 
