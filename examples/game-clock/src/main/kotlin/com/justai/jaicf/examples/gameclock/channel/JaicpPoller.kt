@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.gameclock.channel
 
 import com.justai.jaicf.channel.alexa.AlexaChannel
-import com.justai.jaicf.channel.googleactions.ActionsFulfillment
+import com.justai.jaicf.channel.googleactions.jaicp.ActionsFulfillmentDialogflow
 import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
 import com.justai.jaicf.examples.gameclock.gameClockBot
 
@@ -16,7 +16,7 @@ fun main() {
             accessToken = accessToken,
             channels = listOf(
                 AlexaChannel,
-                ActionsFulfillment.ActionsFulfillmentDialogflow
+                ActionsFulfillmentDialogflow
             )
         ).runBlocking()
     }
