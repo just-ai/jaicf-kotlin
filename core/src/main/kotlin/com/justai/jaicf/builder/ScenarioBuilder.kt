@@ -16,6 +16,7 @@ import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * The main abstraction to build [ScenarioModel] using a scenario DSL.
@@ -66,12 +67,25 @@ abstract class ScenarioBuilder(
     internal var currentState = StateBuilder(StatePath.root())
     private val statesStack = ArrayDeque<StateBuilder>(listOf(currentState))
 
+    private val _model: ScenarioModel by lazy { buildDependencies() }
     val model: ScenarioModel by lazy { build() }
 
-    private fun build(): ScenarioModel {
+    private fun buildDependencies(): ScenarioModel {
         return dependencies.fold(ScenarioModel()) { model, builder ->
-            model + builder.model
+            model + builder._model
         }
+    }
+
+    private fun build(): ScenarioModel {
+        _model.transitions.groupBy({ it.fromState }) { it.rule }.values.forEach { rules ->
+            val exceptIntents = rules.filterIsInstance<IntentByNameActivationRule>().map { it.intent }
+            val exceptEvents = rules.filterIsInstance<EventByNameActivationRule>().map { it.event }
+
+            rules.filterIsInstance<AnyIntentActivationRule>().forEach { it.except += exceptIntents }
+            rules.filterIsInstance<AnyEventActivationRule>().forEach { it.except += exceptEvents }
+        }
+
+        return _model
     }
 
     /**
@@ -82,10 +96,12 @@ abstract class ScenarioBuilder(
      * @param listener a listener block
      * @see BotHook
      */
-    inline fun <reified T: BotHook> handle(noinline listener: (T) -> Unit) {
-        model.hooks.run {
-            putIfAbsent(T::class, mutableListOf())
-            get(T::class)?.add(listener as BotHookAction<in BotHook>)
+    inline fun <reified T: BotHook> handle(noinline listener: (T) -> Unit) = handle(T::class, listener)
+
+    fun <T: BotHook> handle(klass: KClass<T>, listener: (T) -> Unit) {
+        _model.hooks.run {
+            putIfAbsent(klass, mutableListOf())
+            get(klass)?.add(listener as BotHookAction<in BotHook>)
         }
     }
 
@@ -111,11 +127,11 @@ abstract class ScenarioBuilder(
 
         sb.body()
 
-        if (model.states[sb.path.toString()] != null) {
+        if (_model.states[sb.path.toString()] != null) {
             throw IllegalStateException("Duplicated declaration of state with path: ${sb.path}")
         }
 
-        model.states[sb.path.toString()] = sb.build()
+        _model.states[sb.path.toString()] = sb.build()
 
         statesStack.removeLast()
         currentState = statesStack.last
@@ -220,7 +236,7 @@ abstract class ScenarioBuilder(
     inner class BindBuilder(private val fromState: String) {
         private val toState = currentState.path.toString()
 
-        private fun add(transition: Transition) = model.transitions.add(transition)
+        private fun add(transition: Transition) = _model.transitions.add(transition)
 
         /**
          * Appends catch-all activator to this state. Means that any text can activate this state.
