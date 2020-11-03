@@ -8,7 +8,6 @@ import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleBotChannel
-import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
 import com.justai.jaicf.context.RequestContext
 import java.util.*
 
@@ -43,13 +42,4 @@ class ActionsFulfillment private constructor(
         fun dialogflow(botApi: BotApi) = ActionsFulfillment(botApi, DialogflowApp())
     }
 
-    object ActionsFulfillmentDialogflow : JaicpCompatibleChannelFactory {
-        override val channelType = "dialogflow"
-        override fun create(botApi: BotApi) = dialogflow(botApi)
-    }
-
-    object ActionsFulfillmentSDK : JaicpCompatibleChannelFactory {
-        override val channelType = "google"
-        override fun create(botApi: BotApi) = sdk(botApi)
-    }
 }

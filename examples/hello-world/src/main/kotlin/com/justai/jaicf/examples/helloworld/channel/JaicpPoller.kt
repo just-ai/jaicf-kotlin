@@ -3,7 +3,7 @@ package com.justai.jaicf.examples.helloworld.channel
 import com.justai.jaicf.channel.aimybox.AimyboxChannel
 import com.justai.jaicf.channel.alexa.AlexaChannel
 import com.justai.jaicf.channel.facebook.FacebookChannel
-import com.justai.jaicf.channel.googleactions.ActionsFulfillment
+import com.justai.jaicf.channel.googleactions.jaicp.ActionsFulfillmentDialogflow
 import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
 import com.justai.jaicf.channel.jaicp.channels.ChatWidgetChannel
 import com.justai.jaicf.channel.telegram.TelegramChannel
@@ -24,7 +24,7 @@ fun main() {
                 FacebookChannel,
                 AimyboxChannel,
                 AlexaChannel,
-                ActionsFulfillment.ActionsFulfillmentDialogflow
+                ActionsFulfillmentDialogflow
             )
         ).runBlocking()
     }
