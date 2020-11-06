@@ -4,7 +4,7 @@ JAICF is a comprehensive enterprise-level framework from [Just AI](https://just-
 
 <br/>
 
-[![Follow on Twitter](https://img.shields.io/twitter/follow/JustAIglobal.svg?label=Follow%20on%20Twitter&style=popout)](https://twitter.com/intent/follow?screen_name=JustAIglobal)
+![Twitter URL](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fjust-ai%2Fjaicf-kotlin)
 [![Build Status](https://travis-ci.org/just-ai/jaicf-kotlin.svg?branch=master)](https://travis-ci.org/just-ai/jaicf-kotlin)
 [![Download](https://api.bintray.com/packages/just-ai/jaicf/core/images/download.svg) ](https://bintray.com/just-ai/jaicf/core/_latestVersion)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://github.com/just-ai/jaicf-kotlin/blob/master/LICENSE)
