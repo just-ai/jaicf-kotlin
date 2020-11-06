@@ -33,7 +33,7 @@ class CatchAllActivator(model: ScenarioModel) : BaseActivator(model) {
 
     override val name = "catchAllActivator"
 
-    override fun canHandle(request: BotRequest) = request.hasQuery() || request.hasIntent()
+    override fun canHandle(request: BotRequest) = true
 
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest) =
         ruleMatcher<CatchAllActivationRule> { CatchAllActivatorContext() }
