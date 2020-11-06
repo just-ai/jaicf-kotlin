@@ -76,6 +76,35 @@ Copy your new bot's **access token** to the clipboard.
 
 #### 4. Create and run Telegram channel
 
+Using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp)
+
+_For local development:_
+```kotlin
+fun main() {
+    JaicpPollingConnector(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            TelegramChannel
+        )
+    ).runBlocking()
+}
+```
+
+_For cloud production:_
+```kotlin
+fun main() {
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            TelegramChannel
+        )
+    ).start(wait = true)
+}
+```
+
+Or locally:
 ```kotlin
 fun main() {
     TelegramChannel(helloWorldBot, "access token").run()

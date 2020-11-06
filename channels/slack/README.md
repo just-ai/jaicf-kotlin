@@ -58,6 +58,34 @@ Copy a **Bot User OAuth Access Token** from _OAuth & Permissions page_ and **Sig
 
 #### 4. Run Slack channel
 
+Using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp)
+
+_For local development:_
+```kotlin
+fun main() {
+    JaicpPollingConnector(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            ActionsFulfillmentDialogflow
+        )
+    ).runBlocking()
+}
+```
+
+_For cloud production:_
+```kotlin
+fun main() {
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            ActionsFulfillmentDialogflow
+        )
+    ).start(wait = true)
+}
+```
+
 Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin

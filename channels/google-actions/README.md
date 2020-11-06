@@ -104,13 +104,35 @@ val helloWorldBot = BotEngine(
 )
 ```
 
-#### 4. Create and run Actions webhook
+#### 4. Create and run Google Actions
 
-The configuration of the Actions webhook depends on the NLU engine configuration (see the section above).
+Using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp)
 
-#### Dialogflow fulfillment webhook
+_For local development:_
+```kotlin
+fun main() {
+    JaicpPollingConnector(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            SlackChannel
+        )
+    ).runBlocking()
+}
+```
 
-If you decided to use Dialogflow as NLU engine, you have to use `ActionsFulfillment.dialogflow` builder this way:
+_For cloud production:_
+```kotlin
+fun main() {
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            SlackChannel
+        )
+    ).start(wait = true)
+}
+```
 
 Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
@@ -137,30 +159,6 @@ class AlexaController: HttpBotChannelServlet(
 
 After this you have to obtain a public URL of your fulfillment webhook and provide it to the agent's settings created via [Dialogflow Console](https://dialogflow.com).
 _Please note that you have to manually enable fulfillment option for every intent of your Dialogflow agent in this case._
-
-#### SDK fulfillment webhook
-
-If you decided to use third-party NLU engine, you have to use `ActionsFulfillment.sdk` builder this way:
-
-Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
-
-```kotlin
-fun main() {
-    embeddedServer(Netty, 8000) {
-        routing {
-            httpBotRouting(
-                "/" to ActionsFulfillment.sdk(helloWorldBot)
-            )
-        }
-    }.start(wait = true)
-}
-```
-
-And accordingly for [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot).
-
-Once you've obtained a public URL of the webhook (using [ngrok](https://ngrok.com) for example), you have to create Action project and upload the Action JSON package manually.
-
-> Please refer to the [Actions SDK overview](https://developers.google.com/assistant/actions/actions-sdk) to learn how to do this.
 
 ## Using SSML
 

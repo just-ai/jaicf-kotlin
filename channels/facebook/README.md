@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Facebook_Messenger_logo.svg/1200px-Facebook_Messenger_logo.svg.png" width="128" height="128"/>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Facebook_Messenger_logo_2013.svg" width="128" height="128"/>
 </p>
 
 <h1 align="center">Facebook Messenger channel</h1>
@@ -66,7 +66,35 @@ Once the app is created, generate and copy the **page access token** of the link
 Facebook Messenger requires you to serve a webhook for receiving a users' requests.
 As well this webhook must verify a token that will be sent by Facebook Messenger Platform via GET request during the webhook configuration process.
 
-Using [Ktor](https://ktor.io)
+Using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp)
+
+_For local development:_
+```kotlin
+fun main() {
+    JaicpPollingConnector(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            FacebookChannel
+        )
+    ).runBlocking()
+}
+```
+
+_For cloud production:_
+```kotlin
+fun main() {
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            FacebookChannel
+        )
+    ).start(wait = true)
+}
+```
+
+Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin
 fun main() {

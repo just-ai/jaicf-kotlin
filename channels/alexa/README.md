@@ -72,6 +72,34 @@ val helloWorldBot = BotEngine(
 
 #### 4. Create and run Alexa webhook
 
+Using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp)
+
+_For local development:_
+```kotlin
+fun main() {
+    JaicpPollingConnector(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            AlexaChannel
+        )
+    ).runBlocking()
+}
+```
+
+_For cloud production:_
+```kotlin
+fun main() {
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            AlexaChannel
+        )
+    ).start(wait = true)
+}
+```
+
 Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin

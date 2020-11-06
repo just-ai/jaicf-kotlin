@@ -38,7 +38,35 @@ action {
 
 #### 3. Create and run Aimybox webhook
 
-Using [Ktor](https://ktor.io)
+Using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp)
+
+_For local development:_
+```kotlin
+fun main() {
+    JaicpPollingConnector(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            AimyboxChannel
+        )
+    ).runBlocking()
+}
+```
+
+_For cloud production:_
+```kotlin
+fun main() {
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = "your JAICF project token",
+        channels = listOf(
+            AimyboxChannel
+        )
+    ).start(wait = true)
+}
+```
+
+Using [Ktor](https://github.com/just-ai/jaicf-kotlin/wiki/Ktor)
 
 ```kotlin
 fun main() {
@@ -50,7 +78,7 @@ fun main() {
 }
 ```
 
-Using [Spring Boot](https://spring.io/projects/spring-boot)
+Using [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot)
 
 ```kotlin
 @Bean
