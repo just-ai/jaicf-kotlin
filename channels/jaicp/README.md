@@ -79,7 +79,7 @@ Or use **long polling** connection. This connection does not require public webh
      channels = listOf(ChatWidgetChannel, TelephonyChannel, ChatApiChannel)
  ).runBlocking()
  ```
- **Access token** can be aquired after creating project in JAICP Web Interface.
+ **Access token** can be acquired after creating project in JAICP Web Interface.
  
  See full example for JAICP channel [here](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/jaicp-telephony).
  
@@ -103,6 +103,14 @@ state("start"){
 }
 ```
 
+#### Passing parameters to Chat Widget
+Sometimes it is necessary to be able to pass some parameters when loading the widget. 
+For example, to let the bot know the user's ID, name or other data. 
+Such parameters are transferred to the widget when the widget is opened on the website.
+
+These parameters can be set to widget page, as it [referenced in widget documentation](https://help.just-ai.com/#/docs/en/channels/chatwidget/parameters_transfer), 
+and retrieved in scenario from `reactions.chatwidget.jaicp.data` json object.
+
 ## TelephonyChannel
 
 TelephonyChannel can be used to process incoming calls and make smart outgoing calls with JAICP. 
@@ -115,7 +123,7 @@ state("/playAudio") {
     }
 }
 ```
-You also can send audio with **TelephonyReactions.audio** function. Here is the full example:
+You also can send an audio with **TelephonyReactions.audio** function. Here is the full example:
 ```kotlin
 state("/playAudio") {
     globalActivators {
