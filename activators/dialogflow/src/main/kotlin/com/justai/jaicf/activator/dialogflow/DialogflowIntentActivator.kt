@@ -25,7 +25,8 @@ class DialogflowIntentActivator(
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<DialogflowActivatorContext> {
         val params = queryParametersProvider.provideParameters(botContext, request)
 
-        val qr = connector.detectIntent(request, params) ?: return emptyList()
+        val qr = connector.detectIntent(request, params)
+                ?.takeIf { it.intentDetectionConfidence > 0 } ?: return emptyList()
 
         val intent = when {
             qr.intent.displayName.isNotEmpty() -> qr.intent.displayName
