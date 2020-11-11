@@ -44,6 +44,7 @@ object HelloWorldScenario: Scenario(
                     reactions.run {
                         image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
                         sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
+                        buttons("Mew", "Wake up")
                         aimybox?.endConversation()
                     }
                 }
@@ -83,7 +84,7 @@ object HelloWorldScenario: Scenario(
 
         state("mew") {
             activators {
-                regex("/mew")
+                regex("mew")
             }
 
             action {
@@ -100,6 +101,15 @@ object HelloWorldScenario: Scenario(
                     val dt = slots["date-time"]
                     reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
                 }
+            }
+        }
+
+        state("cancel") {
+            activators {
+                intent("cancel")
+            }
+            action {
+                reactions.say("Okay, canceling.")
             }
         }
     }

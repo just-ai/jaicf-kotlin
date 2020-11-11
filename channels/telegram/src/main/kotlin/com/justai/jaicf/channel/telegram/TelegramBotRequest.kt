@@ -26,15 +26,15 @@ interface TelegramBotRequest: BotRequest {
 data class TelegramTextRequest(
     override val message: Message
 ): TelegramBotRequest, QueryBotRequest(
-    clientId = message.chat.id.toString(),
-    input = message.text!!
+    clientId = message.clientId,
+    input = message.text.toString()
 )
 
 data class TelegramQueryRequest(
     override val message: Message,
     val data: String
 ): TelegramBotRequest, QueryBotRequest(
-    clientId = message.chat.id.toString(),
+    clientId = message.clientId,
     input = data
 )
 
@@ -42,7 +42,7 @@ data class TelegramLocationRequest(
     override val message: Message,
     val location: Location
 ): TelegramBotRequest, EventBotRequest(
-    clientId = message.chat.id.toString(),
+    clientId = message.clientId,
     input = TelegramEvent.LOCATION
 )
 
@@ -50,6 +50,9 @@ data class TelegramContactRequest(
     override val message: Message,
     val contact: Contact
 ): TelegramBotRequest, EventBotRequest(
-    clientId = message.chat.id.toString(),
+    clientId = message.clientId,
     input = TelegramEvent.CONTACT
 )
+
+internal val Message.clientId
+    get() = from?.id?.toString() ?: chat.id.toString()
