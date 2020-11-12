@@ -22,7 +22,12 @@ class TelegramReactions(
     private val messages = mutableListOf<Message>()
 
     private fun addResponse(pair: Pair<retrofit2.Response<Response<Message>?>?, Exception?>) {
-        pair.first?.body()?.result?.let { messages.add(it) }
+        pair.first?.body()?.result?.let { message ->
+            when (val index = messages.indexOfFirst { it.messageId == message.messageId }) {
+                -1 -> messages.add(message)
+                else -> messages.set(index, message)
+            }
+        }
     }
 
     override fun say(text: String): SayReaction {
@@ -38,10 +43,7 @@ class TelegramReactions(
                     chatId,
                     message.messageId,
                     replyMarkup = InlineKeyboardMarkup(keyboard)
-            ).also {
-                messages.remove(message)
-                addResponse(it)
-            }
+            ).also { addResponse(it) }
         }
 
         return ButtonsReaction.create(buttons.asList())
@@ -76,13 +78,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ): SayReaction {
         api.sendMessage(
-            chatId,
-            text,
-            parseMode,
-            disableWebPagePreview,
-            disableNotification,
-            replyToMessageId,
-            replyMarkup
+            chatId, text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup
         ).also { addResponse(it) }
 
         return SayReaction.create(text)
@@ -110,13 +106,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ): ImageReaction {
         api.sendPhoto(
-                chatId,
-                url,
-                caption,
-                parseMode,
-                disableNotification,
-                replyToMessageId,
-                replyMarkup
+                chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
         ).also { addResponse(it) }
 
         return ImageReaction.create(url)
@@ -187,16 +177,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVenue(
-        chatId,
-        latitude,
-        longitude,
-        title,
-        address,
-        foursquareId,
-        foursquareType,
-        disableNotification,
-        replyToMessageId,
-        replyMarkup
+            chatId, latitude, longitude, title, address, foursquareId, foursquareType, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 
     fun sendContact(
