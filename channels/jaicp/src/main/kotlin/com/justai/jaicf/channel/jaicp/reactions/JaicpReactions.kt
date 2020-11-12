@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonArray
 open class JaicpReactions : Reactions() {
 
     protected val replies: MutableList<Reply> = mutableListOf()
+    internal val dialer by lazy { JaicpDialerAPI() }
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
@@ -33,6 +34,7 @@ open class JaicpReactions : Reactions() {
         }
 
         return json {
+            "dialer" to dialer
             "replies" to jsonArray {
                 jsonReplies.forEach { +it }
             }
