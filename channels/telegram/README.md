@@ -174,9 +174,17 @@ state("events") {
 Telegram allows to add [keyboard](https://core.telegram.org/bots#keyboards) or [inline keyboard](https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating) to the text message reply.
 This means that it's not possible to add a keyboard without an actual text response.
 
-That is why a standard `reactions.buttons` method does nothing when the request was received from the Telegram channel.
+```kotlin
+action {
+    reactions.say("Click on the button below")
+    reactions.buttons("Click me", "Or me")
+}
+```
 
-To add buttons to the response, please use a channel-specific methods:
+> This code generates [inline]((https://core.telegram.org/bots#inline-keyboards-and-on-the-fly-updating)) keyboard right below the text "Click on the button below".
+Once the user clicks on any of these buttons, the title of the clicked one returns to the bot as a new query. 
+
+To add any keyboard to the response, you can use a channel-specific methods:
 
 ```kotlin
 action {
