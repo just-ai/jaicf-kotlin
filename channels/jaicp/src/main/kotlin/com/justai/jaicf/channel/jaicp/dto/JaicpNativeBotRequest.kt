@@ -17,6 +17,7 @@ data class TelephonyBotRequest(
 ) : JaicpNativeBotRequest(request) {
     val caller: String? = request.rawRequest["caller"]?.content
     val trunk: String? = request.rawRequest["extension"]?.content
+    val calleePayload = request.rawRequest.getObjectOrNull("originateData")?.getObjectOrNull("payload")
 }
 
 data class ChatWidgetBotRequest(

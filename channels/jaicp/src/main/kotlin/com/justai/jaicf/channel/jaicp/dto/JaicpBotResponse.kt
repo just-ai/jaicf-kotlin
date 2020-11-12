@@ -14,7 +14,7 @@ data class JaicpBotResponse(
     val channelUserId: String,
     val questionId: String,
     val query: String?,
-    val timestamp: Long,
+    var timestamp: Long,
     val currentState: String,
     var processingTime: Long,
     val requestType: String = "query",

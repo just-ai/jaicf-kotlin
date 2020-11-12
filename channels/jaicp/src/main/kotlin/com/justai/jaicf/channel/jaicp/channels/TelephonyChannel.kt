@@ -25,7 +25,7 @@ import com.justai.jaicf.channel.jaicp.reactions.TelephonyReactions
 class TelephonyChannel(override val botApi: BotApi) : JaicpNativeChannel(botApi) {
 
     override fun createRequest(request: JaicpBotRequest) = TelephonyBotRequest(request)
-    override fun createReactions(request: JaicpBotRequest) = TelephonyReactions(request)
+    override fun createReactions(request: JaicpBotRequest) = TelephonyReactions()
 
     companion object : JaicpNativeChannelFactory {
         override val channelType = "resterisk"

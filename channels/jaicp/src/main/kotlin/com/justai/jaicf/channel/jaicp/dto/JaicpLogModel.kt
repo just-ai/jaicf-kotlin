@@ -10,6 +10,7 @@ import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.json
 
 
 @Serializable
@@ -72,8 +73,8 @@ internal class JaicpLogModel private constructor(
             ) = Request(
                 type = req.type.toString().toLowerCase(),
                 query = input,
-                requestData = req.data.jsonObject,
-                data = req.data.jsonObject
+                requestData = req.data?.jsonObject ?: json { },
+                data = req.data?.jsonObject ?: json { }
             )
         }
     }

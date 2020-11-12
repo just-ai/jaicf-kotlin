@@ -7,18 +7,16 @@ import com.justai.jaicf.channel.jaicp.dto.SwitchReply
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.reactions.Reactions
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.json
 import java.time.Instant
 
 val Reactions.telephony
     get() = this as? TelephonyReactions
 
-class TelephonyReactions(request: JaicpBotRequest) : JaicpReactions() {
-    private val callerId = request.telephony?.caller
-
+class TelephonyReactions : JaicpReactions() {
     /**
-     * метод шоб взять и положить урлу с аудио
+     * Appends audio to the response.
+     *
+     * @param url of audio
      * */
     override fun audio(url: String): AudioReaction {
         replies.add(AudioReply(url.toUrl()))
@@ -26,19 +24,39 @@ class TelephonyReactions(request: JaicpBotRequest) : JaicpReactions() {
     }
 
     /**
-     * метод шоб взять и положить трубу
+     * Hang up and ends call.
      * */
     fun hangup() {
         replies.add(HangupReply())
     }
 
     /**
-     * метод шоб взять и перезвонить
+     * Schedules a redial in outbound call campaign using [JaicpDialerAPI.RedialData].
      * */
     fun redial(redialData: JaicpDialerAPI.RedialData) = dialer.redial(redialData)
 
     /**
-     * оверлоад метода шоб взять и перезвонить
+     * Schedules a redial in outbound call campaign.
+     *
+     * example usage:
+     * ```
+     * state("redial") {
+     *    activators {
+     *        regex("call me back")
+     *    }
+     *    action {
+     *        reactions.say("Ok, I will call you in an hour.")
+     *        reactions.telephony?.redial(
+     *            fromTime = Instant.now().plusSeconds(3600),
+     *            toTime = null,
+     *            maxAttempts = 2
+     *        )
+     *    }
+     * }
+     * ```
+     * @param fromTime unix timestamp (UTC-0) to start attempting to redial a client
+     * @param toTime unix timestamp (UTC-0) to end attempting to redial a client
+     * @param maxAttempts max number of attempts to call client
      * */
     fun redial(fromTime: Instant?, toTime: Instant?, maxAttempts: Int?) = dialer.redial(
         JaicpDialerAPI.RedialData(
@@ -49,26 +67,36 @@ class TelephonyReactions(request: JaicpBotRequest) : JaicpReactions() {
     )
 
     /**
-     * шоб выставить результат обзвона. один на клиента
+     * Sets result for call in outbound call campaign.
+     *
+     * @param callResult result of call
+     * @param callResultPayload optional payload for call which will be stored in .xsls report.
      * */
-    fun setResult(callResult: String?, callResultPayload: JsonObject?) =
-        dialer.result(JaicpDialerAPI.CallResultData(callResult, callResultPayload))
-
+    fun setResult(callResult: String?, callResultPayload: String? = null) =
+        dialer.result(callResult, callResultPayload);
 
     /**
-     * шоб поставить репорт в цсвху
+     * Reports custom property to be stored in .xsls report.
+     *
+     * Example usage:
+     * ```
+     * state("ReportAnyText") {
+     *    activators {
+     *        regex(.*)
+     *    }
+     *    action {
+     *        reactions.telephony?.report("answer-for-some-question", request.input)
+     *        reactions.say("Ok! I will remember what you have said")
+     *    }
+     * }
      * */
-    fun report(header: String, value: String?, order: Int?) =
-        dialer.report(JaicpDialerAPI.CallReportData(header, value, order))
+    fun report(header: String, value: String, order: Int? = null) =
+        dialer.report(header, JaicpDialerAPI.CallReportData(value, order))
 
     /**
-     * шоб выставить тэг в цсвху. Тэг - имя колонки, пэйлоад и колор где-то в значениях или в бублике
-     * */
-    fun addTag(tag: String, tagPayload: JsonObject?, tagColor: String?) =
-        dialer.tag(JaicpDialerAPI.CallTagData(tag, tagPayload, tagColor))
-
-    /**
-     * перевод на оператора или другого челика
+     * Transfers call to operator or other person.
+     *
+     * @param phoneNumber another person's phone number
      * */
     fun transferCall(phoneNumber: String, sipHeaders: Map<String, String> = emptyMap()) {
         replies.add(SwitchReply(phoneNumber, sipHeaders))

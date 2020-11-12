@@ -32,9 +32,12 @@ open class JaicpReactions : Reactions() {
                 ""
             }
         }
+        val isTelephonyBot = this is TelephonyReactions
 
         return json {
-            "dialer" to dialer
+            if (isTelephonyBot) {
+                "dialer" to dialer.getApiResponse()
+            }
             "replies" to jsonArray {
                 jsonReplies.forEach { +it }
             }
