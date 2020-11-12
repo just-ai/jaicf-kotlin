@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.dto.Button
 import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
 import com.justai.jaicf.channel.jaicp.dto.ImageReply
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
@@ -10,7 +11,7 @@ import com.justai.jaicf.reactions.Reactions
 val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
 
-class ChatWidgetReactions : JaicpReactions() {
+class ChatWidgetReactions(private val request: JaicpBotRequest) : JaicpReactions() {
     override fun image(url: String): ImageReaction {
         return image(imageUrl = url, caption = null)
     }
