@@ -12,7 +12,7 @@ package com.justai.jaicf.channel.jaicp.channels
  * */
 object TelephonyEvents {
     const val SPEECH_NOT_RECOGNISED = "speechNotRecognized"
-    const val HANGUP = "hangup"
+    const val HANGUP = "botHangup"
     const val RINGING = "ringing"
     const val NO_DTMF_ANSWER = "noDtmfAnswerEvent"
 }

@@ -1,74 +1,45 @@
 package com.justai.jaicf.channel.jaicp.dto
 
+import com.fasterxml.jackson.core.util.RequestPayload
+import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 class JaicpDialerAPI {
-
-    private var callResultData: CallResultData? = null
-    private var callTagData: CallTagData? = null
-    private var callReportData: CallReportData? = null
-    private var redialData: RedialData? = null
-
-    /**
-     * Один либо на звонок, либо на клиента.
-     *
-     * @property callResult - результат звонка, попадает в отчет об обзвоне из сценария. Прим. обонент перданул. Попадает в цсвху в поле "результат звонка". Также хранится в логах диалогов - результат звонка.
-     * @property callResultPayload - что угодно json
-     * */
-    @Serializable
-    data class CallResultData(
-        private val callResult: String?,
-        private val callResultPayload: JsonObject?
-    )
-
-    /**
-     * Видно в отчете. Туда попадают всякие переменные из AL автоматом, плюс цвета.
-     * Пишется в скрипте. Нужны для отдельных стоблцов в цсвхе  и в бублике.
-     *
-     * @property tagPayload - json value
-     * @property tag - ключ
-     * @property tagColor - в бублик
-     *
-     * */
-    @Serializable
-    data class CallTagData(
-        private val tag: String,
-        private val tagPayload: JsonObject?,
-        private val tagColor: String?
-    )
+    private var callResult: String? = null
+    private var callResultPayload: String? = null
+    private var reportData: MutableMap<String, CallReportData> = mutableMapOf()
+    private var redial: RedialData? = null
 
     /**
      * Не идет в бублик.
      *
-     * @param header - ключ, название столбца в отчете
-     * @param value - значене
-     * @param order - порядок в отчете
+     * @param header - a column header in .xsls report
+     * @param value - value in cell in .xsls report
+     * @param order - optional order for column
      * */
     @Serializable
-    class CallReportData(
-        private val header: String,
+    internal class CallReportData(
         private val value: String?,
         private val order: Int?
     )
 
-
     /**
-     * Хуйня для перезвона.
+     * An object sent to schedule a redial.
      *
-     * @property startDateTime начало обзвона (instant)
-     * @property finishDateTime конец обзвона (instant)
-     * @property allowedDays список разрешенных дней
-     * @property localTimeFrom начало интервала локального времени, в течение которого можно звонить. ФОрмат HH:MM
-     * @property localTimeTo конец интервала локального времени, в течение которого можно звонить. ФОрмат HH:MM
-     * @property retryIntervalInMinutes интервал в минутах между попытками
-     * @property maxAttempts макс количетсво попыток
+     * @property startDateTime unix timestamp (UTC-0 epoch milliseconds) to start attempting to redial a client
+     * @property finishDateTime unix timestamp (UTC-0 epoch milliseconds) to end attempting to redial a client
+     * @property allowedDays list of [DayOfWeek] allowed days
+     * @property localTimeFrom local time interval start attempting to redial. E.g. 16:20
+     * @property localTimeTo local time interval end attempting to redial. E.g. 23:59
+     * @property retryIntervalInMinutes interval between redial attempts
+     * @property maxAttempts max number of attempts to call client
      * */
     @Serializable
-    class RedialData(
-        val startDateTime: Long?,
-        val finishDateTime: Long?,
+    data class RedialData(
+        val startDateTime: Long? = null,
+        val finishDateTime: Long? = null,
         val allowedDays: List<DayOfWeek> = emptyList(),
         val localTimeFrom: String? = null,
         val localTimeTo: String? = null,
@@ -80,19 +51,20 @@ class JaicpDialerAPI {
         checkStartFinishTime(data)
         checkLocalTime(data)
         checkRetryAndInterval(data)
-        redialData = data
+        redial = data
     }
 
-    internal fun report(data: CallReportData) {
-        callReportData = data
+    internal fun report(header: String, data: CallReportData) {
+        reportData[header] = data
     }
 
-    internal fun tag(data: CallTagData) {
-        callTagData = data
+    internal fun result(result: String?, resultPayload: String?) {
+        callResult = result
+        callResultPayload = resultPayload
     }
 
-    internal fun result(data: CallResultData) {
-        callResultData = data
+    internal fun getApiResponse(): JsonElement {
+        return JSON.toJson(serializer(), this)
     }
 }
 
