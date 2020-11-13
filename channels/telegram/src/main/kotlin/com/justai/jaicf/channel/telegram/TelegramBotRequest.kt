@@ -16,7 +16,7 @@ val TelegramBotRequest.contact
     get() = this as? TelegramContactRequest
 
 internal val Message.clientId
-    get() = from?.id?.toString() ?: chat.id.toString()
+    get() = chat.id.toString()
 
 interface TelegramBotRequest: BotRequest {
     val message: Message
