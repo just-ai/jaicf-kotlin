@@ -30,7 +30,7 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             }
         }
 
-        state("hangup") {
+        state("bye") {
             activators {
                 intent("bye")
             }

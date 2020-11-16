@@ -1,10 +1,13 @@
 package com.justai.jaicf.channel.jaicp.dto
 
+import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-abstract class Reply(val type: String)
+abstract class Reply(val type: String) {
+    abstract fun serialized(): String
+}
 
 @Serializable
 data class TextReply(
@@ -12,7 +15,9 @@ data class TextReply(
     val markup: String? = null,
     val tts: String? = null,
     val state: String? = null
-) : Reply("text")
+) : Reply("text") {
+    override fun serialized() = JSON.stringify(serializer(), this)
+}
 
 @Serializable
 data class Button(
@@ -26,6 +31,8 @@ data class ButtonsReply(
     val state: String? = null
 ) : Reply("buttons") {
     constructor(button: Button) : this(arrayListOf(button))
+
+    override fun serialized() = JSON.stringify(serializer(), this)
 }
 
 @Serializable
@@ -33,16 +40,23 @@ data class ImageReply(
     val imageUrl: String,
     val text: String? = null,
     val state: String? = null
-) : Reply("image")
+) : Reply("image") {
+    override fun serialized() = JSON.stringify(serializer(), this)
+}
 
 @Serializable
 data class AudioReply(
     val audioUrl: String,
     val state: String? = null
-) : Reply("audio")
+) : Reply("audio") {
+
+    override fun serialized() = JSON.stringify(serializer(), this)
+}
 
 @Serializable
-class HangupReply(val state: String? = null) : Reply("hangup")
+class HangupReply(val state: String? = null) : Reply("hangup") {
+    override fun serialized() = JSON.stringify(serializer(), this)
+}
 
 @Serializable
 data class SwitchReply(
@@ -54,4 +68,6 @@ data class SwitchReply(
     val ignoreOffline: Boolean? = false,
     val destination: String? = null,
     val attributes: JsonObject? = null
-) : Reply("switch")
+) : Reply("switch") {
+    override fun serialized() = JSON.stringify(serializer(), this)
+}
