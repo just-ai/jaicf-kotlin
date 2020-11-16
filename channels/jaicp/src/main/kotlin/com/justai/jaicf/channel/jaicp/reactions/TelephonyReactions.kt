@@ -24,7 +24,7 @@ class TelephonyReactions : JaicpReactions() {
     }
 
     /**
-     * Hang up and ends call.
+     * Hangs up and ends the call.
      * */
     fun hangup() {
         replies.add(HangupReply())
