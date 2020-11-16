@@ -11,7 +11,7 @@ import kotlinx.serialization.json.jsonArray
 
 open class JaicpReactions : Reactions() {
 
-    internal val replies: MutableList<Reply> = mutableListOf()
+    protected val replies: MutableList<Reply> = mutableListOf()
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
@@ -21,7 +21,7 @@ open class JaicpReactions : Reactions() {
     }
 
     fun collect(): JsonObject {
-        val jsonReplies: List<JsonElement> = replies.map { reply ->
+        val jsonReplies: List<JsonElement> = replies.mapNotNull { reply ->
             when (reply) {
                 is TextReply -> JSON.toJson(
                     TextReply.serializer(), reply
@@ -41,6 +41,7 @@ open class JaicpReactions : Reactions() {
                 is SwitchReply -> JSON.toJson(
                     SwitchReply.serializer(), reply
                 )
+                else -> null
             }
         }
 

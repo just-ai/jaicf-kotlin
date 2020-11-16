@@ -26,7 +26,7 @@ import io.ktor.client.features.logging.LogLevel
  * @param accessToken can be configured in JAICP Web Interface
  * @param channels is a list of channels which will be managed by connector
  * */
-class JaicpPollingConnector(
+open class JaicpPollingConnector(
     botApi: BotApi,
     accessToken: String,
     url: String = DEFAULT_PROXY_URL,
@@ -36,7 +36,7 @@ class JaicpPollingConnector(
 ) : JaicpConnector(botApi, channels, accessToken, url, httpClient),
     WithLogger {
 
-    private val dispatcher = Dispatcher(httpClient)
+    private val dispatcher = Dispatcher(httpClient, this::processJaicpRequest)
 
     init {
         loadConfig()

@@ -44,7 +44,7 @@ import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
  * @param accessToken can be configured in JAICP Web Interface
  * @param channels is a list of channels which will be managed by connector
  * */
-class JaicpWebhookConnector(
+open class JaicpWebhookConnector(
     botApi: BotApi,
     accessToken: String,
     url: String = DEFAULT_PROXY_URL,
@@ -55,7 +55,7 @@ class JaicpWebhookConnector(
     HttpBotChannel,
     JaicpConnector(botApi, channels, accessToken, url, httpClient) {
 
-    private val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
+    protected val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
 
     init {
         loadConfig()
@@ -83,11 +83,9 @@ class JaicpWebhookConnector(
             .asJaicpBotRequest()
             .also { JaicpMDC.setFromRequest(it) }
 
-        return when (val channel = channelMap[botRequest.channelBotId]) {
-            is JaicpNativeBotChannel -> channel.process(botRequest).deserialized().asJsonHttpBotResponse()
-            is JaicpCompatibleBotChannel -> channel.processCompatible(botRequest).deserialized().asJsonHttpBotResponse()
-            is JaicpCompatibleAsyncBotChannel -> channel.process(botRequest.raw.asHttpBotRequest(botRequest.stringify()))
-            else -> throw RuntimeException("Channel ${botRequest.channelType} is not configured or not supported")
-        }
+        val channel = channelMap[botRequest.channelBotId]
+            ?: error("Channel ${botRequest.channelType} is not configured or not supported")
+
+        return processJaicpRequest(botRequest, channel)?.deserialized()?.asJsonHttpBotResponse()
     }
 }
