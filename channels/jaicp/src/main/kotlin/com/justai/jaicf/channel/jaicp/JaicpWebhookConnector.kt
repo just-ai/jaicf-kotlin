@@ -96,7 +96,7 @@ open class JaicpWebhookConnector(
 
     private fun isHandledPingQuery(request: String): Boolean = try {
         val req = JSON.parse(JaicpPingRequest.serializer(), request)
-        channelMap.containsKey(req.botId)
+        req.requestType == PING_REQUEST_TYPE && channelMap.containsKey(req.botId)
     } catch (e: Exception) {
         false
     }

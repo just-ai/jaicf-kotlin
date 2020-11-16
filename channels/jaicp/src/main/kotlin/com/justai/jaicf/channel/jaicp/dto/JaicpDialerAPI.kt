@@ -1,21 +1,20 @@
 package com.justai.jaicf.channel.jaicp.dto
 
-import com.fasterxml.jackson.core.util.RequestPayload
 import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
 class JaicpDialerAPI {
+
     private var callResult: String? = null
     private var callResultPayload: String? = null
     private var reportData: MutableMap<String, CallReportData> = mutableMapOf()
     private var redial: RedialData? = null
 
     /**
-     * Не идет в бублик.
+     * Reports data to be stored in .xsls report.
      *
-     * @param header - a column header in .xsls report
      * @param value - value in cell in .xsls report
      * @param order - optional order for column
      * */

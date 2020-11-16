@@ -94,6 +94,10 @@ abstract class JaicpConnector(
         }
         else -> null
     }
+
+    companion object {
+        const val PING_REQUEST_TYPE = "ping"
+    }
 }
 
 val JaicpConnector.proxyUrl: String
