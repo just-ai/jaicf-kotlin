@@ -1,8 +1,12 @@
 package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.http.asHttpBotRequest
+import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -80,6 +84,16 @@ abstract class JaicpConnector(
 
     protected fun getChannelProxyUrl(config: ChannelConfig) =
         "$proxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
+
+    protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel) = when (channel) {
+        is JaicpNativeBotChannel -> channel.process(request)
+        is JaicpCompatibleBotChannel -> channel.processCompatible(request)
+        is JaicpCompatibleAsyncBotChannel -> {
+            channel.process(request.raw.asHttpBotRequest(request.stringify()))
+            null
+        }
+        else -> null
+    }
 }
 
 val JaicpConnector.proxyUrl: String

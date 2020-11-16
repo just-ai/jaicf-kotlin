@@ -1,9 +1,7 @@
 package com.justai.jaicf.channel.jaicp.polling
 
-import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.JaicpMDC
-import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
@@ -14,7 +12,10 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.slf4j.MDCContext
 
 
-internal class Dispatcher(client: HttpClient) :
+internal class Dispatcher(
+    client: HttpClient,
+    private val requestProcessor: (JaicpBotRequest, JaicpBotChannel) -> JaicpBotResponse?
+) :
     WithLogger,
     CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
@@ -42,28 +43,11 @@ internal class Dispatcher(client: HttpClient) :
             logger.info("Received bot request: $rawRequest")
             val request = rawRequest.asJaicpPollingRequest().request
             JaicpMDC.setFromRequest(request)
-            when (val botChannel = channel.botChannel) {
-                is JaicpNativeBotChannel -> processNativeChannel(botChannel, channel.url, request)
-                is JaicpCompatibleBotChannel -> processCompatibleChannel(botChannel, channel.url, request)
-                is JaicpCompatibleAsyncBotChannel -> processAsyncChannel(botChannel, request)
+            requestProcessor.invoke(request, channel.botChannel)?.let { response ->
+                sendResponse(response, channel.url)
             }
         }
     }
-
-    private fun processAsyncChannel(channel: JaicpCompatibleAsyncBotChannel, request: JaicpBotRequest) =
-        channel.process(request.raw.asHttpBotRequest(request.stringify()))
-
-    private fun processNativeChannel(
-        channel: JaicpNativeBotChannel,
-        url: String,
-        request: JaicpBotRequest
-    ) = sendResponse(channel.process(request), url)
-
-    private fun processCompatibleChannel(
-        channel: JaicpCompatibleBotChannel,
-        url: String,
-        request: JaicpBotRequest
-    ) = sendResponse(channel.processCompatible(request), url)
 
     private fun sendResponse(botResponse: JaicpBotResponse, url: String) = launch {
         sender.processResponse(url, JaicpPollingResponse(botResponse.questionId, botResponse))

@@ -20,9 +20,9 @@ abstract class JaicpNativeChannel(
     override val botApi: BotApi
 ) : JaicpNativeBotChannel, WithLogger {
 
-    internal abstract fun createRequest(request: JaicpBotRequest): BotRequest
+    abstract fun createRequest(request: JaicpBotRequest): BotRequest
 
-    internal abstract fun createReactions(): JaicpReactions
+    abstract fun createReactions(): JaicpReactions
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val botRequest = request.receiveText().asJaicpBotRequest()
