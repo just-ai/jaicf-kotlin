@@ -114,10 +114,10 @@ and retrieved in scenario from `reactions.chatwidget.jaicp.data` json object.
 ## TelephonyChannel
 
 TelephonyChannel can be used to process incoming calls and make smart outgoing calls with JAICP. 
-It provides a list of TelephonyEvents, for example, **TelephonyEvents.speechNotRecognized**, which will be send 
+It provides a list of TelephonyEvents, for example, **TelephonyEvents.speechNotRecognized**, which will be sent 
 if ASR service cannot recognize user query.
 ```kotlin
-state("/playAudio") {
+state("noSpeech") {
     globalActivators {
         event(TelephonyEvents.speechNotRecognized)
     }
@@ -125,7 +125,7 @@ state("/playAudio") {
 ```
 You also can send an audio with **TelephonyReactions.audio** function. Here is the full example:
 ```kotlin
-state("/playAudio") {
+state("noSpeech") {
     globalActivators {
         event(TelephonyEvents.speechNotRecognized)
     }
