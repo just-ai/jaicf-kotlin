@@ -1,10 +1,9 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
-import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.*
+import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.json
 import kotlinx.serialization.json.jsonArray
@@ -21,28 +20,8 @@ open class JaicpReactions : Reactions() {
     }
 
     fun collect(): JsonObject {
-        val jsonReplies: List<JsonElement> = replies.mapNotNull { reply ->
-            when (reply) {
-                is TextReply -> JSON.toJson(
-                    TextReply.serializer(), reply
-                )
-                is ButtonsReply -> JSON.toJson(
-                    ButtonsReply.serializer(), reply
-                )
-                is ImageReply -> JSON.toJson(
-                    ImageReply.serializer(), reply
-                )
-                is AudioReply -> JSON.toJson(
-                    AudioReply.serializer(), reply
-                )
-                is HangupReply -> JSON.toJson(
-                    HangupReply.serializer(), reply
-                )
-                is SwitchReply -> JSON.toJson(
-                    SwitchReply.serializer(), reply
-                )
-                else -> null
-            }
+        val jsonReplies = replies.map { reply ->
+            reply.serialized().toJson()
         }
 
         val answer = replies.joinToString(separator = "\n\n") {
