@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import kotlin.test.assertEquals
 
-internal class DialerApiTests : JaicpBaseTest() {
+internal class JaicpDialerAPITests : JaicpBaseTest() {
 
     @Test
     fun `001 dialer should answer with redial`() {
