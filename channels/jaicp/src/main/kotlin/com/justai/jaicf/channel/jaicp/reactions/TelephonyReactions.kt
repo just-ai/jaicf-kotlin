@@ -50,9 +50,13 @@ class TelephonyReactions : JaicpReactions() {
      *    }
      * }
      * ```
-     * @param startDateTime unix timestamp (UTC-0) to start attempting to redial a client
-     * @param finishDateTime unix timestamp (UTC-0) to end attempting to redial a client
+     * @param startDateTime unix timestamp (UTC-0 epoch milliseconds) to start attempting to redial a client
+     * @param finishDateTime unix timestamp (UTC-0 epoch milliseconds) to end attempting to redial a client
+     * @param allowedDays list of [DayOfWeek] allowed days to call a client
+     * @param localTimeFrom local time interval start attempting to redial. E.g. 16:20
+     * @param localTimeTo local time interval end attempting to redial. E.g. 23:59
      * @param maxAttempts max number of attempts to call client
+     * @param retryIntervalInMinutes interval between redial attempts
      * */
     fun redial(
         startDateTime: Instant? = null,

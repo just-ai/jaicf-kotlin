@@ -1,8 +1,6 @@
 package com.justai.jaicf.examples.jaicptelephony
 
-import com.justai.jaicf.activator.caila.caila
 import com.justai.jaicf.channel.jaicp.channels.TelephonyEvents
-import com.justai.jaicf.channel.jaicp.dto.JaicpDialerAPI
 import com.justai.jaicf.channel.jaicp.dto.telephony
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.helpers.logging.WithLogger
