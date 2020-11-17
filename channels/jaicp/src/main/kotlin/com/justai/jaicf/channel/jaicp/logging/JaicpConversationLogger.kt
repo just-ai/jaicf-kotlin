@@ -39,7 +39,7 @@ open class JaicpConversationLogger(
     httpClient: HttpClient? = null
 ) : ConversationLogger(logObfuscators),
     WithLogger,
-    CoroutineScope by CoroutineScope(Dispatchers.Default) {
+    CoroutineScope by CoroutineScope(Dispatchers.IO + MDCContext()) {
 
     private val client = httpClient ?: HttpClientFactory.create(logLevel)
     private val connector = ChatAdapterConnector(accessToken, url, client)
@@ -48,9 +48,7 @@ open class JaicpConversationLogger(
         try {
             val req = loggingContext.request.jaicpNative?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
             val session = getOrCreateSessionId(loggingContext)
-            launch(MDCContext()) {
-                doLogAsync(req, loggingContext, session)
-            }
+            launch { doLogAsync(req, loggingContext, session) }
         } catch (e: Exception) {
             logger.debug("Failed to produce JAICP LogRequest: ", e)
         }

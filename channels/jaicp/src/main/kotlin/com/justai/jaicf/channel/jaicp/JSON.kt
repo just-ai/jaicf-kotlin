@@ -2,7 +2,6 @@ package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
-import com.justai.jaicf.channel.jaicp.dto.JaicpPollingRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
 import kotlinx.serialization.json.Json
 

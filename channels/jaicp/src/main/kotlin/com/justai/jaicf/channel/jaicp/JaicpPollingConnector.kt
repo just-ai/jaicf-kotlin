@@ -32,19 +32,19 @@ open class JaicpPollingConnector(
     url: String = DEFAULT_PROXY_URL,
     channels: List<JaicpChannelFactory>,
     logLevel: LogLevel = LogLevel.INFO,
-    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel)
-) : JaicpConnector(botApi, channels, accessToken, url, httpClient),
+    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel),
+    threadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE
+) : JaicpConnector(botApi, channels, accessToken, url, httpClient, threadPoolSize),
     WithLogger {
 
-    private val dispatcher = Dispatcher(httpClient, this::processJaicpRequest)
+
+    private val dispatcher = Dispatcher(httpClient, useLegacyPollingApi, threadPoolSize)
 
     init {
         loadConfig()
     }
 
-    fun runBlocking() {
-        dispatcher.startPollingBlocking()
-    }
+    fun runBlocking() = dispatcher.startPollingBlocking()
 
     override fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
         logger.debug("Register channel ${channelConfig.channelType}")

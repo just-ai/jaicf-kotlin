@@ -1,34 +1,40 @@
 package com.justai.jaicf.channel.jaicp.polling
 
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
-import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
-import io.ktor.client.request.get
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpStatusCode
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.isActive
-import kotlin.coroutines.coroutineContext
+import io.ktor.client.*
+import io.ktor.client.request.*
+import kotlinx.coroutines.*
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.long
 
-internal class RequestPoller(private val client: HttpClient) : WithLogger {
-    fun getUpdates(url: String): Flow<String> = flow {
-        while (coroutineContext.isActive) {
-            try {
-                client.get<HttpResponse>("$url/getUpdates".toUrl()).let { response ->
-                    if (response.status == HttpStatusCode.OK) {
-                        emit(response.receive())
-                    } else {
-                        delay(500)
-                    }
-                }
-            } catch (ex: Exception) {
-                logger.warn("GetUpdates failed with exception: ", ex)
-                delay(500)
-            }
-        }
+internal class RequestPoller(
+    private val client: HttpClient,
+    private val url: String
+) : WithLogger, AbstractRequestPoller() {
 
+    private var since: Long = runBlocking {
+        client.get<JsonObject>("$url/getTimestamp")["timestamp"]?.long ?: error("Failed to get last message timestamp")
     }
+    private var unprocessed: Boolean = false
+
+    override suspend fun doPoll() = client.get<List<JaicpBotRequest>>("$url/getUpdates".toUrl()) {
+        parameter("ts", since)
+        parameter("unprocessed", unprocessed)
+    }.also {
+        updateSince(it)
+        unprocessed = true
+    }
+
+    private fun updateSince(requests: List<JaicpBotRequest>) {
+        since = requests.maxBy { it.timestamp?.asSerializedOffsetDateTime() ?: 0 }
+            ?.timestamp?.asSerializedOffsetDateTime()
+            ?: System.currentTimeMillis()
+    }
+}
+
+private fun String.asSerializedOffsetDateTime(): Long {
+    val (sec, nanos) = split(".")
+    return (sec + nanos.subSequence(0, 3)).toLong()
 }
