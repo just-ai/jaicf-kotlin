@@ -51,13 +51,11 @@ object TelephonyBotScenario : Scenario(), WithLogger {
             action {
                 reactions.say("Ok, I will call you back in a minute!")
                 reactions.telephony?.redial(
-                    JaicpDialerAPI.RedialData(
-                        startDateTime = Instant.now().plus(1, ChronoUnit.MINUTES).toEpochMilli(),
-                        localTimeFrom = "12:00",
-                        localTimeTo = "23:59",
-                        retryIntervalInMinutes = 1,
-                        maxAttempts = 2
-                    )
+                    startDateTime = Instant.now().plus(1, ChronoUnit.MINUTES),
+                    localTimeFrom = "12:00",
+                    localTimeTo = "23:59",
+                    retryIntervalInMinutes = 1,
+                    maxAttempts = 2
                 )
                 reactions.telephony?.hangup()
             }

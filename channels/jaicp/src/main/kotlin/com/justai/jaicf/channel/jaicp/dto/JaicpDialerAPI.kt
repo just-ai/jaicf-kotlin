@@ -3,6 +3,10 @@ package com.justai.jaicf.channel.jaicp.dto
 import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @Serializable
 class JaicpDialerAPI {
@@ -39,18 +43,36 @@ class JaicpDialerAPI {
     data class RedialData(
         val startDateTime: Long? = null,
         val finishDateTime: Long? = null,
-        val allowedDays: List<DayOfWeek> = emptyList(),
+        val allowedDays: List<String> = emptyList(),
         val localTimeFrom: String? = null,
         val localTimeTo: String? = null,
-        val retryIntervalInMinutes: Int? = null,
-        val maxAttempts: Int? = null
+        val maxAttempts: Int? = null,
+        val retryIntervalInMinutes: Int? = null
     )
 
-    internal fun redial(data: RedialData) {
-        checkStartFinishTime(data)
-        checkLocalTime(data)
-        checkRetryAndInterval(data)
-        redial = data
+    internal fun redial(
+        startDateTime: Instant?,
+        finishDateTime: Instant?,
+        allowedDays: List<DayOfWeek> = emptyList(),
+        localTimeFrom: String? = null,
+        localTimeTo: String? = null,
+        maxAttempts: Int? = null,
+        retryIntervalInMinutes: Int? = null
+    ) {
+        val redialData = RedialData(
+            startDateTime = startDateTime?.toEpochMilli(),
+            finishDateTime = finishDateTime?.toEpochMilli(),
+            allowedDays = allowedDays.mapToDialerDays(),
+            localTimeFrom = localTimeFrom,
+            localTimeTo = localTimeTo,
+            retryIntervalInMinutes = retryIntervalInMinutes,
+            maxAttempts = maxAttempts
+        )
+
+        checkStartFinishTime(redialData)
+        checkLocalTime(redialData)
+        checkRetryAndInterval(redialData)
+        redial = redialData
     }
 
     internal fun report(header: String, data: CallReportData) {
@@ -67,14 +89,16 @@ class JaicpDialerAPI {
     }
 }
 
-enum class DayOfWeek(val value: String) {
-    MON("mon"),
-    TUE("tue"),
-    WED("wed"),
-    THU("thu"),
-    FRI("fri"),
-    SAT("sat"),
-    SUN("sun")
+private fun List<DayOfWeek>.mapToDialerDays(): List<String> = map {
+    when (it) {
+        DayOfWeek.MONDAY -> "mon"
+        DayOfWeek.TUESDAY -> "tue"
+        DayOfWeek.WEDNESDAY -> "wed"
+        DayOfWeek.THURSDAY -> "thu"
+        DayOfWeek.FRIDAY -> "fri"
+        DayOfWeek.SATURDAY -> "sat"
+        DayOfWeek.SUNDAY -> "sun"
+    }
 }
 
 private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
@@ -89,13 +113,19 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
 
 
 private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
-    val timeRegex = Regex("[0-9]{2}:[0-9]{2}")
-    data.localTimeFrom?.let {
-        if (!timeRegex.matches(it)) error("localTimeFrom should match pattern HH:MM, got $it")
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val start = data.localTimeFrom?.let {
+        formatter.parse(it)
     }
-    data.localTimeTo?.let {
-        if (!timeRegex.matches(it)) error("localTimeTo should match pattern HH:MM, got $it")
+    val end = data.localTimeTo?.let {
+        formatter.parse(it)
     }
+    if (start != null && end != null) {
+        if (LocalTime.from(start).isAfter(LocalTime.from(end))) {
+            error("localTimeFrom cannot be higher then localTimeTo")
+        }
+    }
+
 }
 
 private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {

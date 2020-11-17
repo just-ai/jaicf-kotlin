@@ -7,6 +7,7 @@ import com.justai.jaicf.channel.jaicp.dto.SwitchReply
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.reactions.Reactions
+import java.time.DayOfWeek
 import java.time.Instant
 
 val Reactions.telephony
@@ -31,11 +32,6 @@ class TelephonyReactions : JaicpReactions() {
     }
 
     /**
-     * Schedules a redial in outbound call campaign using [JaicpDialerAPI.RedialData].
-     * */
-    fun redial(redialData: JaicpDialerAPI.RedialData) = dialer.redial(redialData)
-
-    /**
      * Schedules a redial in outbound call campaign.
      *
      * example usage:
@@ -54,17 +50,19 @@ class TelephonyReactions : JaicpReactions() {
      *    }
      * }
      * ```
-     * @param fromTime unix timestamp (UTC-0) to start attempting to redial a client
-     * @param toTime unix timestamp (UTC-0) to end attempting to redial a client
+     * @param startDateTime unix timestamp (UTC-0) to start attempting to redial a client
+     * @param finishDateTime unix timestamp (UTC-0) to end attempting to redial a client
      * @param maxAttempts max number of attempts to call client
      * */
-    fun redial(fromTime: Instant?, toTime: Instant?, maxAttempts: Int?) = dialer.redial(
-        JaicpDialerAPI.RedialData(
-            startDateTime = fromTime?.toEpochMilli(),
-            finishDateTime = toTime?.toEpochMilli(),
-            maxAttempts = maxAttempts
-        )
-    )
+    fun redial(
+        startDateTime: Instant? = null,
+        finishDateTime: Instant? = null,
+        allowedDays: List<DayOfWeek> = emptyList(),
+        localTimeFrom: String? = null,
+        localTimeTo: String? = null,
+        maxAttempts: Int? = null,
+        retryIntervalInMinutes: Int? = null
+    ) = dialer.redial(startDateTime, finishDateTime, allowedDays, localTimeFrom, localTimeTo, maxAttempts, retryIntervalInMinutes)
 
     /**
      * Sets result for call in outbound call campaign.
