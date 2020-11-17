@@ -40,7 +40,7 @@ class JaicpDialerAPI {
      * @property maxAttempts max number of attempts to call client
      * */
     @Serializable
-    data class RedialData(
+    internal data class RedialData(
         val startDateTime: Long? = null,
         val finishDateTime: Long? = null,
         val allowedDays: List<String> = emptyList(),
