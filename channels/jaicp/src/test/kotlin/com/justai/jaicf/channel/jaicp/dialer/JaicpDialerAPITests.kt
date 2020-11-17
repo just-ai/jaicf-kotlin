@@ -17,7 +17,7 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
     fun `001 dialer should answer with redial`() {
         val scenario = echoWithAction {
             val startRedialTime = Instant.ofEpochMilli(1605189536000);
-            reactions.telephony?.redial(startRedialTime, null, 5)
+            reactions.telephony?.redial(startRedialTime, maxAttempts = 5)
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
@@ -56,7 +56,7 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
     fun `004 dialer should set merge all methods`() {
         val scenario = echoWithAction {
             val startRedialTime = Instant.ofEpochMilli(1605189536000);
-            reactions.telephony?.redial(startRedialTime, null, 5)
+            reactions.telephony?.redial(startRedialTime, null, maxAttempts = 5)
             reactions.telephony?.report("smoking", "i love it")
             reactions.telephony?.setResult(
                 callResult = "call ended",
