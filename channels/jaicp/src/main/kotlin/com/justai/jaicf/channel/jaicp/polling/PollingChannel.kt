@@ -4,5 +4,6 @@ import com.justai.jaicf.channel.jaicp.JaicpBotChannel
 
 internal data class PollingChannel(
     val url: String,
-    val botChannel: JaicpBotChannel
+    val botChannel: JaicpBotChannel,
+    val poller: AbstractRequestPoller
 )

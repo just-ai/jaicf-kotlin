@@ -45,16 +45,18 @@ import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
  * @param accessToken can be configured in JAICP Web Interface
  * @param channels is a list of channels which will be managed by connector
  * */
+@Suppress("MemberVisibilityCanBePrivate")
 open class JaicpWebhookConnector(
     botApi: BotApi,
     accessToken: String,
     url: String = DEFAULT_PROXY_URL,
     channels: List<JaicpChannelFactory>,
     logLevel: LogLevel = LogLevel.INFO,
-    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel)
+    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel),
+    threadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE
 ) : WithLogger,
     HttpBotChannel,
-    JaicpConnector(botApi, channels, accessToken, url, httpClient) {
+    JaicpConnector(botApi, channels, accessToken, url, httpClient, threadPoolSize) {
 
     protected val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
 
@@ -81,10 +83,7 @@ open class JaicpWebhookConnector(
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val botRequest = request.receiveText()
             .also { logger.debug("Received botRequest: $it") }
-            .apply {
-                if (isHandledPingQuery(this))
-                    return "{}".asJsonHttpBotResponse()
-            }
+            .apply { if (isHandledPingQuery(this)) return "{}".asJsonHttpBotResponse() }
             .asJaicpBotRequest()
             .also { JaicpMDC.setFromRequest(it) }
 
