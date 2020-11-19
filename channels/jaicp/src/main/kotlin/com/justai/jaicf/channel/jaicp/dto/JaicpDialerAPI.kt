@@ -9,7 +9,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Serializable
-internal class JaicpDialerAPI {
+class JaicpDialerAPI {
 
     private var callResult: String? = null
     private var callResultPayload: String? = null
@@ -29,7 +29,7 @@ internal class JaicpDialerAPI {
     )
 
     /**
-     * An object sent to schedule a redial.
+     * An object sent in response to schedule a redial.
      *
      * @property startDateTime unix timestamp (UTC-0 epoch milliseconds) to start attempting to redial a client
      * @property finishDateTime unix timestamp (UTC-0 epoch milliseconds) to end attempting to redial a client
@@ -40,7 +40,7 @@ internal class JaicpDialerAPI {
      * @property maxAttempts max number of attempts to call client
      * */
     @Serializable
-    internal data class RedialData(
+    data class RedialData internal constructor(
         val startDateTime: Long? = null,
         val finishDateTime: Long? = null,
         val allowedDays: List<String> = emptyList(),
@@ -48,7 +48,28 @@ internal class JaicpDialerAPI {
         val localTimeTo: String? = null,
         val maxAttempts: Int? = null,
         val retryIntervalInMinutes: Int? = null
-    )
+    ) {
+        companion object {
+            fun create(
+                startDateTime: Instant?,
+                finishDateTime: Instant?,
+                allowedDays: List<DayOfWeek> = emptyList(),
+                localTimeFrom: String? = null,
+                localTimeTo: String? = null,
+                maxAttempts: Int? = null,
+                retryIntervalInMinutes: Int? = null
+            ) = RedialData(
+                startDateTime = startDateTime?.toEpochMilli(),
+                finishDateTime = finishDateTime?.toEpochMilli(),
+                allowedDays = allowedDays.mapToDialerDays(),
+                localTimeFrom = localTimeFrom,
+                localTimeTo = localTimeTo,
+                retryIntervalInMinutes = retryIntervalInMinutes,
+                maxAttempts = maxAttempts
+            )
+        }
+
+    }
 
     internal fun redial(
         startDateTime: Instant?,
@@ -58,8 +79,8 @@ internal class JaicpDialerAPI {
         localTimeTo: String? = null,
         maxAttempts: Int? = null,
         retryIntervalInMinutes: Int? = null
-    ) {
-        val redialData = RedialData(
+    ) = redial(
+        RedialData(
             startDateTime = startDateTime?.toEpochMilli(),
             finishDateTime = finishDateTime?.toEpochMilli(),
             allowedDays = allowedDays.mapToDialerDays(),
@@ -68,12 +89,7 @@ internal class JaicpDialerAPI {
             retryIntervalInMinutes = retryIntervalInMinutes,
             maxAttempts = maxAttempts
         )
-
-        checkStartFinishTime(redialData)
-        checkLocalTime(redialData)
-        checkRetryAndInterval(redialData)
-        redial = redialData
-    }
+    )
 
     internal fun report(header: String, data: CallReportData) {
         reportData[header] = data
@@ -86,6 +102,13 @@ internal class JaicpDialerAPI {
 
     internal fun getApiResponse(): JsonElement {
         return JSON.toJson(serializer(), this)
+    }
+
+    internal fun redial(redialData: RedialData) {
+        checkStartFinishTime(redialData)
+        checkLocalTime(redialData)
+        checkRetryAndInterval(redialData)
+        redial = redialData
     }
 }
 
@@ -105,7 +128,7 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
     val st = data.startDateTime
     val fin = data.finishDateTime
     if (st != null && fin != null) {
-        require(st > fin) {
+        require(st >= fin) {
             "The redial start time (startDateTime) must be less than redial finish time (finishDateTime)"
         }
     }
@@ -119,8 +142,10 @@ private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
     val end = data.localTimeTo?.let {
         LocalTime.parse(it, formatter)
     }
-    require(start?.isBefore(end) == true) {
-        "localTimeFrom cannot be higher then localTimeTo"
+    if (start != null && end != null) {
+        require(start.isBefore(end)) {
+            "localTimeFrom cannot be higher then localTimeTo"
+        }
     }
 }
 

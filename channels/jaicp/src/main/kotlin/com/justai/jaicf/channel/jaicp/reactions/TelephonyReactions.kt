@@ -62,7 +62,22 @@ class TelephonyReactions : JaicpReactions() {
         localTimeTo: String? = null,
         maxAttempts: Int? = null,
         retryIntervalInMinutes: Int? = null
-    ) = dialer.redial(startDateTime, finishDateTime, allowedDays, localTimeFrom, localTimeTo, maxAttempts, retryIntervalInMinutes)
+    ) = dialer.redial(
+        startDateTime,
+        finishDateTime,
+        allowedDays,
+        localTimeFrom,
+        localTimeTo,
+        maxAttempts,
+        retryIntervalInMinutes
+    )
+
+    /**
+     * Schedules a redial in outbound call campaign using [JaicpDialerAPI.RedialData].
+     */
+    fun redial(redialData: JaicpDialerAPI.RedialData) {
+        dialer.redial(redialData)
+    }
 
     /**
      * Sets result for call in outbound call campaign.
