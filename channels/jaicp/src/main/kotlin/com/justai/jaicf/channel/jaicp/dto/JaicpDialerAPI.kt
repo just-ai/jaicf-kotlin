@@ -9,7 +9,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Serializable
-class JaicpDialerAPI {
+internal class JaicpDialerAPI {
 
     private var callResult: String? = null
     private var callResultPayload: String? = null
@@ -105,39 +105,34 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
     val st = data.startDateTime
     val fin = data.finishDateTime
     if (st != null && fin != null) {
-        if (st > fin) {
-            error("startDateTime must be less than finishDateTime")
+        require(st > fin) {
+            "The redial start time (startDateTime) must be less than redial finish time (finishDateTime)"
         }
     }
 }
-
 
 private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
     val start = data.localTimeFrom?.let {
-        formatter.parse(it)
+        LocalTime.parse(it, formatter)
     }
     val end = data.localTimeTo?.let {
-        formatter.parse(it)
+        LocalTime.parse(it, formatter)
     }
-    if (start != null && end != null) {
-        if (LocalTime.from(start).isAfter(LocalTime.from(end))) {
-            error("localTimeFrom cannot be higher then localTimeTo")
-        }
+    require(start?.isBefore(end) == true) {
+        "localTimeFrom cannot be higher then localTimeTo"
     }
-
 }
 
 private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {
-    fun numberInRange(value: Int, min: Int, max: Int) = value in min..max
     data.retryIntervalInMinutes?.let {
-        if (!numberInRange(it, 1, Int.MAX_VALUE)) {
-            error("retryIntervalInMinutes must be a positive integer, got $it")
+        require(it < 1) {
+            "The retry interval in minutes must be a positive number. Given: $it"
         }
     }
     data.maxAttempts?.let {
-        if (!numberInRange(it, 1, 50)) {
-            error("maxAttempts must be a positive integer, got $it")
+        require(it in 1..50) {
+            "The maximum number of attempts must be in range from 1 to 50 inclusive. Given: $it"
         }
     }
 }
