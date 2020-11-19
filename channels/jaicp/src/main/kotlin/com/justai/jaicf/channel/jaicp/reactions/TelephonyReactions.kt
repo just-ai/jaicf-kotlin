@@ -14,11 +14,7 @@ val Reactions.telephony
     get() = this as? TelephonyReactions
 
 class TelephonyReactions : JaicpReactions() {
-    /**
-     * Appends audio to the response.
-     *
-     * @param url of audio
-     * */
+
     override fun audio(url: String): AudioReaction {
         replies.add(AudioReply(url.toUrl()))
         return AudioReaction.create(url)
