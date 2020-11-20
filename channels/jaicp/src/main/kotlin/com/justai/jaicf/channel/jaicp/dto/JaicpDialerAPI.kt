@@ -68,7 +68,6 @@ class JaicpDialerAPI {
                 maxAttempts = maxAttempts
             )
         }
-
     }
 
     internal fun redial(
@@ -91,6 +90,13 @@ class JaicpDialerAPI {
         )
     )
 
+    internal fun redial(redialData: RedialData) {
+        checkStartFinishTime(redialData)
+        checkLocalTime(redialData)
+        checkRetryAndInterval(redialData)
+        redial = redialData
+    }
+
     internal fun report(header: String, data: CallReportData) {
         reportData[header] = data
     }
@@ -102,13 +108,6 @@ class JaicpDialerAPI {
 
     internal fun getApiResponse(): JsonElement {
         return JSON.toJson(serializer(), this)
-    }
-
-    internal fun redial(redialData: RedialData) {
-        checkStartFinishTime(redialData)
-        checkLocalTime(redialData)
-        checkRetryAndInterval(redialData)
-        redial = redialData
     }
 }
 
@@ -128,7 +127,7 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
     val st = data.startDateTime
     val fin = data.finishDateTime
     if (st != null && fin != null) {
-        require(st >= fin) {
+        require(st <= fin) {
             "The redial start time (startDateTime) must be less than redial finish time (finishDateTime)"
         }
     }
@@ -136,12 +135,8 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
 
 private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
-    val start = data.localTimeFrom?.let {
-        LocalTime.parse(it, formatter)
-    }
-    val end = data.localTimeTo?.let {
-        LocalTime.parse(it, formatter)
-    }
+    val start = data.localTimeFrom?.let { LocalTime.parse(it, formatter) }
+    val end = data.localTimeTo?.let { LocalTime.parse(it, formatter) }
     if (start != null && end != null) {
         require(start.isBefore(end)) {
             "localTimeFrom cannot be higher then localTimeTo"
@@ -151,7 +146,7 @@ private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
 
 private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {
     data.retryIntervalInMinutes?.let {
-        require(it < 1) {
+        require(it > 1) {
             "The retry interval in minutes must be a positive number. Given: $it"
         }
     }

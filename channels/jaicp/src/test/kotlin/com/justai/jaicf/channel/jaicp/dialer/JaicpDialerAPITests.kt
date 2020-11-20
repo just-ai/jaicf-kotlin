@@ -8,6 +8,7 @@ import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.model.scenario.Scenario
 import kotlinx.serialization.json.json
 import org.junit.jupiter.api.Test
+import java.time.DayOfWeek
 import java.time.Instant
 import kotlin.test.assertEquals
 
@@ -17,7 +18,15 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
     fun `001 dialer should answer with redial`() {
         val scenario = echoWithAction {
             val startRedialTime = Instant.ofEpochMilli(1605189536000);
-            reactions.telephony?.redial(startRedialTime, maxAttempts = 5)
+            reactions.telephony?.redial(
+                startDateTime = startRedialTime,
+                finishDateTime = startRedialTime.plusSeconds(60),
+                allowedDays = listOf(DayOfWeek.MONDAY, DayOfWeek.THURSDAY, DayOfWeek.WEDNESDAY),
+                localTimeFrom = "12:00",
+                localTimeTo = "12:30",
+                maxAttempts = 5,
+                retryIntervalInMinutes = 5
+            )
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
