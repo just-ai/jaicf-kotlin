@@ -127,7 +127,7 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
     val st = data.startDateTime
     val fin = data.finishDateTime
     if (st != null && fin != null) {
-        require(st <= fin) {
+        require(st < fin) {
             "The redial start time (startDateTime) must be less than redial finish time (finishDateTime)"
         }
     }
@@ -146,7 +146,7 @@ private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
 
 private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {
     data.retryIntervalInMinutes?.let {
-        require(it > 1) {
+        require(it >= 1) {
             "The retry interval in minutes must be a positive number. Given: $it"
         }
     }
