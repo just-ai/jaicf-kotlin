@@ -3,7 +3,16 @@
     "dialer": {
       "redial": {
         "startDateTime": 1605189536000,
-        "maxAttempts": 5
+        "finishDateTime": 1605189596000,
+        "allowedDays": [
+          "mon",
+          "thu",
+          "wed"
+        ],
+        "localTimeFrom": "12:00",
+        "localTimeTo": "12:30",
+        "maxAttempts": 5,
+        "retryIntervalInMinutes": 5
       }
     },
     "replies": [

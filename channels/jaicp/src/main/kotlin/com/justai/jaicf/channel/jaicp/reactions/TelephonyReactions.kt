@@ -8,6 +8,7 @@ import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.reactions.Reactions
 import java.time.DayOfWeek
+import java.time.Duration
 import java.time.Instant
 
 val Reactions.telephony
@@ -77,6 +78,38 @@ class TelephonyReactions : JaicpReactions() {
      */
     fun redial(redialData: JaicpDialerAPI.RedialData) {
         dialer.redial(redialData)
+    }
+
+    /**
+     * Schedules a redial in outbound call campaign
+     *
+     * @param startRedialAfter a [Duration] amount after which redial will start
+     * @param finishRedialAfter a [Duration] after which redial will finish
+     * @param allowedDays list of [DayOfWeek] allowed days to call a client
+     * @param localTimeFrom local time interval start attempting to redial. E.g. 16:20
+     * @param localTimeTo local time interval end attempting to redial. E.g. 23:59
+     * @param maxAttempts max number of attempts to call client
+     * @param retryIntervalInMinutes interval between redial attempts
+     */
+    fun redial(
+        startRedialAfter: Duration,
+        finishRedialAfter: Duration,
+        allowedDays: List<DayOfWeek> = emptyList(),
+        localTimeFrom: String? = null,
+        localTimeTo: String? = null,
+        maxAttempts: Int? = null,
+        retryIntervalInMinutes: Int? = null
+    ) {
+        val currentTime = Instant.now()
+        redial(
+            currentTime.plus(startRedialAfter),
+            currentTime.plus(finishRedialAfter),
+            allowedDays,
+            localTimeFrom,
+            localTimeTo,
+            maxAttempts,
+            retryIntervalInMinutes
+        )
     }
 
     /**
