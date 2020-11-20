@@ -9,8 +9,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
 
 /**
- * This activator handles query and intent requests and activates a state if request contains any input.
- * Thus this activator handles everything except events.
+ * This activator handles query, intent and event requests and activates a state.
  * Produces [CatchAllActivatorContext] instance.
  *
  * Usage example:
