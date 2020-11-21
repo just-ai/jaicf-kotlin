@@ -2,6 +2,8 @@ package com.justai.jaicf.context
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.helpers.action.smartRandom
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.reactions.Reactions
 import kotlin.random.Random
 
@@ -73,4 +75,11 @@ open class ActionContext(
      * @param texts a list of String to select random from
      */
     fun Reactions.sayRandom(texts: List<String>) = say(random(texts))
+
+    infix fun ButtonsReaction?.toStates(states: List<String>) {
+        this?.buttons?.zip(states)?.forEach { (text, state) ->
+            context.dialogContext.transitions[text] =
+                StatePath.parse(context.dialogContext.currentState).resolve(state).toString()
+        }
+    }
 }
