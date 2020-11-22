@@ -10,10 +10,10 @@ import com.justai.jaicf.activator.intent.BaseIntentActivator
 import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.helpers.kotlin.runIfTrueElseNull
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
@@ -107,11 +107,11 @@ class BotEngine(
         processContext(botContext, requestContext)
 
         withHook(BotRequestHook(botContext, request, reactions)) {
-            var activation: ActivationContext? =
-                if (!botContext.isActiveSlotFilling()) { selectActivation(botContext, request) } else null
-            activation = fillSlots(activation, botContext, request, reactions, cm).apply {
-                if (first) return
-            }.second
+            val activation = botContext.isActiveSlotFilling().not()
+                .runIfTrueElseNull { selectActivation(botContext, request) }
+                .withAppliedSlotFilling(botContext, request, reactions, cm)
+                .let { if (it.first) return else it.second }
+
             loggingContext.activationContext = activation
 
             if (activation?.activation == null) {
@@ -183,10 +183,8 @@ class BotEngine(
         return shouldReturn to activationContext
     }
 
-    private fun getActivatorForName(activatorName: String?): Activator? {
-        activatorName ?: return null
-        return activators.find { it.name == activatorName }
-    }
+    private fun getActivatorForName(activatorName: String?) =
+        activatorName?.let { activators.find { it.name == activatorName } }
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
         try {
@@ -203,11 +201,7 @@ class BotEngine(
         }
     }
 
-    private fun selectActivation(
-        botContext: BotContext,
-        request: BotRequest
-    ): ActivationContext? {
-
+    private fun selectActivation(botContext: BotContext, request: BotRequest): ActivationContext? {
         activators.filter { it.canHandle(request) }.forEach { a ->
             val activation = a.activate(botContext, request, activationSelector)
             if (activation != null) {
@@ -269,4 +263,11 @@ class BotEngine(
             }
         )
     }
+
+    private fun ActivationContext?.withAppliedSlotFilling(
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions,
+        cm: BotContextManager
+    ): Pair<Boolean, ActivationContext?> = fillSlots(this, botContext, request, reactions, cm)
 }
