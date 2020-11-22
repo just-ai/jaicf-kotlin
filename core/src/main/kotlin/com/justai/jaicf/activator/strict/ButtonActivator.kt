@@ -1,34 +1,29 @@
 package com.justai.jaicf.activator.strict
 
+import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.BaseActivator
+import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.StrictActivatorContext
+import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.transition.Transition
 
-class ButtonActivator(model: ScenarioModel) : BaseActivator(model) {
+class ButtonActivator : Activator {
 
     override val name = "buttonActivator"
 
-    override fun canHandle(request: BotRequest) = request.hasQuery()
+    override fun canHandle(request: BotRequest): Boolean = request.hasQuery()
 
-    override fun provideRuleMatcher(botContext: BotContext, request: BotRequest) =
-        ruleMatcher<StrictActivationRule> {
-            val req = request.input.toLowerCase()
-            val strictTransitions = botContext.dialogContext.transitions
-            strictTransitions[req]
-                ?.let { StrictActivatorContext() }
-                .also { strictTransitions.clear() }
-        }
-
-    companion object : ActivatorFactory {
-        override fun create(model: ScenarioModel) = ButtonActivator(model)
+    override fun activate(botContext: BotContext, request: BotRequest, selector: ActivationSelector): Activation? {
+        val req = request.input.toLowerCase()
+        val strictTransitions = botContext.dialogContext.transitions
+        val context = strictTransitions[req].also { strictTransitions.clear() }
+        return context?.let { Activation(it, StrictActivatorContext()) }
     }
 
-    override fun generateTransitions(botContext: BotContext) = botContext.dialogContext.transitions.map {
-        Transition(botContext.dialogContext.currentContext, it.value, StrictActivationRule())
+    companion object : ActivatorFactory {
+        override fun create(model: ScenarioModel) = ButtonActivator()
     }
 }

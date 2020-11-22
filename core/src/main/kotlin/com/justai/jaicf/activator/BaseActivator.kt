@@ -77,15 +77,7 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
             override fun match(rule: ActivationRule) = (rule as? R)?.let(matcher)
         }
 
-    /**
-     * Generates a list of transitions for current [BaseActivator] implementation.
-     *
-     * Generally, transitions are computed from scenario model.
-     * This may be overridden if you need to add non-scenario transitions.
-     *
-     * @param botContext a current user's [BotContext]
-     * */
-    protected open fun generateTransitions(botContext: BotContext): List<Transition> {
+    private fun generateTransitions(botContext: BotContext): List<Transition> {
         val currentState = botContext.dialogContext.currentContext
         val isModal = currentState != "/" && model.states[currentState]?.modal
                 ?: error("State $currentState is not registered in model")
