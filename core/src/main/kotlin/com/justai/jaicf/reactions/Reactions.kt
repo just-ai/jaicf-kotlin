@@ -132,3 +132,18 @@ abstract class Reactions : ReactionRegistrar() {
     open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
 }
 
+typealias ButtonToState = Pair<String, String>
+
+/**
+ * Appends buttons with transitions to response.
+ * When button is clicked, a corresponding state will activate
+ *
+ * @param buttons a collection with button texts to states
+ * */
+fun Reactions.buttons(vararg buttons: ButtonToState): ButtonsReaction {
+    buttons.forEach { (text, transition) ->
+        botContext.dialogContext.transitions[text.toLowerCase()] =
+            StatePath.parse(botContext.dialogContext.currentState).resolve(transition).toString()
+    }
+    return buttons(*buttons.map { it.first }.toTypedArray())
+}

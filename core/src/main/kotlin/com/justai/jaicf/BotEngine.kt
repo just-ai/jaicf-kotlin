@@ -7,6 +7,7 @@ import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.activator.event.BaseEventActivator
 import com.justai.jaicf.activator.intent.BaseIntentActivator
+import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -69,9 +70,11 @@ class BotEngine(
         fun MutableList<Activator>.removeIfPresent(a: Activator) = removeIf { it.name == a.name }
         fun MutableList<Activator>.pushToTheEnd(a: Activator) = find { it.name == a.name } ?: add(a)
 
-        val builtinActivators = listOf(BaseEventActivator, BaseIntentActivator, CatchAllActivator).map { it.create(model) }
+        val builtinActivators =
+            listOf(BaseEventActivator, BaseIntentActivator, CatchAllActivator).map { it.create(model) }
+        val strictActivators = mutableListOf(ButtonActivator).map { it.create(model) }
 
-        return toMutableList().apply {
+        return strictActivators + toMutableList().apply {
             builtinActivators.forEach {
                 removeIfPresent(it)
                 pushToTheEnd(it)
@@ -104,15 +107,9 @@ class BotEngine(
         processContext(botContext, requestContext)
 
         withHook(BotRequestHook(botContext, request, reactions)) {
-            val state = checkStrictTransitions(botContext, request)
-
-            var activation: ActivationContext? = null
-            if (!botContext.isActiveSlotFilling()) {
-                activation = state
-                    ?.let { ActivationContext(null, Activation(state, StrictActivatorContext())) }
-                    ?: selectActivation(botContext, request)
-            }
-            activation = fillSlots(activation, botContext, request, reactions, cm, state).apply {
+            var activation: ActivationContext? =
+                if (!botContext.isActiveSlotFilling()) { selectActivation(botContext, request) } else null
+            activation = fillSlots(activation, botContext, request, reactions, cm).apply {
                 if (first) return
             }.second
             loggingContext.activationContext = activation
@@ -131,7 +128,6 @@ class BotEngine(
 
                 processStates(context)
                 saveContext(cm, botContext, request, reactions)
-
             }
             conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
             botContext.cleanTempData()
@@ -143,8 +139,7 @@ class BotEngine(
         botContext: BotContext,
         request: BotRequest,
         reactions: Reactions,
-        cm: BotContextManager,
-        state: String?
+        cm: BotContextManager
     ): Pair<Boolean, ActivationContext?> {
         val slotFillingActivatorName = botContext.getSlotFillingActivator()
         val isSlotFillingSession = slotFillingActivatorName != null
@@ -183,12 +178,7 @@ class BotEngine(
         }
         if (res is SlotFillingInterrupted) {
             botContext.finishSlotFilling()
-            activationContext = state
-                ?.let { ActivationContext(null, Activation(
-                    state,
-                    StrictActivatorContext()
-                )) }
-                ?: selectActivation(botContext, request)
+            activationContext = selectActivation(botContext, request)
         }
         return shouldReturn to activationContext
     }
@@ -211,17 +201,6 @@ class BotEngine(
         if (requestContext.newSession) {
             botContext.cleanSessionData()
         }
-    }
-
-    private fun checkStrictTransitions(botContext: BotContext, request: BotRequest): String? {
-        if (!request.hasQuery()) {
-            return null
-        }
-
-        val dc = botContext.dialogContext
-        val transition = dc.transitions[request.input.toLowerCase()]
-        dc.transitions.clear()
-        return transition
     }
 
     private fun selectActivation(

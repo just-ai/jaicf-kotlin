@@ -11,6 +11,7 @@ import com.justai.jaicf.channel.facebook.facebook
 import com.justai.jaicf.channel.googleactions.dialogflow.DialogflowIntent
 import com.justai.jaicf.channel.telegram.telegram
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.reactions.buttons
 
 object HelloWorldScenario: Scenario(
     dependencies = listOf(HelperScenario)
@@ -44,7 +45,7 @@ object HelloWorldScenario: Scenario(
                     reactions.run {
                         image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
                         sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
-                        buttons("Mew", "Wake up")
+                        buttons("Mew" to "/mew", "Wake up" to "wakeup")
                         aimybox?.endConversation()
                     }
                 }
