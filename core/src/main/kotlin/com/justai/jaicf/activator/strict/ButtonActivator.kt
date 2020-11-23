@@ -10,7 +10,7 @@ import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 
-class ButtonActivator : Activator {
+internal class ButtonActivator : Activator {
 
     override val name = "buttonActivator"
 
