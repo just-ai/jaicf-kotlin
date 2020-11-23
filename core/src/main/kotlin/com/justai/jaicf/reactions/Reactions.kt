@@ -136,7 +136,7 @@ typealias ButtonToState = Pair<String, String>
 
 /**
  * Appends buttons with transitions to response.
- * When button is clicked, a corresponding state will activate
+ * When button is clicked, a corresponding state will be activated
  *
  * @param buttons a collection with button texts to states
  * */
