@@ -13,7 +13,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.helpers.kotlin.runIfTrueElseNull
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
@@ -108,7 +108,7 @@ class BotEngine(
 
         withHook(BotRequestHook(botContext, request, reactions)) {
             val activation = botContext.isActiveSlotFilling().not()
-                .runIfTrueElseNull { selectActivation(botContext, request) }
+                .ifTrue { selectActivation(botContext, request) }
                 .withAppliedSlotFilling(botContext, request, reactions, cm)
                 .let { if (it.first) return else it.second }
 
