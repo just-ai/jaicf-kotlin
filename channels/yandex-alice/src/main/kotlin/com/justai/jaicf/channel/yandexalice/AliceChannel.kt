@@ -42,9 +42,10 @@ class AliceChannel(
     }
 
     class Factory(
-        private val oauthToken: String? = null
+        private val oauthToken: String? = null,
+        private val useDataStorage: Boolean = false
     ) : JaicpCompatibleChannelFactory {
         override val channelType = "yandex"
-        override fun create(botApi: BotApi) = AliceChannel(botApi, oauthToken)
+        override fun create(botApi: BotApi) = AliceChannel(botApi, oauthToken, useDataStorage)
     }
 }
