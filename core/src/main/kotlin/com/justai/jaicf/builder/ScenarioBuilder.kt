@@ -5,7 +5,7 @@ import com.justai.jaicf.activator.event.AnyEventActivationRule
 import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
-import com.justai.jaicf.activator.intent.ThemeActivationRule
+import com.justai.jaicf.activator.intent.IntentByPrefixActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.hook.BotHook
@@ -314,16 +314,16 @@ abstract class ScenarioBuilder(
         ))
 
         /**
-         * Appends a theme activator to this state. Means that any intent with its name beginning with such a theme can activate this state.
+         * Appends a multiple-intent activator to this state. Means that any intent having such a prefix can activate this state.
          * Requires a [com.justai.jaicf.activator.intent.IntentActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
          *
          * @see com.justai.jaicf.activator.intent.IntentActivator
          * @see com.justai.jaicf.api.BotApi
          */
-        fun theme(theme: String) = add(Transition(
+        fun intents(prefix: String) = add(Transition(
             fromState,
             toState,
-            ThemeActivationRule(theme)
+            IntentByPrefixActivationRule(prefix)
         ))
 
         /**

@@ -12,9 +12,9 @@ private val intentActivationScenario = object : Scenario() {
             }
         }
 
-        state("theme") {
+        state("intents") {
             activators {
-                theme("/bar")
+                intents("/bar")
             }
         }
 
@@ -32,7 +32,7 @@ class IntentActivatorTest : ScenarioTest(intentActivationScenario.model) {
 
     @Test
     fun `should activate on any intent with the same prefix`() {
-        intent("/bar") goesToState "/theme"
-        intent("/bar/baz") goesToState "/theme"
+        intent("/bar") goesToState "/intents"
+        intent("/bar/baz") goesToState "/intents"
     }
 }

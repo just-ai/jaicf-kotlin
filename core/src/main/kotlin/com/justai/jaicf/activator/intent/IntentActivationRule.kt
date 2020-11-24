@@ -6,6 +6,6 @@ abstract class IntentActivationRule(val intentMatches: (String) -> Boolean): Act
 
 open class IntentByNameActivationRule(val intent: String): IntentActivationRule({ it == intent })
 
-class AnyIntentActivationRule(val except: MutableList<String> = mutableListOf()): IntentActivationRule({ it !in except })
+class IntentByPrefixActivationRule(val prefix: String): IntentActivationRule({ it.startsWith(prefix) })
 
-class ThemeActivationRule(val theme: String): IntentActivationRule({ it.startsWith(theme) })
+class AnyIntentActivationRule(val except: MutableList<String> = mutableListOf()): IntentActivationRule({ it !in except })
