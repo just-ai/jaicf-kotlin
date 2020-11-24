@@ -7,3 +7,5 @@ abstract class IntentActivationRule(val intentMatches: (String) -> Boolean): Act
 open class IntentByNameActivationRule(val intent: String): IntentActivationRule({ it == intent })
 
 class AnyIntentActivationRule(val except: MutableList<String> = mutableListOf()): IntentActivationRule({ it !in except })
+
+class ThemeActivationRule(val theme: String): IntentActivationRule({ it.startsWith(theme) })
