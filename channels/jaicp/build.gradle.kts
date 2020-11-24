@@ -21,10 +21,9 @@ dependencies {
     api("io.ktor:ktor-server-netty" version { ktor })
 
 
+    testImplementation("io.mockk:mockk" version { mockk })
     testCompile(kotlin("test-junit"))
     testCompile(kotlin("test"))
-    testCompile(project(":channels:facebook"))
-    testCompile(project(":channels:google-actions"))
     testCompile("org.junit.jupiter:junit-jupiter-api" version { jUnit })
     testRuntime("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }

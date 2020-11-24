@@ -2,6 +2,8 @@ package com.justai.jaicf.channel.jaicp.dialer
 
 import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
+import com.justai.jaicf.channel.jaicp.ScenarioFactory
+import com.justai.jaicf.channel.jaicp.ScenarioFactory.echoWithAction
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.context.ActionContext
@@ -27,6 +29,7 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
                 maxAttempts = 5,
                 retryIntervalInMinutes = 5
             )
+            reactions.say("You said: ${request.input}")
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
@@ -38,6 +41,7 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
     fun `002 dialer should report property from call`() {
         val scenario = echoWithAction {
             reactions.telephony?.report("propname", "propvalue")
+            reactions.say("You said: ${request.input}")
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
@@ -54,6 +58,7 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
                     "result" to "Ok"
                 }.toString()
             )
+            reactions.say("You said: ${request.input}")
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
@@ -73,21 +78,11 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
                     "result" to "Ok"
                 }.toString()
             )
+            reactions.say("You said: ${request.input}")
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
         val response = channel.process(request)
         assertEquals(expected, response.jaicp)
-    }
-}
-
-private fun echoWithAction(block: ActionContext.() -> Unit): Scenario {
-    return object : Scenario() {
-        init {
-            fallback {
-                block()
-                reactions.say("You said: ${request.input}")
-            }
-        }
     }
 }

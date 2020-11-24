@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
+import com.justai.jaicf.channel.jaicp.logging.JaicpSessionManager
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.reactions.Reactions
@@ -20,11 +21,15 @@ open class JaicpReactions : Reactions() {
         return SayReaction.create(text)
     }
 
-    fun collect(): JsonObject {
-        val jsonReplies = replies.map { reply ->
-            reply.serialized().toJson()
-        }
+    fun startNewSession() {
+        botContext.dialogContext.currentState = "/"
+        botContext.dialogContext.currentContext = "/"
+        botContext.cleanSessionData()
+        JaicpSessionManager.setNewSession(botContext)
+    }
 
+    fun collect(): JsonObject {
+        val jsonReplies = replies.map { it.serialized().toJson() }
         val answer = replies.joinToString(separator = "\n\n") {
             if (it is TextReply) {
                 it.text

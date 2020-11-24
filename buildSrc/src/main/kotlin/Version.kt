@@ -14,6 +14,7 @@ object Version {
     const val coroutinesCore = "1.3.3"
     const val tomcatServletApi = "6.0.53"
     const val logbackGelfAppender = "1.5"
+    const val mockk = "1.10.2"
 }
 
 infix fun String.version(versionProvider: Version.() -> String) =
