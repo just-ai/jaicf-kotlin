@@ -20,7 +20,7 @@ data class CailaIntentData(
     val customData: String?,
     val slots: List<CailaSlotData>?
 )  : java.io.Serializable{
-    val name = path.substring(path.lastIndexOf('/') + 1)
+    val name = path.substring(1)
 }
 
 @Serializable

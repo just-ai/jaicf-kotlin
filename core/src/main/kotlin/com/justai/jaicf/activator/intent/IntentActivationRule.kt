@@ -4,7 +4,7 @@ import com.justai.jaicf.model.activation.ActivationRule
 
 abstract class IntentActivationRule(val intentMatches: (String) -> Boolean): ActivationRule
 
-open class IntentByNameActivationRule(val intent: String): IntentActivationRule({ it == intent })
+open class IntentByNameActivationRule(val intent: String): IntentActivationRule({ it.substring(it.lastIndexOf("/") + 1) == intent })
 
 class IntentByPrefixActivationRule(val prefix: String): IntentActivationRule({ it.startsWith(prefix) })
 

@@ -8,13 +8,13 @@ private val intentActivationScenario = object : Scenario() {
     init {
         state("intent") {
             activators {
-                intent("/foo")
+                intent("foo")
             }
         }
 
         state("intents") {
             activators {
-                intents("/bar")
+                intents("bar")
             }
         }
 
@@ -26,13 +26,13 @@ class IntentActivatorTest : ScenarioTest(intentActivationScenario.model) {
 
     @Test
     fun `should activate on strict intent match only`() {
-        intent("/foo") goesToState "/intent"
-        intent("/foo/bar") goesToState "/fallback"
+        intent("foo") goesToState "/intent"
+        intent("foo/bar") goesToState "/fallback"
     }
 
     @Test
     fun `should activate on any intent with the same prefix`() {
-        intent("/bar") goesToState "/intents"
-        intent("/bar/baz") goesToState "/intents"
+        intent("bar") goesToState "/intents"
+        intent("bar/baz") goesToState "/intents"
     }
 }
