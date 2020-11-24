@@ -109,8 +109,8 @@ class BotEngine(
         }
 
         botContext.cleanTempData()
-        saveContext(manager, botContext, request, reactions)
         conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
+        saveContext(manager, botContext, request, reactions)
     }
 
     private fun processRequest(

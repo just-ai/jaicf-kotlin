@@ -1,14 +1,9 @@
 package com.justai.jaicf.channel.jaicp
 
-import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
-import com.justai.jaicf.model.scenario.Scenario
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.TestInfo
@@ -19,9 +14,9 @@ import kotlin.test.fail
 
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 open class JaicpBaseTest {
-    private lateinit var testName: String
-    private lateinit var testNumber: String
-    private lateinit var testPackage: String
+    protected lateinit var testName: String
+    protected lateinit var testNumber: String
+    protected lateinit var testPackage: String
 
     protected val request: HttpBotRequest get() = HttpBotRequest(getResourceAsInputStream("req.json"))
     protected val expected: JaicpBotResponse get() = getResourceAsString("resp.json").asJsonHttpBotResponse().jaicp

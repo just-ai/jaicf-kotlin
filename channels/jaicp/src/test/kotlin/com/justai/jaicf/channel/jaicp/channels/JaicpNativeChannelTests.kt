@@ -3,7 +3,7 @@ package com.justai.jaicf.channel.jaicp.channels
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
-import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.channel.jaicp.ScenarioFactory.echoWithAction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -33,11 +33,7 @@ internal class JaicpNativeChannelTests : JaicpBaseTest() {
     }
 }
 
-private val echoBot = BotEngine(object : Scenario() {
-    init {
-        fallback {
-            reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
-        }
-    }
+private val echoBot = BotEngine(echoWithAction {
+    reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
 }.model)
 
