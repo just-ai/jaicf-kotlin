@@ -40,8 +40,7 @@ class TelephonyReactions : JaicpReactions() {
      *    action {
      *        reactions.say("Ok, I will call you in an hour.")
      *        reactions.telephony?.redial(
-     *            fromTime = Instant.now().plusSeconds(3600),
-     *            toTime = null,
+     *            startDateTime = Instant.now().plusSeconds(3600),
      *            maxAttempts = 2
      *        )
      *    }
