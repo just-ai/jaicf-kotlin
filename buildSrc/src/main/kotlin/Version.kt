@@ -12,7 +12,7 @@ object Version {
     const val ktor = "1.3.1"
     const val serializationRuntime = "0.14.0"
     const val coroutinesCore = "1.3.3"
-    const val javaxServletApi = "3.0.1"
+    const val tomcatServletApi = "6.0.53"
     const val logbackGelfAppender = "1.5"
 }
 

@@ -36,13 +36,13 @@ open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotC
     }
 
     private fun HttpServletResponse.ok() {
-        status = HttpServletResponse.SC_OK
+        setStatus(HttpServletResponse.SC_OK)
         writer.write("OK")
         writer.flush()
     }
 
     private fun HttpServletResponse.notFound(message: String) {
-        status = HttpServletResponse.SC_NOT_FOUND
+        setStatus(HttpServletResponse.SC_NOT_FOUND)
         writer.write(message)
         writer.flush()
     }
