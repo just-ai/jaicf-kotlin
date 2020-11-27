@@ -4,7 +4,6 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.execution.ThreadPoolRequestExecutor
 import com.justai.jaicf.helpers.http.toUrl
@@ -46,9 +45,9 @@ abstract class JaicpConnector(
     }
 
     private fun createChannel(factory: JaicpChannelFactory, cfg: ChannelConfig) = when (factory) {
-        is JaicpCompatibleChannelFactory -> register(factory.create(botApi), cfg)
-        is JaicpNativeChannelFactory -> register(factory.create(botApi), cfg)
-        is JaicpCompatibleAsyncChannelFactory -> register(factory.create(botApi, getChannelProxyUrl(cfg)), cfg)
+        is JaicpCompatibleChannelFactory -> registerInternal(factory.create(botApi), cfg)
+        is JaicpNativeChannelFactory -> registerInternal(factory.create(botApi), cfg)
+        is JaicpCompatibleAsyncChannelFactory -> registerInternal(factory.create(botApi, getChannelProxyUrl(cfg)), cfg)
         else -> logger.info("Channel type ${factory.channelType} is not added to list of channels in BotEngine")
     }
 
@@ -80,6 +79,13 @@ abstract class JaicpConnector(
         }
     }
 
+    private fun registerInternal(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
+        if (channel is JaicpCompatibleChannelWithApiClient) {
+            channel.configureApiUrl("${getApiProxyUrl(channelConfig)}/proxyApiCall")
+        }
+        register(channel, channelConfig)
+    }
+
     abstract fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig)
 
     abstract fun evict(channelConfig: ChannelConfig)
@@ -90,8 +96,12 @@ abstract class JaicpConnector(
     private val proxyUrl: String
         get() = if (useLegacyPollingApi) "$url/proxy" else "$url/proxy/$accessToken"
 
+    protected fun getApiProxyUrl(config: ChannelConfig) =
+        "$apiProxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
+
     protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpBotResponse? =
         threadPoolRequestExecutor.executeSync(request, channel)
+
 
     companion object {
         const val PING_REQUEST_TYPE = "ping"
@@ -99,3 +109,9 @@ abstract class JaicpConnector(
 }
 
 internal const val DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE = 5
+
+val JaicpConnector.proxyUrl: String
+    get() = "$url/proxy"
+
+val JaicpConnector.apiProxyUrl: String
+    get() = "$url/api-proxy"

@@ -62,3 +62,20 @@ interface JaicpCompatibleAsyncChannelFactory : JaicpChannelFactory {
     fun create(botApi: BotApi, apiUrl: String): JaicpCompatibleAsyncBotChannel
 }
 
+/**
+ * Basic interface for all channels with configurable api client.
+ *
+ * Implementing this allows to set a baseUrl for api calls.
+ * JAICP will provide authorization from channel configuration if channel is supported.
+ *
+ * @see HttpBotChannel
+ **/
+interface JaicpCompatibleChannelWithApiClient : JaicpCompatibleBotChannel {
+
+    /**
+     * Sends a proxyUrl to be set as new base url for api client if channel is connected via JAICP.
+     *
+     * @param proxyUrl a url which should be set as baseUrl for client calls.
+     * */
+    fun configureApiUrl(proxyUrl: String)
+}
