@@ -9,6 +9,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
+import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
@@ -17,11 +18,11 @@ import kotlinx.serialization.json.JsonPrimitive
 
 class AliceApi(
     oauthToken: String,
-    private val skillId: String
+    private val skillId: String,
+    private val apiUrl: String
 ) {
 
     companion object {
-        private const val URL = "https://dialogs.yandex.net/api/v1"
         private val imageStorage = mutableMapOf<String, MutableMap<String, String>>()
     }
 
@@ -32,6 +33,9 @@ class AliceApi(
 
         install(JsonFeature) {
             serializer = KotlinxSerializer(JSON)
+        }
+        install(Logging) {
+            level = LogLevel.INFO
         }
 
         defaultRequest {
@@ -50,7 +54,7 @@ class AliceApi(
     fun getImageId(url: String) = images.getOrPut(url) { uploadImage(url).id }
 
     fun uploadImage(url: String): Image = runBlocking {
-        client.post<UploadedImage>("$URL/skills/$skillId/images") {
+        client.post<UploadedImage>("$apiUrl/skills/$skillId/images") {
             contentType(ContentType.Application.Json)
             body = JsonObject(mapOf("url" to JsonPrimitive(url)))
         }.image
@@ -59,6 +63,6 @@ class AliceApi(
     }
 
     fun listImages(): List<Image> = runBlocking {
-        client.get<Images>("$URL/skills/$skillId/images").images
+        client.get<Images>("$apiUrl/skills/$skillId/images").images
     }
 }
