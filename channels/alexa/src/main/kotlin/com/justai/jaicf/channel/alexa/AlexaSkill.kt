@@ -6,7 +6,11 @@ import com.justai.jaicf.api.BotApi
 
 object AlexaSkill {
 
-    fun create(botApi: BotApi): Skill = Skills.standard()
-        .addRequestHandler(AlexaRequestHandler(botApi))
+    fun create(
+        botApi: BotApi,
+        dynamoDBTableName: String? = null
+    ): Skill = Skills.standard()
+        .addRequestHandler(AlexaRequestHandler(botApi, !dynamoDBTableName.isNullOrEmpty()))
+        .withTableName(dynamoDBTableName)
         .build()
 }
