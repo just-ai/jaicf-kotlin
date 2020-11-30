@@ -98,7 +98,7 @@ class BotEngine(
     ) {
         val manager = contextManager ?: defaultContextManager
         val botContext = manager.loadContext(request)
-        val loggingContext = LoggingContext(requestContext.httpBotRequest, null, botContext, request)
+        val loggingContext = LoggingContext(requestContext.httpBotRequest, null, botContext, request, requestContext.newSession)
         reactions.loggingContext = loggingContext
         reactions.botContext = botContext
 
