@@ -47,7 +47,7 @@ open class JaicpConversationLogger(
     override fun doLog(loggingContext: LoggingContext) {
         try {
             val req = loggingContext.request.jaicpNative?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
-            val session = getOrCreateSessionId(loggingContext.botContext)
+            val session = getOrCreateSessionId(loggingContext.botContext, loggingContext.isNewSession)
             launch(MDCContext()) {
                 doLogAsync(req, loggingContext, session)
             }

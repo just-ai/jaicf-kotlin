@@ -8,12 +8,12 @@ internal object SessionManager {
 
     fun processEndSessionReaction(ctx: BotContext) = SessionEnded.saveToContext(ctx)
 
-    fun getOrCreateSessionId(ctx: BotContext): SessionData {
+    fun getOrCreateSessionId(ctx: BotContext, newSession: Boolean): SessionData {
         val sessionData = SessionDataService.fromContext(ctx)
         val sessionEvent = SessionEventService.fromContext(ctx)
         SessionEventService.cleanup(ctx)
 
-        if (sessionData == null) {
+        if (sessionData == null || newSession) {
             return SessionData.new(ctx).apply { saveToContext(ctx) }
         }
 

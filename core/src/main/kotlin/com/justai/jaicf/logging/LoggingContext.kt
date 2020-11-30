@@ -18,6 +18,7 @@ data class LoggingContext(
     var activationContext: ActivationContext?,
     val botContext: BotContext,
     val request: BotRequest,
+    val isNewSession: Boolean,
     val firstState: String = botContext.dialogContext.currentState,
     val reactions: MutableList<Reaction> = mutableListOf(),
     val input: String = request.input
