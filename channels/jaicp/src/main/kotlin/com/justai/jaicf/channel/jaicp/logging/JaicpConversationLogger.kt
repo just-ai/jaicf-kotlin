@@ -3,12 +3,13 @@ package com.justai.jaicf.channel.jaicp.logging
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.jaicp.*
-import com.justai.jaicf.channel.jaicp.logging.JaicpSessionManager.getOrCreateSessionId
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.dto.jaicpNative
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
+import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager.getOrCreateSessionId
+import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
@@ -55,11 +56,13 @@ open class JaicpConversationLogger(
         }
     }
 
-    private suspend fun doLogAsync(req: JaicpBotRequest, ctx: LoggingContext, session: JaicpConversationSessionData) =
+    private suspend fun doLogAsync(req: JaicpBotRequest, ctx: LoggingContext, session: SessionData) =
         connector.processLogAsync(createLog(req, ctx, session))
 
-    internal open fun createLog(req: JaicpBotRequest, ctx: LoggingContext, session: JaicpConversationSessionData) =
-        JaicpLogModel.fromRequest(req, ctx, session)
+    internal open fun createLog(req: JaicpBotRequest, ctx: LoggingContext, session: SessionData) =
+        JaicpLogModel.fromRequest(req, ctx, session).also {
+            logger.debug("Send log with sessionId: ${it.sessionId} isNewSession: ${it.isNewSession}")
+        }
 
     private fun extractJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
         return try {

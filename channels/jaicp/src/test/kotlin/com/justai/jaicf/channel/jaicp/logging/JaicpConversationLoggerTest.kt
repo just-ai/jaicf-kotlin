@@ -8,6 +8,7 @@ import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.ChatApiChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
+import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.reactions.chatapi
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.model.scenario.Scenario
@@ -15,10 +16,7 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import kotlin.properties.Delegates
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     private var actLog: JaicpLogModel by Delegates.notNull()
@@ -29,7 +27,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
         override fun createLog(
             req: JaicpBotRequest,
             ctx: LoggingContext,
-            session: JaicpConversationSessionData
+            session: SessionData
         ): JaicpLogModel = super.createLog(req, ctx, session).also { actLog = it }
     }
     private val spyLogger = spyk(conversationLogger)
@@ -60,12 +58,14 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
         JaicpTestChannel(echoBot, ChatApiChannel).process(request.withQuery("Hello!").withClientId(testNumber))
         verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
         val sessionBefore = actLog.sessionId
+        assertTrue(actLog.isNewSession)
 
         JaicpTestChannel(echoBot, ChatApiChannel).process(request.withQuery("test session id").withClientId(testNumber))
         verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
         val sessionAfter = actLog.sessionId
 
         assertEquals(sessionBefore, sessionAfter)
+        assertFalse(actLog.isNewSession)
     }
 
     @Test
@@ -74,30 +74,74 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
             init {
                 fallback { reactions.say("You said: ${request.input}") }
                 state("sid") {
-                    activators { regex("test session id") }
-                    action {
-                        reactions.chatapi?.startNewSession()
-                    }
+                    activators { regex("start session") }
+                    action { reactions.chatapi?.startNewSession() }
                 }
             }
         }
         val bot =
             BotEngine(scenario.model, conversationLoggers = arrayOf(spyLogger), activators = arrayOf(RegexActivator))
+        val channel = JaicpTestChannel(bot, ChatApiChannel)
 
-        JaicpTestChannel(bot, ChatApiChannel).process(request.withQuery("Hello!").withClientId(testNumber))
+        channel.process(request.withQuery("Hello!").withClientId(testNumber))
         verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
         val sessionBefore = actLog.sessionId
+        assertTrue(actLog.isNewSession)
 
-        JaicpTestChannel(bot, ChatApiChannel).process(request.withQuery("test session id").withClientId(testNumber))
+        channel.process(request.withQuery("start session").withClientId(testNumber))
         verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
         val sessionAfter = actLog.sessionId
 
         assertNotEquals(sessionBefore, sessionAfter)
+        assertTrue(actLog.isNewSession)
+
+        channel.process(request.withQuery("Hello again!").withClientId(testNumber))
+        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+
+        assertNotEquals(sessionBefore, sessionAfter)
+        assertFalse(actLog.isNewSession)
+    }
+
+    @Test
+    fun `005 logging should end current session, next request should go to new session`() {
+        val scenario = object : Scenario() {
+            init {
+                fallback { reactions.say("You said: ${request.input}") }
+                state("sid") {
+                    activators { regex("end session") }
+                    action { reactions.chatapi?.endSession() }
+                }
+            }
+        }
+        val bot =
+            BotEngine(scenario.model, conversationLoggers = arrayOf(spyLogger), activators = arrayOf(RegexActivator))
+        val channel = JaicpTestChannel(bot, ChatApiChannel)
+
+        channel.process(request.withQuery("Hello!").withClientId(testNumber))
+        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        val sessionInitial = actLog.sessionId
+        assertTrue(actLog.isNewSession)
+
+        channel.process(request.withQuery("end session").withClientId(testNumber))
+        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        val sessionAfterEndReaction = actLog.sessionId
+
+        assertFalse(actLog.isNewSession)
+        assertEquals(sessionInitial, sessionAfterEndReaction)
+
+        channel.process(request.withQuery("Hello again!").withClientId(testNumber))
+        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        val sessionAfterNewRequest = actLog.sessionId
+
+        assertTrue(actLog.isNewSession)
+        assertNotEquals(sessionInitial, sessionAfterNewRequest)
     }
 }
 
 private fun JaicpLogModel.withInvalidatedTime() = copy(timestamp = 0, processingTime = 0)
+
 private fun JaicpLogModel.withInvalidatedSessionId() = copy(sessionId = "sessionId")
+
 private fun JaicpLogModel.withUserId(uid: String) = copy(userId = uid)
 
 private fun HttpBotRequest.withQuery(q: String) =
