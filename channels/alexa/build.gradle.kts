@@ -7,7 +7,8 @@ dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
 
-    api("com.amazon.alexa:ask-sdk:2.35.0")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin" version {jackson})
+    api("com.amazon.alexa:ask-sdk:2.37.1")
 }
 
 tasks {

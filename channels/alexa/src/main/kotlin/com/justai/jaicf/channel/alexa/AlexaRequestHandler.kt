@@ -13,26 +13,34 @@ import com.amazon.ask.model.interfaces.playbackcontroller.PlayCommandIssuedReque
 import com.amazon.ask.model.interfaces.playbackcontroller.PreviousCommandIssuedRequest
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.BotChannel
+import com.justai.jaicf.channel.alexa.manager.AlexaBotContextManager
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.context.RequestContext
 import java.util.*
 
 class AlexaRequestHandler(
-    override val botApi: BotApi
+    override val botApi: BotApi,
+    useDataStorage: Boolean = false
 ): BotChannel, RequestHandler {
+
+    private val contextManager = useDataStorage.takeIf { it }?.let { AlexaBotContextManager() }
 
     override fun canHandle(input: HandlerInput?) = true
 
     override fun handle(input: HandlerInput?): Optional<Response> {
         val request = createRequest(input!!) ?: return Optional.empty()
         val response = AlexaBotResponse(input.responseBuilder)
-        val httpBotRequest = (input.context as HttpBotRequest)
+        val httpBotRequest = input.context as? HttpBotRequest
 
         botApi.process(
-            request,
-            AlexaReactions(response, input),
-            RequestContext(newSession = input.requestEnvelope.session != null && input.requestEnvelope.session.new, httpBotRequest = httpBotRequest)
+            request = request,
+            reactions = AlexaReactions(response, input),
+            contextManager = contextManager,
+            requestContext = RequestContext(
+                newSession = input.requestEnvelope.session != null && input.requestEnvelope.session.new,
+                httpBotRequest = httpBotRequest
+            )
         )
 
         return response.builder.build()

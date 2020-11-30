@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version Version.kotlin
+    id("com.github.johnrengelman.shadow") version "5.0.0"
 }
 
 repositories {
@@ -32,5 +33,8 @@ tasks {
     }
     test {
         useJUnitPlatform()
+    }
+    build {
+        dependsOn(shadowJar)
     }
 }
