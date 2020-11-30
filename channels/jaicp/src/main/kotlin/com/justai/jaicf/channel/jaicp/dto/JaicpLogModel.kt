@@ -5,7 +5,7 @@ import com.justai.jaicf.activator.event.EventActivatorContext
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.logging.JaicpConversationSessionData
+import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.logging.*
@@ -133,7 +133,7 @@ internal data class JaicpLogModel private constructor(
         fun fromRequest(
             jaicpBotRequest: JaicpBotRequest,
             loggingContext: LoggingContext,
-            session: JaicpConversationSessionData
+            session: SessionData
         ): JaicpLogModel {
             val currentTimeUTC = System.currentTimeMillis()
             val request = Request.fromRequest(jaicpBotRequest, loggingContext.input)
