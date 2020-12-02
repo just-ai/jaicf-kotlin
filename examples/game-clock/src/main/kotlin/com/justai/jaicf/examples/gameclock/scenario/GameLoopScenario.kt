@@ -31,6 +31,7 @@ object GameLoopScenario: Scenario() {
 
             action {
                 val game = GameController(context)
+                game.restart()
                 game.nextGamer()
 
                 reactions.run {

@@ -4,7 +4,9 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.googleactions.ActionsFulfillment
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleChannelFactory
 
-object ActionsFulfillmentSDK : JaicpCompatibleChannelFactory {
+class ActionsFulfillmentSDK(
+    private val useDataStorage: Boolean = false
+) : JaicpCompatibleChannelFactory {
     override val channelType = "google"
-    override fun create(botApi: BotApi) = ActionsFulfillment.sdk(botApi)
+    override fun create(botApi: BotApi) = ActionsFulfillment.sdk(botApi, useDataStorage)
 }
