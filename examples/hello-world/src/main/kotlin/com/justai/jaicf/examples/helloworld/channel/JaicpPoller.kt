@@ -24,7 +24,7 @@ fun main() {
                 FacebookChannel,
                 AimyboxChannel,
                 AlexaChannel,
-                ActionsFulfillmentDialogflow
+                ActionsFulfillmentDialogflow()
             )
         ).runBlocking()
     }
