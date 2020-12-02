@@ -16,7 +16,7 @@ fun main() {
             accessToken = accessToken,
             channels = listOf(
                 AlexaChannel,
-                ActionsFulfillmentDialogflow
+                ActionsFulfillmentDialogflow(useDataStorage = true)
             )
         ).runBlocking()
     }

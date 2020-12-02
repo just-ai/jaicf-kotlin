@@ -70,7 +70,7 @@ class GameController(context: BotContext) {
         }
     }
 
-    fun isReady() = gamers != null && colors.isNullOrEmpty() && colors.size == gamers
+    fun isReady() = gamers != null && !colors.isNullOrEmpty() && colors.size == gamers
 
     fun reset() {
         restart()

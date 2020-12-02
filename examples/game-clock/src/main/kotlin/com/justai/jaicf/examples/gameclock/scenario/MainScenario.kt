@@ -27,12 +27,16 @@ object MainScenario : Scenario(
             }
 
             action {
-                reactions.run {
-                    say("Hi gamers! ${breakMs(300)}" +
-                            "Game clock keeps track of the time for each player during the board game session." +
-                            "$break500ms Are you ready to start a game?")
-
-                    buttons("Yes", "No")
+                val game = GameController(context)
+                if (game.isReady()) {
+                    reactions.go("/start")
+                } else {
+                    reactions.run {
+                        say("Hi gamers! ${breakMs(300)}" +
+                                "Game clock keeps track of the time for each player during the board game session." +
+                                "$break500ms Are you ready to start a game?")
+                        buttons("Yes", "No")
+                    }
                 }
             }
 
@@ -117,7 +121,7 @@ object MainScenario : Scenario(
             action {
                 val game = GameController(context)
                 reactions.run {
-                    say("Would you like to restart your previous game for ${game.gamers} gamers?")
+                    say("Hello! Would you like to restart your previous game for ${game.gamers} gamers?")
                     buttons("Yes", "No")
                 }
             }

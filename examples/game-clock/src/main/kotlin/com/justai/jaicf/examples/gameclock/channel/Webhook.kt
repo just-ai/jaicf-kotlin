@@ -13,7 +13,7 @@ fun main() {
         routing {
             httpBotRouting(
                 "/alexa" to AlexaChannel(gameClockBot),
-                "/actions" to ActionsFulfillment.dialogflow(gameClockBot)
+                "/actions" to ActionsFulfillment.dialogflow(gameClockBot, useDataStorage = true)
             )
         }
     }.start(wait = true)
