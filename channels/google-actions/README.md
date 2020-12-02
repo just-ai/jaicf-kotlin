@@ -73,33 +73,18 @@ action {
 > Learn more about native response builder [here](https://github.com/actions-on-google/actions-on-google-java/blob/master/src/main/kotlin/com/google/actions/api/response/ResponseBuilder.kt).
 
 #### 3. Configure activator and webhook
+ 
+Use [Dialogflow](https://dialogflow.cloud.google.com/) to create your Google Actions agent.
+Create a new agent with corresponding intents and entities.
+Then configure a Dialogflow fulfillment _and enable it on every intent of the agent_.
 
-Google Actions platform allows you to use any third-party NLU engine or use a [Dialogflow integration](https://dialogflow.com/docs/integrations/actions/integration).
-
-#### Dialogflow
-
-This is the most easy way to create an Actions project but it requires you to use Dialogflow as NLU engine for your project.
-To configure Dialogflow fulfillment add `ActionsDialogflowActivator` to the array of activators in your JAICF agent's configuration:
+To configure Dialogflow fulfillment add `ActionsDialogflowActivator` to the array of activators in your JAICF project configuration:
 
 ```kotlin
 val helloWorldBot = BotEngine(
     model = MainScenario.model,
     activators = arrayOf(
         ActionsDialogflowActivator
-    )
-)
-```
-
-#### Third-party NLU engine
-
-In case of third-party NLU engine usage you're free to pick any NLU engine you wish to use.
-Add its activator to the JAICF agent's configuration:
-
-```kotlin
-val helloWorldBot = BotEngine(
-    model = MainScenario.model,
-    activators = arrayOf(
-        RasaIntentActivator.Factory(RasaApi("https://address.com"))
     )
 )
 ```
@@ -115,7 +100,7 @@ fun main() {
         botApi = helloWorldBot,
         accessToken = "your JAICF project token",
         channels = listOf(
-            SlackChannel
+            ActionsFulfillmentDialogflow(useDataStorage = true)
         )
     ).runBlocking()
 }
@@ -128,7 +113,7 @@ fun main() {
         botApi = helloWorldBot,
         accessToken = "your JAICF project token",
         channels = listOf(
-            SlackChannel
+            ActionsFulfillmentDialogflow(useDataStorage = true)
         )
     ).start(wait = true)
 }
@@ -158,7 +143,21 @@ class AlexaController: HttpBotChannelServlet(
 ```
 
 After this you have to obtain a public URL of your fulfillment webhook and provide it to the agent's settings created via [Dialogflow Console](https://dialogflow.com).
-_Please note that you have to manually enable fulfillment option for every intent of your Dialogflow agent in this case._
+
+>Please note that you have to manually enable fulfillment option for every intent of your Dialogflow agent in this case.
+
+## User storage
+
+Google Actions provides a built-in [user storage](https://developers.google.com/assistant/conversational/storage-user) that persists any data of your fulfillment in the internal session and user related storages.
+Thus you don't have to set-up any third-party database to store dialogue's state and any arbitrary data stored via [context](https://github.com/just-ai/jaicf-kotlin/wiki/context).
+
+Just define `useDataStorage` property in the builder to enable this feature:
+
+```kotlin
+ActionsFulfillment.dialogflow(helloWorldBot, useDataStorage = true)
+```
+
+> JAICF transparently serializes and deserializes your context's data
 
 ## Using SSML
 
