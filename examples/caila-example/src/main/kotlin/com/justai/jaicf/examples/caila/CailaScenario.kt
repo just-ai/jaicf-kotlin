@@ -6,6 +6,17 @@ import com.justai.jaicf.model.scenario.Scenario
 object CailaScenario: Scenario() {
     init {
 
+        state("smalltalk", noContext = true) {
+            activators {
+                anyIntent()
+            }
+            action {
+                activator.caila?.topIntent?.answer?.let {
+                    reactions.say(it)
+                }
+            }
+        }
+
         state("pricing") {
             activators {
                 intent("/FAQ/Pricing")
@@ -18,17 +29,6 @@ object CailaScenario: Scenario() {
         state("faq") {
             activators {
                 intent("/FAQ")
-            }
-            action {
-                activator.caila?.topIntent?.answer?.let {
-                    reactions.say(it)
-                }
-            }
-        }
-
-        state("smalltalk", noContext = true) {
-            activators {
-                anyIntent()
             }
             action {
                 activator.caila?.topIntent?.answer?.let {
