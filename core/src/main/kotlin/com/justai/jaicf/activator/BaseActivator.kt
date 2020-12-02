@@ -1,11 +1,15 @@
 package com.justai.jaicf.activator
 
+import com.justai.jaicf.activator.catchall.CatchAllActivationRule
+import com.justai.jaicf.activator.event.AnyEventActivationRule
+import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
+import com.justai.jaicf.model.activation.priority
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
@@ -18,6 +22,8 @@ import com.justai.jaicf.model.transition.Transition
  * @see com.justai.jaicf.activator.intent.BaseIntentActivator
  */
 abstract class BaseActivator(private val model: ScenarioModel) : Activator {
+
+    private val transitionsMap = model.transitions.groupBy { it.fromState }
 
     override fun activate(botContext: BotContext, request: BotRequest, selector: ActivationSelector): Activation? {
         val transitions = generateTransitions(botContext)
@@ -87,7 +93,8 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
             if (!isModal) addAll(currentPath.parents.reversedArray())
         }
 
-        val transitionsMap = model.transitions.groupBy { it.fromState }
-        return availableStates.flatMap { transitionsMap[it] ?: emptyList() }
+        return availableStates
+            .flatMap { transitionsMap[it] ?: emptyList() }
+            .sortedByDescending { it.rule.priority }
     }
 }

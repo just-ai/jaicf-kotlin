@@ -12,7 +12,7 @@ object CailaScenario: Scenario() {
             }
             action {
                 activator.caila?.topIntent?.answer?.let {
-                    reactions.say(it)
+                    reactions.say("Any intent $it")
                 }
             }
         }
