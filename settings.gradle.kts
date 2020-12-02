@@ -9,6 +9,8 @@ include("examples:jaicp-telephony")
 findProject(":examples:jaicp-telephony")?.name = "jaicp-telephony"
 include("examples:game-clock")
 findProject(":examples:game-clock")?.name = "game-clock"
+include("examples:caila-example")
+findProject(":examples:caila-example")?.name = "caila-example"
 
 include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"

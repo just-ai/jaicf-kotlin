@@ -22,9 +22,9 @@ open class BaseIntentActivator(model: ScenarioModel) : BaseActivator(model), Int
     override fun canHandle(request: BotRequest) = request.hasIntent()
 
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
-        val intents = recogniseIntent(botContext, request)
+        val intents = recogniseIntent(botContext, request).sortedByDescending { it.confidence }
         return ruleMatcher<IntentActivationRule> { rule ->
-            intents.sortedByDescending { it.confidence }.firstOrNull { rule.intentMatches(it.intent) }
+            intents.firstOrNull { rule.intentMatches(it.intent) }
         }
     }
 

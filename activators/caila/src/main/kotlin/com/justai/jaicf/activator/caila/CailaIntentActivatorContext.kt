@@ -4,14 +4,15 @@ import com.justai.jaicf.activator.caila.dto.CailaAnalyzeResponseData
 import com.justai.jaicf.activator.caila.dto.CailaInferenceResultData
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.context.ActivatorContext
+import java.io.Serializable
 
 data class CailaIntentActivatorContext(
     val result: CailaAnalyzeResponseData,
     val intentData: CailaInferenceResultData
 ) : IntentActivatorContext(
-    intent = intentData.intent.name,
+    intent = intentData.intent.path,
     confidence = intentData.confidence.toFloat()
-), java.io.Serializable {
+), Serializable {
 
     val topIntent = intentData.intent
 

@@ -46,6 +46,12 @@ class CailaIntentActivator(
         val results = client.analyze(request.input) ?: return emptyList()
         return results.inference.variants.filter {
             it.confidence >= settings.confidenceThreshold
+        }.flatMap { data ->
+            data.intent.path
+                .split('/').drop(1)
+                .fold(mutableListOf<String>()) { acc, s -> acc.also { acc.add((acc.lastOrNull() ?: "") + "/$s") } }
+                .sortedWith(reverseOrder())
+                .map { data.copy(intent = data.intent.copy(path = it)) }
         }.map { CailaIntentActivatorContext(results, it) }
     }
 
