@@ -148,7 +148,7 @@ After this you have to obtain a public URL of your fulfillment webhook and provi
 
 ## User storage
 
-Google Actions provides a built-in [user storage](https://developers.google.com/assistant/conversational/storage-user) that persists any data of your fulfillment in the internal session and user related storages.
+Google Actions provides a built-in [user storage](https://developers.google.com/assistant/conversational/storage-user) that persists any user's data in the internal session and user related storages.
 Thus you don't have to set-up any third-party database to store dialogue's state and any arbitrary data stored via [context](https://github.com/just-ai/jaicf-kotlin/wiki/context).
 
 Just define `useDataStorage` property in the builder to enable this feature:
