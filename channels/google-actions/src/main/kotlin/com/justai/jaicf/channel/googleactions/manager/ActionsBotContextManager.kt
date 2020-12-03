@@ -39,7 +39,7 @@ class ActionsBotContextManager: BotContextManager {
                 this.client.putAll(client ?: emptyMap())
                 this.session.putAll(session?.session ?: emptyMap())
             }
-        } ?: BotContext(request.clientId, DialogContext())
+        } ?: BotContext(request.clientId)
     }
 
     override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
