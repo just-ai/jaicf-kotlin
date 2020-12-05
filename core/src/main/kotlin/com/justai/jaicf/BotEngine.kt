@@ -13,13 +13,11 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.Slf4jConversationLogger
-import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -98,8 +96,8 @@ class BotEngine(
         requestContext: RequestContext,
         contextManager: BotContextManager?
     ) {
-        val cm = contextManager ?: defaultContextManager
-        val botContext = cm.loadContext(request)
+        val manager = contextManager ?: defaultContextManager
+        val botContext = manager.loadContext(request)
         val loggingContext = LoggingContext(requestContext.httpBotRequest, null, botContext, request)
         reactions.loggingContext = loggingContext
         reactions.botContext = botContext
@@ -107,84 +105,58 @@ class BotEngine(
         processContext(botContext, requestContext)
 
         withHook(BotRequestHook(botContext, request, reactions)) {
-            val activation = botContext.isActiveSlotFilling().not()
-                .ifTrue { selectActivation(botContext, request) }
-                .withAppliedSlotFilling(botContext, request, reactions, cm)
-                .let { if (it.first) return else it.second }
-
-            loggingContext.activationContext = activation
-
-            if (activation?.activation == null) {
-                logger.warn("No state selected to handle a request $request")
-            } else {
-                val context = ProcessContext(
-                    request,
-                    reactions,
-                    requestContext,
-                    botContext,
-                    activation,
-                    loggingContext
-                )
-
-                processStates(context)
-                saveContext(cm, botContext, request, reactions)
-            }
-            conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
-            botContext.cleanTempData()
+            processRequest(botContext, request, requestContext, reactions, loggingContext)
         }
+
+        botContext.cleanTempData()
+        saveContext(manager, botContext, request, reactions)
+        conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
     }
 
-    private fun fillSlots(
-        selectedActivator: ActivationContext?,
+    private fun processRequest(
         botContext: BotContext,
         request: BotRequest,
+        requestContext: RequestContext,
         reactions: Reactions,
-        cm: BotContextManager
-    ): Pair<Boolean, ActivationContext?> {
-        val slotFillingActivatorName = botContext.getSlotFillingActivator()
-        val isSlotFillingSession = slotFillingActivatorName != null
-        var activationContext = selectedActivator
-        var shouldReturn = false
-
-        val res = when (val a = activationContext?.activator ?: getActivatorForName(slotFillingActivatorName)) {
-            null -> SlotFillingSkipped
-            else -> a.fillSlots(
-                request,
-                reactions,
-                botContext,
-                activationContext?.activation?.context,
-                slotReactor
-            )
-        }
-        if (res is SlotFillingInProgress) {
-            if (!isSlotFillingSession) {
-                botContext.startSlotFilling(activationContext?.activator?.name)
-                botContext.dialogContext.nextState = activationContext?.activation?.state
-                saveContext(cm, botContext, request, reactions)
+        loggingContext: LoggingContext
+    ) {
+        val slotFillingContext = if (isActiveSlotFilling(botContext)) {
+            getSlotFillingContext(botContext)!!
+        } else {
+            selectActivation(botContext, request)?.let {
+                startSlotFilling(botContext, it)
+            } ?: run {
+                logger.warn("No state selected to handle a request $request")
+                return
             }
-            saveContext(cm, botContext, request, reactions)
-            conversationLoggers.forEach { it.obfuscateAndLog(reactions.loggingContext) }
-            shouldReturn = true
         }
-        if (res is SlotFillingFinished) {
-            botContext.finishSlotFilling()
-            activationContext = ActivationContext(
-                activator = getActivatorForName(slotFillingActivatorName),
-                activation = Activation(
-                    botContext.dialogContext.nextState,
-                    res.activatorContext
-                )
-            )
+
+        with(slotFillingContext) {
+            val res = activator.fillSlots(request, reactions, botContext, activatorContext, slotReactor)
+
+            when (res) {
+                is SlotFillingInProgress -> return
+                is SlotFillingInterrupted -> {
+                    cancelSlotFilling(botContext)
+                    processRequest(botContext, request, requestContext, reactions, loggingContext)
+                }
+                is SlotFillingFinished -> {
+                    val activation = finishSlotFilling(botContext, res)
+                    loggingContext.activationContext = activation
+                    processStates(ProcessContext(
+                        request,
+                        reactions,
+                        requestContext,
+                        botContext,
+                        activation,
+                        loggingContext
+                    ))
+                }
+            }
         }
-        if (res is SlotFillingInterrupted) {
-            botContext.finishSlotFilling()
-            activationContext = selectActivation(botContext, request)
-        }
-        return shouldReturn to activationContext
     }
 
-    private fun getActivatorForName(activatorName: String?) =
-        activatorName?.let { activators.find { it.name == activatorName } }
+    internal fun getActivatorForName(activatorName: String) = activators.find { it.name == activatorName }
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
         try {
@@ -205,9 +177,7 @@ class BotEngine(
         activators.filter { it.canHandle(request) }.forEach { a ->
             val activation = a.activate(botContext, request, activationSelector)
             if (activation != null) {
-                if (activation.state != null) {
-                    return ActivationContext(a, activation)
-                }
+                return ActivationContext(a, activation)
             }
         }
 
@@ -264,10 +234,4 @@ class BotEngine(
         )
     }
 
-    private fun ActivationContext?.withAppliedSlotFilling(
-        botContext: BotContext,
-        request: BotRequest,
-        reactions: Reactions,
-        cm: BotContextManager
-    ): Pair<Boolean, ActivationContext?> = fillSlots(this, botContext, request, reactions, cm)
 }

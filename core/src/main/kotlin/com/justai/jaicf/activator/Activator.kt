@@ -11,8 +11,8 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.slotfilling.SlotFillingFinished
 import com.justai.jaicf.slotfilling.SlotFillingResult
-import com.justai.jaicf.slotfilling.SlotFillingSkipped
 import com.justai.jaicf.slotfilling.SlotReactor
 
 /**
@@ -95,7 +95,12 @@ interface Activator {
         botContext: BotContext,
         activatorContext: ActivatorContext?,
         slotReactor: SlotReactor? = null
-    ): SlotFillingResult = SlotFillingSkipped
+    ): SlotFillingResult {
+        requireNotNull(activatorContext) {
+            "Initial activator context must be provided for the channels, that don't support slot filling."
+        }
+        return SlotFillingFinished(activatorContext)
+    }
 }
 
 /**

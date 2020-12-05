@@ -13,13 +13,6 @@ import com.justai.jaicf.context.ActivatorContext
 sealed class SlotFillingResult
 
 /**
- * This result indicates that either intent has no slots, or no prompts, or activator can not process it.
- *
- * @see [com.justai.jaicf.activator.Activator]
- * */
-object SlotFillingSkipped : SlotFillingResult()
-
-/**
  * This result indicates that intent started processing slotfilling,
  * prompted question to client and will prompt question for another slot.
  * 
