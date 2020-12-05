@@ -11,6 +11,6 @@ import com.justai.jaicf.context.ActivatorContext
  * @property context an [ActivatorContext] that contains an activator-related details like named entities, confidence and etc.
  */
 data class Activation(
-    val state: String?,
+    val state: String,
     val context: ActivatorContext
 )

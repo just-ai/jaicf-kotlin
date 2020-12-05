@@ -29,7 +29,7 @@ internal class CailaSlotFillingHelper(
         val required = ctx.requiredSlots
         val known = ctx.knownSlots
         if (known.map { it.name }.containsAll(required.map { it.name })) {
-            return SlotFillingSkipped
+            return SlotFillingFinished(ctx.initialActivatorContext)
         }
 
         val actionContext =
@@ -55,9 +55,9 @@ internal class CailaSlotFillingHelper(
                     } else {
                         with(actionContext) {
                             slot.prompts?.let { prompts ->
-                                if (prompts.isEmpty()) return SlotFillingSkipped
+                                if (prompts.isEmpty()) return SlotFillingFinished(ctx.initialActivatorContext)
                                 reactions.sayRandom(*prompts.toTypedArray())
-                            } ?: return SlotFillingSkipped
+                            } ?: return SlotFillingFinished(ctx.initialActivatorContext)
                         }
                     }
                     saveSlotFillingContext(botContext, ctx)

@@ -46,7 +46,7 @@ class DialogflowIntentActivator(
     ): SlotFillingResult {
         var context = activatorContext?.dialogflow?.apply {
             if (queryResult.allRequiredParamsPresent) {
-                return SlotFillingSkipped
+                return SlotFillingFinished(activatorContext)
             } else {
                 botContext.session[INTENT_NAME] = intent
             }
