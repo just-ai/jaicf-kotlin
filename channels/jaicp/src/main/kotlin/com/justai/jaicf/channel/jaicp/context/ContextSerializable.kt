@@ -7,9 +7,9 @@ internal interface ContextSerializable {
 
     val service: ContextSerializableService<*>
 
-    fun saveToContext(ctx: BotContext) = ctx.client.put(service.key, serialized())
+    fun saveToContext(ctx: BotContext) = ctx.session.put(service.key, serialized())
 
-    fun removeFromContext(ctx: BotContext) = ctx.client.remove(service.key)
+    fun removeFromContext(ctx: BotContext) = ctx.session.remove(service.key)
 }
 
 internal interface ContextSerializableService<out T : ContextSerializable> {
@@ -17,8 +17,8 @@ internal interface ContextSerializableService<out T : ContextSerializable> {
 
     fun deserialize(content: String): T
 
-    fun fromContext(ctx: BotContext) = (ctx.client[key] as? String)?.let { deserialize(it) }
+    fun fromContext(ctx: BotContext) = (ctx.session[key] as? String)?.let { deserialize(it) }
 
-    fun cleanup(ctx: BotContext) = ctx.client.remove(key)
+    fun cleanup(ctx: BotContext) = ctx.session.remove(key)
 }
 

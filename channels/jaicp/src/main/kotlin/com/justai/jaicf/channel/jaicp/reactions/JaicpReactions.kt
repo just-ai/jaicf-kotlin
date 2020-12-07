@@ -25,23 +25,21 @@ open class JaicpReactions : Reactions() {
     }
 
     /**
-     * Starts a new conversation session with client.
+     * Starts a new conversation session with client for JAICP analytics.
      *
      * Each session is logged to JAICP analytics with unique session identifier.
-     * Using this reaction creates new session identifier, clears existing [DialogContext]
-     *  and sends a response with new session identifier.
+     * Using this reaction creates new session identifier and sends a response with new session identifier.
      *
      * @see [com.justai.jaicf.channel.jaicp.logging.JaicpConversationLogger]
      * */
     fun startNewSession() {
-        botContext.dialogContext.currentState = "/"
-        botContext.dialogContext.currentContext = "/"
         botContext.cleanSessionData()
         SessionManager.processStartSessionReaction(botContext)
     }
 
     /**
-     * Ends the conversation session with client.
+     * Ends the conversation session with client, clears [DialogContext] for current client,
+     *  thus client next question will start a new dialogue session.
      *
      * Each session is logged to JAICP analytics with unique session identifier.
      * Using this reaction removes session identifier, clears existing [DialogContext],
@@ -52,7 +50,6 @@ open class JaicpReactions : Reactions() {
     fun endSession() {
         botContext.dialogContext.currentState = "/"
         botContext.dialogContext.currentContext = "/"
-        botContext.cleanSessionData()
         SessionManager.processEndSessionReaction(botContext)
     }
 

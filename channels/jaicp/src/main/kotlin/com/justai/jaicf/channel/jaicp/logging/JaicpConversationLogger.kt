@@ -47,7 +47,7 @@ open class JaicpConversationLogger(
     override fun doLog(loggingContext: LoggingContext) {
         try {
             val req = loggingContext.request.jaicpNative?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
-            val session = getOrCreateSessionId(loggingContext.botContext, loggingContext.isNewSession)
+            val session = getOrCreateSessionId(loggingContext)
             launch(MDCContext()) {
                 doLogAsync(req, loggingContext, session)
             }
@@ -66,8 +66,8 @@ open class JaicpConversationLogger(
 
     private fun extractJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
         return try {
-            loggingContext.httpBotRequest?.requestMetadata?.run {
-                JSON.parse(JaicpBotRequest.serializer(), loggingContext.httpBotRequest?.requestMetadata!!)
+            loggingContext.requestContext.httpBotRequest?.requestMetadata?.let {
+                JSON.parse(JaicpBotRequest.serializer(), it)
             }
         } catch (e: Exception) {
             logger.debug("Logging skipped as loggingContext does not have valid JAICP Request")
