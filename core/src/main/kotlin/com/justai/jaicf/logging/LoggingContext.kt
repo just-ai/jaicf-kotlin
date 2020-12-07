@@ -4,6 +4,7 @@ import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.RequestContext
 
 /**
  * Internal class used by [ConversationLogger] implementations.
@@ -14,11 +15,10 @@ import com.justai.jaicf.context.BotContext
  * @see Reaction
  * */
 data class LoggingContext(
-    val httpBotRequest: HttpBotRequest? = null,
+    val requestContext: RequestContext,
     var activationContext: ActivationContext?,
     val botContext: BotContext,
     val request: BotRequest,
-    val isNewSession: Boolean,
     val firstState: String = botContext.dialogContext.currentState,
     val reactions: MutableList<Reaction> = mutableListOf(),
     val input: String = request.input
