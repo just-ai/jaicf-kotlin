@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 internal object SessionDataService : ContextSerializableService<SessionData> {
-    override val key = "com.justai.jaicf.jaicp.logging.conversationSession.session"
+    override val key = "com/justai/jaicf/jaicp/logging/conversationSession/session"
     override fun deserialize(content: String) = JSON.parse(SessionData.serializer(), content)
 }
 
