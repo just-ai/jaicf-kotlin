@@ -8,7 +8,9 @@ import com.mongodb.MongoClientURI
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 
+@Disabled
 class MongoBotContextManagerTest {
 
     private val uri = MongoClientURI("mongodb://test:testtest1@ds125385.mlab.com:25385/jaicf")
