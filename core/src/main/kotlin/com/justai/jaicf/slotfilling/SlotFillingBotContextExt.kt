@@ -28,11 +28,6 @@ internal data class SlotFillingContext(
         botContext.session -= listOf(SLOTFILLING_ACTIVATOR_KEY, SLOTFILLING_NEXT_STATE_KEY)
     }
 
-    private fun toActivationContext(activatorContext: ActivatorContext) = ActivationContext(
-        activator = activator,
-        activation = Activation(nextState, activatorContext)
-    )
-
 }
 
 internal fun BotEngine.startSlotFilling(botContext: BotContext, context: ActivationContext) =

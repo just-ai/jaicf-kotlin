@@ -96,9 +96,7 @@ interface Activator {
         activatorContext: ActivatorContext?,
         slotReactor: SlotReactor? = null
     ): SlotFillingResult {
-        requireNotNull(activatorContext) {
-            "Initial activator context must be provided for the channels, that don't support slot filling."
-        }
+        requireNotNull(activatorContext) { "ActivatorContext must be provided on the first call" }
         return SlotFillingFinished(activatorContext)
     }
 }
