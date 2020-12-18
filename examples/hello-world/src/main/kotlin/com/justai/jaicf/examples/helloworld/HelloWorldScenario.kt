@@ -31,11 +31,11 @@ object HelloWorldScenario: Scenario(
                 var name = context.client["name"]
 
                 if (name == null) {
-                    name = telegram {
-                        request.message.chat.firstName ?: request.message.chat.username
+                    telegram {
+                        name = request.message.chat.firstName ?: request.message.chat.username
                     }
-                    name = facebook {
-                        reactions.queryUserProfile()?.firstName()
+                    facebook {
+                        name = reactions.queryUserProfile()?.firstName()
                     }
                 }
 
