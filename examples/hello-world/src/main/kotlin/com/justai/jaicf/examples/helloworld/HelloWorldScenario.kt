@@ -31,11 +31,11 @@ object HelloWorldScenario: Scenario(
                 var name = context.client["name"]
 
                 if (name == null) {
-                    request.telegram?.run {
-                        name = message.chat.firstName ?: message.chat.username
+                    name = telegram {
+                        request.message.chat.firstName ?: request.message.chat.username
                     }
-                    request.facebook?.run {
-                        name = reactions.facebook?.queryUserProfile()?.firstName()
+                    name = facebook {
+                        reactions.queryUserProfile()?.firstName()
                     }
                 }
 
@@ -79,7 +79,9 @@ object HelloWorldScenario: Scenario(
             }
 
             action {
-                reactions.alexa?.endSession("See you latter! Bye bye!")
+                alexa {
+                    reactions.endSession("See you latter! Bye bye!")
+                }
             }
         }
 
@@ -98,8 +100,8 @@ object HelloWorldScenario: Scenario(
                 intent("wake_up")
             }
             action {
-                activator.dialogflow?.run {
-                    val dt = slots["date-time"]
+                dialogflow {
+                    val dt = activator.slots["date-time"]
                     reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
                 }
             }
