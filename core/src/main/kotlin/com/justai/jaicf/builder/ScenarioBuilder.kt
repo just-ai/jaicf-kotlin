@@ -1,6 +1,7 @@
 package com.justai.jaicf.builder
 
 import com.justai.jaicf.activator.catchall.CatchAllActivationRule
+import com.justai.jaicf.activator.catchall.CatchAllActivatorContext
 import com.justai.jaicf.activator.event.AnyEventActivationRule
 import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
@@ -154,7 +155,7 @@ abstract class ScenarioBuilder(
      */
     fun fallback(
         state: String = "fallback",
-        action: ActionContext.() -> Unit
+        action: ActionContext<*, *, *>.() -> Unit
     ) = state(
         name = state,
         noContext = true,
@@ -176,7 +177,7 @@ abstract class ScenarioBuilder(
         private val modal: Boolean = false
     ) {
 
-        private var action: (ActionContext.() -> Unit)? = null
+        private var action: (ActionContext<*, *, *>.() -> Unit)? = null
 
         internal fun build() : State {
             return State(
@@ -210,7 +211,7 @@ abstract class ScenarioBuilder(
          * An action that should be executed once this state was activated.
          * @param body a code block of the action
          */
-        fun action(body: ActionContext.() -> Unit) {
+        fun action(body: ActionContext<*, *, *>.() -> Unit) {
             action = body
         }
 
@@ -219,7 +220,7 @@ abstract class ScenarioBuilder(
          * Means that inner state could be activated only if it's prarent state was activated previously.
          *
          * @param name a name of the state. Could be plain text or contains slashes to define a state path
-         * @param noContext indicates if this state should not to change the current dialogue's context
+         * @param noContext indicates if this state sh<*, *, *>ould not to change the current dialogue's context
          * @param modal indicates if this state should process the user's request in modal mode ignoring all other states
          * @param body a code block of the state that contains activators, action and inner states definitions
          */

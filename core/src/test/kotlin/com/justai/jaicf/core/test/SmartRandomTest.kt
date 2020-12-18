@@ -14,7 +14,7 @@ import java.util.*
 
 class SmartRandomTest {
 
-    private lateinit var context: ActionContext
+    private lateinit var context: ActionContext<*, *, *>
 
     @BeforeEach
     fun createContext() {
