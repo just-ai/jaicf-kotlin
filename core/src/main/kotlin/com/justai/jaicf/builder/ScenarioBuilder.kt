@@ -9,6 +9,9 @@ import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
+import com.justai.jaicf.generic.ActivatorTypeToken
+import com.justai.jaicf.generic.ChannelTypeToken
+import com.justai.jaicf.generic.ContextTypeToken
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
 import com.justai.jaicf.hook.BotHookException
@@ -216,6 +219,42 @@ abstract class ScenarioBuilder(
         fun action(body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit) {
             action = body
         }
+
+        /**
+         * An action that should be executed once this state was activated.
+         * The action will be executed only if [ActionContext] type matches the given [token]
+         *
+         * @param token an activator type token
+         * @param body a code block of the action
+         */
+        fun <A: ActivatorContext> action(
+            token: ActivatorTypeToken<A>,
+            body: ActionContext<A, BotRequest, Reactions>.() -> Unit
+        ) = action { token(body) }
+
+        /**
+         * An action that should be executed once this state was activated.
+         * The action will be executed only if [ActionContext] type matches the given [token]
+         *
+         * @param token a channel type token
+         * @param body a code block of the action
+         */
+        fun <B: BotRequest, R: Reactions> action(
+            token: ChannelTypeToken<B, R>,
+            body: ActionContext<ActivatorContext, B, R>.() -> Unit
+        ) = action { token(body) }
+
+        /**
+         * An action that should be executed once this state was activated.
+         * The action will be executed only if [ActionContext] type matches the given [token]
+         *
+         * @param token a full context type token
+         * @param body a code block of the action
+         */
+        fun <A: ActivatorContext, B: BotRequest, R: Reactions> action(
+            token: ContextTypeToken<A, B, R>,
+            body: ActionContext<A, B, R>.() -> Unit
+        ) = action { token(body) }
 
         /**
          * Appends an inner state to the current state.
