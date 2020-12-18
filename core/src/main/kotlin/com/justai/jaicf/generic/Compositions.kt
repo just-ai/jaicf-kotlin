@@ -6,7 +6,7 @@ import com.justai.jaicf.reactions.Reactions
 
 // -- Type tokens' compositions
 
-private typealias Act<A> = ActivatorContextTypeToken<A>
+private typealias Act<A> = ActivatorTypeToken<A>
 private typealias Ch<B, R> = ChannelTypeToken<B, R>
 private typealias Ctx<A, B, R> = ContextTypeToken<A, B, R>
 

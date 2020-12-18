@@ -25,7 +25,7 @@ data class ContextTypeToken<A: ActivatorContext, B: BotRequest, R: Reactions>(
  * Can be used in some contexts in order to provide type-specific functionality.
  * Can be composed with other type tokens, see [and] functions.
  */
-data class ActivatorContextTypeToken<A: ActivatorContext>(
+data class ActivatorTypeToken<A: ActivatorContext>(
     val activatorType: KClass<A>
 ) {
     fun isInstance(activatorContext: ActivatorContext) = activatorType.isInstance(activatorContext)
@@ -52,10 +52,10 @@ inline fun <reified A: ActivatorContext, reified B: BotRequest, reified R: React
     ContextTypeToken(A::class, B::class, R::class)
 
 /**
- * Creates [ActivatorContextTypeToken] of type [A]
+ * Creates [ActivatorTypeToken] of type [A]
  */
-inline fun <reified A: ActivatorContext> ActivatorContextTypeToken(): ActivatorContextTypeToken<A> =
-    ActivatorContextTypeToken(A::class)
+inline fun <reified A: ActivatorContext> ActivatorTypeToken(): ActivatorTypeToken<A> =
+    ActivatorTypeToken(A::class)
 
 /**
  * Creates [ChannelTypeToken] of types [B] and [R]
