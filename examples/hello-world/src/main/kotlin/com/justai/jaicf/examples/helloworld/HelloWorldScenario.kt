@@ -78,10 +78,8 @@ object HelloWorldScenario: Scenario(
                 intent(AlexaIntent.STOP)
             }
 
-            action {
-                alexa {
-                    reactions.endSession("See you latter! Bye bye!")
-                }
+            action(alexa.intent) {
+                reactions.endSession("See you latter! Bye bye!")
             }
         }
 
@@ -99,11 +97,10 @@ object HelloWorldScenario: Scenario(
             activators {
                 intent("wake_up")
             }
-            action {
-                dialogflow {
-                    val dt = activator.slots["date-time"]
-                    reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
-                }
+
+            action(dialogflow) {
+                val dt = activator.slots["date-time"]
+                reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
             }
         }
 
