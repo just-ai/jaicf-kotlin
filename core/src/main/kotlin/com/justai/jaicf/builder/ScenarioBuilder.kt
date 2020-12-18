@@ -1,13 +1,14 @@
 package com.justai.jaicf.builder
 
 import com.justai.jaicf.activator.catchall.CatchAllActivationRule
-import com.justai.jaicf.activator.catchall.CatchAllActivatorContext
 import com.justai.jaicf.activator.event.AnyEventActivationRule
 import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
+import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
+import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
 import com.justai.jaicf.hook.BotHookException
@@ -16,6 +17,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
+import com.justai.jaicf.reactions.Reactions
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -177,7 +179,7 @@ abstract class ScenarioBuilder(
         private val modal: Boolean = false
     ) {
 
-        private var action: (ActionContext<*, *, *>.() -> Unit)? = null
+        private var action: (ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit)? = null
 
         internal fun build() : State {
             return State(
@@ -211,7 +213,7 @@ abstract class ScenarioBuilder(
          * An action that should be executed once this state was activated.
          * @param body a code block of the action
          */
-        fun action(body: ActionContext<*, *, *>.() -> Unit) {
+        fun action(body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit) {
             action = body
         }
 
