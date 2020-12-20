@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.telegram
 
 import com.github.kotlintelegrambot.entities.*
+import com.github.kotlintelegrambot.entities.files.*
 import com.github.kotlintelegrambot.entities.stickers.Sticker
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest

@@ -4,8 +4,8 @@ import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.*
 import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.network.serialization.GsonFactory
 import com.github.kotlintelegrambot.updater.Updater
-import com.google.gson.Gson
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
@@ -20,7 +20,7 @@ class TelegramChannel(
     private val telegramApiUrl: String = "https://api.telegram.org/"
 ) : JaicpCompatibleAsyncBotChannel {
 
-    private val gson = Gson()
+    private val gson = GsonFactory.createForApiClient()
 
     private lateinit var botUpdater: Updater
 
@@ -34,82 +34,58 @@ class TelegramChannel(
                 botApi.process(request, TelegramReactions(bot, request), RequestContext.fromHttp(update.httpBotRequest))
             }
 
-            text { _, update ->
-                update.message?.let {
-                    process(TelegramTextRequest(it), update)
+            text {
+                process(TelegramTextRequest(message), update)
+            }
+
+            callbackQuery {
+                callbackQuery.message?.let { message ->
+                    process(TelegramQueryRequest(message, callbackQuery.data), update)
                 }
             }
 
-            callbackQuery { _, update ->
-                update.callbackQuery?.let {
-                    process(TelegramQueryRequest(it.message!!, it.data), update)
-                }
+            location {
+                process(TelegramLocationRequest(message, location), update)
             }
 
-            location { _, update, location ->
-                update.message?.let {
-                    process(TelegramLocationRequest(it, location), update)
-                }
+            contact {
+                process(TelegramContactRequest(message, contact), update)
             }
 
-            contact { _, update, contact ->
-                update.message?.let {
-                    process(TelegramContactRequest(it, contact), update)
-                }
+            audio {
+                process(TelegramAudioRequest(message, media), update)
             }
 
-            audio { _, update, audio ->
-                update.message?.let {
-                    process(TelegramAudioRequest(it, audio), update)
-                }
+            document {
+                process(TelegramDocumentRequest(message, media), update)
             }
 
-            document { _, update, document ->
-                update.message?.let {
-                    process(TelegramDocumentRequest(it, document), update)
-                }
+            animation {
+                process(TelegramAnimationRequest(message, media), update)
             }
 
-            animation { _, update, animation ->
-                update.message?.let {
-                    process(TelegramAnimationRequest(it, animation), update)
-                }
+            game {
+                process(TelegramGameRequest(message, media), update)
             }
 
-            game { _, update, game ->
-                update.message?.let {
-                    process(TelegramGameRequest(it, game), update)
-                }
+            photos {
+                process(TelegramPhotosRequest(message, media), update)
             }
 
-            photos { _, update, list ->
-                update.message?.let {
-                    process(TelegramPhotosRequest(it, list), update)
-                }
+            sticker {
+                process(TelegramStickerRequest(message, media), update)
             }
 
-            sticker { _, update, sticker ->
-                update.message?.let {
-                    process(TelegramStickerRequest(it, sticker), update)
-                }
+            video {
+                process(TelegramVideoRequest(message, media), update)
             }
 
-            video { _, update, video ->
-                update.message?.let {
-                    process(TelegramVideoRequest(it, video), update)
-                }
+            videoNote {
+                process(TelegramVideoNoteRequest(message, media), update)
             }
 
-            videoNote { _, update, videoNote ->
-                update.message?.let {
-                    process(TelegramVideoNoteRequest(it, videoNote), update)
-                }
-            }
-
-            voice { _, update, voice ->
-                update.message?.let {
-                    process(TelegramVoiceRequest(it, voice), update)
-                }
+            voice {
+                process(TelegramVoiceRequest(message, media), update)
             }
         }
     }
