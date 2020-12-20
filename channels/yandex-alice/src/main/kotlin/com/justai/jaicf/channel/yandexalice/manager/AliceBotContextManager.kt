@@ -50,7 +50,7 @@ class AliceBotContextManager : BotContextManager {
             val model = BotContextModel(botContext)
             val json = JSON.decodeFromString<JsonObject>(mapper.writeValueAsString(model))
             val session = mutableMapOf<String, JsonElement>().apply {
-                putAll(json["session"]!!.jsonObject)
+                putAll(json["session"]?.jsonObject ?: buildJsonObject { })
                 put("result", json["result"] ?: JsonNull)
                 put("dialogContext", json["dialogContext"] ?: JsonNull)
             }.let {
