@@ -4,6 +4,7 @@ import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
 
 internal fun JaicpCompatibleBotChannel.processCompatible(
@@ -12,7 +13,7 @@ internal fun JaicpCompatibleBotChannel.processCompatible(
     val startTime = System.currentTimeMillis()
     val request = botRequest.raw.asHttpBotRequest(botRequest.stringify())
     val response = process(request)?.let { response ->
-        val rawJson = JSON.encodeToJsonElement(response.output.toString())
+        val rawJson = JSON.decodeFromString<JsonObject>(response.output.toString())
         addRawReply(rawJson)
     } ?: throw RuntimeException("Failed to process compatible channel request")
 
@@ -21,10 +22,11 @@ internal fun JaicpCompatibleBotChannel.processCompatible(
 }
 
 private fun addRawReply(rawResponse: JsonElement) = buildJsonObject {
-    "replies" to buildJsonArray {
-        buildJsonObject {
-            "type" to "raw"
-            "body" to rawResponse
-        }
-    }
+    put("replies", buildJsonArray {
+        add(buildJsonObject {
+            put("type", "raw")
+            put("body", rawResponse)
+        })
+    })
+
 }
