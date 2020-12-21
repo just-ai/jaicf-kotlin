@@ -222,39 +222,39 @@ abstract class ScenarioBuilder(
 
         /**
          * An action that should be executed once this state was activated.
-         * The action will be executed only if [ActionContext] type matches the given [token]
+         * The action will be executed only if [ActionContext] type matches the given [activatorToken]
          *
-         * @param token an activator type token
+         * @param activatorToken an activator type token
          * @param body a code block of the action
          */
         fun <A: ActivatorContext> action(
-            token: ActivatorTypeToken<A>,
+            activatorToken: ActivatorTypeToken<A>,
             body: ActionContext<A, BotRequest, Reactions>.() -> Unit
-        ) = action { token(body) }
+        ) = action { activatorToken(body) }
 
         /**
          * An action that should be executed once this state was activated.
-         * The action will be executed only if [ActionContext] type matches the given [token]
+         * The action will be executed only if [ActionContext] type matches the given [channelToken]
          *
-         * @param token a channel type token
+         * @param channelToken a channel type token
          * @param body a code block of the action
          */
         fun <B: BotRequest, R: Reactions> action(
-            token: ChannelTypeToken<B, R>,
+            channelToken: ChannelTypeToken<B, R>,
             body: ActionContext<ActivatorContext, B, R>.() -> Unit
-        ) = action { token(body) }
+        ) = action { channelToken(body) }
 
         /**
          * An action that should be executed once this state was activated.
-         * The action will be executed only if [ActionContext] type matches the given [token]
+         * The action will be executed only if [ActionContext] type matches the given [contextTypeToken]
          *
-         * @param token a full context type token
+         * @param contextTypeToken a full context type token
          * @param body a code block of the action
          */
         fun <A: ActivatorContext, B: BotRequest, R: Reactions> action(
-            token: ContextTypeToken<A, B, R>,
+            contextTypeToken: ContextTypeToken<A, B, R>,
             body: ActionContext<A, B, R>.() -> Unit
-        ) = action { token(body) }
+        ) = action { contextTypeToken(body) }
 
         /**
          * Appends an inner state to the current state.
