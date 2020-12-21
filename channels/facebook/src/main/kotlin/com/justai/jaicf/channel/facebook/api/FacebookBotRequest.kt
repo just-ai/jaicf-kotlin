@@ -6,8 +6,20 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 
-val BotRequest.facebook
-    get() = this as? FacebookBotRequest
+val BotRequest.facebook get() = this as? FacebookBotRequest
+
+val FacebookBotRequest.text get() = this as? FacebookTextBotRequest
+val FacebookBotRequest.quickReply get() = this as? FacebookQuickReplyBotRequest
+val FacebookBotRequest.optIn get() = this as? FacebookOptInBotRequest
+val FacebookBotRequest.accountLinking get() = this as? FacebookAccountLinkingBotRequest
+val FacebookBotRequest.attachment get() = this as? FacebookAttachmentBotRequest
+val FacebookBotRequest.fallback get() = this as? FacebookFallbackBotRequest
+val FacebookBotRequest.instantGame get() = this as? FacebookInstantGameBotRequest
+val FacebookBotRequest.messageDelivered get() = this as? FacebookMessageDeliveredBotRequest
+val FacebookBotRequest.messageEcho get() = this as? FacebookMessageEchoBotRequest
+val FacebookBotRequest.messageRead get() = this as? FacebookMessageReadBotRequest
+val FacebookBotRequest.postBack get() = this as? FacebookPostBackBotRequest
+val FacebookBotRequest.referral get() = this as? FacebookReferralBotRequest
 
 interface FacebookBotRequest: BotRequest {
     val event: BaseEvent
@@ -15,25 +27,16 @@ interface FacebookBotRequest: BotRequest {
 
 data class FacebookTextBotRequest(
     override val event: TextMessageEvent
-): FacebookBotRequest, QueryBotRequest(
-    clientId = event.senderId(),
-    input = event.text()
-)
+): FacebookBotRequest, QueryBotRequest(clientId = event.senderId(), input = event.text())
 
 data class FacebookQuickReplyBotRequest(
     override val event: QuickReplyMessageEvent
-): FacebookBotRequest, QueryBotRequest(
-    clientId = event.senderId(),
-    input = event.text()
-)
+): FacebookBotRequest, QueryBotRequest(clientId = event.senderId(), input = event.text())
 
 sealed class FacebookEventBotRequest(
     override val event: BaseEvent,
     type: String
-): FacebookBotRequest, EventBotRequest(
-    clientId = event.senderId(),
-    input = type
-)
+): FacebookBotRequest, EventBotRequest(clientId = event.senderId(), input = type)
 
 data class FacebookOptInBotRequest(
     override val event: OptInEvent
