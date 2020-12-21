@@ -7,124 +7,89 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 
-val BotRequest.telegram
-    get() = this as? TelegramBotRequest
+val BotRequest.telegram get() = this as? TelegramBotRequest
 
-val TelegramBotRequest.location
-    get() = this as? TelegramLocationRequest
+val TelegramBotRequest.text get() = this as? TelegramTextRequest
+val TelegramBotRequest.callback get() = this as? TelegramQueryRequest
+val TelegramBotRequest.location get() = this as? TelegramLocationRequest
+val TelegramBotRequest.contact get() = this as? TelegramContactRequest
+val TelegramBotRequest.audio get() = this as? TelegramAudioRequest
+val TelegramBotRequest.document get() = this as? TelegramDocumentRequest
+val TelegramBotRequest.animation get() = this as? TelegramAnimationRequest
+val TelegramBotRequest.game get() = this as? TelegramGameRequest
+val TelegramBotRequest.photos get() = this as? TelegramPhotosRequest
+val TelegramBotRequest.sticker get() = this as? TelegramStickerRequest
+val TelegramBotRequest.video get() = this as? TelegramVideoRequest
+val TelegramBotRequest.videoNote get() = this as? TelegramVideoNoteRequest
+val TelegramBotRequest.voice get() = this as? TelegramVoiceRequest
 
-val TelegramBotRequest.contact
-    get() = this as? TelegramContactRequest
-
-internal val Message.clientId
-    get() = chat.id.toString()
+internal val Message.clientId get() = chat.id.toString()
 
 interface TelegramBotRequest: BotRequest {
     val message: Message
-
-    val chatId: Long
-        get() = message.chat.id
+    val chatId: Long get() = message.chat.id
 }
 
 data class TelegramTextRequest(
     override val message: Message
-): TelegramBotRequest, QueryBotRequest(
-    clientId = message.clientId,
-    input = message.text.toString()
-)
+): TelegramBotRequest, QueryBotRequest(clientId = message.clientId, input = message.text.toString())
 
 data class TelegramQueryRequest(
     override val message: Message,
     val data: String
-): TelegramBotRequest, QueryBotRequest(
-    clientId = message.clientId,
-    input = data
-)
+): TelegramBotRequest, QueryBotRequest(clientId = message.clientId, input = data)
 
 data class TelegramLocationRequest(
     override val message: Message,
     val location: Location
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.LOCATION
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.LOCATION)
 
 data class TelegramContactRequest(
     override val message: Message,
     val contact: Contact
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.CONTACT
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.CONTACT)
 
 data class TelegramAudioRequest(
     override val message: Message,
     val audio: Audio
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.AUDIO
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.AUDIO)
 
 data class TelegramDocumentRequest(
     override val message: Message,
     val document: Document
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.DOCUMENT
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.DOCUMENT)
 
 data class TelegramAnimationRequest(
     override val message: Message,
     val animation: Animation
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.ANIMATION
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.ANIMATION)
 
 data class TelegramGameRequest(
     override val message: Message,
     val game: Game
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.GAME
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.GAME)
 
 data class TelegramPhotosRequest(
     override val message: Message,
     val photos: List<PhotoSize>
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.PHOTOS
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.PHOTOS)
 
 data class TelegramStickerRequest(
     override val message: Message,
     val sticker: Sticker
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.STICKER
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.STICKER)
 
 data class TelegramVideoRequest(
     override val message: Message,
     val video: Video
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.VIDEO
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VIDEO)
 
 data class TelegramVideoNoteRequest(
     override val message: Message,
     val videoNote: VideoNote
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.VIDEO_NOTE
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VIDEO_NOTE)
 
 data class TelegramVoiceRequest(
     override val message: Message,
     val voice: Voice
-): TelegramBotRequest, EventBotRequest(
-    clientId = message.clientId,
-    input = TelegramEvent.VOICE
-)
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VOICE)
