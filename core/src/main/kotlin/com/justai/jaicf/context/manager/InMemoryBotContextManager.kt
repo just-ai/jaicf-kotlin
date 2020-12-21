@@ -20,18 +20,32 @@ object InMemoryBotContextManager : BotContextManager {
      */
     override fun loadContext(request: BotRequest): BotContext {
         val bc = storage.computeIfAbsent(request.clientId) { clientId -> BotContext(clientId) }
-        return bc.copy(dialogContext = bc.dialogContext.copy())
+        return bc.copy(dialogContext = bc.dialogContext.clone()).apply {
+            result = bc.result
+            client.putAll(bc.client)
+            session.putAll(bc.session)
+        }
     }
 
     /**
      * Stores a shallow copy [BotContext] to the internal mutable map.
      */
     override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
-        storage[botContext.clientId] = botContext.copy(dialogContext = botContext.dialogContext.copy()).apply {
+        storage[botContext.clientId] = botContext.copy(dialogContext = botContext.dialogContext.clone()).apply {
             result = botContext.result
             client.putAll(botContext.client)
             session.putAll(botContext.session)
         }
     }
+}
 
+private fun DialogContext.clone(): DialogContext {
+    val dc = DialogContext()
+    dc.nextContext = nextContext
+    dc.currentContext = currentContext
+    dc.nextState = nextState
+    dc.currentState = currentState
+    dc.transitions.putAll(transitions)
+    dc.backStateStack.addAll(backStateStack)
+    return dc
 }

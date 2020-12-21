@@ -8,15 +8,15 @@ import java.util.ArrayDeque
  * Contains all data regarding the current state of the dialogue.
  * Please be careful and edit this class variables values only if you clearly understand what you do.
  */
-data class DialogContext(
-    var nextContext: String? = null,
-    var currentContext: String = "/",
-    var nextState: String? = null,
-    var currentState: String = "/",
+class DialogContext: Serializable {
 
-    val transitions: MutableMap<String, String> = mutableMapOf(),
-    val backStateStack: ArrayDeque<String> = ArrayDeque()
-) : Serializable {
+    var nextContext: String? = null
+    var currentContext: String = "/"
+    var nextState: String? = null
+    var currentState: String = "/"
+
+    val transitions: MutableMap<String, String> = mutableMapOf()
+    val backStateStack = ArrayDeque<String>()
 
     fun nextState(): String? {
         currentState = nextState ?: return null
