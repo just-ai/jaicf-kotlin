@@ -12,7 +12,7 @@ internal class RequestPollerLegacy(
     private val client: HttpClient,
     private val url: String
 ) : WithLogger,
-    AbstractRequestPoller() {
+    BaseRequestPoller() {
 
     override suspend fun doPoll(): List<JaicpBotRequest> {
         return try {

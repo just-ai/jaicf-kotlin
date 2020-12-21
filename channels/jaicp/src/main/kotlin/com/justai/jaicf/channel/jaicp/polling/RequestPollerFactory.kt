@@ -12,7 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlin.coroutines.coroutineContext
 
 
-internal abstract class AbstractRequestPoller : WithLogger {
+internal abstract class BaseRequestPoller : WithLogger {
     suspend fun getUpdates(): Flow<List<JaicpBotRequest>> = flow {
         while (coroutineContext.isActive) {
             try {
@@ -28,7 +28,7 @@ internal abstract class AbstractRequestPoller : WithLogger {
 
 internal object RequestPollerFactory {
 
-    fun getPoller(client: HttpClient, url: String, legacy: Boolean): AbstractRequestPoller {
+    fun getPoller(client: HttpClient, url: String, legacy: Boolean): BaseRequestPoller {
         return when (legacy) {
             true -> RequestPollerLegacy(client, url)
             false -> RequestPoller(client, url)
