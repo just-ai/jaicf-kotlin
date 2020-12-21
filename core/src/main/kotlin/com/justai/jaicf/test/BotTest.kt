@@ -144,6 +144,7 @@ open class BotTest(private val bot: BotEngine) {
      */
     fun withBackState(path: String) {
         botContext.dialogContext.backStateStack.push(path)
+        saveBotContext()
     }
 
     /**
