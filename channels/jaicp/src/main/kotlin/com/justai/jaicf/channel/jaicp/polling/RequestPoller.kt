@@ -12,7 +12,7 @@ import kotlinx.serialization.json.long
 internal class RequestPoller(
     private val client: HttpClient,
     private val url: String
-) : WithLogger, AbstractRequestPoller() {
+) : WithLogger, BaseRequestPoller() {
 
     private var since: Long = runBlocking {
         client.get<JsonObject>("$url/getTimestamp")["timestamp"]?.long ?: error("Failed to get last message timestamp")
@@ -28,9 +28,9 @@ internal class RequestPoller(
     }
 
     private fun updateSince(requests: List<JaicpBotRequest>) {
-        since = requests.maxBy { it.timestamp?.asSerializedOffsetDateTime() ?: 0 }
-            ?.timestamp?.asSerializedOffsetDateTime()
-            ?: System.currentTimeMillis()
+        since = requests
+            .maxBy { it.timestamp.asSerializedOffsetDateTime() }?.timestamp?.asSerializedOffsetDateTime()
+            ?: since
     }
 }
 
