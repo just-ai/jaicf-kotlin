@@ -6,6 +6,7 @@ import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.delay
 
 @Deprecated("Deprecated long poll api. Will be deleted with all references in further releases.")
 internal class RequestPollerLegacy(
@@ -18,6 +19,7 @@ internal class RequestPollerLegacy(
         return try {
             return listOf(client.get<JaicpPollingRequest>("$url/getUpdates".toUrl()).request)
         } catch (e: Exception) {
+            delay(500L)
             emptyList()
         }
     }
