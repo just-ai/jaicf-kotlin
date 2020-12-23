@@ -34,16 +34,10 @@ abstract class JaicpConnector(
     executorThreadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE
 ) : WithLogger {
 
-    private val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
+    protected val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
     private var registeredChannels = fetchChannels()
-    protected val useLegacyPollingApi: Boolean
-
-    init {
-        useLegacyPollingApi = chatAdapterConnector.getVersion().run {
-            equals("release-1.10.1") || equals("release-1.10.2")
-        }
-    }
+    protected val useLegacyPollingApi = chatAdapterConnector.getVersion() in listOf("release-1.10.1", "release-1.10.2")
 
     protected fun loadConfig() {
         registeredChannels.forEach { (factory, cfg) ->

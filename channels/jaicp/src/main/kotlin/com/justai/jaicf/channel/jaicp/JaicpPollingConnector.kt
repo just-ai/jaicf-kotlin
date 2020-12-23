@@ -38,7 +38,7 @@ open class JaicpPollingConnector(
     WithLogger {
 
 
-    private val dispatcher = Dispatcher(httpClient, useLegacyPollingApi, threadPoolSize)
+    private val dispatcher = Dispatcher(httpClient, useLegacyPollingApi, threadPoolRequestExecutor)
 
     init {
         loadConfig()

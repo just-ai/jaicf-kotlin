@@ -16,7 +16,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
-internal class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
+class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
 
     override val coroutineContext: CoroutineContext =
         Executors.newFixedThreadPool(nThreads).asCoroutineDispatcher()
