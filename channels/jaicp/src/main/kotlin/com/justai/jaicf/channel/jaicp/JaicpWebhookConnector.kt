@@ -45,7 +45,7 @@ import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
  * @param accessToken can be configured in JAICP Web Interface
  * @param channels is a list of channels which will be managed by connector
  * */
-@Suppress("MemberVisibilityCanBePrivate")
+
 open class JaicpWebhookConnector(
     botApi: BotApi,
     accessToken: String,
@@ -58,6 +58,7 @@ open class JaicpWebhookConnector(
     HttpBotChannel,
     JaicpConnector(botApi, channels, accessToken, url, httpClient, threadPoolSize) {
 
+    @Suppress("MemberVisibilityCanBePrivate")
     protected val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
 
     init {
