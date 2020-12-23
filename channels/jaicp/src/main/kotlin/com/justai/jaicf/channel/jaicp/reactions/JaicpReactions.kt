@@ -60,16 +60,14 @@ open class JaicpReactions : Reactions() {
                 ""
             }
         }
-        val obj = buildJsonObject {
+        return buildJsonObject {
             if (this@JaicpReactions is TelephonyReactions) {
                 put("dialer", dialer.getApiResponse())
             }
-            put("replies", buildJsonArray {
+            putJsonArray("replies") {
                 jsonReplies.forEach { add(it) }
-            })
+            }
             put("answer", answer)
         }
-
-        return obj
     }
 }
