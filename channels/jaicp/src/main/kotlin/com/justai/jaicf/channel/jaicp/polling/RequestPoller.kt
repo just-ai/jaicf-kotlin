@@ -7,6 +7,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
 internal class RequestPoller(
@@ -15,7 +16,8 @@ internal class RequestPoller(
 ) : WithLogger, BaseRequestPoller() {
 
     private var since: Long = runBlocking {
-        client.get<JsonObject>("$url/getTimestamp")["timestamp"]?.long ?: error("Failed to get last message timestamp")
+        client.get<JsonObject>("$url/getTimestamp")["timestamp"]?.jsonPrimitive?.long
+            ?: error("Failed to get last message timestamp")
     }
     private var unprocessed: Boolean = false
 
@@ -29,7 +31,7 @@ internal class RequestPoller(
 
     private fun updateSince(requests: List<JaicpBotRequest>) {
         since = requests
-            .maxBy { it.timestamp.asSerializedOffsetDateTime() }?.timestamp?.asSerializedOffsetDateTime()
+            .maxByOrNull { it.timestamp.asSerializedOffsetDateTime() }?.timestamp?.asSerializedOffsetDateTime()
             ?: since
     }
 }
