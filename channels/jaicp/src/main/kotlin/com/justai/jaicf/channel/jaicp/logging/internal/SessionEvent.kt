@@ -7,12 +7,12 @@ import kotlinx.serialization.Serializable
 
 internal object SessionEventService : ContextSerializableService<SessionEvent> {
     override val key = "com/justai/jaicf/jaicp/logging/conversationSession/event"
-    override fun deserialize(content: String) = JSON.parse(SessionEvent.serializer(), content)
+    override fun deserialize(content: String) = JSON.decodeFromString(SessionEvent.serializer(), content)
 }
 
 @Serializable
 internal sealed class SessionEvent : ContextSerializable {
-    override fun serialized() = JSON.stringify(serializer(), this)
+    override fun serialized() = JSON.encodeToString(serializer(), this)
     override val service by lazy { SessionEventService }
 }
 
