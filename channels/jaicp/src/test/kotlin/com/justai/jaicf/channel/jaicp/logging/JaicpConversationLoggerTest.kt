@@ -21,7 +21,7 @@ import kotlin.test.*
 internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     private var actLog: JaicpLogModel by Delegates.notNull()
     private val expLog: JaicpLogModel by lazy {
-        JSON.parse(JaicpLogModel.serializer(), getResourceAsString("logModel.json"))
+        JSON.decodeFromString(JaicpLogModel.serializer(), getResourceAsString("logModel.json"))
     }
     private val conversationLogger = object : JaicpConversationLogger("") {
         override fun createLog(
