@@ -22,11 +22,10 @@ internal fun JaicpCompatibleBotChannel.processCompatible(
 }
 
 private fun addRawReply(rawResponse: JsonElement) = buildJsonObject {
-    put("replies", buildJsonArray {
+    putJsonArray("replies") {
         add(buildJsonObject {
             put("type", "raw")
             put("body", rawResponse)
         })
-    })
-
+    }
 }
