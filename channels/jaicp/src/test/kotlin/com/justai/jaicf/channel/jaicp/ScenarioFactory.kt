@@ -10,7 +10,7 @@ object ScenarioFactory {
         }
     }
 
-    fun echoWithAction(block: ActionContext.() -> Unit) = object : Scenario() {
+    fun echoWithAction(block: ActionContext<*, *, *>.() -> Unit) = object : Scenario() {
         init {
             fallback {
                 block()
