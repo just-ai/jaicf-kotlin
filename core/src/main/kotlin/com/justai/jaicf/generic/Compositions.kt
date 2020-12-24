@@ -4,7 +4,15 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.reactions.Reactions
 
-// -- Type tokens' compositions
+/*
+ * All type tokens' compositions are presented here
+ *
+ * The fowlloing are true for all compositions:
+ *  1. the second argument of the composition must always be more (or no less) specific
+ *     by all common type parameters than the first one;
+ *  2. the result of the composition is the type token,
+ *     that the most specific by all presented in both arguments type parameters
+ */
 
 private typealias Act<A> = ActivatorTypeToken<A>
 private typealias Ch<B, R> = ChannelTypeToken<B, R>
