@@ -1,6 +1,7 @@
 package com.justai.jaicf.builder
 
 import com.justai.jaicf.activator.catchall.CatchAllActivationRule
+import com.justai.jaicf.activator.catchall.CatchAllActivatorContext
 import com.justai.jaicf.activator.event.AnyEventActivationRule
 import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
@@ -12,6 +13,7 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.generic.ActivatorTypeToken
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.generic.ContextTypeToken
+import com.justai.jaicf.generic.and
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
 import com.justai.jaicf.hook.BotHookException
@@ -156,17 +158,43 @@ abstract class ScenarioBuilder(
      * ```
      *
      * @param state an optional state name ("fallback" by default)
-     * @param action an action block that will be executed
+     * @param body an action block that will be executed
      */
     fun fallback(
         state: String = "fallback",
-        action: ActionContext<*, *, *>.() -> Unit
+        body: ActionContext<CatchAllActivatorContext, BotRequest, Reactions>.() -> Unit
     ) = state(
         name = state,
         noContext = true,
         body = {
             activators { catchAll() }
-            action(action)
+            action { ActivatorTypeToken<CatchAllActivatorContext>().invoke(body) }
+        }
+    )
+
+    /**
+     * A channel-specific variation of [fallback].
+     *
+     * ```
+     * fallback(telegram) {
+     *   reactions.say("Sorry, ${request.message.chat.firstName}, I didn't get it.")
+     * }
+     * ```
+     *
+     * @param state an optional state name ("fallback" by default)
+     * @param channelToken a type token of the channel
+     * @param body an action block that will be executed only if request matches given [channelToken]
+     */
+    fun <B: BotRequest, R: Reactions> fallback(
+        channelToken: ChannelTypeToken<B, R>,
+        state: String = "fallback",
+        body: ActionContext<CatchAllActivatorContext, B, R>.() -> Unit
+    ) = state(
+        name = state,
+        noContext = true,
+        body = {
+            activators { catchAll() }
+            action { (ActivatorTypeToken<CatchAllActivatorContext>() and channelToken).invoke(body) }
         }
     )
 
