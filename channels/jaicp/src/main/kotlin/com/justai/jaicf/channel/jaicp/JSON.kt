@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpPollingRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpPollingResponse
 import kotlinx.serialization.json.Json
 
-internal val JSON = Json { ignoreUnknownKeys = true; isLenient = true }
+internal val JSON = Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = true }
 
 internal fun String.asJaicpBotRequest() = JSON.decodeFromString(JaicpBotRequest.serializer(), this)
 

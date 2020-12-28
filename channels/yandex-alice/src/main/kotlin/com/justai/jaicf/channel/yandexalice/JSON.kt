@@ -9,6 +9,7 @@ import kotlinx.serialization.modules.SerializersModule
 internal val JSON = Json {
     classDiscriminator = "type"
     ignoreUnknownKeys = true
+    encodeDefaults = true
 
     serializersModule = SerializersModule {
         polymorphic(Card::class, Image::class, Image.serializer())

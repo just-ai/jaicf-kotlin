@@ -8,6 +8,7 @@ internal val JSON = Json {
 
     ignoreUnknownKeys = true
     classDiscriminator = "type"
+    encodeDefaults = true
 
     serializersModule = SerializersModule {
         polymorphic(AimyboxReply::class, TextReply::class, TextReply.serializer())
