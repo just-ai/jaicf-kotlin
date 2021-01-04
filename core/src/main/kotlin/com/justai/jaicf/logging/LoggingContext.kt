@@ -5,6 +5,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.reactions.Reactions
 
 /**
  * Internal class used by [ConversationLogger] implementations.
@@ -21,5 +22,6 @@ data class LoggingContext(
     val request: BotRequest,
     val firstState: String = botContext.dialogContext.currentState,
     val reactions: MutableList<Reaction> = mutableListOf(),
-    val input: String = request.input
+    val input: String = request.input,
+    var channelReactions: Reactions? = null
 )

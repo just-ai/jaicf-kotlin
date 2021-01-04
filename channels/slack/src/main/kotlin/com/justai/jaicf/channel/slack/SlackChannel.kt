@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.slack
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
@@ -8,6 +9,7 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
+import com.justai.jaicf.reactions.Reactions
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
@@ -94,10 +96,19 @@ class SlackChannel private constructor(
         botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
-        val slackRequest = buildSlackRequest(request)
+    override fun processLiveChatEventRequest(event: String, reactions: Reactions) {
+        (reactions as? SlackReactions)?.let { slackReactions ->
+            botApi.process(
+                EventBotRequest(slackReactions.loggingContext.request.clientId, event),
+                slackReactions,
+                RequestContext.DEFAULT
+            )
+        }
+    }
+
+    override fun process(request: HttpBotRequest): HttpBotResponse {
+        val slackRequest = buildSlackRequest(request).apply { context.httpBotRequest = request }
         val slackResponse = app.run(slackRequest)
-        slackRequest.context.httpBotRequest = request
 
         return HttpBotResponse(slackResponse.body ?: "", slackResponse.contentType).apply {
             headers.putAll(slackResponse.headers.mapValues { it.value.first() })

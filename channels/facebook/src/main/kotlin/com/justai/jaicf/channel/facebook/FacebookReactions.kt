@@ -21,7 +21,7 @@ val Reactions.facebook
 
 class FacebookReactions(
     private val messenger: Messenger,
-    private val request: FacebookBotRequest
+    internal val request: FacebookBotRequest
 ) : Reactions() {
 
     fun send(payload: Payload) = messenger.send(payload)

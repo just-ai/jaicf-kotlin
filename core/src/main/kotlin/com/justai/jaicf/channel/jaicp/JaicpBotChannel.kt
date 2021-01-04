@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.jaicp
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.http.HttpBotChannel
+import com.justai.jaicf.reactions.Reactions
 
 /**
  * Basic interface for all (native or compatible) JAICP channels.
@@ -23,7 +24,10 @@ interface JaicpCompatibleBotChannel : JaicpBotChannel, HttpBotChannel
  *
  * @see HttpBotChannel
  */
-interface JaicpCompatibleAsyncBotChannel : JaicpBotChannel, HttpBotChannel
+interface JaicpCompatibleAsyncBotChannel : JaicpBotChannel, HttpBotChannel {
+
+    fun processLiveChatEventRequest(event: String, reactions: Reactions)
+}
 
 /**
  * Basic interface for JAICP-provided channel factories.
