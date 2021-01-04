@@ -5,7 +5,6 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
-import com.justai.jaicf.channel.jaicp.dto.jaicpNative
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager.getOrCreateSessionId
@@ -42,11 +41,11 @@ open class JaicpConversationLogger(
     CoroutineScope by CoroutineScope(Dispatchers.IO + MDCContext()) {
 
     private val client = httpClient ?: HttpClientFactory.create(logLevel)
-    private val connector = ChatAdapterConnector(accessToken, url, client)
+    private val connector = ChatAdapterConnector.getOrCreate(accessToken, url, client)
 
     override fun doLog(loggingContext: LoggingContext) {
         try {
-            val req = loggingContext.request.jaicpNative?.jaicp ?: extractJaicpRequest(loggingContext) ?: return
+            val req = loggingContext.jaicpRequest ?: return
             val session = getOrCreateSessionId(loggingContext)
             launch { doLogAsync(req, loggingContext, session) }
         } catch (e: Exception) {
@@ -61,15 +60,5 @@ open class JaicpConversationLogger(
         JaicpLogModel.fromRequest(req, ctx, session).also {
             logger.debug("Send log with sessionId: ${it.sessionId} isNewSession: ${it.isNewSession}")
         }
-
-    private fun extractJaicpRequest(loggingContext: LoggingContext): JaicpBotRequest? {
-        return try {
-            loggingContext.requestContext.httpBotRequest?.requestMetadata?.let {
-                JSON.decodeFromString(JaicpBotRequest.serializer(), it)
-            }
-        } catch (e: Exception) {
-            logger.debug("Logging skipped as loggingContext does not have valid JAICP Request")
-            return null
-        }
-    }
 }
+

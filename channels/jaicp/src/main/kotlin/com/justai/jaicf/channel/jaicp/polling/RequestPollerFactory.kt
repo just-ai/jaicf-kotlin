@@ -16,7 +16,7 @@ internal abstract class BaseRequestPoller : WithLogger {
     suspend fun getUpdates(): Flow<List<JaicpBotRequest>> = flow {
         while (coroutineContext.isActive) {
             try {
-                emit(doPoll())
+                emit(doPoll().also { logger.debug("Polled requests: $it") })
             } catch (ex: Exception) {
                 delay(500)
             }
