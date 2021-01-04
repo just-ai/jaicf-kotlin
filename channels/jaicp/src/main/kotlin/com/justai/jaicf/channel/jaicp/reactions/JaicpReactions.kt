@@ -87,7 +87,7 @@ fun Reactions.switch(message: String): Nothing = switch(SwitchReply(firstMessage
  * Works only if channel connected via JAICP Connector (Webhook or Polling);
  * */
 fun Reactions.switch(reply: SwitchReply): Nothing {
-    LiveChatStartRequest.createAndRegister(loggingContext, reply)?.let {
+    LiveChatStartRequest.createAndRegister(loggingContext, reply, this)?.let {
         ChatAdapterConnector.getIfExists()?.initLiveChat(it)
     }
     throw TerminalReactionException
