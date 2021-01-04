@@ -60,14 +60,21 @@ class HangupReply(val state: String? = null) : Reply("hangup") {
 
 @Serializable
 data class SwitchReply(
+    val firstMessage: String? = null,
+    val closeChatPhrases: List<String> = emptyList(),
+    val appendCloseChatButton: Boolean? = null,
+    val ignoreOffline: Boolean? = null,
+    val oneTimeMessage: Boolean? = null,
+    val destination: String? = null,
+    val lastMessage: String? = null,
+    val attributes: JsonObject? = null,
     val phoneNumber: String? = null,
     val headers: Map<String, String> = emptyMap(),
-    val firstMessage: String? = null,
-    val lastMessage: String? = null,
-    val closeChatPhrases: List<String> = emptyList(),
-    val ignoreOffline: Boolean? = false,
-    val destination: String? = null,
-    val attributes: JsonObject? = null
+    val transferCall: String? = null,
+    val continueCall: Boolean? = null,
+    val continueRecording: Boolean? = null,
+    val sendMessagesToOperator: Boolean? = null,
+    val sendMessageHistoryAmount: Boolean? = null
 ) : Reply("switch") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
