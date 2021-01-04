@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.http
 
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
+import com.justai.jaicf.channel.jaicp.livechat.LiveChatStartRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
@@ -12,12 +13,15 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-
-internal class ChatAdapterConnector(
+internal class ChatAdapterConnector private constructor(
     accessToken: String,
     url: String = DEFAULT_PROXY_URL,
     private val httpClient: HttpClient
 ) : WithLogger {
+
+    init {
+        INSTANCE = this
+    }
 
     private val baseUrl = "$url/restapi/external-bot/$accessToken"
     private val versionUrl = "$url/version"
@@ -41,5 +45,22 @@ internal class ChatAdapterConnector(
         } catch (e: Exception) {
             logger.debug("Failed to produce logs to JAICP", e)
         }
+    }
+
+    fun initLiveChat(liveChatStartRequest: LiveChatStartRequest) = runBlocking {
+        httpClient.post<String>("$baseUrl/initLiveChatSwitch") {
+            contentType(ContentType.Application.Json)
+            body = liveChatStartRequest
+        }
+    }
+
+    companion object {
+        private var INSTANCE: ChatAdapterConnector? = null
+
+        fun getOrCreate(accessToken: String, url: String, httpClient: HttpClient) = synchronized(this) {
+            INSTANCE ?: ChatAdapterConnector(accessToken, url, httpClient).also { INSTANCE = it }
+        }
+
+        fun getIfExists() = INSTANCE
     }
 }

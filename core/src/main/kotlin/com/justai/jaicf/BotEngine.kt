@@ -13,6 +13,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.exceptions.TerminalReactionException
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
@@ -206,6 +207,8 @@ class BotEngine(
                                 logger.trace("Executing state: $state")
                                 state.action.execute(this)
                                 withHook(AfterActionHook(botContext, request, reactions, activator, state))
+                            } catch (e: TerminalReactionException) {
+                                dc.nextState = null
                             } catch (e: Exception) {
                                 logger.error("Action exception on state ${dc.currentState}", e)
                                 hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, e))

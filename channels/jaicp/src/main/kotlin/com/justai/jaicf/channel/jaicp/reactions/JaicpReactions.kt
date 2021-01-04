@@ -2,8 +2,11 @@ package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.channel.jaicp.dto.*
+import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
+import com.justai.jaicf.channel.jaicp.livechat.LiveChatStartRequest
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.exceptions.TerminalReactionException
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
 import kotlinx.serialization.json.*
@@ -64,10 +67,28 @@ open class JaicpReactions : Reactions() {
             if (this@JaicpReactions is TelephonyReactions) {
                 put("dialer", dialer.getApiResponse())
             }
+            put("sessionId", SessionManager.getOrCreateSessionId(loggingContext).sessionId)
             putJsonArray("replies") {
                 jsonReplies.forEach { add(it) }
             }
             put("answer", answer)
         }
     }
+}
+
+/**
+ * JAVADOC ME
+ * */
+fun Reactions.switch(message: String): Nothing = switch(SwitchReply(firstMessage = message))
+
+
+/**
+ * JAVADOC ME
+ * Works only if channel connected via JAICP Connector (Webhook or Polling);
+ * */
+fun Reactions.switch(reply: SwitchReply): Nothing {
+    LiveChatStartRequest.createAndRegister(loggingContext, reply)?.let {
+        ChatAdapterConnector.getIfExists()?.initLiveChat(it)
+    }
+    throw TerminalReactionException
 }

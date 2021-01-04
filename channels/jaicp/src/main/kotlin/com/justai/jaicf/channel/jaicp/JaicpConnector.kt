@@ -35,7 +35,7 @@ abstract class JaicpConnector(
 ) : WithLogger {
 
     protected val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
-    private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
+    private val chatAdapterConnector = ChatAdapterConnector.getOrCreate(accessToken, url, httpClient)
     private var registeredChannels = fetchChannels()
     protected val useLegacyPollingApi = chatAdapterConnector.getVersion() in listOf("release-1.10.1", "release-1.10.2")
 
