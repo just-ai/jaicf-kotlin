@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.facebook
 
 import com.github.messenger4j.exception.MessengerVerificationException
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.channel.facebook.api.toBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.channel.http.HttpBotRequest
@@ -10,6 +11,7 @@ import com.justai.jaicf.channel.http.asTextHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.reactions.Reactions
 import java.util.*
 
 class FacebookChannel private constructor(
@@ -24,6 +26,12 @@ class FacebookChannel private constructor(
 
     private constructor(botApi: BotApi, baseUrl: String) : this(botApi) {
         messenger = Messenger.create("", "", "", baseUrl)
+    }
+
+    override fun processLiveChatEventRequest(event: String, reactions: Reactions) {
+        (reactions as? FacebookReactions)?.let {
+            botApi.process(EventBotRequest(it.request.clientId, event), it, RequestContext.DEFAULT)
+        }
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {

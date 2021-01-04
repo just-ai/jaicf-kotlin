@@ -7,12 +7,14 @@ import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.network.serialization.GsonFactory
 import com.github.kotlintelegrambot.updater.Updater
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
+import com.justai.jaicf.reactions.Reactions
 
 class TelegramChannel(
     override val botApi: BotApi,
@@ -87,6 +89,12 @@ class TelegramChannel(
             voice {
                 process(TelegramVoiceRequest(message, media), update)
             }
+        }
+    }
+
+    override fun processLiveChatEventRequest(event: String, reactions: Reactions) {
+        (reactions as? TelegramReactions)?.let {
+            botApi.process(EventBotRequest(it.chatId.toString(), event), it, RequestContext.DEFAULT)
         }
     }
 
