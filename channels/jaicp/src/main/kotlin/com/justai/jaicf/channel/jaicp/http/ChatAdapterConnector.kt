@@ -2,7 +2,7 @@ package com.justai.jaicf.channel.jaicp.http
 
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
-import com.justai.jaicf.channel.jaicp.livechat.LiveChatStartRequest
+import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
@@ -47,10 +47,10 @@ internal class ChatAdapterConnector private constructor(
         }
     }
 
-    fun initLiveChat(liveChatStartRequest: LiveChatStartRequest) = runBlocking {
+    fun initLiveChat(liveChatInitRequest: LiveChatInitRequest) = runBlocking {
         httpClient.post<String>("$baseUrl/initLiveChatSwitch") {
             contentType(ContentType.Application.Json)
-            body = liveChatStartRequest
+            body = liveChatInitRequest
         }
     }
 

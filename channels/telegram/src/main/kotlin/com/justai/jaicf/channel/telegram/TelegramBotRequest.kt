@@ -93,3 +93,9 @@ data class TelegramVoiceRequest(
     override val message: Message,
     val voice: Voice
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VOICE)
+
+data class TelegramLiveChatEventRequest(
+    override val message: Message,
+    override val clientId: String,
+    override val input: String
+): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VOICE)

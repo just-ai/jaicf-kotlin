@@ -17,6 +17,7 @@ import com.slack.api.bolt.AppConfig
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.middleware.builtin.IgnoringSelfEvents
 import com.slack.api.bolt.request.RequestHeaders
+import com.slack.api.bolt.request.builtin.EventRequest
 import com.slack.api.bolt.util.SlackRequestParser
 import com.slack.api.methods.MethodsConfig
 import kotlinx.coroutines.CoroutineScope
@@ -96,14 +97,13 @@ class SlackChannel private constructor(
         botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
-    override fun processLiveChatEventRequest(event: String, reactions: Reactions) {
-        (reactions as? SlackReactions)?.let { slackReactions ->
-            botApi.process(
-                EventBotRequest(slackReactions.loggingContext.request.clientId, event),
-                slackReactions,
-                RequestContext.DEFAULT
-            )
-        }
+    override fun processLiveChatEventRequest(event: String, clientId: String, request: HttpBotRequest) {
+        val slackRequest = buildSlackRequest(request) as EventRequest
+        botApi.process(
+            SlackLiveChatEventRequest(clientId, event),
+            SlackReactions(slackRequest.context),
+            RequestContext.fromHttp(request)
+        )
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
