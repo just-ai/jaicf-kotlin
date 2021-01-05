@@ -3,7 +3,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
-import com.justai.jaicf.channel.jaicp.livechat.LiveChatStartRequest
+import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.exceptions.TerminalReactionException
@@ -87,7 +87,7 @@ fun Reactions.switch(message: String): Nothing = switch(SwitchReply(firstMessage
  * Works only if channel connected via JAICP Connector (Webhook or Polling);
  * */
 fun Reactions.switch(reply: SwitchReply): Nothing {
-    LiveChatStartRequest.createAndRegister(loggingContext, reply, this)?.let {
+    LiveChatInitRequest.create(loggingContext, reply)?.let {
         ChatAdapterConnector.getIfExists()?.initLiveChat(it)
     }
     throw TerminalReactionException

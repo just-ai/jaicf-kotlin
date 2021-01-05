@@ -14,6 +14,7 @@ import com.justai.jaicf.reactions.*
 val Reactions.telegram
     get() = this as? TelegramReactions
 
+@Suppress("MemberVisibilityCanBePrivate")
 class TelegramReactions(
     val api: Bot,
     val request: TelegramBotRequest
