@@ -14,7 +14,7 @@ import kotlinx.serialization.json.*
 
 val Reactions.jaicp get() = this as? JaicpReactions
 
-open class JaicpReactions : Reactions(), JaicpCompatibleAsyncReactions {
+open class JaicpReactions : Reactions() {
 
     protected val replies: MutableList<Reply> = mutableListOf()
     internal val dialer by lazy { JaicpDialerAPI() }
