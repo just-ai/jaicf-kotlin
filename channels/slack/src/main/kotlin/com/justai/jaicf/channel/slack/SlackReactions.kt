@@ -4,9 +4,11 @@ import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import com.slack.api.bolt.context.ActionRespondUtility
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.context.SayUtility
+import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.users.profile.UsersProfileGetRequest
 import com.slack.api.model.User
 import com.slack.api.model.block.ActionsBlock
@@ -19,11 +21,12 @@ import java.util.*
 val Reactions.slack
     get() = this as? SlackReactions
 
+@Suppress("MemberVisibilityCanBePrivate")
 class SlackReactions(
     val context: Context
-) : Reactions() {
+) : Reactions(), JaicpCompatibleAsyncReactions {
 
-    val client = context.client()
+    val client: MethodsClient = context.client()
 
     private fun nextActionId() = UUID.randomUUID().toString()
 
@@ -52,11 +55,11 @@ class SlackReactions(
     }
 
     override fun image(url: String) = image(
-            ImageBlock.builder()
-                .imageUrl(url)
-                .altText(url)
-                .build()
-        )
+        ImageBlock.builder()
+            .imageUrl(url)
+            .altText(url)
+            .build()
+    )
 
 
     fun image(image: ImageBlock): ImageReaction {
