@@ -7,11 +7,12 @@ import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
+import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 
 val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
 
-class ChatWidgetReactions : JaicpReactions() {
+class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
     override fun image(url: String): ImageReaction {
         return image(imageUrl = url, caption = null)
     }
