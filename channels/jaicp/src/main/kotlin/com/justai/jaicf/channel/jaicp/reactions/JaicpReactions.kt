@@ -9,11 +9,12 @@ import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.exceptions.TerminalReactionException
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import kotlinx.serialization.json.*
 
 val Reactions.jaicp get() = this as? JaicpReactions
 
-open class JaicpReactions : Reactions() {
+open class JaicpReactions : Reactions(), JaicpCompatibleAsyncReactions {
 
     protected val replies: MutableList<Reply> = mutableListOf()
     internal val dialer by lazy { JaicpDialerAPI() }
@@ -67,28 +68,10 @@ open class JaicpReactions : Reactions() {
             if (this@JaicpReactions is TelephonyReactions) {
                 put("dialer", dialer.getApiResponse())
             }
-            put("sessionId", SessionManager.getOrCreateSessionId(loggingContext).sessionId)
             putJsonArray("replies") {
                 jsonReplies.forEach { add(it) }
             }
             put("answer", answer)
         }
     }
-}
-
-/**
- * JAVADOC ME
- * */
-fun Reactions.switch(message: String): Nothing = switch(SwitchReply(firstMessage = message))
-
-
-/**
- * JAVADOC ME
- * Works only if channel connected via JAICP Connector (Webhook or Polling);
- * */
-fun Reactions.switch(reply: SwitchReply): Nothing {
-    LiveChatInitRequest.create(loggingContext, reply)?.let {
-        ChatAdapterConnector.getIfExists()?.initLiveChat(it)
-    }
-    throw TerminalReactionException
 }
