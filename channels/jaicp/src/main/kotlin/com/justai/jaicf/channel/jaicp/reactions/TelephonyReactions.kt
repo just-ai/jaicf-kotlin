@@ -145,6 +145,15 @@ class TelephonyReactions : JaicpReactions() {
      * @param phoneNumber another person's phone number
      * */
     fun transferCall(phoneNumber: String, sipHeaders: Map<String, String> = emptyMap()) {
-        replies.add(SwitchReply(phoneNumber = phoneNumber, headers = sipHeaders))
+        replies.add(TelephonySwitchReply(phoneNumber = phoneNumber, headers = sipHeaders))
+    }
+
+    /**
+     * Transfers call to operator or other person.
+     *
+     * @param reply another person's phone number
+     * */
+    fun transferCall(reply: TelephonySwitchReply) {
+        replies.add(reply)
     }
 }
