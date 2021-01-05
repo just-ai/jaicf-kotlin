@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.jaicp
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.http.HttpBotChannel
+import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -26,7 +27,7 @@ interface JaicpCompatibleBotChannel : JaicpBotChannel, HttpBotChannel
  */
 interface JaicpCompatibleAsyncBotChannel : JaicpBotChannel, HttpBotChannel {
 
-    fun processLiveChatEventRequest(event: String, reactions: Reactions)
+    fun processLiveChatEventRequest(event: String, clientId: String, request: HttpBotRequest)
 }
 
 /**
