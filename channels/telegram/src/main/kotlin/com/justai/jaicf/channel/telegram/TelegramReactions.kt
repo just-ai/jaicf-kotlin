@@ -10,6 +10,7 @@ import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.*
+import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 
 val Reactions.telegram
     get() = this as? TelegramReactions
@@ -18,7 +19,7 @@ val Reactions.telegram
 class TelegramReactions(
     val api: Bot,
     val request: TelegramBotRequest
-) : Reactions() {
+) : Reactions(), JaicpCompatibleAsyncReactions {
 
     val chatId = request.chatId
     private val messages = mutableListOf<Message>()
@@ -108,7 +109,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ): ImageReaction {
         api.sendPhoto(
-                chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
+            chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
         ).also { addResponse(it) }
 
         return ImageReaction.create(url)
@@ -124,7 +125,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVideo(
-            chatId, url, duration, width, height, caption, disableNotification, replyToMessageId, replyMarkup
+        chatId, url, duration, width, height, caption, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 
     fun sendVoice(
@@ -134,7 +135,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVoice(
-            chatId, url, duration, disableNotification, replyToMessageId, replyMarkup
+        chatId, url, duration, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 
     override fun audio(url: String): AudioReaction {
@@ -151,7 +152,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ): AudioReaction {
         api.sendAudio(
-                chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup
+            chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup
         ).also { addResponse(it) }
 
         return AudioReaction.create(url)
@@ -165,7 +166,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendDocument(
-            chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
+        chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 
     fun sendVenue(
@@ -179,7 +180,16 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVenue(
-            chatId, latitude, longitude, title, address, foursquareId, foursquareType, disableNotification, replyToMessageId, replyMarkup
+        chatId,
+        latitude,
+        longitude,
+        title,
+        address,
+        foursquareId,
+        foursquareType,
+        disableNotification,
+        replyToMessageId,
+        replyMarkup
     ).also { addResponse(it) }
 
     fun sendContact(
@@ -190,7 +200,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendContact(
-            chatId, phoneNumber, firstName, lastName, disableNotification, replyToMessageId, replyMarkup
+        chatId, phoneNumber, firstName, lastName, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 
     fun sendLocation(
@@ -201,7 +211,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendLocation(
-            chatId, latitude, longitude, livePeriod, disableNotification, replyToMessageId, replyMarkup
+        chatId, latitude, longitude, livePeriod, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 
     fun sendMediaGroup(
@@ -218,6 +228,6 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVideoNote(
-            chatId, url, duration, length, disableNotification, replyToMessageId, replyMarkup
+        chatId, url, duration, length, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
 }

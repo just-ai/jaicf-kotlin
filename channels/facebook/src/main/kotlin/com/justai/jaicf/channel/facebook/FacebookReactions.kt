@@ -14,6 +14,7 @@ import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import java.net.URL
 
 val Reactions.facebook
@@ -22,7 +23,7 @@ val Reactions.facebook
 class FacebookReactions(
     private val messenger: Messenger,
     internal val request: FacebookBotRequest
-) : Reactions() {
+) : Reactions(), JaicpCompatibleAsyncReactions {
 
     fun send(payload: Payload) = messenger.send(payload)
 
