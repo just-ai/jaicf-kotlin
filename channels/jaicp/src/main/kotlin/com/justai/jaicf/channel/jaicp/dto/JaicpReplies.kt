@@ -59,27 +59,6 @@ class HangupReply(val state: String? = null) : Reply("hangup") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
-abstract class SwitchReply : Reply("switch") {
-    open val firstMessage: String? = null
-    open val closeChatPhrases: List<String> = emptyList()
-    open val appendCloseChatButton: Boolean? = null
-    open val ignoreOffline: Boolean? = null
-    open val oneTimeMessage: Boolean? = null
-    open val destination: String? = null
-    open val lastMessage: String? = null
-    open val attributes: JsonObject? = null
-    open val hiddenAttributes: JsonObject? = null
-    open val phoneNumber: String? = null
-    open val headers: Map<String, String> = emptyMap()
-
-    @SerialName("transferChannel")
-    open val transferBotId: String? = null
-    open val continueCall: Boolean? = null
-    open val continueRecording: Boolean? = null
-    open val sendMessagesToOperator: Boolean? = null
-    open val sendMessageHistoryAmount: Int? = null
-}
-
 /**
  * An object with parameters to customize transfer call in telephony channel.
  *
@@ -90,14 +69,14 @@ abstract class SwitchReply : Reply("switch") {
  * @param continueRecording - whether to continue recording after transfer. True to continue recording after transfer.
  *  */
 @Serializable
-data class TelephonySwitchReply(
-    override val phoneNumber: String? = null,
-    override val headers: Map<String, String> = emptyMap(),
+class TelephonySwitchReply(
+    val phoneNumber: String? = null,
+    val headers: Map<String, String> = emptyMap(),
     @SerialName("transferCall")
-    override val transferBotId: String? = null,
-    override val continueCall: Boolean? = null,
-    override val continueRecording: Boolean? = null
-) : SwitchReply() {
+    val transferBotId: String? = null,
+    val continueCall: Boolean? = null,
+    val continueRecording: Boolean? = null
+) : Reply("switch") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
@@ -120,17 +99,17 @@ data class TelephonySwitchReply(
  * */
 @Serializable
 data class LiveChatSwitchReply(
-    override val firstMessage: String? = null,
-    override val closeChatPhrases: List<String> = emptyList(),
-    override val appendCloseChatButton: Boolean = false,
-    override val ignoreOffline: Boolean = false,
-    override val oneTimeMessage: Boolean = false,
-    override val destination: String? = null,
-    override val lastMessage: String? = null,
-    override val attributes: JsonObject? = null,
-    override val hiddenAttributes: JsonObject? = null,
-    override val sendMessagesToOperator: Boolean = false,
-    override val sendMessageHistoryAmount: Int? = null
-) : SwitchReply() {
+    val firstMessage: String? = null,
+    val closeChatPhrases: List<String> = emptyList(),
+    val appendCloseChatButton: Boolean = false,
+    val ignoreOffline: Boolean = false,
+    val oneTimeMessage: Boolean = false,
+    val destination: String? = null,
+    val lastMessage: String? = null,
+    val attributes: JsonObject? = null,
+    val hiddenAttributes: JsonObject? = null,
+    val sendMessagesToOperator: Boolean = false,
+    val sendMessageHistoryAmount: Int? = null
+) : Reply("switch") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
