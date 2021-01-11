@@ -71,6 +71,7 @@ open class JaicpReactions : Reactions() {
             putJsonArray("replies") {
                 jsonReplies.forEach { add(it) }
             }
+            put("sessionId", SessionManager.getOrCreateSessionId(loggingContext).sessionId)
             put("answer", answer)
         }
     }

@@ -4,6 +4,7 @@ import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import kotlinx.serialization.json.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.TestInfo
@@ -12,6 +13,7 @@ import java.io.File
 import java.io.FileInputStream
 import kotlin.test.fail
 
+@Suppress("MemberVisibilityCanBePrivate")
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 open class JaicpBaseTest {
     protected lateinit var testName: String
@@ -50,9 +52,19 @@ open class JaicpBaseTest {
     }
 
 
-    protected val HttpBotResponse.jaicp
-        get() = output.toString().asJaicpBotResponse().apply {
-            processingTime = 0
-            timestamp = 0
+    protected val HttpBotResponse.jaicp: JaicpBotResponse
+        get() {
+            val response = output.toString().asJaicpBotResponse().apply {
+                processingTime = 0
+                timestamp = 0
+            }
+            return response.copy(data = buildJsonObject {
+                copyField(response.data, "answer")
+                copyField(response.data, "replies")
+                copyField(response.data, "dialer")
+            })
         }
 }
+
+private fun JsonObjectBuilder.copyField(from: JsonElement, field: String) =
+    from.jsonObject[field]?.let { put(field, it) }
