@@ -9,9 +9,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class LiveChatInitRequest(
-    private val request: JaicpBotRequest,
-    private val sessionId: String,
-    private val switchData: LiveChatSwitchReply
+    val request: JaicpBotRequest,
+    val sessionId: String,
+    val switchData: LiveChatSwitchReply
 ) {
     companion object {
         fun create(lc: LoggingContext, reply: LiveChatSwitchReply): LiveChatInitRequest? {

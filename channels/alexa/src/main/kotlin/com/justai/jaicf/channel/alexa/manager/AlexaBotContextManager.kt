@@ -8,6 +8,7 @@ import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 
 class AlexaBotContextManager: BotContextManager {
@@ -20,7 +21,7 @@ class AlexaBotContextManager: BotContextManager {
         )
     }
 
-    override fun loadContext(request: BotRequest): BotContext {
+    override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
         return request.alexa?.handlerInput?.attributesManager?.let { attributesManager ->
             val client = attributesManager.persistentAttributes[ATTR_NAME]?.let { user ->
                 mapper.readValue(user.toString(), MutableMap::class.java).mapKeys { it.key as String }

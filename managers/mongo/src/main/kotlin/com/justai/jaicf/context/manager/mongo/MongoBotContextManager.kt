@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
@@ -14,9 +15,10 @@ class MongoBotContextManager(
     private val collection: MongoCollection<Document>
 ): BotContextManager {
 
+    @Suppress("DEPRECATION")
     private val mapper = jacksonObjectMapper().enableDefaultTyping()
 
-    override fun loadContext(request: BotRequest): BotContext {
+    override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
         return collection
             .find(Filters.eq("_id", request.clientId))
             .iterator().tryNext()?.let { doc ->

@@ -2,8 +2,8 @@ package com.justai.jaicf.channel.jaicp.http
 
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
-import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
+import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.features.*
@@ -12,16 +12,13 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.jetbrains.annotations.TestOnly
 
 internal class ChatAdapterConnector private constructor(
-    accessToken: String,
-    url: String = DEFAULT_PROXY_URL,
+    val accessToken: String,
+    val url: String = DEFAULT_PROXY_URL,
     private val httpClient: HttpClient
 ) : WithLogger {
-
-    init {
-        INSTANCE = this
-    }
 
     private val baseUrl = "$url/restapi/external-bot/$accessToken"
     private val versionUrl = "$url/version"
@@ -57,10 +54,18 @@ internal class ChatAdapterConnector private constructor(
     companion object {
         private var INSTANCE: ChatAdapterConnector? = null
 
-        fun getOrCreate(accessToken: String, url: String, httpClient: HttpClient) = synchronized(this) {
-            INSTANCE ?: ChatAdapterConnector(accessToken, url, httpClient).also { INSTANCE = it }
-        }
+        @Synchronized
+        fun getOrCreate(accessToken: String, url: String, httpClient: HttpClient) = INSTANCE
+            ?.apply {
+                if (this.accessToken != accessToken || this.url != url)
+                    error("Multiple connector instances detected. Make sure your JaicpConnection and JaicpConversationLogger are pointed to same host with same access token.")
+            } ?: ChatAdapterConnector(accessToken, url, httpClient).also { INSTANCE = it }
 
         fun getIfExists() = INSTANCE
+
+        @TestOnly
+        fun removeInstance() {
+            INSTANCE = null
+        }
     }
 }

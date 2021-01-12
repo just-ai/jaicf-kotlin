@@ -4,11 +4,14 @@ import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.content.*
 import kotlinx.serialization.json.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.TestInfo
-import org.junit.jupiter.api.TestMethodOrder
+import org.junit.jupiter.api.*
 import java.io.File
 import java.io.FileInputStream
 import kotlin.test.fail
@@ -22,12 +25,31 @@ open class JaicpBaseTest {
 
     protected val request: HttpBotRequest get() = HttpBotRequest(getResourceAsInputStream("req.json"))
     protected val expected: JaicpBotResponse get() = getResourceAsString("resp.json").asJsonHttpBotResponse().jaicp
+    protected var connectorHttpRequestBody: String? = null
+
+    private val mockHttp: HttpClient = HttpClient(MockEngine) {
+        install(JsonFeature) { serializer = KotlinxSerializer(JSON) }
+        engine {
+            addHandler { request ->
+                connectorHttpRequestBody = (request.body as TextContent).text
+                respond("ok")
+            }
+        }
+    }
 
     @BeforeEach
-    fun setTestName(testInfo: TestInfo) {
+    fun setUp(testInfo: TestInfo) {
         testName = testInfo.displayName
         testNumber = testName.split(" ")[0]
         testPackage = testName.split(" ")[1]
+
+        ChatAdapterConnector.getOrCreate("", "", mockHttp)
+    }
+
+    @AfterEach
+    fun tearDown() {
+        ChatAdapterConnector.removeInstance()
+        connectorHttpRequestBody = null
     }
 
     private fun getResource(name: String): File {
