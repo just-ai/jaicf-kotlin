@@ -39,7 +39,7 @@ import java.util.*
 open class BotTest(private val bot: BotEngine) {
 
     private lateinit var botContext: BotContext
-    private lateinit var requestContext: TestRequestContext
+    private var requestContext: TestRequestContext = TestRequestContext(false)
     private lateinit var reactions: Reactions
 
     @BeforeEach
@@ -67,7 +67,7 @@ open class BotTest(private val bot: BotEngine) {
      * @param clientId client ID
      */
     fun withClientId(clientId: String) {
-        botContext = bot.defaultContextManager.loadContext(EventBotRequest(clientId, ""))
+        botContext = bot.defaultContextManager.loadContext(EventBotRequest(clientId, ""), requestContext)
     }
 
     /**
@@ -77,9 +77,7 @@ open class BotTest(private val bot: BotEngine) {
      */
     fun withNewSession() {
         requestContext = TestRequestContext(newSession = true).also {
-            if (this::requestContext.isInitialized) {
-                it.randomNumbers.addAll(requestContext.randomNumbers)
-            }
+            it.randomNumbers.addAll(requestContext.randomNumbers)
         }
     }
 
@@ -156,7 +154,7 @@ open class BotTest(private val bot: BotEngine) {
      */
     fun process(request: BotRequest): ProcessResult {
         bot.process(request, reactions, requestContext = requestContext)
-        botContext = bot.defaultContextManager.loadContext(request)
+        botContext = bot.defaultContextManager.loadContext(request, requestContext)
         return ProcessResult(botContext, reactions).also { reactions = TextReactions(TextResponse()) }
     }
 

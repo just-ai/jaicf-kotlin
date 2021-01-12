@@ -10,6 +10,7 @@ import com.justai.jaicf.channel.yandexalice.api.AliceBotResponse
 import com.justai.jaicf.channel.yandexalice.api.alice
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.*
@@ -24,7 +25,7 @@ class AliceBotContextManager : BotContextManager {
         )
     }
 
-    override fun loadContext(request: BotRequest): BotContext {
+    override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
         return request.alice?.state?.let { state ->
             val client = state.user["com.justai.jaicf"]?.let { user ->
                 mapper.readValue(user.toString(), MutableMap::class.java).mapKeys { it.key as String }

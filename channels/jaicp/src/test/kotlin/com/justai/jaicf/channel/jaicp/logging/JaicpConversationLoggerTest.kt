@@ -23,7 +23,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     private val expLog: JaicpLogModel by lazy {
         JSON.decodeFromString(JaicpLogModel.serializer(), getResourceAsString("logModel.json"))
     }
-    private val conversationLogger = object : JaicpConversationLogger("") {
+    private val conversationLogger = object : JaicpConversationLogger("", emptyList(), "") {
         override fun createLog(
             req: JaicpBotRequest,
             ctx: LoggingContext,

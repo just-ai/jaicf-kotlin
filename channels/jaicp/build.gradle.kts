@@ -22,10 +22,11 @@ dependencies {
 
 
     testImplementation("io.mockk:mockk" version { mockk })
-    testCompile(kotlin("test-junit"))
-    testCompile(kotlin("test"))
-    testCompile("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
+    testImplementation("io.ktor:ktor-client-mock" version { ktor })
+    testImplementation(kotlin("test-junit"))
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    testImplementation("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {

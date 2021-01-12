@@ -109,6 +109,7 @@ abstract class ScenarioBuilder(
     fun <T: BotHook> handle(klass: KClass<T>, listener: (T) -> Unit) {
         _model.hooks.run {
             putIfAbsent(klass, mutableListOf())
+            @Suppress("UNCHECKED_CAST")
             get(klass)?.add(listener as BotHookAction<in BotHook>)
         }
     }
