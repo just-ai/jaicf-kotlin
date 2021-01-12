@@ -162,13 +162,13 @@ abstract class ScenarioBuilder(
      */
     fun fallback(
         state: String = "fallback",
-        body: ActionContext<CatchAllActivatorContext, BotRequest, Reactions>.() -> Unit
+        body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit
     ) = state(
         name = state,
         noContext = true,
         body = {
             activators { catchAll() }
-            action { ActivatorTypeToken<CatchAllActivatorContext>().invoke(body) }
+            action(body)
         }
     )
 
@@ -188,13 +188,13 @@ abstract class ScenarioBuilder(
     fun <B: BotRequest, R: Reactions> fallback(
         channelToken: ChannelTypeToken<B, R>,
         state: String = "fallback",
-        body: ActionContext<CatchAllActivatorContext, B, R>.() -> Unit
+        body: ActionContext<ActivatorContext, B, R>.() -> Unit
     ) = state(
         name = state,
         noContext = true,
         body = {
             activators { catchAll() }
-            action { (ActivatorTypeToken<CatchAllActivatorContext>() and channelToken).invoke(body) }
+            action { channelToken.invoke(body) }
         }
     )
 
