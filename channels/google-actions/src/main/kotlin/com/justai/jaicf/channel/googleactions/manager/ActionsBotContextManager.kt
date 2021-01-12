@@ -9,6 +9,7 @@ import com.justai.jaicf.channel.googleactions.ActionsBotResponse
 import com.justai.jaicf.channel.googleactions.actions
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 
 class ActionsBotContextManager: BotContextManager {
@@ -21,7 +22,7 @@ class ActionsBotContextManager: BotContextManager {
         )
     }
 
-    override fun loadContext(request: BotRequest): BotContext {
+    override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
         return request.actions?.request?.let { actionRequest ->
             val client = actionRequest.userStorage[ATTR_NAME]?.let { user ->
                 mapper.readValue(user.toString(), MutableMap::class.java).mapKeys { it.key as String }

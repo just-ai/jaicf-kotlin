@@ -109,6 +109,7 @@ abstract class ScenarioBuilder(
     fun <T: BotHook> handle(klass: KClass<T>, listener: (T) -> Unit) {
         _model.hooks.run {
             putIfAbsent(klass, mutableListOf())
+            @Suppress("UNCHECKED_CAST")
             get(klass)?.add(listener as BotHookAction<in BotHook>)
         }
     }
@@ -162,13 +163,13 @@ abstract class ScenarioBuilder(
      */
     fun fallback(
         state: String = "fallback",
-        body: ActionContext<CatchAllActivatorContext, BotRequest, Reactions>.() -> Unit
+        body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit
     ) = state(
         name = state,
         noContext = true,
         body = {
             activators { catchAll() }
-            action { ActivatorTypeToken<CatchAllActivatorContext>().invoke(body) }
+            action { ActivatorTypeToken<ActivatorContext>().invoke(body) }
         }
     )
 

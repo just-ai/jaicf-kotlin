@@ -4,6 +4,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.context.RequestContext
 
 /**
  * Simple in-memory [BotContextManager] implementation.
@@ -18,7 +19,7 @@ object InMemoryBotContextManager : BotContextManager {
      * @param request current user's request
      * @return [BotContext] instance
      */
-    override fun loadContext(request: BotRequest): BotContext {
+    override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
         val bc = storage.computeIfAbsent(request.clientId) { clientId -> BotContext(clientId) }
         return bc.copy(dialogContext = bc.dialogContext.clone()).apply {
             result = bc.result

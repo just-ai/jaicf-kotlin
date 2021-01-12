@@ -3,6 +3,7 @@ package com.justai.jaicf.context.manager
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.RequestContext
 
 /**
  * Main abstraction for transparent [BotContext] persistence.
@@ -20,7 +21,7 @@ interface BotContextManager {
      * @param request current user's request
      * @return current user's [BotContext]
      */
-    fun loadContext(request: BotRequest): BotContext
+    fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext
 
     /**
      * Persists the current user's bot context.

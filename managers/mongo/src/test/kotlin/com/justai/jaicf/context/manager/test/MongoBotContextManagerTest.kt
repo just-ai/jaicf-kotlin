@@ -2,6 +2,7 @@ package com.justai.jaicf.context.manager.test
 
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.mongo.MongoBotContextManager
 import com.mongodb.MongoClient
 import com.mongodb.MongoClientURI
@@ -27,7 +28,7 @@ class MongoBotContextManagerTest {
 
         manager.saveContext(context, null, null)
 
-        val result = manager.loadContext(EventBotRequest("client1", "event"))
+        val result = manager.loadContext(EventBotRequest("client1", "event"), RequestContext.DEFAULT)
 
         assertNotNull(result)
         assertEquals(context.result, result.result)
@@ -43,7 +44,7 @@ class MongoBotContextManagerTest {
 
         manager.saveContext(context, null, null)
 
-        val result = manager.loadContext(EventBotRequest("client2", "event"))
+        val result = manager.loadContext(EventBotRequest("client2", "event"), RequestContext.DEFAULT)
 
         assertNotNull(result)
         assertTrue(result.result is CustomValue)
