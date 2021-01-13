@@ -1,15 +1,11 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
-import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.channel.jaicp.dto.*
-import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
-import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
+import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.DialogContext
-import com.justai.jaicf.exceptions.TerminalReactionException
-import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
-import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
+import com.justai.jaicf.reactions.Reactions
 import kotlinx.serialization.json.*
 
 val Reactions.jaicp get() = this as? JaicpReactions

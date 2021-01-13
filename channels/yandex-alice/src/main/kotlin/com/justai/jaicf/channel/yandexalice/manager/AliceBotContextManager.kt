@@ -46,7 +46,12 @@ class AliceBotContextManager : BotContextManager {
         } ?: BotContext(request.clientId, DialogContext())
     }
 
-    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
+    override fun saveContext(
+        botContext: BotContext,
+        request: BotRequest?,
+        response: BotResponse?,
+        requestContext: RequestContext
+    ) {
         (response as? AliceBotResponse)?.run {
             val model = BotContextModel(botContext)
             val json = JSON.decodeFromString<JsonObject>(mapper.writeValueAsString(model))

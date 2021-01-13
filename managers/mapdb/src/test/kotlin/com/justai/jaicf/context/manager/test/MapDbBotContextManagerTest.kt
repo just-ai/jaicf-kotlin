@@ -19,7 +19,7 @@ class MapDbBotContextManagerTest {
             session["key1"] = "value1"
         }
 
-        manager.saveContext(context, null, null)
+        manager.saveContext(context, null, null, RequestContext.DEFAULT)
         val result = manager.loadContext(EventBotRequest("client1", "event"), RequestContext.DEFAULT)
 
         assertEquals("client1", context.clientId)
@@ -32,7 +32,7 @@ class MapDbBotContextManagerTest {
     fun testWithFile() {
         val context = BotContext("client1").apply { result = "some result" }
         MapDbBotContextManager(".mapdb").apply {
-            saveContext(context, null, null)
+            saveContext(context, null, null, RequestContext.DEFAULT)
             close()
         }
 
