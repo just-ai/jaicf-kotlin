@@ -31,7 +31,12 @@ object InMemoryBotContextManager : BotContextManager {
     /**
      * Stores a shallow copy [BotContext] to the internal mutable map.
      */
-    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
+    override fun saveContext(
+        botContext: BotContext,
+        request: BotRequest?,
+        response: BotResponse?,
+        requestContext: RequestContext
+    ) {
         storage[botContext.clientId] = botContext.copy(dialogContext = botContext.dialogContext.clone()).apply {
             result = botContext.result
             client.putAll(botContext.client)
