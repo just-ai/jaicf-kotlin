@@ -33,7 +33,12 @@ class MongoBotContextManager(
         } ?: BotContext(request.clientId)
     }
 
-    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
+    override fun saveContext(
+        botContext: BotContext,
+        request: BotRequest?,
+        response: BotResponse?,
+        requestContext: RequestContext
+    ) {
         BotContextModel(
             _id = botContext.clientId,
             result = botContext.result,

@@ -30,5 +30,5 @@ interface BotContextManager {
      * @param request current user's request
      * @param response a response that are going to be sent back to the user
      */
-    fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?)
+    fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?, requestContext: RequestContext)
 }

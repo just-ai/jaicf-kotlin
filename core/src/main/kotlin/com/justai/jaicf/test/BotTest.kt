@@ -50,7 +50,7 @@ open class BotTest(private val bot: BotEngine) {
     }
 
     private fun saveBotContext() {
-        bot.defaultContextManager.saveContext(botContext, null, null)
+        bot.defaultContextManager.saveContext(botContext, null, null, requestContext)
     }
 
     /**

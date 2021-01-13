@@ -22,6 +22,5 @@ data class LoggingContext(
     val request: BotRequest,
     val firstState: String = botContext.dialogContext.currentState,
     val reactions: MutableList<Reaction> = mutableListOf(),
-    val input: String = request.input,
-    var channelReactions: Reactions? = null
+    val input: String = request.input
 )

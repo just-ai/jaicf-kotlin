@@ -42,7 +42,12 @@ class AlexaBotContextManager: BotContextManager {
         } ?: BotContext(request.clientId)
     }
 
-    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
+    override fun saveContext(
+        botContext: BotContext,
+        request: BotRequest?,
+        response: BotResponse?,
+        requestContext: RequestContext
+    ) {
         request?.alexa?.handlerInput?.attributesManager?.let { attributesManager ->
             val session = mapper.writeValueAsString(SessionModel(botContext))
             val client = mapper.writeValueAsString(botContext.client.toMutableMap())

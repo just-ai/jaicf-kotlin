@@ -26,7 +26,7 @@ class MongoBotContextManagerTest {
             session["key1"] = "some value"
         }
 
-        manager.saveContext(context, null, null)
+        manager.saveContext(context, null, null, RequestContext.DEFAULT)
 
         val result = manager.loadContext(EventBotRequest("client1", "event"), RequestContext.DEFAULT)
 
@@ -42,7 +42,7 @@ class MongoBotContextManagerTest {
             session["value"] = CustomValue(CustomValue(2))
         }
 
-        manager.saveContext(context, null, null)
+        manager.saveContext(context, null, null, RequestContext.DEFAULT)
 
         val result = manager.loadContext(EventBotRequest("client2", "event"), RequestContext.DEFAULT)
 

@@ -43,7 +43,12 @@ class ActionsBotContextManager: BotContextManager {
         } ?: BotContext(request.clientId)
     }
 
-    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
+    override fun saveContext(
+        botContext: BotContext,
+        request: BotRequest?,
+        response: BotResponse?,
+        requestContext: RequestContext
+    ) {
         val actionsResponse = response as? ActionsBotResponse
         actionsResponse?.builder?.let { builder ->
             val session = mapper.writeValueAsString(SessionModel(botContext))

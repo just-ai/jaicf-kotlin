@@ -24,7 +24,12 @@ class MapDbBotContextManager(dbFilePath: String? = null): BotContextManager {
         }
     }
 
-    override fun saveContext(botContext: BotContext, request: BotRequest?, response: BotResponse?) {
+    override fun saveContext(
+        botContext: BotContext,
+        request: BotRequest?,
+        response: BotResponse?,
+        requestContext: RequestContext
+    ) {
         map[botContext.clientId] = BotContextModel(botContext)
         db.commit()
     }
