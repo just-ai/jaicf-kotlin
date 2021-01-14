@@ -27,23 +27,12 @@ open class JaicpBaseTest {
     protected val expected: JaicpBotResponse get() = getResourceAsString("resp.json").asJsonHttpBotResponse().jaicp
     protected var connectorHttpRequestBody: String? = null
 
-    private val mockHttp: HttpClient = HttpClient(MockEngine) {
-        install(JsonFeature) { serializer = KotlinxSerializer(JSON) }
-        engine {
-            addHandler { request ->
-                connectorHttpRequestBody = (request.body as TextContent).text
-                respond("ok")
-            }
-        }
-    }
-
     @BeforeEach
     fun setUp(testInfo: TestInfo) {
         testName = testInfo.displayName
         testNumber = testName.split(" ")[0]
         testPackage = testName.split(" ")[1]
-
-        ChatAdapterConnector.getOrCreate("", "", mockHttp)
+        configureMockHttp()
     }
 
     @AfterEach
@@ -86,6 +75,21 @@ open class JaicpBaseTest {
                 copyField(response.data, "dialer")
             })
         }
+
+    private fun configureMockHttp() {
+        ChatAdapterConnector.removeInstance()
+        ChatAdapterConnector.getOrCreate("", "", getMockHttp())
+    }
+
+    protected fun getMockHttp() = HttpClient(MockEngine) {
+        install(JsonFeature) { serializer = KotlinxSerializer(JSON) }
+        engine {
+            addHandler { request ->
+                connectorHttpRequestBody = (request.body as TextContent).text
+                respond("ok")
+            }
+        }
+    }
 }
 
 private fun JsonObjectBuilder.copyField(from: JsonElement, field: String) =
