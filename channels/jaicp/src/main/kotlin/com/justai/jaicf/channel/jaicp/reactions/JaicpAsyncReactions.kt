@@ -3,18 +3,19 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.dto.LiveChatSwitchReply
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
+import com.justai.jaicf.channel.jaicp.livechat.exceptions.NoOperatorChannelConfiguredException
+import com.justai.jaicf.channel.jaicp.livechat.exceptions.NoOperatorsOnlineException
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
-import java.lang.IllegalArgumentException
-import kotlin.jvm.Throws
 
 /**
  * Switches to livechat operator if channel is connected to livechat in JAICP App Console.
  *
  * @param message a message sent to operator after switch.
  *
- * @throws IllegalArgumentException signal that no further execution is possible, as conversation was switched to livechat.
+ * @throws NoOperatorsOnlineException when no livechat operators are available
+ * @throws NoOperatorChannelConfiguredException when current channel has no livechat configured
  * */
-@Throws(IllegalArgumentException::class)
+@Throws(NoOperatorsOnlineException::class, NoOperatorChannelConfiguredException::class)
 fun JaicpCompatibleAsyncReactions.switchToOperator(message: String) =
     switchToOperator(LiveChatSwitchReply(firstMessage = message))
 
@@ -26,8 +27,10 @@ fun JaicpCompatibleAsyncReactions.switchToOperator(message: String) =
  *
  * @see LiveChatSwitchReply
  *
- * @throws TerminalReactionException to signal that no further execution is possible, as conversation was switched to livechat.
+ * @throws NoOperatorsOnlineException when no livechat operators are available
+ * @throws NoOperatorChannelConfiguredException when current channel has no livechat configured
  * */
+@Throws(NoOperatorsOnlineException::class, NoOperatorChannelConfiguredException::class)
 fun JaicpCompatibleAsyncReactions.switchToOperator(reply: LiveChatSwitchReply) =
     LiveChatInitRequest.create(loggingContext, reply)?.let {
         ChatAdapterConnector.getIfExists()?.initLiveChat(it)

@@ -4,6 +4,8 @@ import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
+import com.justai.jaicf.channel.jaicp.livechat.exceptions.NoOperatorChannelConfiguredException
+import com.justai.jaicf.channel.jaicp.livechat.exceptions.NoOperatorsOnlineException
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.features.*
@@ -44,10 +46,21 @@ internal class ChatAdapterConnector private constructor(
         }
     }
 
-    fun initLiveChat(liveChatInitRequest: LiveChatInitRequest) = runBlocking {
+    fun initLiveChat(liveChatInitRequest: LiveChatInitRequest) {
+        try {
+            initLiveChat0(liveChatInitRequest)
+        } catch (e: ClientRequestException){
+            when(e.response?.status){
+                HttpStatusCode.NotFound -> throw NoOperatorsOnlineException(liveChatInitRequest.request)
+                HttpStatusCode.BadRequest -> throw NoOperatorChannelConfiguredException(liveChatInitRequest.request)
+            }
+        }
+    }
+
+    private fun initLiveChat0(liveChatInitRequest: LiveChatInitRequest) = runBlocking {
         httpClient.post<String>("$baseUrl/initLiveChatSwitch") {
-            contentType(ContentType.Application.Json)
             body = liveChatInitRequest
+            contentType(ContentType.Application.Json)
         }
     }
 
