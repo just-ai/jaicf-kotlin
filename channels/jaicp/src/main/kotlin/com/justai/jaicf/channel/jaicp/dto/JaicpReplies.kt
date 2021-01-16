@@ -72,7 +72,7 @@ class HangupReply(val state: String? = null) : Reply("hangup") {
 class TelephonySwitchReply(
     val phoneNumber: String? = null,
     val headers: Map<String, String> = emptyMap(),
-    @SerialName("transferCall")
+    @SerialName("transferChannel")
     val transferBotId: String? = null,
     val continueCall: Boolean? = null,
     val continueRecording: Boolean? = null
