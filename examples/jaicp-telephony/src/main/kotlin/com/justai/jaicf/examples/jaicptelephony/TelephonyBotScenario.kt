@@ -1,10 +1,7 @@
 package com.justai.jaicf.examples.jaicptelephony
 
-import com.justai.jaicf.channel.jaicp.JaicpEvents
 import com.justai.jaicf.channel.jaicp.channels.TelephonyEvents
 import com.justai.jaicf.channel.jaicp.dto.telephony
-import com.justai.jaicf.channel.jaicp.reactions.chatwidget
-import com.justai.jaicf.channel.jaicp.reactions.switchToOperator
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.scenario.Scenario
@@ -76,12 +73,9 @@ object TelephonyBotScenario : Scenario(), WithLogger {
         state("speechNotRecognized") {
             activators {
                 event(TelephonyEvents.SPEECH_NOT_RECOGNISED)
-                event(JaicpEvents.liveChatFinished)
             }
             action {
                 reactions.say("Sorry, I can't hear you! Could you repeat please?")
-                reactions.chatwidget?.switchToOperator("asd")
-                reactions.say("test")
             }
         }
 
