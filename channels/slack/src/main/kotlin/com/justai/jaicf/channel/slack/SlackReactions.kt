@@ -8,7 +8,6 @@ import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import com.slack.api.bolt.context.ActionRespondUtility
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.context.SayUtility
-import com.slack.api.methods.MethodsClient
 import com.slack.api.methods.request.users.profile.UsersProfileGetRequest
 import com.slack.api.model.User
 import com.slack.api.model.block.ActionsBlock
@@ -26,7 +25,7 @@ class SlackReactions(
     val context: Context
 ) : Reactions(), JaicpCompatibleAsyncReactions {
 
-    val client: MethodsClient = context.client()
+    val client = context.client()
 
     private fun nextActionId() = UUID.randomUUID().toString()
 
@@ -55,11 +54,11 @@ class SlackReactions(
     }
 
     override fun image(url: String) = image(
-        ImageBlock.builder()
-            .imageUrl(url)
-            .altText(url)
-            .build()
-    )
+            ImageBlock.builder()
+                .imageUrl(url)
+                .altText(url)
+                .build()
+        )
 
 
     fun image(image: ImageBlock): ImageReaction {
