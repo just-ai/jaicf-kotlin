@@ -10,17 +10,16 @@ internal data class LiveChatEvent(
     val commonType: String,
     val chatId: String,
     val timestamp: Long,
-    val chatUserInfo: UserInfo,
-    val originalRequest: JsonObject
+    val chatUserInfo: UserInfo
 ) {
     @Serializable
     data class UserInfo(
         val id: String,
         val firstName: String? = null,
         val lastName: String? = null,
-        val userName: String? = null
+        val userName: String? = null,
+        val requestData: JsonObject
     )
 
-    fun getHttpRequest(r: JaicpBotRequest) = originalRequest.toString().asHttpBotRequest(r.stringify())
+    fun getHttpRequest(r: JaicpBotRequest) = chatUserInfo.requestData.toString().asHttpBotRequest(r.stringify())
 }
-
