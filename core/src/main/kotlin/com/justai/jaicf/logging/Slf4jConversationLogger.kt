@@ -24,12 +24,15 @@ class Slf4jConversationLogger(
      * @param loggingContext current request's [LoggingContext] with obfuscated input and reactions
      * */
     override fun doLog(loggingContext: LoggingContext) {
-        logger.debug(
+        val replies = loggingContext.reactions.joinToString(separator = "\n\t\t", prefix = "\n\t\t") {
+            it.toString().replace("\n", "\\n")
+        }
+        logger.info(
             """
             |
-            |Processing ${loggingContext.request::class.simpleName} with input "${loggingContext.input}" finished
-            |SelectedActivator: ${loggingContext.activationContext?.activator?.name} with state ${loggingContext.activationContext?.activation?.state}
-            |Reactions: ${loggingContext.reactions}""".trimMargin()
+            |  Processing ${loggingContext.request::class.simpleName} with input "${loggingContext.input}"
+            |  SelectedActivator: ${loggingContext.activationContext?.activator?.name} with state ${loggingContext.activationContext?.activation?.state}
+            |  Reactions: $replies""".trimMargin()
         )
     }
 }
