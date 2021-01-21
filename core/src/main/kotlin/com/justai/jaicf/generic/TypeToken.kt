@@ -18,6 +18,10 @@ data class ContextTypeToken<A: ActivatorContext, B: BotRequest, R: Reactions>(
     fun isInstance(activatorContext: ActivatorContext) = activatorType.isInstance(activatorContext)
     fun isInstance(request: BotRequest) = requestType.isInstance(request)
     fun isInstance(reactions: Reactions) = reactionsType.isInstance(reactions)
+
+    companion object {
+        val Default: ContextTypeToken<ActivatorContext, BotRequest, Reactions> = ContextTypeToken()
+    }
 }
 
 /**
@@ -29,6 +33,12 @@ data class ActivatorTypeToken<A: ActivatorContext>(
     val activatorType: KClass<A>
 ) {
     fun isInstance(activatorContext: ActivatorContext) = activatorType.isInstance(activatorContext)
+
+    fun toContextTypeToken(): ContextTypeToken<A, BotRequest, Reactions> = ContextTypeToken.Default and this
+
+    companion object {
+        val Default: ActivatorTypeToken<ActivatorContext> = ActivatorTypeToken()
+    }
 }
 
 /**
@@ -42,6 +52,12 @@ data class ChannelTypeToken<B: BotRequest, R: Reactions>(
 ) {
     fun isInstance(request: BotRequest) = requestType.isInstance(request)
     fun isInstance(reactions: Reactions) = reactionsType.isInstance(reactions)
+
+    fun toContextTypeToken(): ContextTypeToken<ActivatorContext, B, R> = ContextTypeToken.Default and this
+
+    companion object {
+        val Default: ChannelTypeToken<BotRequest, Reactions> = ChannelTypeToken()
+    }
 }
 
 
