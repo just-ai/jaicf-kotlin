@@ -1,0 +1,24 @@
+{
+  "object": "page",
+  "entry": [
+    {
+      "id": "110387787249256",
+      "time": 1611153924637,
+      "messaging": [
+        {
+          "sender": {
+            "id": "{{ clientId }}"
+          },
+          "recipient": {
+            "id": "{{ clientId }}"
+          },
+          "timestamp": 1611153924412,
+          "message": {
+            "mid": "predefined_message_id",
+            "text": "{{ text }}"
+          }
+        }
+      ]
+    }
+  ]
+}

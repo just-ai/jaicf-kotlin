@@ -1,15 +1,16 @@
 package com.justai.jaicf.channel.slack
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.gateway.BotGateway
+import com.justai.jaicf.gateway.BotGatewayRequest
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
-import com.justai.jaicf.reactions.Reactions
 import com.slack.api.Slack
 import com.slack.api.SlackConfig
 import com.slack.api.bolt.App
@@ -17,7 +18,6 @@ import com.slack.api.bolt.AppConfig
 import com.slack.api.bolt.context.Context
 import com.slack.api.bolt.middleware.builtin.IgnoringSelfEvents
 import com.slack.api.bolt.request.RequestHeaders
-import com.slack.api.bolt.request.builtin.EventRequest
 import com.slack.api.bolt.util.SlackRequestParser
 import com.slack.api.methods.MethodsConfig
 import kotlinx.coroutines.CoroutineScope
@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 class SlackChannel private constructor(
     override val botApi: BotApi
 ) : JaicpCompatibleAsyncBotChannel,
+    BotGateway<SlackGatewayRequest>(),
     CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private lateinit var app: App
@@ -97,12 +98,15 @@ class SlackChannel private constructor(
         botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
-    override fun processLiveChatEventRequest(event: String, clientId: String, request: HttpBotRequest) {
-        val slackRequest = buildSlackRequest(request) as EventRequest
+    override fun processGatewayRequest(request: BotGatewayRequest) {
+        val gwRequest = SlackGatewayRequest.create(request) ?: return
+        val slackRequest =
+            buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
+        SlackGatewayRequest.create(request)
         botApi.process(
-            SlackLiveChatEventRequest(clientId, event),
+            gwRequest,
             SlackReactions(slackRequest.context),
-            RequestContext.fromHttp(request)
+            RequestContext.DEFAULT
         )
     }
 
@@ -115,6 +119,7 @@ class SlackChannel private constructor(
         }
     }
 
+
     private fun buildSlackRequest(req: HttpBotRequest) = SlackRequestParser.HttpRequest.builder()
         .queryString(req.parameters.toMutableMap())
         .headers(RequestHeaders(req.headers.toMutableMap()))
@@ -122,10 +127,11 @@ class SlackChannel private constructor(
         .build()
         .let { parser.parse(it) }
 
-
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "slack"
         override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, apiUrl)
+
+        private const val REQUEST_TEMPLATE_PATH = "/SlackRequestTemplate.json"
     }
 }
 

@@ -1,0 +1,23 @@
+{
+  "update_id": 0,
+  "message": {
+    "message_id": 0,
+    "from": {
+      "id": 0,
+      "is_bot": false,
+      "first_name": "First",
+      "last_name": "Name",
+      "username": "UserName",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": "{{ clientId }}",
+      "first_name": "Vladislav",
+      "last_name": "Metelyagin",
+      "username": "vmetelyagin",
+      "type": "private"
+    },
+    "date": 1611064356,
+    "text": "{{ text }}"
+  }
+}
