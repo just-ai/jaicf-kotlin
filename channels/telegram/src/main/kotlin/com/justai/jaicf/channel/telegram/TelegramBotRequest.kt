@@ -6,6 +6,9 @@ import com.github.kotlintelegrambot.entities.stickers.Sticker
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
+import com.justai.jaicf.gateway.BotGatewayEventRequest
+import com.justai.jaicf.gateway.BotGatewayQueryRequest
+import com.justai.jaicf.gateway.BotGatewayRequest
 
 val BotRequest.telegram get() = this as? TelegramBotRequest
 
@@ -22,6 +25,7 @@ val TelegramBotRequest.sticker get() = this as? TelegramStickerRequest
 val TelegramBotRequest.video get() = this as? TelegramVideoRequest
 val TelegramBotRequest.videoNote get() = this as? TelegramVideoNoteRequest
 val TelegramBotRequest.voice get() = this as? TelegramVoiceRequest
+val TelegramBotRequest.gateway get() = this as? TelegramGatewayRequest
 
 internal val Message.clientId get() = chat.id.toString()
 
@@ -94,8 +98,26 @@ data class TelegramVoiceRequest(
     val voice: Voice
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VOICE)
 
-data class TelegramLiveChatEventRequest(
+interface TelegramGatewayRequest : TelegramBotRequest, BotGatewayRequest {
+    companion object {
+        fun create(r: BotGatewayRequest, message: Message) = when (r) {
+            is BotGatewayEventRequest -> TelegramGatewayEventRequest(message, r.clientId, r.input, r.requestData)
+            is BotGatewayQueryRequest -> TelegramGatewayQueryRequest(message, r.clientId, r.input, r.requestData)
+            else -> null
+        }
+    }
+}
+
+data class TelegramGatewayEventRequest(
     override val message: Message,
     override val clientId: String,
-    override val input: String
-): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = input)
+    override val input: String,
+    override val requestData: String
+) : TelegramGatewayRequest, BotGatewayEventRequest(clientId, input, requestData)
+
+data class TelegramGatewayQueryRequest(
+    override val message: Message,
+    override val clientId: String,
+    override val input: String,
+    override val requestData: String
+) : TelegramGatewayRequest, BotGatewayQueryRequest(clientId, input, requestData)

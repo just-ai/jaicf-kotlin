@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.facebook
 
 import com.github.messenger4j.send.MessagePayload
+import com.github.messenger4j.send.MessageResponse
 import com.github.messenger4j.send.MessagingType
 import com.github.messenger4j.send.Payload
 import com.github.messenger4j.send.message.Message
@@ -25,7 +26,9 @@ class FacebookReactions(
     internal val request: FacebookBotRequest
 ) : Reactions(), JaicpCompatibleAsyncReactions {
 
-    fun send(payload: Payload) = messenger.send(payload)
+    fun send(payload: Payload): MessageResponse? {
+        return messenger.send(payload)
+    }
 
     fun sendResponse(message: Message) = send(
         MessagePayload.create(request.event.senderId(), MessagingType.RESPONSE, message)
@@ -59,3 +62,15 @@ class FacebookReactions(
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.FILE)
     }
 }
+
+//    override fun processGatewayRequest(request: BotGatewayRequest) {
+//        val template = getRequestTemplateJson(request.clientId, request.input)
+//        val gson = Gson()
+//        val event = gson.fromJson(template, TextMessageEvent::class.java)
+//        val fbRequest = FacebookGatewayRequest.create(request, event) ?: return
+//        botApi.process(
+//            fbRequest,
+//            FacebookReactions(messenger, fbRequest),
+//            RequestContext.DEFAULT
+//        )
+//    }

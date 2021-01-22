@@ -5,6 +5,9 @@ import com.github.messenger4j.webhook.event.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
+import com.justai.jaicf.gateway.BotGatewayEventRequest
+import com.justai.jaicf.gateway.BotGatewayQueryRequest
+import com.justai.jaicf.gateway.BotGatewayRequest
 
 val BotRequest.facebook get() = this as? FacebookBotRequest
 
@@ -94,8 +97,26 @@ internal fun Event.toBotRequest(): FacebookBotRequest = when {
     else -> FacebookFallbackBotRequest(FallbackEvent(senderId(), recipientId(), timestamp()))
 }
 
-data class FacebookLiveChatEventRequest(
+interface FacebookGatewayRequest : FacebookBotRequest, BotGatewayRequest {
+    companion object {
+        fun create(r: BotGatewayRequest, event: BaseEvent) = when (r) {
+            is BotGatewayEventRequest -> FacebookGatewayEventRequest(event, r.clientId, r.input, r.requestData)
+            is BotGatewayQueryRequest -> FacebookGatewayQueryRequest(event, r.clientId, r.input, r.requestData)
+            else -> null
+        }
+    }
+}
+
+data class FacebookGatewayEventRequest(
     override val event: BaseEvent,
     override val clientId: String,
-    override val input: String
-) : FacebookEventBotRequest(event, input)
+    override val input: String,
+    override val requestData: String
+) : FacebookGatewayRequest, BotGatewayEventRequest(clientId, input, requestData)
+
+data class FacebookGatewayQueryRequest(
+    override val event: BaseEvent,
+    override val clientId: String,
+    override val input: String,
+    override val requestData: String
+) : FacebookGatewayRequest, BotGatewayQueryRequest(clientId, input, requestData)
