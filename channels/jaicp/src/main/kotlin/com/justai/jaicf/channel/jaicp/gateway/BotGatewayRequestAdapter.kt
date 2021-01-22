@@ -15,7 +15,7 @@ internal object BotGatewayRequestAdapter {
      * @see BotGateway
      * @see BotGatewayEventRequest
      * */
-    fun ensureGatewayRequest(channel: BotGateway<*>, request: JaicpBotRequest): Boolean {
+    fun ensureGatewayRequest(channel: BotGateway, request: JaicpBotRequest): Boolean {
         val event = request.event ?: return false
         if (!request.isGatewayRequest()) {
             return false
