@@ -8,7 +8,8 @@ import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
-import com.justai.jaicf.channel.jaicp.livechat.LiveChatEventAdapter
+import com.justai.jaicf.channel.jaicp.gateway.BotGatewayRequestAdapter
+import com.justai.jaicf.gateway.BotGateway
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -50,9 +51,10 @@ class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
         channel.processCompatible(request)
 
     private fun executeAsync(channel: JaicpCompatibleAsyncBotChannel, request: JaicpBotRequest) {
-        if (!LiveChatEventAdapter.ensureAsyncLiveChatEvent(channel, request)) {
-            channel.process(request.raw.asHttpBotRequest(request.stringify()))
+        if (channel is BotGateway<*> && BotGatewayRequestAdapter.ensureGatewayRequest(channel, request)) {
+            return
         }
+        channel.process(request.raw.asHttpBotRequest(request.stringify()))
     }
 }
 

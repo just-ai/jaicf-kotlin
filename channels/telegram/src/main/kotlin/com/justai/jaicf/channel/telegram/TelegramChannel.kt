@@ -13,12 +13,14 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
+import com.justai.jaicf.gateway.BotGateway
+import com.justai.jaicf.gateway.BotGatewayRequest
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/"
-) : JaicpCompatibleAsyncBotChannel {
+) : JaicpCompatibleAsyncBotChannel, BotGateway<TelegramGatewayRequest>() {
 
     private val gson = GsonFactory.createForApiClient()
 
@@ -90,21 +92,22 @@ class TelegramChannel(
         }
     }
 
-    override fun processLiveChatEventRequest(event: String, clientId: String, request: HttpBotRequest) {
-        val message = gson.fromJson(request.receiveText(), Update::class.java).message ?: return
-        val liveChatRequest = TelegramLiveChatEventRequest(message, clientId, event)
-        botApi.process(
-            liveChatRequest,
-            TelegramReactions(bot, liveChatRequest),
-            RequestContext.fromHttp(request)
-        )
-    }
-
     override fun process(request: HttpBotRequest): HttpBotResponse? {
         val update = gson.fromJson(request.receiveText(), Update::class.java)
         update.httpBotRequest = request
         bot.processUpdate(update)
         return null
+    }
+
+    override fun processGatewayRequest(request: BotGatewayRequest) {
+        val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
+        val message = gson.fromJson(template, Update::class.java).message ?: return
+        val telegramRequest = TelegramGatewayRequest.create(request, message) ?: return
+        botApi.process(
+            telegramRequest         ,
+            TelegramReactions(bot, telegramRequest),
+            RequestContext.DEFAULT
+        )
     }
 
     fun run() {
@@ -117,6 +120,8 @@ class TelegramChannel(
             TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").also {
                 it.botUpdater.startCheckingUpdates()
             }
+
+        private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
     }
 }
 

@@ -6,6 +6,8 @@ import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 @Serializable
 data class JaicpBotRequest(
@@ -31,4 +33,6 @@ data class JaicpBotRequest(
     val raw: String get() = rawRequest.toString()
 
     fun stringify() = JSON.encodeToString(serializer(), this)
+
+    internal fun isGatewayRequest() = rawRequest["commonType"]?.jsonPrimitive?.contentOrNull == "COMMON"
 }

@@ -25,10 +25,7 @@ interface JaicpCompatibleBotChannel : JaicpBotChannel, HttpBotChannel
  *
  * @see HttpBotChannel
  */
-interface JaicpCompatibleAsyncBotChannel : JaicpBotChannel, HttpBotChannel {
-
-    fun processLiveChatEventRequest(event: String, clientId: String, request: HttpBotRequest)
-}
+interface JaicpCompatibleAsyncBotChannel : JaicpBotChannel, HttpBotChannel
 
 /**
  * Basic interface for JAICP-provided channel factories.

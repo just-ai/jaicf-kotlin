@@ -1,9 +1,8 @@
 package com.justai.jaicf.channel.facebook
 
 import com.github.messenger4j.exception.MessengerVerificationException
-import com.github.messenger4j.webhook.Event
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.facebook.api.FacebookLiveChatEventRequest
+import com.justai.jaicf.channel.facebook.api.FacebookGatewayRequest
 import com.justai.jaicf.channel.facebook.api.toBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.channel.http.HttpBotRequest
@@ -12,11 +11,13 @@ import com.justai.jaicf.channel.http.asTextHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.gateway.BotGateway
+import com.justai.jaicf.gateway.BotGatewayRequest
 import java.util.*
 
 class FacebookChannel private constructor(
     override val botApi: BotApi
-) : JaicpCompatibleAsyncBotChannel {
+) : JaicpCompatibleAsyncBotChannel, BotGateway<FacebookGatewayRequest>() {
 
     private lateinit var messenger: Messenger
 
@@ -26,14 +27,6 @@ class FacebookChannel private constructor(
 
     private constructor(botApi: BotApi, baseUrl: String) : this(botApi) {
         messenger = Messenger.create("", "", "", baseUrl)
-    }
-
-    override fun processLiveChatEventRequest(event: String, clientId: String, request: HttpBotRequest) {
-        messenger.onReceiveEvents(request.receiveText(), Optional.empty()) { e: Event ->
-            val eventRequest = FacebookLiveChatEventRequest(e.toBotRequest().event, clientId, event)
-            val reactions = FacebookReactions(messenger, eventRequest)
-            botApi.process(eventRequest, reactions, RequestContext.fromHttp(request))
-        }
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse? {
@@ -61,5 +54,19 @@ class FacebookChannel private constructor(
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "facebook"
         override fun create(botApi: BotApi, apiUrl: String) = FacebookChannel(botApi, apiUrl)
+
+        private const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
+    }
+
+    override fun processGatewayRequest(request: BotGatewayRequest) {
+        val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
+        messenger.onReceiveEvents(template, Optional.empty()) { event ->
+            val fbRequest = FacebookGatewayRequest.create(request, event.asTextMessageEvent()) ?: return@onReceiveEvents
+            botApi.process(
+                fbRequest,
+                FacebookReactions(messenger, fbRequest),
+                RequestContext.DEFAULT
+            )
+        }
     }
 }

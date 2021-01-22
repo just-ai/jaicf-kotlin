@@ -2,8 +2,10 @@ package com.justai.jaicf.channel.slack
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
-import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
+import com.justai.jaicf.gateway.BotGatewayEventRequest
+import com.justai.jaicf.gateway.BotGatewayQueryRequest
+import com.justai.jaicf.gateway.BotGatewayRequest
 import com.slack.api.app_backend.events.payload.EventsApiPayload
 import com.slack.api.app_backend.interactive_components.payload.BlockActionPayload
 import com.slack.api.app_backend.slash_commands.payload.SlashCommandPayload
@@ -59,7 +61,24 @@ data class SlackActionRequest(
     input = payload.actions[0].value
 )
 
-data class SlackLiveChatEventRequest(
+interface SlackGatewayRequest : SlackBotRequest, BotGatewayRequest {
+    companion object {
+        fun create(r: BotGatewayRequest) = when (r) {
+            is BotGatewayEventRequest -> SlackGatewayEventRequest(r.clientId, r.input, r.requestData)
+            is BotGatewayQueryRequest -> SlackGatewayQueryRequest(r.clientId, r.input, r.requestData)
+            else -> null
+        }
+    }
+}
+
+data class SlackGatewayEventRequest(
     override val clientId: String,
-    override val input: String
-) : SlackBotRequest, EventBotRequest(clientId, input)
+    override val input: String,
+    override val requestData: String
+) : SlackGatewayRequest, BotGatewayEventRequest(clientId, input, requestData)
+
+data class SlackGatewayQueryRequest(
+    override val clientId: String,
+    override val input: String,
+    override val requestData: String
+) : SlackGatewayRequest, BotGatewayQueryRequest(clientId, input, requestData)
