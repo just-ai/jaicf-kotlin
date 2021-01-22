@@ -15,7 +15,6 @@ import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
  * @throws NoOperatorsOnlineException when no livechat operators are available
  * @throws NoOperatorChannelConfiguredException when current channel has no livechat configured
  * */
-@Throws(NoOperatorsOnlineException::class, NoOperatorChannelConfiguredException::class)
 fun JaicpCompatibleAsyncReactions.switchToOperator(message: String) =
     switchToOperator(LiveChatSwitchReply(firstMessage = message))
 
@@ -30,7 +29,6 @@ fun JaicpCompatibleAsyncReactions.switchToOperator(message: String) =
  * @throws NoOperatorsOnlineException when no livechat operators are available
  * @throws NoOperatorChannelConfiguredException when current channel has no livechat configured
  * */
-@Throws(NoOperatorsOnlineException::class, NoOperatorChannelConfiguredException::class)
 fun JaicpCompatibleAsyncReactions.switchToOperator(reply: LiveChatSwitchReply) =
     LiveChatInitRequest.create(loggingContext, reply)?.let {
         ChatAdapterConnector.getIfExists()?.initLiveChat(it)
