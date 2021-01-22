@@ -5,6 +5,8 @@ import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.util.*
 
+typealias RouteToGatewayChannel = Pair<String, BotGateway<*>>
+
 /**
  * A helper extensions for Ktor framework with [BotGateway] routing.
  *
@@ -27,8 +29,6 @@ import io.ktor.util.*
  * @see BotGatewayRequest
  * @see BotGatewayRequestType
  */
-typealias RouteToGatewayChannel = Pair<String, BotGateway<*>>
-
 fun Routing.botGatewayRouting(vararg routes: RouteToGatewayChannel) {
     routes.forEach { channel ->
         post("${channel.first}/{clientId}") {
@@ -67,7 +67,7 @@ private fun processGatewayRequest(
     requestData: String,
     bot: BotGateway<*>
 ) = bot.processGatewayRequest(
-    when (type) {
+    request = when (type) {
         BotGatewayRequestType.EVENT -> BotGatewayEventRequest(clientId, input, requestData)
         BotGatewayRequestType.TEXT -> BotGatewayQueryRequest(clientId, input, requestData)
     }
