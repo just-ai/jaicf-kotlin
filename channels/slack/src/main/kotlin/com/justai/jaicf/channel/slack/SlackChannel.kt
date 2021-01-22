@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 class SlackChannel private constructor(
     override val botApi: BotApi
 ) : JaicpCompatibleAsyncBotChannel,
-    BotGateway<SlackGatewayRequest>(),
+    BotGateway(),
     CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private lateinit var app: App

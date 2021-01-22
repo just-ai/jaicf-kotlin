@@ -5,7 +5,7 @@ import io.ktor.request.*
 import io.ktor.routing.*
 import io.ktor.util.*
 
-typealias RouteToGatewayChannel = Pair<String, BotGateway<*>>
+typealias RouteToGatewayChannel = Pair<String, BotGateway>
 
 /**
  * A helper extensions for Ktor framework with [BotGateway] routing.
@@ -65,7 +65,7 @@ private fun processGatewayRequest(
     input: String,
     type: BotGatewayRequestType,
     requestData: String,
-    bot: BotGateway<*>
+    bot: BotGateway
 ) = bot.processGatewayRequest(
     request = when (type) {
         BotGatewayRequestType.EVENT -> BotGatewayEventRequest(clientId, input, requestData)

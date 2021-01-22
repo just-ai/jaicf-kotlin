@@ -51,7 +51,7 @@ class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
         channel.processCompatible(request)
 
     private fun executeAsync(channel: JaicpCompatibleAsyncBotChannel, request: JaicpBotRequest) {
-        if (channel is BotGateway<*> && BotGatewayRequestAdapter.ensureGatewayRequest(channel, request)) {
+        if (channel is BotGateway && BotGatewayRequestAdapter.ensureGatewayRequest(channel, request)) {
             return
         }
         channel.process(request.raw.asHttpBotRequest(request.stringify()))
