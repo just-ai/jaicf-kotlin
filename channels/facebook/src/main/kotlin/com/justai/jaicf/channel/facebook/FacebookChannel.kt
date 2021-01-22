@@ -17,7 +17,7 @@ import java.util.*
 
 class FacebookChannel private constructor(
     override val botApi: BotApi
-) : JaicpCompatibleAsyncBotChannel, BotGateway<FacebookGatewayRequest>() {
+) : JaicpCompatibleAsyncBotChannel, BotGateway() {
 
     private lateinit var messenger: Messenger
 
@@ -29,7 +29,7 @@ class FacebookChannel private constructor(
         messenger = Messenger.create("", "", "", baseUrl)
     }
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         messenger.onReceiveEvents(request.receiveText(), Optional.empty()) { event ->
             event.toBotRequest().let { botRequest ->
                 botApi.process(

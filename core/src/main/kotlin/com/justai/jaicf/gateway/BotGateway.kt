@@ -7,7 +7,7 @@ package com.justai.jaicf.gateway
  * @see BotGatewayRequest
  *
  * */
-abstract class BotGateway<out T : BotGatewayRequest> {
+abstract class BotGateway {
     abstract fun processGatewayRequest(request: BotGatewayRequest)
 
     @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
@@ -15,7 +15,4 @@ abstract class BotGateway<out T : BotGatewayRequest> {
         this.javaClass.getResource(resourceName).readText()
             .replace("{{ clientId }}", request.clientId)
             .replace("{{ text }}", request.input)
-
 }
-
-

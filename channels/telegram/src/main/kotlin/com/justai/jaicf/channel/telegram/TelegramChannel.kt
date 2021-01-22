@@ -20,7 +20,7 @@ class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/"
-) : JaicpCompatibleAsyncBotChannel, BotGateway<TelegramGatewayRequest>() {
+) : JaicpCompatibleAsyncBotChannel, BotGateway() {
 
     private val gson = GsonFactory.createForApiClient()
 

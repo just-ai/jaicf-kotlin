@@ -62,15 +62,3 @@ class FacebookReactions(
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.FILE)
     }
 }
-
-//    override fun processGatewayRequest(request: BotGatewayRequest) {
-//        val template = getRequestTemplateJson(request.clientId, request.input)
-//        val gson = Gson()
-//        val event = gson.fromJson(template, TextMessageEvent::class.java)
-//        val fbRequest = FacebookGatewayRequest.create(request, event) ?: return
-//        botApi.process(
-//            fbRequest,
-//            FacebookReactions(messenger, fbRequest),
-//            RequestContext.DEFAULT
-//        )
-//    }
