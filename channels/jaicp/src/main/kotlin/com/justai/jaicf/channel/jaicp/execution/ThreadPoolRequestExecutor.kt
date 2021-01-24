@@ -54,7 +54,7 @@ class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
         if (channel is BotGateway && BotGatewayRequestAdapter.ensureGatewayRequest(channel, request)) {
             return
         }
-        channel.process(request.raw.asHttpBotRequest(request.stringify()))
+        channel.process(request.asHttpBotRequest())
     }
 }
 
@@ -63,7 +63,7 @@ private fun JaicpCompatibleBotChannel.processCompatible(
     botRequest: JaicpBotRequest
 ): JaicpBotResponse {
     val startTime = System.currentTimeMillis()
-    val request = botRequest.raw.asHttpBotRequest(botRequest.stringify())
+    val request = botRequest.asHttpBotRequest()
     val response = process(request)?.let { response ->
         val rawJson = JSON.decodeFromString<JsonObject>(response.output.toString())
         addRawReply(rawJson)

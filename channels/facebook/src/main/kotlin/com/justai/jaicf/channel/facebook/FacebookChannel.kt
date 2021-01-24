@@ -58,15 +58,12 @@ class FacebookChannel private constructor(
         private const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
     }
 
-    override fun processGatewayRequest(request: BotGatewayRequest) {
+    override fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext) {
         val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
         messenger.onReceiveEvents(template, Optional.empty()) { event ->
-            val fbRequest = FacebookGatewayRequest.create(request, event.asTextMessageEvent()) ?: return@onReceiveEvents
-            botApi.process(
-                fbRequest,
-                FacebookReactions(messenger, fbRequest),
-                RequestContext.DEFAULT
-            )
+            FacebookGatewayRequest.create(request, event.asTextMessageEvent())?.let {
+                botApi.process(it, FacebookReactions(messenger, it), requestContext)
+            }
         }
     }
 }

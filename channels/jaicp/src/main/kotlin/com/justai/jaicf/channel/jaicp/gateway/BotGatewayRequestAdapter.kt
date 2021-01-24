@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.gateway
 
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.gateway.BotGateway
 import com.justai.jaicf.gateway.BotGatewayEventRequest
 
@@ -25,7 +26,10 @@ internal object BotGatewayRequestAdapter {
         } catch (e: Exception) {
             return false
         }
-        channel.processGatewayRequest(BotGatewayEventRequest(data.chatId, event, request.raw))
+        channel.processGatewayRequest(
+            request = BotGatewayEventRequest(data.chatId, event, request.raw),
+            requestContext = RequestContext.fromHttp(request.asHttpBotRequest())
+        )
         return true
     }
 }
