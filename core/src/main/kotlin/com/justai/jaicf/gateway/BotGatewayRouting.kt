@@ -1,5 +1,7 @@
 package com.justai.jaicf.gateway
 
+import com.justai.jaicf.channel.http.asHttpBotRequest
+import com.justai.jaicf.context.RequestContext
 import io.ktor.application.*
 import io.ktor.request.*
 import io.ktor.routing.*
@@ -70,7 +72,8 @@ private fun processGatewayRequest(
     request = when (type) {
         BotGatewayRequestType.EVENT -> BotGatewayEventRequest(clientId, input, requestData)
         BotGatewayRequestType.TEXT -> BotGatewayQueryRequest(clientId, input, requestData)
-    }
+    },
+    requestContext = RequestContext.fromHttp(requestData.asHttpBotRequest())
 )
 
 

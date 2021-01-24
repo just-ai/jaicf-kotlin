@@ -1,5 +1,7 @@
 package com.justai.jaicf.gateway
 
+import com.justai.jaicf.context.RequestContext
+
 /**
  * Base class for all channels able to process requests from external service.
  * Allows to send [BotGatewayEventRequest] or [BotGatewayQueryRequest] with client identifier to implementations at any time.
@@ -8,7 +10,7 @@ package com.justai.jaicf.gateway
  *
  * */
 abstract class BotGateway {
-    abstract fun processGatewayRequest(request: BotGatewayRequest)
+    abstract fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext)
 
     @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     protected fun getRequestTemplateFromResources(request: BotGatewayRequest, resourceName: String) =

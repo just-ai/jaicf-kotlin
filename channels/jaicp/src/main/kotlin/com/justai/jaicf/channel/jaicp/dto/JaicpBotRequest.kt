@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.dto
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -35,4 +36,6 @@ data class JaicpBotRequest(
     fun stringify() = JSON.encodeToString(serializer(), this)
 
     internal fun isGatewayRequest() = rawRequest["commonType"]?.jsonPrimitive?.contentOrNull == "COMMON"
+
+    internal fun asHttpBotRequest() = raw.asHttpBotRequest(stringify())
 }
