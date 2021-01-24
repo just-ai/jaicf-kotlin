@@ -98,16 +98,12 @@ class SlackChannel private constructor(
         botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
-    override fun processGatewayRequest(request: BotGatewayRequest) {
+    override fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext) {
         val gwRequest = SlackGatewayRequest.create(request) ?: return
         val slackRequest =
             buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
         SlackGatewayRequest.create(request)
-        botApi.process(
-            gwRequest,
-            SlackReactions(slackRequest.context),
-            RequestContext.DEFAULT
-        )
+        botApi.process(gwRequest, SlackReactions(slackRequest.context), requestContext)
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {

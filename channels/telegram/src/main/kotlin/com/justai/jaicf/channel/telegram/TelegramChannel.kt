@@ -99,15 +99,11 @@ class TelegramChannel(
         return null
     }
 
-    override fun processGatewayRequest(request: BotGatewayRequest) {
+    override fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext) {
         val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
         val message = gson.fromJson(template, Update::class.java).message ?: return
         val telegramRequest = TelegramGatewayRequest.create(request, message) ?: return
-        botApi.process(
-            telegramRequest         ,
-            TelegramReactions(bot, telegramRequest),
-            RequestContext.DEFAULT
-        )
+        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest), requestContext)
     }
 
     fun run() {
