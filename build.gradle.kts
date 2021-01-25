@@ -18,7 +18,7 @@ buildscript {
 allprojects {
 
     group = "com.justai.jaicf"
-    version = "0.11.0-SNAPSHOT"
+    version = "0.10.2"
 
     repositories {
         google()
