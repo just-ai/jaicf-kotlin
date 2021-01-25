@@ -7,7 +7,7 @@ dependencies {
     implementation(project(":core"))
     implementation(kotlin("stdlib", Version.stdLib))
 
-    api("org.mongodb:mongo-java-driver:4.1.1")
+    api("org.mongodb:mongodb-driver-sync:4.1.1")
     api("com.fasterxml.jackson.module:jackson-module-kotlin" version {jackson})
 
     testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
