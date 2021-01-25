@@ -19,7 +19,7 @@ val Reactions.alexa
 
 class AlexaReactions(
     override val response: AlexaBotResponse,
-    private val handlerInput: HandlerInput
+    val handlerInput: HandlerInput
 ) : ResponseReactions<AlexaBotResponse>(response) {
 
     private val speeches = mutableListOf<String>()
