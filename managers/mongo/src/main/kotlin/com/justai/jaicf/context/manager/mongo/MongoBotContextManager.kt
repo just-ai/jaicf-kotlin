@@ -7,7 +7,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
-import com.mongodb.client.model.UpdateOptions
+import com.mongodb.client.model.ReplaceOptions
 import org.bson.Document
 
 class MongoBotContextManager(
@@ -40,7 +40,7 @@ class MongoBotContextManager(
             dialogContext = botContext.dialogContext
         ).apply {
             val doc = Document.parse(mapper.writeValueAsString(this))
-            collection.replaceOne(Filters.eq("_id", _id), doc, UpdateOptions().upsert(true))
+            collection.replaceOne(Filters.eq("_id", _id), doc, ReplaceOptions().upsert(true))
         }
     }
 }
