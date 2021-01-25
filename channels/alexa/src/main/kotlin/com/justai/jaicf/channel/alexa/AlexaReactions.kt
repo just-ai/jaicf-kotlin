@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.alexa
 
 import com.amazon.ask.dispatcher.request.handler.HandlerInput
+import com.amazon.ask.model.interfaces.alexa.presentation.apl.RenderDocumentDirective
 import com.amazon.ask.model.interfaces.audioplayer.*
 import com.amazon.ask.model.interfaces.display.Image
 import com.amazon.ask.model.services.DefaultApiConfiguration
@@ -40,6 +41,9 @@ class AlexaReactions(
 
         return SayReaction.create(text)
     }
+
+    fun say(text: String, voice: String) =
+        say("<voice name='$voice'>$text</voice>")
 
     override fun audio(url: String): AudioReaction {
         return playAudio(url)
@@ -105,6 +109,23 @@ class AlexaReactions(
 
     fun sendAPIResponse(data: Map<String, Any?>) {
         response.builder.withApiResponse(data)
+    }
+
+    fun sendDocument(token: String,
+                     document: Map<String, Any>,
+                     datasources: Map<String, Any> = emptyMap(),
+                     sources: Map<String, Any> = emptyMap(),
+                     packages: List<Any> = emptyList()
+    ) {
+        val directive = RenderDocumentDirective.builder()
+            .withToken(token)
+            .withDocument(document)
+            .withDatasources(datasources)
+            .withSources(sources)
+            .withPackages(packages)
+            .build()
+
+        response.builder.addDirective(directive)
     }
 
     fun sendDirective(directive: Directive) {
