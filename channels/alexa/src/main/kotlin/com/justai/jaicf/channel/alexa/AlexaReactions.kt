@@ -6,6 +6,7 @@ import com.amazon.ask.model.interfaces.audioplayer.*
 import com.amazon.ask.model.interfaces.display.Image
 import com.amazon.ask.model.services.DefaultApiConfiguration
 import com.amazon.ask.model.services.directive.*
+import com.amazon.ask.request.RequestHelper
 import com.amazon.ask.services.ApacheHttpApiClient
 import com.amazon.ask.util.JacksonSerializer
 import com.justai.jaicf.logging.AudioReaction
@@ -117,15 +118,18 @@ class AlexaReactions(
                      sources: Map<String, Any> = emptyMap(),
                      packages: List<Any> = emptyList()
     ) {
-        val directive = RenderDocumentDirective.builder()
-            .withToken(token)
-            .withDocument(document)
-            .withDatasources(datasources)
-            .withSources(sources)
-            .withPackages(packages)
-            .build()
 
-        response.builder.addDirective(directive)
+        if (RequestHelper.forHandlerInput(handlerInput).supportedInterfaces.alexaPresentationAPL != null) {
+            val directive = RenderDocumentDirective.builder()
+                .withToken(token)
+                .withDocument(document)
+                .withDatasources(datasources)
+                .withSources(sources)
+                .withPackages(packages)
+                .build()
+
+            response.builder.addDirective(directive)
+        }
     }
 
     fun sendDirective(directive: Directive) {
