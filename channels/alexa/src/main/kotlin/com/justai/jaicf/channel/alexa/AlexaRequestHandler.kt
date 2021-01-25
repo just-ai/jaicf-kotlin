@@ -29,7 +29,9 @@ class AlexaRequestHandler(
     override fun canHandle(input: HandlerInput?) = true
 
     override fun handle(input: HandlerInput?): Optional<Response> {
-        val request = createRequest(input!!) ?: return Optional.empty()
+        if (input == null) return Optional.empty()
+
+        val request = createRequest(input)
         val response = AlexaBotResponse(input.responseBuilder)
         val httpBotRequest = input.context as? HttpBotRequest
 
@@ -46,23 +48,8 @@ class AlexaRequestHandler(
         return response.builder.build()
     }
 
-    private fun createRequest(input: HandlerInput): AlexaBotRequest? {
-        if (input.request is IntentRequest) {
-            return AlexaIntentRequest(input)
-        }
-
-        return when (input.request) {
-            is LaunchRequest -> AlexaEvent.LAUNCH
-            is SessionEndedRequest -> AlexaEvent.SESSION_ENDED
-            is PauseCommandIssuedRequest -> AlexaEvent.PAUSE
-            is NextCommandIssuedRequest -> AlexaEvent.NEXT
-            is PreviousCommandIssuedRequest -> AlexaEvent.PREV
-            is PlayCommandIssuedRequest -> AlexaEvent.PLAY
-            is APIInvocationRequest -> (input.request as APIInvocationRequest).apiRequest.name
-
-            else -> null
-        }?.let {
-            AlexaEventRequest(input, it)
-        }
+    private fun createRequest(input: HandlerInput) = when (input.request) {
+        is IntentRequest -> AlexaIntentRequest(input)
+        else -> AlexaEventRequest(input, input.request.type)
     }
 }
