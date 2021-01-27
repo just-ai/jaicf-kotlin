@@ -1,21 +1,22 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
+import com.justai.jaicf.builder.startScenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
 import com.justai.jaicf.channel.googleactions.dialogflow.actionsDialogflow
-import com.justai.jaicf.helpers.ssml.break200ms
-import com.justai.jaicf.helpers.ssml.fast
-import com.justai.jaicf.helpers.ssml.ordinal
 import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.examples.gameclock.model.supportedColors
+import com.justai.jaicf.helpers.ssml.break200ms
 import com.justai.jaicf.helpers.ssml.break500ms
+import com.justai.jaicf.helpers.ssml.fast
+import com.justai.jaicf.helpers.ssml.ordinal
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.context.runInTest
 
-object GamersColorsScenario: Scenario() {
+object GamersColorsScenario: Scenario {
 
     const val state = "/setup/colors"
 
-    init {
+    override val model by startScenario {
         state(state) {
             action {
                 val game = GameController(context)

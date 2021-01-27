@@ -35,5 +35,5 @@ internal class JaicpNativeChannelTests : JaicpBaseTest() {
 
 private val echoBot = BotEngine(echoWithAction {
     reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
-}.model)
+})
 

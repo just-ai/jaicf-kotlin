@@ -14,22 +14,8 @@ import kotlin.reflect.KClass
  *
  * @see com.justai.jaicf.builder.ScenarioBuilder
  */
-class ScenarioModel {
-    val transitions = mutableListOf<Transition>()
-    val states = mutableMapOf<String, State>()
-    val hooks = mutableMapOf<KClass<out BotHook>, MutableList<BotHookAction<in BotHook>>>()
-
-    operator fun plus(other: ScenarioModel): ScenarioModel {
-        val model = ScenarioModel()
-
-        model.transitions.addAll(transitions + other.transitions)
-        model.states.putAll(states + other.states)
-        model.hooks.putAll(hooks)
-        other.hooks.forEach { (event, listeners) ->
-            model.hooks.putIfAbsent(event, mutableListOf())
-            model.hooks[event]?.addAll(listeners)
-        }
-
-        return model
-    }
-}
+data class ScenarioModel(
+    val states: Map<String, State> = mapOf(),
+    val transitions: List<Transition> = listOf(),
+    val hooks: Map<KClass<out BotHook>, MutableList<BotHookAction<in BotHook>>> = mapOf()
+)

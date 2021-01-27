@@ -1,7 +1,8 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.justai.jaicf.channel.alexa.*
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
+import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.googleactions.actions
@@ -14,11 +15,11 @@ import com.justai.jaicf.helpers.ssml.break500ms
 import com.justai.jaicf.helpers.ssml.breakMs
 import com.justai.jaicf.model.scenario.Scenario
 
-object MainScenario : Scenario(
-    dependencies = listOf(GameSetupScenario, GameLoopScenario)
-) {
+object MainScenario : Scenario by Scenario({
 
-    init {
+    append(GameSetupScenario, GameLoopScenario)
+
+    start {
 
         state("launch") {
             activators {
@@ -32,9 +33,11 @@ object MainScenario : Scenario(
                     reactions.go("/start")
                 } else {
                     reactions.run {
-                        say("Hi gamers! ${breakMs(300)}" +
-                                "Game clock keeps track of the time for each player during the board game session." +
-                                "$break500ms Are you ready to start a game?")
+                        say(
+                            "Hi gamers! ${breakMs(300)}" +
+                                    "Game clock keeps track of the time for each player during the board game session." +
+                                    "$break500ms Are you ready to start a game?"
+                        )
                         buttons("Yes", "No")
                     }
                 }
@@ -171,6 +174,5 @@ object MainScenario : Scenario(
         fallback {
             reactions.say("Sorry, I didn't get it... Please try again or say cancel to stop me.")
         }
-
     }
-}
+})

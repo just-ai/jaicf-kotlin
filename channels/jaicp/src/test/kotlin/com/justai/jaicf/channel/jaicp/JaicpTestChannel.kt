@@ -13,7 +13,7 @@ class JaicpTestChannel(
     factory: JaicpNativeChannelFactory
 ) : HttpBotChannel {
 
-    constructor(scenario: Scenario, factory: JaicpNativeChannelFactory) : this(BotEngine(scenario.model), factory)
+    constructor(scenario: Scenario, factory: JaicpNativeChannelFactory) : this(BotEngine(scenario), factory)
 
     private val channel = factory.create(botApi)
 

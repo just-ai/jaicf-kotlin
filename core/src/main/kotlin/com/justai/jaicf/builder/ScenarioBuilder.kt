@@ -1,399 +1,79 @@
 package com.justai.jaicf.builder
 
-import com.justai.jaicf.activator.catchall.CatchAllActivationRule
-import com.justai.jaicf.activator.catchall.CatchAllActivatorContext
-import com.justai.jaicf.activator.event.AnyEventActivationRule
-import com.justai.jaicf.activator.event.EventByNameActivationRule
-import com.justai.jaicf.activator.intent.AnyIntentActivationRule
-import com.justai.jaicf.activator.intent.IntentByNameActivationRule
-import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.context.ActionContext
-import com.justai.jaicf.context.ActivatorContext
-import com.justai.jaicf.generic.ActivatorTypeToken
 import com.justai.jaicf.generic.ChannelTypeToken
-import com.justai.jaicf.generic.ContextTypeToken
-import com.justai.jaicf.generic.and
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
-import com.justai.jaicf.hook.BotHookException
-import com.justai.jaicf.model.ActionAdapter
+import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.state.State
-import com.justai.jaicf.model.state.StatePath
-import com.justai.jaicf.model.transition.Transition
 import com.justai.jaicf.reactions.Reactions
-import java.util.*
 import kotlin.reflect.KClass
 
-/**
- * The main abstraction to build [ScenarioModel] using a scenario DSL.
- * You can use it through Scenario type alias.
- *
- * A simple example of usage:
- *
- * ```
- * object HelloWorldScenario: Scenario() {
- *  init {
- *
- *    state("main") {
- *
- *      activators {
- *        catchAll()
- *        event(AlexaEvent.LAUNCH)
- *      }
- *
- *      action {
- *        reactions.sayRandom("Hi!", "Hello there!")
- *      }
- *
- *      state("inner") {
- *        ...
- *      }
- *    }
- *
- *  }
- * }
- *
- * val helloWorldBot = BotEngine(
- *  model = HelloWorldScenario.model,
- *  activators = arrayOf(
- *    AlexaActivator,
- *    CatchAllActivator
- *  )
- * )
- * ```
- *
- * Please learn more about scenario DSL in the SDK documentation
- *
- * @param dependencies a list of scenarios that are used by this one. These scenarios will be built and appended to the current one automatically during initialization.
- * @see ScenarioModel
- */
-abstract class ScenarioBuilder(
-    private val dependencies: List<ScenarioBuilder> = emptyList()
+@Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.FUNCTION)
+@DslMarker
+annotation class ScenarioDsl
+
+@ScenarioDsl
+class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
+    private val channelToken: ChannelTypeToken<B, R>
 ) {
-    internal var currentState = StateBuilder(StatePath.root())
-    private val statesStack = ArrayDeque<StateBuilder>(listOf(currentState))
-
-    private val _model: ScenarioModel by lazy { buildDependencies() }
-    val model: ScenarioModel by lazy { build() }
-
-    private fun buildDependencies(): ScenarioModel {
-        return dependencies.fold(ScenarioModel()) { model, builder ->
-            model + builder._model
-        }
-    }
-
-    private fun build(): ScenarioModel {
-        _model.transitions.groupBy({ it.fromState }) { it.rule }.values.forEach { rules ->
-            val exceptIntents = rules.filterIsInstance<IntentByNameActivationRule>().map { it.intent }
-            val exceptEvents = rules.filterIsInstance<EventByNameActivationRule>().map { it.event }
-
-            rules.filterIsInstance<AnyIntentActivationRule>().forEach { it.except += exceptIntents }
-            rules.filterIsInstance<AnyEventActivationRule>().forEach { it.except += exceptEvents }
-        }
-
-        return _model
-    }
+    private val scenarioModelBuilder = ScenarioModelBuilder()
+    private var model: ScenarioModel? = null
 
     /**
      * Registers a listener for a particular [BotHook].
      * Listener will be invoked by bot engine on the corresponding phase of the user's request processing.
      * To interrupt the request processing just throw a [BotHookException] in the body of your listener.
      *
+     * @param klass a [BotHook] type
      * @param listener a listener block
      * @see BotHook
      */
-    inline fun <reified T: BotHook> handle(noinline listener: (T) -> Unit) = handle(T::class, listener)
+    @ScenarioDsl
+    fun <T : BotHook> handle(klass: KClass<T>, listener: Dummy.(T) -> Unit) = addHandler(klass) { Dummy.listener(it) }
 
-    fun <T: BotHook> handle(klass: KClass<T>, listener: (T) -> Unit) {
-        _model.hooks.run {
-            putIfAbsent(klass, mutableListOf())
-            get(klass)?.add(listener as BotHookAction<in BotHook>)
-        }
+    @ScenarioDsl
+    inline fun <reified T : BotHook> handle(noinline listener: Dummy.(T) -> Unit) = handle(T::class, listener)
+
+    private fun <T: BotHook> addHandler(klass: KClass<T>, listener: (T) -> Unit) {
+        val hooks = scenarioModelBuilder.hooks.computeIfAbsent(klass) { mutableListOf() }
+        @Suppress("UNCHECKED_CAST")
+        hooks += listener as BotHookAction<in BotHook>
     }
 
     /**
-     * Appends a new top-level state to the scenario.
+     * Appends given scenarios to the current.
+     * Means that the scenarios will be accessible from the current model.
      *
-     * @param name a name of the state. Could be plain text or contains slashes to define a state path
-     * @param noContext indicates if this state should not to change the current dialogue's context
-     * @param modal indicates if this state should process the user's request in modal mode ignoring all other states
-     * @param body a code block of the state that contains activators, action and inner states definitions
+     * The scenarios will be merged as follows:
+     * - all top-level states of each scenario will be linked to a single root
+     *   resulting in a single merged scenario
+     *
+     * @param first the first of additional scenarios
+     * @param others other additional scenarios
      */
-    fun state(
-        name: String,
-        noContext: Boolean = false,
-        modal: Boolean = false,
-        body: StateBuilder.() -> Unit
-    ) {
-        val path = currentState.path.resolve(name)
-        val sb = StateBuilder(path, noContext, modal)
-
-        currentState = sb
-        statesStack.addLast(sb)
-
-        sb.body()
-
-        if (_model.states[sb.path.toString()] != null) {
-            throw IllegalStateException("Duplicated declaration of state with path: ${sb.path}")
-        }
-
-        _model.states[sb.path.toString()] = sb.build()
-
-        statesStack.removeLast()
-        currentState = statesStack.last
+    @ScenarioDsl
+    fun append(first: Scenario, vararg others: Scenario) {
+        scenarioModelBuilder.dependencies += first.model
+        scenarioModelBuilder.dependencies += others.map { it.model }
     }
 
     /**
-     * Appends a fallback state to the scenario.
-     * This state will be activated for every request that doesn't match to any other state.
-     * The current dialogue's context won't be changed.
-     * This builder requires a CatchAllActivator to be added to the activators list of your BotEngine instance.
+     * The starting point of a scenario building, builds the root state of the scenario.
+     * Every conversation starts in the root state.
      *
-     * ```
-     * fallback {
-     *   reactions.say("Sorry, I didn't get it...")
-     * }
-     * ```
+     * @param body a code block that builds the root state.
      *
-     * @param state an optional state name ("fallback" by default)
-     * @param body an action block that will be executed
+     * @see RootBuilder
      */
-    fun fallback(
-        state: String = "fallback",
-        body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit
-    ) = state(
-        name = state,
-        noContext = true,
-        body = {
-            activators { catchAll() }
-            action(body)
-        }
-    )
-
-    /**
-     * A channel-specific variation of [fallback].
-     *
-     * ```
-     * fallback(telegram) {
-     *   reactions.say("Sorry, ${request.message.chat.firstName}, I didn't get it.")
-     * }
-     * ```
-     *
-     * @param state an optional state name ("fallback" by default)
-     * @param channelToken a type token of the channel
-     * @param body an action block that will be executed only if request matches given [channelToken]
-     */
-    fun <B: BotRequest, R: Reactions> fallback(
-        channelToken: ChannelTypeToken<B, R>,
-        state: String = "fallback",
-        body: ActionContext<ActivatorContext, B, R>.() -> Unit
-    ) = state(
-        name = state,
-        noContext = true,
-        body = {
-            activators { catchAll() }
-            action { channelToken.invoke(body) }
-        }
-    )
-
-    private fun state0(
-        name: String,
-        noContext: Boolean,
-        modal: Boolean,
-        body: StateBuilder.() -> Unit) = state(name, noContext, modal, body)
-
-    inner class StateBuilder(
-        val path: StatePath,
-        private val noContext: Boolean = false,
-        private val modal: Boolean = false
-    ) {
-
-        private var action: (ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit)? = null
-
-        internal fun build() : State {
-            return State(
-                path,
-                noContext,
-                modal,
-                action?.let { ActionAdapter(it) })
-        }
-
-        /**
-         * Appends local activators to this state. Means that this state can be activated only if the parent state was activated previously.
-         * If the state is on top of the states hierarchy then these activators become global for scenario.
-         *
-         * @param fromState an optional state from where this state could be activated. If not specified the parent's state is used.
-         * @param body a code block that contains activators list
-         * @see com.justai.jaicf.activator.Activator
-         */
-        fun activators(fromState: String = currentState.path.parent, body: BindBuilder.() -> Unit) {
-            BindBuilder(fromState).body()
-        }
-
-        /**
-         * Appends global activators for this state. Means that this state can be activated from any point of scenario.
-         *
-         * @param body a code block that contains activators list
-         * @see com.justai.jaicf.activator.Activator
-         */
-        fun globalActivators(body: BindBuilder.() -> Unit) = activators("/", body)
-
-        /**
-         * An action that should be executed once this state was activated.
-         * @param body a code block of the action
-         */
-        fun action(body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit) {
-            action = body
-        }
-
-        /**
-         * An action that should be executed once this state was activated.
-         * The action will be executed only if [ActionContext] type matches the given [activatorToken]
-         *
-         * @param activatorToken an activator type token
-         * @param body a code block of the action
-         */
-        fun <A: ActivatorContext> action(
-            activatorToken: ActivatorTypeToken<A>,
-            body: ActionContext<A, BotRequest, Reactions>.() -> Unit
-        ) = action { activatorToken(body) }
-
-        /**
-         * An action that should be executed once this state was activated.
-         * The action will be executed only if [ActionContext] type matches the given [channelToken]
-         *
-         * @param channelToken a channel type token
-         * @param body a code block of the action
-         */
-        fun <B: BotRequest, R: Reactions> action(
-            channelToken: ChannelTypeToken<B, R>,
-            body: ActionContext<ActivatorContext, B, R>.() -> Unit
-        ) = action { channelToken(body) }
-
-        /**
-         * An action that should be executed once this state was activated.
-         * The action will be executed only if [ActionContext] type matches the given [contextTypeToken]
-         *
-         * @param contextTypeToken a full context type token
-         * @param body a code block of the action
-         */
-        fun <A: ActivatorContext, B: BotRequest, R: Reactions> action(
-            contextTypeToken: ContextTypeToken<A, B, R>,
-            body: ActionContext<A, B, R>.() -> Unit
-        ) = action { contextTypeToken(body) }
-
-        /**
-         * Appends an inner state to the current state.
-         * Means that inner state could be activated only if it's prarent state was activated previously.
-         *
-         * @param name a name of the state. Could be plain text or contains slashes to define a state path
-         * @param noContext indicates if this state sh<*, *, *>ould not to change the current dialogue's context
-         * @param modal indicates if this state should process the user's request in modal mode ignoring all other states
-         * @param body a code block of the state that contains activators, action and inner states definitions
-         */
-        fun state(
-            name: String,
-            noContext: Boolean = false,
-            modal: Boolean = false,
-            body: StateBuilder.() -> Unit
-        ) = state0(name, noContext, modal, body)
-
+    @ScenarioDsl
+    fun start(body: RootBuilder<B, R>.() -> Unit) {
+        val root = RootBuilder(scenarioModelBuilder, channelToken).apply(body).build()
+        scenarioModelBuilder.states.add(root)
     }
 
-
-    inner class BindBuilder(private val fromState: String) {
-        private val toState = currentState.path.toString()
-
-        private fun add(transition: Transition) = _model.transitions.add(transition)
-
-        /**
-         * Appends catch-all activator to this state. Means that any text can activate this state.
-         * Requires a [com.justai.jaicf.activator.catchall.CatchAllActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.catchall.CatchAllActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun catchAll() = add(Transition(
-            fromState,
-            toState,
-            CatchAllActivationRule()
-        ))
-
-        /**
-         * Appends regex activator to this state. Means that any text that matches to the pattern can activate this state.
-         * Requires a [com.justai.jaicf.activator.regex.RegexActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.regex.RegexActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun regex(pattern: Regex) = add(Transition(
-            fromState,
-            toState,
-            RegexActivationRule(pattern.pattern)
-        ))
-
-        /**
-         * Appends regex activator to this state. Means that any text that matches to the pattern can activate this state.
-         * Requires a [com.justai.jaicf.activator.regex.RegexActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.regex.RegexActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun regex(pattern: String) = regex(pattern.toRegex())
-
-        /**
-         * Appends event activator to this state. Means that an event with such name can activate this state.
-         * Requires a [com.justai.jaicf.activator.event.EventActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.event.EventActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun event(event: String) = add(Transition(
-                fromState,
-                toState,
-                EventByNameActivationRule(event)
-        ))
-
-        /**
-         * Appends any-event activator to this state. Means that any intent can activate this state.
-         * Requires a [com.justai.jaicf.activator.event.EventActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.event.EventActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun anyEvent() = add(Transition(
-            fromState,
-            toState,
-            AnyEventActivationRule()
-        ))
-
-        /**
-         * Appends intent activator to this state. Means that an intent with such name can activate this state.
-         * Requires a [com.justai.jaicf.activator.intent.IntentActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.intent.IntentActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun intent(intent: String) = add(Transition(
-            fromState,
-            toState,
-            IntentByNameActivationRule(intent)
-        ))
-
-        /**
-         * Appends any-intent activator to this state. Means that any intent can activate this state.
-         * Requires a [com.justai.jaicf.activator.intent.IntentActivator] in the activators' list of your [com.justai.jaicf.api.BotApi] instance.
-         *
-         * @see com.justai.jaicf.activator.intent.IntentActivator
-         * @see com.justai.jaicf.api.BotApi
-         */
-        fun anyIntent() = add(Transition(
-            fromState,
-            toState,
-            AnyIntentActivationRule()
-        ))
-    }
-
+    internal fun build(): ScenarioModel = model ?: scenarioModelBuilder.build().also { model = it }
 }
+
+@ScenarioDsl
+object Dummy

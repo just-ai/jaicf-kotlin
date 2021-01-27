@@ -13,20 +13,17 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  * Main abstraction for particular [ScenarioModel] test.
  * Unlike [BotTest] it creates [BotEngine] instance using provided [ScenarioModel] and default activators ([BaseIntentActivator], [RegexActivator]. [BaseEventActivator] and [CatchAllActivator]),
  *
- * @param model a [ScenarioModel] to be tested
+ * @param scenario a [ScenarioModel] to be tested
  * @see BaseIntentActivator
  * @see BaseEventActivator
  * @see RegexActivator
  * @see CatchAllActivator
  */
 open class ScenarioTest(
-    model: ScenarioModel
+    scenario: Scenario
 ): BotTest(
-    BotEngine(model, InMemoryBotContextManager, DEFAULT_ACTIVATORS)
+    BotEngine(scenario, InMemoryBotContextManager, DEFAULT_ACTIVATORS)
 ) {
-
-    constructor (scenario: Scenario) : this(scenario.model)
-
     companion object {
         private val DEFAULT_ACTIVATORS = arrayOf(
             BaseIntentActivator,
