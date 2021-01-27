@@ -1,23 +1,24 @@
 package com.justai.jaicf.examples.helloworld
 
 import com.justai.jaicf.activator.dialogflow.dialogflow
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.aimybox.AimyboxEvent
 import com.justai.jaicf.channel.aimybox.aimybox
-import com.justai.jaicf.channel.alexa.*
+import com.justai.jaicf.channel.alexa.alexa
+import com.justai.jaicf.channel.alexa.intent
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
-import com.justai.jaicf.channel.facebook.api.facebook
 import com.justai.jaicf.channel.facebook.facebook
 import com.justai.jaicf.channel.googleactions.dialogflow.DialogflowIntent
 import com.justai.jaicf.channel.telegram.telegram
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.reactions.buttons
 
-object HelloWorldScenario: Scenario(
-    dependencies = listOf(HelperScenario)
-) {
+object HelloWorldScenario : Scenario by Scenario({
 
-    init {
+    append(HelperScenario)
+
+    start {
         state("main") {
 
             activators {
@@ -113,4 +114,4 @@ object HelloWorldScenario: Scenario(
             }
         }
     }
-}
+})

@@ -13,7 +13,7 @@ class StatePath {
     }
 
     override fun toString(): String {
-        return if (path.size == 1 && path[0] == "") {
+        return if (isRoot) {
             "/"
         } else {
             path.joinToString(separator = "/")
@@ -24,6 +24,8 @@ class StatePath {
         return StatePath(path.subList(0, path.size - 1))
     }
 
+    val isRoot: Boolean
+        get() = path.size == 1 && path[0] == ""
 
     val name: String
         get() = path[path.size - 1]

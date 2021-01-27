@@ -3,14 +3,16 @@ package com.justai.jaicf
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.catchall.CatchAllActivator
 import com.justai.jaicf.activator.event.BaseEventActivator
 import com.justai.jaicf.activator.intent.BaseIntentActivator
+import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.context.*
+import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.ProcessContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -18,6 +20,7 @@ import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.Slf4jConversationLogger
+import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -25,7 +28,7 @@ import com.justai.jaicf.slotfilling.*
 
 /**
  * Default [BotApi] implementation.
- * You can use it passing the [ScenarioModel] of your bot, [BotContextManager] that manages the bot's state data and an array of [ActivatorFactory]. See params description below.
+ * You can use it passing the [Scenario] of your bot, [BotContextManager] that manages the bot's state data and an array of [ActivatorFactory]. See params description below.
  *
  * Here is an example of usage:
  *
@@ -38,7 +41,7 @@ import com.justai.jaicf.slotfilling.*
  *  )
  * ```
  *
- * @param model bot scenario model. Every bot should serve some scenario that implements a business logic of the bot.
+ * @param scenario bot scenario. Every bot should serve some scenario that implements a business logic of the bot.
  * @param defaultContextManager the default manager that manages a bot's context during the request execution. Can be overriden by the channel itself fot every user's request.
  * @param activators an array of used activator that can handle a request. Note that an order is matter: lower activators won't be called if top-level activator handles a request and a corresponding state is found in scenario.
  * @param activationSelector a selector that is used for selecting the most relevant [ActivationSelector] from all possible.
@@ -54,13 +57,15 @@ import com.justai.jaicf.slotfilling.*
  * @see ConversationLogger
  */
 class BotEngine(
-    val model: ScenarioModel,
+    scenario: Scenario,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory> = emptyArray(),
     private val activationSelector: ActivationSelector = ActivationSelector.default,
     private val slotReactor: SlotReactor? = null,
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
+
+    val model = scenario.model
 
     private val activators = activators.map { it.create(model) }.addBuiltinActivators()
 

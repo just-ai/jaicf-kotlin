@@ -7,9 +7,11 @@ import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.scenario.Scenario
 import java.time.Instant
 import java.time.temporal.ChronoUnit
+import com.justai.jaicf.builder.*
 
-object TelephonyBotScenario : Scenario(), WithLogger {
-    init {
+object TelephonyBotScenario : WithLogger, Scenario {
+
+    override val model by startScenario {
 
         state("ringing") {
             activators {

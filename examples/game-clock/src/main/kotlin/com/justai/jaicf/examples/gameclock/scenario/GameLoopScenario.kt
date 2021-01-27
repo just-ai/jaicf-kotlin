@@ -1,13 +1,13 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.amazon.ask.model.interfaces.display.Image
-import com.amazon.ask.model.interfaces.display.ImageInstance
 import com.google.api.services.actions_fulfillment.v2.model.TableCard
 import com.google.api.services.actions_fulfillment.v2.model.TableCardCell
 import com.google.api.services.actions_fulfillment.v2.model.TableCardColumnProperties
 import com.google.api.services.actions_fulfillment.v2.model.TableCardRow
 import com.justai.jaicf.activator.intent.intent
-import com.justai.jaicf.channel.alexa.*
+import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.channel.alexa.AlexaReactions
+import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.googleactions.ActionsReactions
@@ -18,14 +18,14 @@ import com.justai.jaicf.helpers.ssml.*
 import com.justai.jaicf.model.scenario.Scenario
 import kotlin.math.floor
 
-object GameLoopScenario: Scenario() {
+object GameLoopScenario: Scenario {
 
     private const val AUDIO_URL = "https://bitbucket.org/just-ai/examples/downloads/game-timer-1.mp3"
     private const val STARTED_AT = "started_at"
 
     const val play = "/play"
 
-    init {
+    override val model by startScenario {
 
         state(play) {
 

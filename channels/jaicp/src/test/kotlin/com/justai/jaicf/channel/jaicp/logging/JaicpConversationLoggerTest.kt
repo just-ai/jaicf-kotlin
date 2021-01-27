@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.logging
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.regex.RegexActivator
+import com.justai.jaicf.builder.startScenario
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
@@ -32,7 +33,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
         ): JaicpLogModel = super.createLog(req, ctx, session).also { actLog = it }
     }
     private val spyLogger = spyk(conversationLogger)
-    private val echoBot = BotEngine(ScenarioFactory.echo().model, conversationLoggers = arrayOf(spyLogger))
+    private val echoBot = BotEngine(ScenarioFactory.echo(), conversationLoggers = arrayOf(spyLogger))
 
     @Test
     fun `001 logging should set log model with session id for new user`() {
@@ -71,17 +72,17 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
 
     @Test
     fun `004 logging should start new session`() {
-        val scenario = object : Scenario() {
-            init {
-                fallback { reactions.say("You said: ${request.input}") }
-                state("sid") {
-                    activators { regex("start session") }
-                    action { reactions.chatapi?.startNewSession() }
-                }
+        val scenario = startScenario {
+
+            state("sid") {
+                activators { regex("start session") }
+                action { reactions.chatapi?.startNewSession() }
             }
+
+            fallback { reactions.say("You said: ${request.input}") }
         }
         val bot =
-            BotEngine(scenario.model, conversationLoggers = arrayOf(spyLogger), activators = arrayOf(RegexActivator))
+            BotEngine(scenario, conversationLoggers = arrayOf(spyLogger), activators = arrayOf(RegexActivator))
         val channel = JaicpTestChannel(bot, ChatApiChannel)
 
         channel.process(request.withQuery("Hello!").withClientId(testNumber))
@@ -105,17 +106,17 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
 
     @Test
     fun `005 logging should end current session, next request should go to new session`() {
-        val scenario = object : Scenario() {
-            init {
-                fallback { reactions.say("You said: ${request.input}") }
-                state("sid") {
-                    activators { regex("end session") }
-                    action { reactions.chatapi?.endSession() }
-                }
+        val scenario = startScenario {
+
+            state("sid") {
+                activators { regex("end session") }
+                action { reactions.chatapi?.endSession() }
             }
+
+            fallback { reactions.say("You said: ${request.input}") }
         }
         val bot =
-            BotEngine(scenario.model, conversationLoggers = arrayOf(spyLogger), activators = arrayOf(RegexActivator))
+            BotEngine(scenario, conversationLoggers = arrayOf(spyLogger), activators = arrayOf(RegexActivator))
         val channel = JaicpTestChannel(bot, ChatApiChannel)
 
         channel.process(request.withQuery("Hello!").withClientId(testNumber))

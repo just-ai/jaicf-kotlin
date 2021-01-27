@@ -9,7 +9,7 @@ import com.justai.jaicf.logging.Slf4jConversationLogger
 val cailaIntentActivator = CailaIntentActivator.Factory(nluSettings)
 
 val telephonyCallScenario = BotEngine(
-    TelephonyBotScenario.model,
+    TelephonyBotScenario,
     activators = arrayOf(
         cailaIntentActivator,
         RegexActivator
