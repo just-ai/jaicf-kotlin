@@ -3,8 +3,7 @@ package com.justai.jaicf.context.manager.test
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.manager.mongo.MongoBotContextManager
-import com.mongodb.MongoClient
-import com.mongodb.MongoClientURI
+import com.mongodb.client.MongoClients
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -13,10 +12,8 @@ import org.junit.jupiter.api.Disabled
 @Disabled
 class MongoBotContextManagerTest {
 
-    private val uri = MongoClientURI("mongodb://test:testtest1@ds125385.mlab.com:25385/jaicf")
-
-    private val client = MongoClient(uri)
-    private val manager = MongoBotContextManager(client.getDatabase(uri.database!!).getCollection("contexts"))
+    private val client = MongoClients.create("mongodb://test:testtest1@ds125385.mlab.com:25385/jaicf")
+    private val manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
 
     @Test
     fun testSave() {
