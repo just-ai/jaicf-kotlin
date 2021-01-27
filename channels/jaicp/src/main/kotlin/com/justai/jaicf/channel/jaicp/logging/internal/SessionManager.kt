@@ -1,7 +1,7 @@
 package com.justai.jaicf.channel.jaicp.logging.internal
 
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.logging.ExecutionContext
 
 internal object SessionManager {
 
@@ -9,13 +9,13 @@ internal object SessionManager {
 
     fun processEndSessionReaction(ctx: BotContext) = SessionEnded.saveToContext(ctx)
 
-    fun getOrCreateSessionId(loggingContext: LoggingContext): SessionData {
-        val ctx = loggingContext.botContext
+    fun getOrCreateSessionId(executionContext: ExecutionContext): SessionData {
+        val ctx = executionContext.botContext
         val sessionData = SessionDataService.fromContext(ctx)
         val sessionEvent = SessionEventService.fromContext(ctx)
         SessionEventService.cleanup(ctx)
 
-        if (sessionData == null || loggingContext.requestContext.newSession) {
+        if (sessionData == null || executionContext.requestContext.newSession) {
             return SessionData.new(ctx).apply { saveToContext(ctx) }
         }
 

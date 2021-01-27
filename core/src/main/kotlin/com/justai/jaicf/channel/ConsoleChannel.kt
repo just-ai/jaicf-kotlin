@@ -2,22 +2,21 @@ package com.justai.jaicf.channel
 
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.QueryBotRequest
-import com.justai.jaicf.api.TextResponse
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.reactions.TextReactions
+import com.justai.jaicf.test.reactions.TestReactions
 import java.util.*
 
 /**
  * A simple implementation of [BotChannel] that receives raw text requests from the console and prints a text responses back.
- * Supports only a [TextResponse].
- * Creates [TextReactions] instance for every request.
+ * Supports only a [TestResponse].
+ * Creates [TestReactions] instance for every request.
  *
  * @param botApi a bot engine
  *
  * @see [BotApi]
- * @see [TextReactions]
+ * @see [TestReactions]
  */
-class ConsoleChannel(override val botApi: BotApi): BotChannel {
+class ConsoleChannel(override val botApi: BotApi) : BotChannel {
 
     private val clientId = UUID.randomUUID().toString()
 
@@ -28,7 +27,7 @@ class ConsoleChannel(override val botApi: BotApi): BotChannel {
      */
     fun run(startMessage: String? = null) {
         startMessage?.let { process(startMessage) }
-        while(true) {
+        while (true) {
             print("> ")
             val input = readLine()
 
@@ -41,19 +40,17 @@ class ConsoleChannel(override val botApi: BotApi): BotChannel {
     }
 
     private fun process(input: String) {
-        execute(input)?.let {
-            it.split("\n").forEach { reply ->
-                print("< ")
-                println(reply)
-            }
+        execute(input).replies.forEach { reply ->
+            print("< ")
+            println(reply)
         }
     }
 
-    private fun execute(text: String): String? {
+    private fun execute(text: String): TestReactions {
         val request = QueryBotRequest(clientId, text)
-        val reactions = TextReactions(TextResponse())
+        val reactions = TestReactions()
 
         botApi.process(request, reactions, RequestContext.DEFAULT)
-        return reactions.response.text
+        return reactions
     }
 }

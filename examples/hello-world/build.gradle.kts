@@ -23,8 +23,9 @@ dependencies {
 
     implementation(project(":activators:dialogflow"))
 
+    testImplementation(project(":test:mock-jvm"))
     testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
 
 tasks {

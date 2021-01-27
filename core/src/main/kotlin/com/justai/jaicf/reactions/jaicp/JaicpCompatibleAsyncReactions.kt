@@ -1,6 +1,6 @@
 package com.justai.jaicf.reactions.jaicp
 
-import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.logging.ExecutionContext
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -10,7 +10,7 @@ import com.justai.jaicf.reactions.Reactions
  * @see com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
  * */
 interface JaicpCompatibleAsyncReactions {
-    val loggingContext: LoggingContext
+    val executionContext: ExecutionContext
 }
 
 val Reactions.jaicpAsync get() = this as? JaicpCompatibleAsyncReactions

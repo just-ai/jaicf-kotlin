@@ -12,9 +12,9 @@ abstract class Reaction(
 )
 
 /**
- * Result of performing reactions.say() to store in [LoggingContext].
+ * Result of performing reactions.say() to store in [ExecutionContext].
  *
- * @see [com.justai.jaicf.logging.LoggingContext]
+ * @see [com.justai.jaicf.logging.ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]
  * */
 data class SayReaction internal constructor(
@@ -28,9 +28,9 @@ data class SayReaction internal constructor(
 }
 
 /**
- * Result of performing reactions.image() to store in [LoggingContext]. May not be supported in some channels.
+ * Result of performing reactions.image() to store in [ExecutionContext]. May not be supported in some channels.
  *
- * @see [com.justai.jaicf.logging.LoggingContext]
+ * @see [com.justai.jaicf.logging.ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]
  * */
 data class ImageReaction internal constructor(
@@ -44,9 +44,9 @@ data class ImageReaction internal constructor(
 }
 
 /**
- * Result of performing reactions.buttons() to store in [LoggingContext]. May not be supported in some channels.
+ * Result of performing reactions.buttons() to store in [ExecutionContext]. May not be supported in some channels.
  *
- * @see [com.justai.jaicf.logging.LoggingContext]
+ * @see [com.justai.jaicf.logging.ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]
  * */
 data class ButtonsReaction internal constructor(
@@ -60,9 +60,9 @@ data class ButtonsReaction internal constructor(
 }
 
 /**
- * Result of performing reactions.go() to store in [LoggingContext].
+ * Result of performing reactions.go() to store in [ExecutionContext].
  *
- * @see [com.justai.jaicf.logging.LoggingContext]
+ * @see [com.justai.jaicf.logging.ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]
  * */
 data class GoReaction internal constructor(
@@ -76,7 +76,7 @@ data class GoReaction internal constructor(
 }
 
 /**
- * Result of performing reactions.changeState() to store in [LoggingContext]..
+ * Result of performing reactions.changeState() to store in [ExecutionContext]..
  * */
 data class ChangeStateReaction internal constructor(
     val transition: String,
@@ -89,9 +89,9 @@ data class ChangeStateReaction internal constructor(
 }
 
 /**
- * Result of performing reactions.audio() to store in [LoggingContext]. May not be supported in some channels.
+ * Result of performing reactions.audio() to store in [ExecutionContext]. May not be supported in some channels.
  *
- * @see [com.justai.jaicf.logging.LoggingContext]
+ * @see [com.justai.jaicf.logging.ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]
  * */
 data class AudioReaction internal constructor(

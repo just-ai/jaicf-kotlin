@@ -3,7 +3,6 @@ package com.justai.jaicf.examples.helloworld
 import com.justai.jaicf.activator.catchall.catchAll
 import com.justai.jaicf.activator.dialogflow.dialogflow
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
-import com.justai.jaicf.hook.BotRequestHook
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.reactions.Reactions
 

@@ -1,0 +1,223 @@
+{
+  "markup": {
+    "source": "спасибо",
+    "correctedText": "спасибо",
+    "words": [
+      {
+        "annotations": {
+          "lemma": "спасибо",
+          "pos": "NOUN"
+        },
+        "startPos": 0,
+        "endPos": 7,
+        "pattern": false,
+        "punctuation": false,
+        "source": "спасибо",
+        "word": "спасибо"
+      }
+    ]
+  },
+  "entitiesLookup": {
+    "text": "спасибо",
+    "entities": [
+      {
+        "entity": "THANKS",
+        "slot": null,
+        "startPos": 0,
+        "endPos": 7,
+        "text": "спасибо",
+        "value": "null",
+        "default": false,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      },
+      {
+        "entity": "thanks",
+        "slot": null,
+        "startPos": 0,
+        "endPos": 7,
+        "text": "спасибо",
+        "value": "null",
+        "default": false,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      },
+      {
+        "entity": "AnyWord",
+        "slot": null,
+        "startPos": 0,
+        "endPos": 7,
+        "text": "спасибо",
+        "value": "null",
+        "default": true,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      },
+      {
+        "entity": "TEXT",
+        "slot": null,
+        "startPos": 0,
+        "endPos": 7,
+        "text": "спасибо",
+        "value": "\"спасибо\"",
+        "default": false,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      },
+      {
+        "entity": "Text",
+        "slot": null,
+        "startPos": 0,
+        "endPos": 7,
+        "text": "спасибо",
+        "value": "\"спасибо\"",
+        "default": false,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      },
+      {
+        "entity": "catchAll",
+        "slot": null,
+        "startPos": 0,
+        "endPos": 7,
+        "text": "спасибо",
+        "value": "null",
+        "default": false,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      }
+    ],
+    "stagedPhraseIdx": null
+  },
+  "inference": {
+    "phrase": {
+      "text": "спасибо",
+      "entities": [
+        {
+          "entity": "THANKS",
+          "slot": null,
+          "startPos": 0,
+          "endPos": 7,
+          "text": "спасибо",
+          "value": "null",
+          "default": false,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        },
+        {
+          "entity": "thanks",
+          "slot": null,
+          "startPos": 0,
+          "endPos": 7,
+          "text": "спасибо",
+          "value": "null",
+          "default": false,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        },
+        {
+          "entity": "AnyWord",
+          "slot": null,
+          "startPos": 0,
+          "endPos": 7,
+          "text": "спасибо",
+          "value": "null",
+          "default": true,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        },
+        {
+          "entity": "TEXT",
+          "slot": null,
+          "startPos": 0,
+          "endPos": 7,
+          "text": "спасибо",
+          "value": "\"спасибо\"",
+          "default": false,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        },
+        {
+          "entity": "Text",
+          "slot": null,
+          "startPos": 0,
+          "endPos": 7,
+          "text": "спасибо",
+          "value": "\"спасибо\"",
+          "default": false,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        },
+        {
+          "entity": "catchAll",
+          "slot": null,
+          "startPos": 0,
+          "endPos": 7,
+          "text": "спасибо",
+          "value": "null",
+          "default": false,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        }
+      ],
+      "stagedPhraseIdx": null
+    },
+    "variants": [
+      {
+        "intent": {
+          "id": 22522,
+          "path": "/cailaWithContext",
+          "answer": null,
+          "customData": null,
+          "slots": null
+        },
+        "confidence": 1.0,
+        "slots": [
+          {
+            "name": "THANKS",
+            "value": "null",
+            "array": null
+          }
+        ],
+        "debug": null
+      },
+      {
+        "intent": {
+          "id": 18315,
+          "path": "/Bye",
+          "answer": null,
+          "customData": null,
+          "slots": null
+        },
+        "confidence": 0.0,
+        "slots": [],
+        "debug": null
+      },
+      {
+        "intent": {
+          "id": 18314,
+          "path": "/Hello",
+          "answer": null,
+          "customData": null,
+          "slots": null
+        },
+        "confidence": 0.0,
+        "slots": [],
+        "debug": null
+      }
+    ],
+    "spelledWords": null
+  }
+}

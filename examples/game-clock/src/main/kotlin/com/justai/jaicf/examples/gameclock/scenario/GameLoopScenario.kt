@@ -1,7 +1,5 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.amazon.ask.model.interfaces.display.Image
-import com.amazon.ask.model.interfaces.display.ImageInstance
 import com.google.api.services.actions_fulfillment.v2.model.TableCard
 import com.google.api.services.actions_fulfillment.v2.model.TableCardCell
 import com.google.api.services.actions_fulfillment.v2.model.TableCardColumnProperties

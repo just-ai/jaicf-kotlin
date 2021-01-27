@@ -15,13 +15,14 @@ dependencies {
     implementation(project(":channels:alexa"))
     implementation(project(":channels:google-actions"))
 
-    implementation("io.ktor:ktor-server-netty" version {ktor})
+    implementation("io.ktor:ktor-server-netty" version { ktor })
 
-    implementation("org.slf4j:slf4j-simple" version {slf4j})
-    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
+    implementation("org.slf4j:slf4j-simple" version { slf4j })
+    implementation("org.slf4j:slf4j-log4j12" version { slf4j })
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testImplementation(project(":test:mock-jvm"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    testRuntime("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {

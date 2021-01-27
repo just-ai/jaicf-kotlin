@@ -30,6 +30,6 @@ fun JaicpCompatibleAsyncReactions.switchToOperator(message: String) =
  * @throws NoOperatorChannelConfiguredException when current channel has no livechat configured
  * */
 fun JaicpCompatibleAsyncReactions.switchToOperator(reply: LiveChatSwitchReply) =
-    LiveChatInitRequest.create(loggingContext, reply)?.let {
+    LiveChatInitRequest.create(executionContext, reply)?.let {
         ChatAdapterConnector.getIfExists()?.initLiveChat(it)
     }

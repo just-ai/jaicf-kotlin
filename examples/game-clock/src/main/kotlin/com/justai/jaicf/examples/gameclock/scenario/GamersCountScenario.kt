@@ -40,7 +40,7 @@ class GamersCountScenario(
                     }
 
                     runInTest {
-                        gamers = getVar("gamers") as? Int
+                        gamers = gamers ?: getVar("gamers") as? Int
                     }
 
                     if (gamers == null) {

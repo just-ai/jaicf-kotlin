@@ -6,6 +6,7 @@ import com.justai.jaicf.activator.event.BaseEventActivator
 import com.justai.jaicf.activator.intent.BaseIntentActivator
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
 
@@ -21,14 +22,20 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  */
 open class ScenarioTest(
     model: ScenarioModel
-): BotTest(
-    BotEngine(model, InMemoryBotContextManager, DEFAULT_ACTIVATORS)
+) : BotTest(
+    BotEngine(
+        model,
+        InMemoryBotContextManager,
+        DEFAULT_ACTIVATORS,
+        conversationLoggers = arrayOf(Slf4jConversationLogger())
+    )
 ) {
 
     constructor (scenario: Scenario) : this(scenario.model)
 
     companion object {
         private val DEFAULT_ACTIVATORS = arrayOf(
+            TestIntentActivator,
             BaseIntentActivator,
             RegexActivator,
             BaseEventActivator,

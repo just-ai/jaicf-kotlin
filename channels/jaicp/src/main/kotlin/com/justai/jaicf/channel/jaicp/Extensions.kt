@@ -2,9 +2,9 @@ package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.jaicpNative
-import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.logging.ExecutionContext
 
-internal val LoggingContext.jaicpRequest: JaicpBotRequest?
+internal val ExecutionContext.jaicpRequest: JaicpBotRequest?
     get() {
         return request.jaicpNative?.jaicp ?: try {
             requestContext.httpBotRequest?.requestMetadata?.let {

@@ -14,29 +14,29 @@ abstract class ConversationLogger(
     /**
      * Logs to console or external service.
      *
-     * @param loggingContext current request's [LoggingContext] with obfuscated input and reactions
+     * @param executionContext current request's [ExecutionContext] with obfuscated input and reactions
      *
      * @see Reaction
-     * @see LoggingContext
+     * @see ExecutionContext
      * @see ConversationLogObfuscator
      * */
-    abstract fun doLog(loggingContext: LoggingContext)
+    abstract fun doLog(executionContext: ExecutionContext)
 
-    internal fun obfuscateAndLog(loggingContext: LoggingContext) = doLog(
-        loggingContext.copy(
-            input = obfuscateInput(loggingContext),
-            reactions = obfuscateReactions(loggingContext)
+    internal fun obfuscateAndLog(executionContext: ExecutionContext) = doLog(
+        executionContext.copy(
+            input = obfuscateInput(executionContext),
+            reactions = obfuscateReactions(executionContext)
         )
     )
 
-    private fun obfuscateInput(loggingContext: LoggingContext) =
-        logObfuscators.fold(loggingContext) { context, obfuscator ->
+    private fun obfuscateInput(executionContext: ExecutionContext) =
+        logObfuscators.fold(executionContext) { context, obfuscator ->
             context.copy(input = obfuscator.obfuscateInput(context))
         }.input
 
 
-    private fun obfuscateReactions(loggingContext: LoggingContext) =
-        logObfuscators.fold(loggingContext) { context, obfuscator ->
+    private fun obfuscateReactions(executionContext: ExecutionContext) =
+        logObfuscators.fold(executionContext) { context, obfuscator ->
             context.copy(reactions = obfuscator.obfuscateReactions(context))
         }.reactions
 }

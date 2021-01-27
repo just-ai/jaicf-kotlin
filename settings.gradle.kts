@@ -37,3 +37,6 @@ include("channels:facebook")
 findProject(":channels:facebook")?.name = "facebook"
 include("channels:yandex-alice")
 findProject(":channels:yandex-alice")?.name = "yandex-alice"
+
+include("test:mock-jvm")
+findProject(":test:mock-jvm")?.name = "mock-jvm"

@@ -3,6 +3,8 @@ package com.justai.jaicf.hook
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.exceptions.BotException
+import com.justai.jaicf.exceptions.BotExecutionException
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 
@@ -29,10 +31,13 @@ interface BotProcessHook: BotHook {
     val context: BotContext
     val request: BotRequest
     val reactions: Reactions
+}
+
+interface BotStatesProcessHook: BotProcessHook {
     val activator: ActivatorContext
 }
 
-interface BotActionHook: BotProcessHook {
+interface BotActionHook: BotStatesProcessHook {
     val state: State
 }
 
@@ -47,14 +52,14 @@ data class BeforeProcessHook(
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext
-): BotProcessHook
+): BotStatesProcessHook
 
 data class AfterProcessHook(
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext
-): BotProcessHook
+): BotStatesProcessHook
 
 data class BeforeActionHook(
     override val context: BotContext,
@@ -78,5 +83,12 @@ data class ActionErrorHook(
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val state: State,
-    val exception: Exception
+    val exception: BotException
 ): BotActionHook
+
+data class AnyErrorHook(
+    override val context: BotContext,
+    override val request: BotRequest,
+    override val reactions: Reactions,
+    val exception: BotExecutionException,
+): BotProcessHook

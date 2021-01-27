@@ -51,7 +51,7 @@ object GamersColorsScenario: Scenario() {
                     }
 
                     runInTest {
-                        color = getVar("color") as? String
+                        color = color ?: getVar("color") as? String
                     }
 
                     if (game.colors.isNullOrEmpty()) {

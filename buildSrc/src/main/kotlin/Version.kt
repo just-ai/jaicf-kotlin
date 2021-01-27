@@ -15,6 +15,7 @@ object Version {
     const val tomcatServletApi = "6.0.53"
     const val logbackGelfAppender = "1.5"
     const val mockk = "1.10.2"
+    const val atomicfu = "0.15.0"
 }
 
 infix fun String.version(versionProvider: Version.() -> String) =

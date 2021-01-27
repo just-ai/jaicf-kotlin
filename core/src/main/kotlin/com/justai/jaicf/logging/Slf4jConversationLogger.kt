@@ -21,15 +21,15 @@ class Slf4jConversationLogger(
     WithLogger {
 
     /**
-     * @param loggingContext current request's [LoggingContext] with obfuscated input and reactions
+     * @param executionContext current request's [ExecutionContext] with obfuscated input and reactions
      * */
-    override fun doLog(loggingContext: LoggingContext) {
+    override fun doLog(executionContext: ExecutionContext) {
         logger.debug(
             """
             |
-            |Processing ${loggingContext.request::class.simpleName} with input "${loggingContext.input}" finished
-            |SelectedActivator: ${loggingContext.activationContext?.activator?.name} with state ${loggingContext.activationContext?.activation?.state}
-            |Reactions: ${loggingContext.reactions}""".trimMargin()
+            |Processing ${executionContext.request::class.simpleName} with input "${executionContext.input}" finished
+            |SelectedActivator: ${executionContext.activationContext?.activator?.name} with state ${executionContext.activationContext?.activation?.state}
+            |Reactions: ${executionContext.reactions}""".trimMargin()
         )
     }
 }

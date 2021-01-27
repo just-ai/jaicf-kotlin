@@ -5,7 +5,7 @@ import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 
-val scenarioWithErrorHook = object : Scenario() {
+private val scenarioWithActionErrorHook = object : Scenario() {
     init {
         handle<ActionErrorHook> {
             it.reactions.say("Error happened. Sorry.")
@@ -27,7 +27,7 @@ val scenarioWithErrorHook = object : Scenario() {
     }
 }
 
-class ActionErrorHookHandlingTest : ScenarioTest(scenarioWithErrorHook.model) {
+class ActionErrorHookHandlingTest : ScenarioTest(scenarioWithActionErrorHook.model) {
 
     @Test
     fun `should handle error with some reaction`() {
