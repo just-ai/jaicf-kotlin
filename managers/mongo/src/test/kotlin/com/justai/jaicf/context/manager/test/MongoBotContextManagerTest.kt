@@ -4,16 +4,44 @@ import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.manager.mongo.MongoBotContextManager
 import com.mongodb.client.MongoClients
+import de.flapdoodle.embed.mongo.MongodExecutable
+import de.flapdoodle.embed.mongo.MongodStarter
+import de.flapdoodle.embed.mongo.config.MongodConfig
+import de.flapdoodle.embed.mongo.config.Net
+import de.flapdoodle.embed.mongo.distribution.Version
+import de.flapdoodle.embed.process.runtime.Network
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.TestInstance
 
-@Disabled
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MongoBotContextManagerTest {
 
-    private val client = MongoClients.create("mongodb://test:testtest1@ds125385.mlab.com:25385/jaicf")
-    private val manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
+    private lateinit var mongo: MongodExecutable
+    private lateinit var manager: MongoBotContextManager
+
+    @BeforeAll
+    internal fun setup() {
+        val port = Network.getFreeServerPort()
+        MongodConfig.builder()
+            .version(Version.Main.PRODUCTION)
+            .net(Net(port, false))
+            .build().let { config ->
+                mongo = MongodStarter.getDefaultInstance().prepare(config)
+                mongo.start()
+            }
+
+        val client = MongoClients.create("mongodb://localhost:$port")
+        manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
+    }
+
+    @AfterAll
+    internal fun shutdown() {
+        mongo.stop()
+    }
 
     @Test
     fun testSave() {
