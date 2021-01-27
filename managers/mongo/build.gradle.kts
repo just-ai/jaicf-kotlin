@@ -11,6 +11,7 @@ dependencies {
     api("com.fasterxml.jackson.module:jackson-module-kotlin" version {jackson})
 
     testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
+    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.0.0")
     testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
 
