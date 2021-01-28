@@ -27,7 +27,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * Appends an inner state to the current state.
      *
      * @param name a name of the state. Could be plain text or contains slashes to define a state path
-     * @param noContext indicates if this state sh<*, *, *>ould not to change the current dialogue's context
+     * @param noContext indicates if this state should not to change the current dialogue's context
      * @param modal indicates if this state should process the user's request in modal mode ignoring all other states
      * @param body a code block of the state that contains activators, action and inner states definitions
      */
