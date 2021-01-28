@@ -4,6 +4,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
+import com.justai.jaicf.model.ScenarioModelBuilder
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions

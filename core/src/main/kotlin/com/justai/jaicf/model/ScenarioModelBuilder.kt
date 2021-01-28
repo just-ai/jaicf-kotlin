@@ -1,4 +1,4 @@
-package com.justai.jaicf.builder
+package com.justai.jaicf.model
 
 import com.justai.jaicf.activator.event.AnyEventActivationRule
 import com.justai.jaicf.activator.event.EventByNameActivationRule
@@ -8,7 +8,6 @@ import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookAction
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
-import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 import kotlin.reflect.KClass
 

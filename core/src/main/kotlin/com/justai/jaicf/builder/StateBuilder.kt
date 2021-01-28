@@ -7,6 +7,7 @@ import com.justai.jaicf.generic.ActivatorTypeToken
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.generic.ContextTypeToken
 import com.justai.jaicf.model.ActionAdapter
+import com.justai.jaicf.model.ScenarioModelBuilder
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition

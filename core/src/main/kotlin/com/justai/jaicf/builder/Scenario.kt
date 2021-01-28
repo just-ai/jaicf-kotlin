@@ -1,12 +1,9 @@
 package com.justai.jaicf.builder
 
-import com.justai.jaicf.builder.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.generic.ChannelTypeToken
-import com.justai.jaicf.hook.BeforeProcessHook
-import com.justai.jaicf.hook.BotRequestHook
+import com.justai.jaicf.model.ScenarioModelBuilder
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.scenario.createScenario
 import com.justai.jaicf.reactions.Reactions
 
