@@ -105,7 +105,7 @@ open class ActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     }
 
     operator fun <A1: A, B1: B, R1: R, T> ContextTypeToken<A1, B1, R1>.invoke(action: ActionContext<A1, B1, R1>.() -> T): T? {
-        return if (isInstance(activator)) {
+        return if (isInstance(activator) && isInstance(request) && isInstance(reactions)) {
             @Suppress("UNCHECKED_CAST")
             (this@ActionContext as ActionContext<A1, B1, R1>).action()
         } else {
