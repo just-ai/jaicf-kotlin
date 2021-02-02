@@ -2,7 +2,11 @@ package com.justai.jaicf.examples.gameclock.scenario
 
 import com.justai.jaicf.builder.startScenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
+import com.justai.jaicf.channel.alexa.alexa
+import com.justai.jaicf.channel.alexa.intent
+import com.justai.jaicf.channel.googleactions.actions
 import com.justai.jaicf.channel.googleactions.dialogflow.actionsDialogflow
+import com.justai.jaicf.channel.googleactions.intent
 import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.examples.gameclock.model.supportedColors
 import com.justai.jaicf.helpers.ssml.break200ms
@@ -43,12 +47,12 @@ object GamersColorsScenario: Scenario {
                     val game = GameController(context)
                     var color: String? = null
 
-                    activator.alexaIntent?.run {
-                        color = slots["color"]?.value
+                    alexa.intent {
+                        color = activator.slots["color"]?.value
                     }
 
-                    activator.actionsDialogflow?.run {
-                        color = slots["color"] as? String
+                    actions.intent {
+                        color = activator.slots["color"] as? String
                     }
 
                     runInTest {

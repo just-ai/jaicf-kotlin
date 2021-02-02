@@ -8,19 +8,18 @@ import com.justai.jaicf.model.scenario.Scenario
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import com.justai.jaicf.builder.*
+import com.justai.jaicf.channel.jaicp.telephony
 
 object TelephonyBotScenario : WithLogger, Scenario {
 
-    override val model by startScenario {
+    override val model by startScenario(telephony) {
 
         state("ringing") {
             activators {
                 event(TelephonyEvents.RINGING)
             }
             action {
-                request.telephony?.let {
-                    logger.debug("Incoming call from ${it.caller}")
-                }
+                logger.debug("Incoming call from ${request.caller}")
             }
         }
 
@@ -40,7 +39,7 @@ object TelephonyBotScenario : WithLogger, Scenario {
             }
             action {
                 reactions.say("Bye-bye!")
-                reactions.telephony?.hangup()
+                reactions.hangup()
             }
         }
 
@@ -50,14 +49,14 @@ object TelephonyBotScenario : WithLogger, Scenario {
             }
             action {
                 reactions.say("Ok, I will call you back in a minute!")
-                reactions.telephony?.redial(
+                reactions.redial(
                     startDateTime = Instant.now().plus(1, ChronoUnit.MINUTES),
                     localTimeFrom = "12:00",
                     localTimeTo = "23:59",
                     retryIntervalInMinutes = 1,
                     maxAttempts = 2
                 )
-                reactions.telephony?.hangup()
+                reactions.hangup()
             }
         }
 
@@ -67,8 +66,8 @@ object TelephonyBotScenario : WithLogger, Scenario {
             }
             action {
                 reactions.say("Ok, sorry!")
-                reactions.telephony?.setResult("CALLEE REFUSED")
-                reactions.telephony?.hangup()
+                reactions.setResult("CALLEE REFUSED")
+                reactions.hangup()
             }
         }
 
@@ -86,17 +85,13 @@ object TelephonyBotScenario : WithLogger, Scenario {
                 event(TelephonyEvents.HANGUP)
             }
             action {
-                request.telephony?.let {
-                    logger.info("Conversation ended with caller: ${it.caller}")
-                }
+                logger.info("Conversation ended with caller: ${request.caller}")
             }
         }
 
         fallback {
             reactions.say("You said ${request.input}")
-            request.telephony?.let {
-                logger.info("Unrecognized message from caller: ${it.caller}")
-            }
+            logger.info("Unrecognized message from caller: ${request.caller}")
         }
     }
 }

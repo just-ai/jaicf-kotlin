@@ -14,11 +14,12 @@ import com.justai.jaicf.channel.googleactions.ActionsReactions
 import com.justai.jaicf.channel.googleactions.actions
 import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.examples.gameclock.model.colorLink
+import com.justai.jaicf.examples.gameclock.scenario.GameLoopScenario.playStream
 import com.justai.jaicf.helpers.ssml.*
 import com.justai.jaicf.model.scenario.Scenario
 import kotlin.math.floor
 
-object GameLoopScenario: Scenario {
+object GameLoopScenario : Scenario {
 
     private const val AUDIO_URL = "https://bitbucket.org/just-ai/examples/downloads/game-timer-1.mp3"
     private const val STARTED_AT = "started_at"
@@ -34,25 +35,24 @@ object GameLoopScenario: Scenario {
                 game.restart()
                 game.nextGamer()
 
-                reactions.run {
-                    say(
-                        "Okay! We are ready to start the game! ${breakMs(300)} " +
-                                "${game.currentColor()} player! You're the first! "
-                    )
+                reactions.say(
+                    "Okay! We are ready to start the game! ${breakMs(300)} " +
+                            "${game.currentColor()} player! You're the first! "
+                )
 
-                    actions?.playStream(game.currentColor())
-
-                    alexa?.run {
-                        say(
-                            "Just say me next $break300ms once you have finished your turn! " +
-                                    "Say pause $break300ms for a short break! " +
-                                    "Or say stop music $break300ms to finish the game."
-                        )
-
-                        playStream(game.currentColor())
-                    }
+                actions {
+                    reactions.playStream(game.currentColor())
                 }
 
+                alexa {
+                    reactions.say(
+                        "Just say me next $break300ms once you have finished your turn! " +
+                                "Say pause $break300ms for a short break! " +
+                                "Or say stop music $break300ms to finish the game."
+                    )
+
+                    reactions.playStream(game.currentColor())
+                }
             }
         }
 
@@ -67,17 +67,17 @@ object GameLoopScenario: Scenario {
                 val game = GameController(context)
                 var time: Long = 0
 
-                request.alexa?.run {
-                    time = handlerInput.requestEnvelope.context.audioPlayer.offsetInMilliseconds
+                alexa {
+                    time = request.handlerInput.requestEnvelope.context.audioPlayer.offsetInMilliseconds
                 }
 
-                request.actions?.run {
-                    time = System.currentTimeMillis() - (request.userStorage[STARTED_AT] as Number).toLong()
+                actions {
+                    time = System.currentTimeMillis() - (request.request.userStorage[STARTED_AT] as Number).toLong()
                 }
 
                 game.record(time)
 
-                activator.intent?.run {
+                intent {
                     reactions.run {
                         say(
                             "${game.currentColor()} player! " +
@@ -92,14 +92,12 @@ object GameLoopScenario: Scenario {
 
                 game.nextGamer()
 
-                activator.intent?.run {
+                intent {
                     reactions.say("$break1s ${game.currentColor()} player! It is your turn now!")
                 }
 
-                reactions.run {
-                    alexa?.playStream(game.currentColor())
-                    actions?.playStream(game.currentColor())
-                }
+                alexa { reactions.playStream(game.currentColor()) }
+                actions { reactions.playStream(game.currentColor()) }
             }
         }
 
@@ -114,16 +112,18 @@ object GameLoopScenario: Scenario {
                 val game = GameController(context)
                 game.prevGamer()
 
-                activator.intent?.run {
-                    reactions.say("${game.currentColor()} player! Please continue your ${ordinal(
-                        game.currentTurn()
-                    )} turn.")
+                intent {
+                    reactions.say(
+                        "${game.currentColor()} player! Please continue your ${
+                            ordinal(
+                                game.currentTurn()
+                            )
+                        } turn."
+                    )
                 }
 
-                reactions.run {
-                    alexa?.playStream(game.currentColor())
-                    actions?.playStream(game.currentColor())
-                }
+                alexa { reactions.playStream(game.currentColor()) }
+                actions { reactions.playStream(game.currentColor()) }
             }
         }
 
@@ -137,17 +137,17 @@ object GameLoopScenario: Scenario {
             action {
                 val game = GameController(context)
 
-                request.alexa?.run {
-                    game.currentTime = handlerInput.requestEnvelope.context.audioPlayer.offsetInMilliseconds
+                alexa {
+                    game.currentTime = request.handlerInput.requestEnvelope.context.audioPlayer.offsetInMilliseconds
                 }
 
-                activator.intent?.run {
+                intent {
                     reactions.say("Okay! Let's have a break! Once you are ready to continue, just say me play. Or say stop music to finish the game.")
                 }
 
-                reactions.alexa?.run {
-                    stopAudioPlayer()
-                    endSession()
+                alexa {
+                    reactions.stopAudioPlayer()
+                    reactions.endSession()
                 }
             }
         }
@@ -162,16 +162,18 @@ object GameLoopScenario: Scenario {
             action {
                 val game = GameController(context)
 
-                activator.intent?.run {
-                    reactions.say("${game.currentColor()} player! Please continue your ${ordinal(
-                        game.currentTurn()
-                    )} turn.")
+                intent {
+                    reactions.say(
+                        "${game.currentColor()} player! Please continue your ${
+                            ordinal(
+                                game.currentTurn()
+                            )
+                        } turn."
+                    )
                 }
 
-                reactions.run {
-                    alexa?.playStream(game.currentColor(), game.currentTime ?: 0)
-                    actions?.playStream(game.currentColor(), true)
-                }
+                alexa { reactions.playStream(game.currentColor(), game.currentTime ?: 0) }
+                actions { reactions.playStream(game.currentColor(), true) }
             }
         }
 
@@ -184,39 +186,39 @@ object GameLoopScenario: Scenario {
             action {
                 val game = GameController(context)
 
-                reactions.run {
-                    say("The game is over! $break500ms Here is your overall timing.")
+                reactions.say("The game is over! $break500ms Here is your overall timing.")
 
-                    game.gamersTime.forEach { (color, time) ->
-                        say("$break1s $color gamer $break200ms ${timeSpeech(time)}")
-                    }
+                game.gamersTime.forEach { (color, time) ->
+                    reactions.say("$break1s $color gamer $break200ms ${timeSpeech(time)}")
+                }
 
-                    alexa?.run {
-                        stopAudioPlayer()
-                        endSession("$break1s I also sent this game summary to your Alexa app! Please check for details!")
-                    }
+                alexa {
+                    reactions.stopAudioPlayer()
+                    reactions.endSession("$break1s I also sent this game summary to your Alexa app! Please check for details!")
+                }
 
-                    actions?.run {
-                        endConversation()
-                        response.builder.add(
-                            TableCard().apply {
-                                title = "Overall timing"
-                                subtitle = formatTime(game.overall!!)
+                actions {
+                    reactions.endConversation()
+                    reactions.response.builder.add(
+                        TableCard().apply {
+                            title = "Overall timing"
+                            subtitle = formatTime(game.overall!!)
 
-                                columnProperties = listOf(
-                                    TableCardColumnProperties().setHeader("Player"),
-                                    TableCardColumnProperties().setHeader("Time")
-                                )
+                            columnProperties = listOf(
+                                TableCardColumnProperties().setHeader("Player"),
+                                TableCardColumnProperties().setHeader("Time")
+                            )
 
-                                rows = game.gamersTime.map {
-                                    TableCardRow().setCells(listOf(
+                            rows = game.gamersTime.map {
+                                TableCardRow().setCells(
+                                    listOf(
                                         TableCardCell().setText(it.key),
                                         TableCardCell().setText(formatTime(it.value))
-                                    ))
-                                }
+                                    )
+                                )
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }

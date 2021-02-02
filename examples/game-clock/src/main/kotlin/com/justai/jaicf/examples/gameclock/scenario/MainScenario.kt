@@ -3,11 +3,13 @@ package com.justai.jaicf.examples.gameclock.scenario
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
 import com.justai.jaicf.channel.alexa.alexa
+import com.justai.jaicf.channel.alexa.intent
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
 import com.justai.jaicf.channel.alexa.model.AlexaIntent
 import com.justai.jaicf.channel.googleactions.actions
 import com.justai.jaicf.channel.googleactions.dialogflow.DialogflowIntent
 import com.justai.jaicf.channel.googleactions.dialogflow.actionsDialogflow
+import com.justai.jaicf.channel.googleactions.intent
 import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.helpers.ssml.break200ms
 import com.justai.jaicf.helpers.ssml.break300ms
@@ -75,12 +77,14 @@ object MainScenario : Scenario by Scenario({
                 reactions.run {
                     say("Okay $break200ms See you latter then! Bye bye!")
 
-                    actions?.endConversation()
-                    alexa?.run {
-                        stopAudioPlayer()
-                        endSession()
+                    actions {
+                        reactions.endConversation()
                     }
 
+                    alexa {
+                        reactions.stopAudioPlayer()
+                        reactions.endSession()
+                    }
                 }
             }
         }
@@ -94,12 +98,12 @@ object MainScenario : Scenario by Scenario({
                 val game = GameController(context)
                 var gamers: Int? = null
 
-                activator.alexaIntent?.run {
-                    gamers = slots["gamers"]?.value?.toInt()
+                alexa.intent {
+                    gamers = activator.slots["gamers"]?.value?.toInt()
                 }
 
-                activator.actionsDialogflow?.run {
-                    gamers = (slots["gamers"] as? Number)?.toInt()
+                actions.intent {
+                    gamers = (activator.slots["gamers"] as? Number)?.toInt()
                 }
 
                 when {
