@@ -1,15 +1,16 @@
 package com.justai.jaicf.channel.jaicp.execution
 
 import com.justai.jaicf.channel.BotChannel
-import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
-import com.justai.jaicf.channel.jaicp.gateway.BotGatewayRequestAdapter
-import com.justai.jaicf.gateway.BotGateway
+import com.justai.jaicf.channel.jaicp.invocationapi.InvocationRequestData
+import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.channel.invocationapi.InvocationEventRequest
+import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
@@ -51,13 +52,12 @@ class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
         channel.processCompatible(request)
 
     private fun executeAsync(channel: JaicpCompatibleAsyncBotChannel, request: JaicpBotRequest) {
-        if (channel is BotGateway && BotGatewayRequestAdapter.ensureGatewayRequest(channel, request)) {
-            return
+        val isProcessed = tryProcessAsExternalInvocation(channel, request)
+        if (!isProcessed) {
+            channel.process(request.asHttpBotRequest())
         }
-        channel.process(request.asHttpBotRequest())
     }
 }
-
 
 private fun JaicpCompatibleBotChannel.processCompatible(
     botRequest: JaicpBotRequest
@@ -80,4 +80,23 @@ private fun addRawReply(rawResponse: JsonElement) = buildJsonObject {
             put("body", rawResponse)
         })
     }
+}
+
+private fun tryProcessAsExternalInvocation(
+    channel: JaicpCompatibleAsyncBotChannel,
+    request: JaicpBotRequest
+): Boolean {
+    if (channel !is InvocableBotChannel) return false
+    if (!request.isExternalInvocationRequest()) return false
+    val event = request.event ?: return false
+    val data = try {
+        JSON.decodeFromString(InvocationRequestData.serializer(), request.raw)
+    } catch (e: Exception) {
+        return false
+    }
+    channel.processExternalInvocation(
+        request = InvocationEventRequest(data.chatId, event, request.raw),
+        requestContext = RequestContext.fromHttp(request.asHttpBotRequest())
+    )
+    return true
 }

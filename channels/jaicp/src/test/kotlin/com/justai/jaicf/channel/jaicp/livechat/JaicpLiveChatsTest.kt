@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.ScenarioFactory.echoWithAction
 import com.justai.jaicf.channel.jaicp.channels.ChatWidgetChannel
 import com.justai.jaicf.channel.jaicp.dto.LiveChatSwitchReply
-import com.justai.jaicf.channel.jaicp.reactions.switchToOperator
+import com.justai.jaicf.channel.jaicp.reactions.switchToLiveChat
 import com.justai.jaicf.reactions.jaicp.jaicpAsync
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -18,7 +18,7 @@ internal class JaicpLiveChatsTest : JaicpBaseTest() {
     fun `001 livechat should switch to operator`() {
         val message = "My First Message"
         val scenario = echoWithAction {
-            reactions.jaicpAsync?.switchToOperator(message)
+            reactions.jaicpAsync?.switchToLiveChat(message)
         }
         JaicpTestChannel(scenario, ChatWidgetChannel).process(request)
 
@@ -36,7 +36,7 @@ internal class JaicpLiveChatsTest : JaicpBaseTest() {
             oneTimeMessage = false
         )
         val scenario = echoWithAction {
-            reactions.jaicpAsync?.switchToOperator(expected)
+            reactions.jaicpAsync?.switchToLiveChat(expected)
         }
         JaicpTestChannel(scenario, ChatWidgetChannel).process(request)
 

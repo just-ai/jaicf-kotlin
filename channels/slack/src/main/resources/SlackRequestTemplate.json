@@ -3,11 +3,11 @@
   "team_id": "",
   "api_app_id": "",
   "event": {
-    "client_msg_id": "",
+    "client_msg_id": "{{ messageId }}",
     "type": "message",
     "text": "{{ text }}",
     "user": "",
-    "ts": "1611160062.001100",
+    "ts": "{{ timestamp }}.001100",
     "team": "",
     "blocks": [
       {
@@ -27,7 +27,7 @@
       }
     ],
     "channel": "{{ clientId }}",
-    "event_ts": "1611160062.001100",
+    "event_ts": "{{ timestamp }}.001100",
     "channel_type": "im"
   },
   "type": "event_callback",
@@ -37,13 +37,13 @@
     {
       "enterprise_id": null,
       "team_id": "",
-      "user_id": "",
+      "user_id": "{{ clientId }}",
       "is_bot": true,
       "is_enterprise_install": false
     }
   ],
   "is_ext_shared_channel": false,
-  "event_context": "1-message-T1EQM7A4D-D01CXF85Q9K",
+  "event_context": "1-message-{{ messageId }}-{{ clientId }}",
   "user_info": {
     "real_name_normalized": "GatewayAPI User",
     "display_name_normalized": ""

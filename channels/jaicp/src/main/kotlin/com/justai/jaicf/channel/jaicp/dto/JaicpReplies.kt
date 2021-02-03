@@ -95,7 +95,7 @@ class TelephonySwitchReply(
  * @param sendMessagesToOperator - true to send conversation history to operator.
  * @param sendMessageHistoryAmount - amount of last conversation history messages to send to operator.
  *
- * @see com.justai.jaicf.channel.jaicp.reactions.switchToOperator
+ * @see com.justai.jaicf.channel.jaicp.reactions.switchToLiveChat
  * */
 @Serializable
 data class LiveChatSwitchReply(

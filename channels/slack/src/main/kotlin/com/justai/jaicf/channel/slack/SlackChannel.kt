@@ -7,8 +7,8 @@ import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.gateway.BotGateway
-import com.justai.jaicf.gateway.BotGatewayRequest
+import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
+import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.slack.api.Slack
@@ -23,11 +23,12 @@ import com.slack.api.methods.MethodsConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class SlackChannel private constructor(
     override val botApi: BotApi
 ) : JaicpCompatibleAsyncBotChannel,
-    BotGateway(),
+    InvocableBotChannel,
     CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private lateinit var app: App
@@ -98,12 +99,12 @@ class SlackChannel private constructor(
         botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
-    override fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext) {
-        val gwRequest = SlackGatewayRequest.create(request) ?: return
-        val slackRequest =
-            buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
-        SlackGatewayRequest.create(request)
-        botApi.process(gwRequest, SlackReactions(slackRequest.context), requestContext)
+    override fun provideTimestamp(): String = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString()
+
+    override fun processExternalInvocation(request: InvocationRequest, requestContext: RequestContext) {
+        val invocationRequest = SlackInvocationRequest.create(request) ?: return
+        val slackRequest = buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
+        botApi.process(invocationRequest, SlackReactions(slackRequest.context), requestContext)
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {

@@ -1,9 +1,9 @@
 {
-  "update_id": 0,
+  "update_id": "{{ randomInt }}",
   "message": {
-    "message_id": 0,
+    "message_id": "{{ randomInt }}",
     "from": {
-      "id": 0,
+      "id": "{{ randomInt }}",
       "is_bot": false,
       "first_name": "First",
       "last_name": "Name",
@@ -12,12 +12,12 @@
     },
     "chat": {
       "id": "{{ clientId }}",
-      "first_name": "Vladislav",
-      "last_name": "Metelyagin",
-      "username": "vmetelyagin",
+      "first_name": "InvocationAPI FirstName",
+      "last_name": "InvocationAPI LastName",
+      "username": "InvocationAPI Username",
       "type": "private"
     },
-    "date": 1611064356,
+    "date": "{{ timestamp }}",
     "text": "{{ text }}"
   }
 }

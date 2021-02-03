@@ -1,44 +1,44 @@
-package com.justai.jaicf.gateway
+package com.justai.jaicf.channel.invocationapi
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 
-val BotRequest.gateway get() = this as? BotGatewayRequest
+val BotRequest.invocationApi get() = this as? InvocationRequest
 
 /**
- * A request processed by [BotGateway] implementation.
+ * A request processed by [InvocableBotChannel] implementation.
  *
  * @property clientId inherited from [BotRequest] is a recipient or channel identifier from a concrete channel implementation.
- * @property input inherited from [BotRequest] a input (text or event) sent via gateway.
+ * @property input inherited from [BotRequest] a input (text or event) sent via [InvocableBotChannel].
  * @property requestData a stringified data sent with request.
  * */
-interface BotGatewayRequest : BotRequest {
+interface InvocationRequest : BotRequest {
     val requestData: String
 }
 
 /**
- * An [EventBotRequest] sent via [BotGateway].
+ * An [EventBotRequest] sent via [InvocableBotChannel].
  *
  * @property clientId inherited from [BotRequest] is a recipient or channel identifier from a concrete channel implementation.
- * @property input inherited from [BotRequest] a input (text or event) sent via gateway.
+ * @property input inherited from [BotRequest] a input (text or event) sent via [InvocableBotChannel].
  * @property requestData a stringified data sent with request.
  * */
-open class BotGatewayEventRequest(
+open class InvocationEventRequest(
     override val clientId: String,
     override val input: String,
     override val requestData: String
-) : BotGatewayRequest, EventBotRequest(clientId, input)
+) : InvocationRequest, EventBotRequest(clientId, input)
 
 /**
- * A [QueryBotRequest] sent via [BotGateway].
+ * A [QueryBotRequest] sent via [InvocableBotChannel].
  *
  * @property clientId inherited from [BotRequest] is a recipient or channel identifier from a concrete channel implementation.
- * @property input inherited from [BotRequest] a input (text or event) sent via gateway.
+ * @property input inherited from [BotRequest] a input (text or event) sent via [InvocableBotChannel].
  * @property requestData a stringified data sent with request.
  * */
-open class BotGatewayQueryRequest(
+open class InvocationQueryRequest(
     override val clientId: String,
     override val input: String,
     override val requestData: String
-) : BotGatewayRequest, QueryBotRequest(clientId, input)
+) : InvocationRequest, QueryBotRequest(clientId, input)

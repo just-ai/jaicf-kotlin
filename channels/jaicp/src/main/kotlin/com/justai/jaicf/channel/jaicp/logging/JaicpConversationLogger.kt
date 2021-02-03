@@ -58,7 +58,7 @@ open class JaicpConversationLogger(
 
     internal open fun createLog(req: JaicpBotRequest, ctx: LoggingContext, session: SessionData) =
         JaicpLogModel.fromRequest(req, ctx, session).also {
-            logger.debug("Send log with sessionId: ${it.sessionId} isNewSession: ${it.isNewSession}")
+            logger.trace("Send log with sessionId: ${it.sessionId} isNewSession: ${it.isNewSession}")
         }
 }
 
