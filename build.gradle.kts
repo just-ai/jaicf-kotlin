@@ -1,6 +1,10 @@
 val coreProject: Project
     get() = rootProject.project("core")
 
+plugins {
+    id("com.justai.jaicf.plugins.internal.github")
+}
+
 buildscript {
     repositories {
         google()
@@ -28,8 +32,4 @@ allprojects {
         maven(uri("https://jitpack.io"))
     }
 
-}
-
-apply {
-    from("release/github.gradle")
 }
