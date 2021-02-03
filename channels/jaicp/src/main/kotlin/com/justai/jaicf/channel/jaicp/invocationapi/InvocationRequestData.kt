@@ -1,10 +1,10 @@
-package com.justai.jaicf.channel.jaicp.gateway
+package com.justai.jaicf.channel.jaicp.invocationapi
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-internal data class BotGatewayRequestData(
+internal data class InvocationRequestData(
     val commonType: String,
     val chatId: String,
     val timestamp: Long,

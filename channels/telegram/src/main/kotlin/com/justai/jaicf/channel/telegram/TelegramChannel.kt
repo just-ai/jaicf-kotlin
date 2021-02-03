@@ -13,14 +13,15 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
-import com.justai.jaicf.gateway.BotGateway
-import com.justai.jaicf.gateway.BotGatewayRequest
+import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
+import com.justai.jaicf.channel.invocationapi.InvocationRequest
+import java.util.concurrent.TimeUnit
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/"
-) : JaicpCompatibleAsyncBotChannel, BotGateway() {
+) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
     private val gson = GsonFactory.createForApiClient()
 
@@ -99,10 +100,12 @@ class TelegramChannel(
         return null
     }
 
-    override fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext) {
+    override fun provideTimestamp(): String = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString()
+
+    override fun processExternalInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
         val message = gson.fromJson(template, Update::class.java).message ?: return
-        val telegramRequest = TelegramGatewayRequest.create(request, message) ?: return
+        val telegramRequest = TelegramInvocationRequest.create(request, message) ?: return
         botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest), requestContext)
     }
 

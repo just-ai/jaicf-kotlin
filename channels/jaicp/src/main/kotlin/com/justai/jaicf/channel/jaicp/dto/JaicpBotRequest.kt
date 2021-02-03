@@ -35,7 +35,7 @@ data class JaicpBotRequest(
 
     fun stringify() = JSON.encodeToString(serializer(), this)
 
-    internal fun isGatewayRequest() = rawRequest["commonType"]?.jsonPrimitive?.contentOrNull == "COMMON"
+    internal fun isExternalInvocationRequest() = rawRequest["commonType"]?.jsonPrimitive?.contentOrNull == "COMMON"
 
     internal fun asHttpBotRequest() = raw.asHttpBotRequest(stringify())
 }

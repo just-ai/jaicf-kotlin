@@ -2,8 +2,8 @@
   "object": "page",
   "entry": [
     {
-      "id": "110387787249256",
-      "time": 1611153924637,
+      "id": "{{ randomInt }}",
+      "time": "{{ timestamp }}",
       "messaging": [
         {
           "sender": {
@@ -12,9 +12,9 @@
           "recipient": {
             "id": "{{ clientId }}"
           },
-          "timestamp": 1611153924412,
+          "timestamp": "{{ timestamp }}",
           "message": {
-            "mid": "predefined_message_id",
+            "mid": "{{ messageId }}",
             "text": "{{ text }}"
           }
         }

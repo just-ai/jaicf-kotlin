@@ -2,7 +2,7 @@ package com.justai.jaicf.channel.facebook
 
 import com.github.messenger4j.exception.MessengerVerificationException
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.facebook.api.FacebookGatewayRequest
+import com.justai.jaicf.channel.facebook.api.FacebookInvocationRequest
 import com.justai.jaicf.channel.facebook.api.toBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.channel.http.HttpBotRequest
@@ -11,13 +11,14 @@ import com.justai.jaicf.channel.http.asTextHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.gateway.BotGateway
-import com.justai.jaicf.gateway.BotGatewayRequest
+import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
+import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import java.util.*
 
 class FacebookChannel private constructor(
     override val botApi: BotApi
-) : JaicpCompatibleAsyncBotChannel, BotGateway() {
+) : JaicpCompatibleAsyncBotChannel,
+    InvocableBotChannel {
 
     private lateinit var messenger: Messenger
 
@@ -55,13 +56,13 @@ class FacebookChannel private constructor(
         override val channelType = "facebook"
         override fun create(botApi: BotApi, apiUrl: String) = FacebookChannel(botApi, apiUrl)
 
-        private const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
+        internal const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
     }
 
-    override fun processGatewayRequest(request: BotGatewayRequest, requestContext: RequestContext) {
+    override fun processExternalInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
         messenger.onReceiveEvents(template, Optional.empty()) { event ->
-            FacebookGatewayRequest.create(request, event.asTextMessageEvent())?.let {
+            FacebookInvocationRequest.create(request, event.asTextMessageEvent())?.let {
                 botApi.process(it, FacebookReactions(messenger, it), requestContext)
             }
         }

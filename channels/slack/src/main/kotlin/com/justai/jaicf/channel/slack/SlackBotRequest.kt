@@ -3,9 +3,9 @@ package com.justai.jaicf.channel.slack
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
 import com.justai.jaicf.api.QueryBotRequest
-import com.justai.jaicf.gateway.BotGatewayEventRequest
-import com.justai.jaicf.gateway.BotGatewayQueryRequest
-import com.justai.jaicf.gateway.BotGatewayRequest
+import com.justai.jaicf.channel.invocationapi.InvocationEventRequest
+import com.justai.jaicf.channel.invocationapi.InvocationQueryRequest
+import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import com.slack.api.app_backend.events.payload.EventsApiPayload
 import com.slack.api.app_backend.interactive_components.payload.BlockActionPayload
 import com.slack.api.app_backend.slash_commands.payload.SlashCommandPayload
@@ -61,24 +61,24 @@ data class SlackActionRequest(
     input = payload.actions[0].value
 )
 
-interface SlackGatewayRequest : SlackBotRequest, BotGatewayRequest {
+interface SlackInvocationRequest : SlackBotRequest, InvocationRequest {
     companion object {
-        fun create(r: BotGatewayRequest) = when (r) {
-            is BotGatewayEventRequest -> SlackGatewayEventRequest(r.clientId, r.input, r.requestData)
-            is BotGatewayQueryRequest -> SlackGatewayQueryRequest(r.clientId, r.input, r.requestData)
+        fun create(r: InvocationRequest) = when (r) {
+            is InvocationEventRequest -> SlackInvocationEventRequest(r.clientId, r.input, r.requestData)
+            is InvocationQueryRequest -> SlackInvocationQueryRequest(r.clientId, r.input, r.requestData)
             else -> null
         }
     }
 }
 
-data class SlackGatewayEventRequest(
+data class SlackInvocationEventRequest(
     override val clientId: String,
     override val input: String,
     override val requestData: String
-) : SlackGatewayRequest, BotGatewayEventRequest(clientId, input, requestData)
+) : SlackInvocationRequest, InvocationEventRequest(clientId, input, requestData)
 
-data class SlackGatewayQueryRequest(
+data class SlackInvocationQueryRequest(
     override val clientId: String,
     override val input: String,
     override val requestData: String
-) : SlackGatewayRequest, BotGatewayQueryRequest(clientId, input, requestData)
+) : SlackInvocationRequest, InvocationQueryRequest(clientId, input, requestData)
