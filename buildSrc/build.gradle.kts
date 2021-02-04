@@ -9,6 +9,8 @@ repositories {
 }
 
 dependencies {
+    implementation(kotlin("gradle-plugin", version = "1.4.10"))
+    implementation(kotlin("serialization", version = "1.4.10"))
     implementation("com.github.breadmoirai:github-release:2.2.12")
     implementation(gradleApi())
 }
