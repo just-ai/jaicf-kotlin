@@ -1,13 +1,11 @@
 package plugins.serialization
 
-import org.gradle.api.Project
-import plugins.*
-import plugins.utils.*
-import Version
-import version
 import org.gradle.api.Plugin
+import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.kotlin
+import plugins.PluginAdapter
+import plugins.apply
+import version
 
 class JaicfSerializationPlugin : Plugin<Project> by apply<JaicfSerialization>()
 

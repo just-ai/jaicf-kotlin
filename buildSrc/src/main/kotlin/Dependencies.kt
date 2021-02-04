@@ -1,6 +1,5 @@
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 import org.gradle.kotlin.dsl.project
-import org.gradle.kotlin.dsl.version
 
 fun DependencyHandlerScope.core() = "implementation"(project(":core"))
 fun DependencyHandlerScope.ktor(module: String): String = "io.ktor:$module" version { ktor }

@@ -1,15 +1,13 @@
 package plugins.junit
 
-import org.gradle.api.Project
-import plugins.*
-import plugins.utils.*
-import Version
 import org.gradle.api.Plugin
+import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
-import version
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.named
-import org.gradle.kotlin.dsl.version
+import plugins.PluginAdapter
+import plugins.apply
+import version
 
 class JaicfJUnitPlugin : Plugin<Project> by apply<JaicfJUnit>()
 
