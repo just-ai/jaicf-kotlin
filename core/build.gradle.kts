@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    `maven-publish`
+    id("com.justai.jaicf.plugins.internal.publish")
 }
 
 dependencies {
@@ -25,16 +25,4 @@ tasks {
     test {
         useJUnitPlatform()
     }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>(project.name) {
-            from(components["java"])
-        }
-    }
-}
-
-apply {
-    from(rootProject.file("release.gradle"))
 }

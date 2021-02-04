@@ -10,12 +10,12 @@ import plugins.*
 
 class JaicfGithubReleasePlugin : Plugin<Project> by apply<JaicfGithubRelease>()
 
-class JaicfGithubRelease(project: Project): PluginAdapter(project) {
-    private val properties by lazy { project.localProperties() }
+class JaicfGithubRelease(project: Project) : PluginAdapter(project) {
+    private val properties by lazy { loadLocalProperties() }
 
     private val githubToken by lazy { properties.getProperty("github.token") }
     private val githubRepo = "jaicf-kotlin"
-    private val githubOwner = "just-ai"
+    private val githubOwner = "nikvoloshin"
     private val githubTagName by lazy { project.version.toString() }
     private val githubReleaseName by lazy { project.version.toString() }
 

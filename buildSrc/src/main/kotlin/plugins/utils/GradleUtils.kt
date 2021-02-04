@@ -2,15 +2,12 @@ package plugins.utils
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import java.io.File
+import plugins.PluginAdapter
 import java.util.*
-import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 
 val Project.isRoot get() = parent == null
 
-inline fun <reified P: Plugin<Project>> Project.applySafely(): Boolean {
+inline fun <reified P : Plugin<*>> Project.applySafely(): Boolean {
     return if (plugins.hasPlugin(P::class.java)) {
         false
     } else {
@@ -19,6 +16,6 @@ inline fun <reified P: Plugin<Project>> Project.applySafely(): Boolean {
     }
 }
 
-fun Project.localProperties(): Properties = Properties().apply {
-    rootProject.file("local.properties").inputStream().use(::load)
+fun PluginAdapter.loadLocalProperties(): Properties = Properties().apply {
+    project.rootProject.file("local.properties").inputStream().use(::load)
 }
