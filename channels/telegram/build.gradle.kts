@@ -4,8 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
-
+    core()
     api("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.1") {
         exclude("com.github.kotlin-telegram-bot.kotlin-telegram-bot", "webhook")
     }

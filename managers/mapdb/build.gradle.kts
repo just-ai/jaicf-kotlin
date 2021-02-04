@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
-
+    core()
     api("org.mapdb:mapdb:3.0.8")
 }

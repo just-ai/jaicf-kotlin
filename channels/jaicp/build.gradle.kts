@@ -6,19 +6,20 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
+    core()
 
-    implementation("org.apache.tomcat:servlet-api" version { tomcatServletApi })
+    implementation(`tomcat-servlet`())
+
     implementation("de.appelgriepsch.logback:logback-gelf-appender" version { logbackGelfAppender })
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j" version { coroutinesCore })
+    implementation(kotlinx("kotlinx-coroutines-slf4j") version { coroutinesCore })
 
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core" version { coroutinesCore })
-    api("io.ktor:ktor-client-cio" version { ktor })
-    api("io.ktor:ktor-client-logging-jvm" version { ktor })
-    api("io.ktor:ktor-client-json-jvm" version { ktor })
-    api("io.ktor:ktor-client-serialization-jvm" version { ktor })
-    api("io.ktor:ktor-server-netty" version { ktor })
+    api(`coroutines-core`())
 
+    api(ktor("ktor-client-cio"))
+    api(ktor("ktor-client-logging-jvm"))
+    api(ktor("ktor-client-json-jvm"))
+    api(ktor("ktor-client-serialization-jvm"))
+    api(ktor("ktor-server-netty"))
 
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation("io.ktor:ktor-client-mock" version { ktor })

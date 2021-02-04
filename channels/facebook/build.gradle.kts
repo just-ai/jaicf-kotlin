@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
-
+    core()
     api("com.github.messenger4j:messenger4j:1.1.0")
 }
