@@ -1,26 +1,11 @@
 plugins {
-    kotlin("jvm")
-    id("com.justai.jaicf.plugins.internal.publish")
+    `jaicf-kotlin`
+    `jaicf-publish`
+    `jaicf-junit`
 }
 
 dependencies {
     implementation(project(":core"))
-    implementation(kotlin("stdlib", Version.stdLib))
 
     api("org.mapdb:mapdb:3.0.8")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    test {
-        useJUnitPlatform()
-    }
 }

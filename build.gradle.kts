@@ -1,5 +1,5 @@
 plugins {
-    id("com.justai.jaicf.plugins.internal.github")
+    `jaicf-github-release`
 }
 
 allprojects {

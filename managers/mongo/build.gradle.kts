@@ -1,28 +1,13 @@
 plugins {
-    kotlin("jvm")
-    id("com.justai.jaicf.plugins.internal.publish")
+    `jaicf-kotlin`
+    `jaicf-junit`
+    `jaicf-publish`
 }
 
 dependencies {
     implementation(project(":core"))
-    implementation(kotlin("stdlib", Version.stdLib))
 
     api("org.mongodb:mongodb-driver-sync:4.1.1")
     api("com.fasterxml.jackson.module:jackson-module-kotlin" version {jackson})
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
     testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.0.0")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    test {
-        useJUnitPlatform()
-    }
 }
