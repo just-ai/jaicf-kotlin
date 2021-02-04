@@ -18,7 +18,7 @@ class JaicfGithubRelease(project: Project) : PluginAdapter(project) {
 
     private val githubToken by lazy { properties.getProperty("github.token") }
     private val githubRepo = "jaicf-kotlin"
-    private val githubOwner = "nikvoloshin"
+    private val githubOwner = "just-ai"
     private val githubTagName by lazy { project.version.toString() }
     private val githubReleaseName by lazy { project.version.toString() }
 
