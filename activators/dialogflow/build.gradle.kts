@@ -4,8 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
-
+    core()
     api("com.google.cloud:google-cloud-dialogflow:0.109.0-alpha")
     api("io.grpc:grpc-okhttp:1.24.0")
 }

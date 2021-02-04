@@ -6,8 +6,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":core"))
-
-    api("io.ktor:ktor-client-cio" version { ktor })
-    api("io.ktor:ktor-client-serialization-jvm" version { ktor })
+    core()
+    api(ktor("ktor-client-cio"))
+    api(ktor("ktor-client-serialization-jvm"))
 }

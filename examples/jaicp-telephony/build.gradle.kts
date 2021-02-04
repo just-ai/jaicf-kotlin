@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    core()
 
     implementation(project(":core"))
     implementation(project(":channels:jaicp"))
