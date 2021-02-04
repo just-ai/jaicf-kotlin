@@ -17,5 +17,5 @@ inline fun <reified P : Plugin<*>> Project.applySafely(): Boolean {
 }
 
 fun PluginAdapter.loadLocalProperties(): Properties = Properties().apply {
-    project.rootProject.file("local.properties").inputStream().use(::load)
+    project.rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
 }
