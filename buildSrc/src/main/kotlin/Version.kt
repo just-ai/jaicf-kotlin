@@ -17,5 +17,4 @@ object Version {
     const val mockk = "1.10.2"
 }
 
-infix fun String.version(versionProvider: Version.() -> String) =
-    "$this:${versionProvider(Version)}"
+infix fun String.version(versionProvider: Version.() -> String) = "$this:${versionProvider(Version)}"

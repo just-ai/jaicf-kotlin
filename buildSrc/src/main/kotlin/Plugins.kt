@@ -1,4 +1,3 @@
-import org.gradle.kotlin.dsl.kotlin
 import org.gradle.plugin.use.PluginDependenciesSpec
 
 private fun PluginDependenciesSpec.internal(plugin: String) = id("com.justai.jaicf.plugins.internal.$plugin")

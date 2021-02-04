@@ -5,8 +5,11 @@ import com.github.breadmoirai.githubreleaseplugin.GithubReleasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import plugins.utils.*
-import plugins.*
+import plugins.PluginAdapter
+import plugins.apply
+import plugins.utils.applySafely
+import plugins.utils.isRoot
+import plugins.utils.loadLocalProperties
 
 class JaicfGithubReleasePlugin : Plugin<Project> by apply<JaicfGithubRelease>()
 
