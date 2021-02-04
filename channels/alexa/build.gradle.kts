@@ -7,4 +7,5 @@ dependencies {
     core()
     api(jackson())
     api("com.amazon.alexa:ask-sdk:2.37.1")
+    implementation(kotlin("reflect", Version.reflect))
 }
