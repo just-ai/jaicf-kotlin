@@ -4,7 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import kotlin.reflect.full.primaryConstructor
 
-abstract class PluginAdapter(private val project: Project) {
+abstract class PluginAdapter(val project: Project) {
 
     fun apply() = project.run {
         apply()

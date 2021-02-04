@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    `maven-publish`
+    id("com.justai.jaicf.plugins.internal.publish")
 }
 
 dependencies {
@@ -21,17 +21,4 @@ tasks {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>(project.name) {
-            from(components["java"])
-        }
-    }
-}
-
-
-apply {
-    from(rootProject.file("release.gradle"))
 }
