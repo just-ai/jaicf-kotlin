@@ -110,8 +110,5 @@ abstract class JaicpConnector(
 
 internal const val DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE = 5
 
-val JaicpConnector.proxyUrl: String
-    get() = "$url/proxy"
-
 val JaicpConnector.apiProxyUrl: String
     get() = "$url/api-proxy/$accessToken"
