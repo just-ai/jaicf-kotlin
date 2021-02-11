@@ -162,7 +162,7 @@ abstract class ScenarioBuilder(
      */
     fun fallback(
         state: String = "fallback",
-        body: ActionContext<CatchAllActivatorContext, BotRequest, Reactions>.() -> Unit
+        body: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit
     ) = state(
         name = state,
         noContext = true,
