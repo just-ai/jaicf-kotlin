@@ -70,7 +70,8 @@ class AliceReactions(
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
 
-    fun imageGallery(vararg images: Image) = ImageGallery(images.toMutableList()).also { builder.card = it }
+    fun imageGallery(first: Image, vararg images: Image) =
+        ImageGallery(listOf(first) + images.toList()).also { builder.card = it }
 
     override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
