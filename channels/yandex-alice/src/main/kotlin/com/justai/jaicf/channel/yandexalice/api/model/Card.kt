@@ -35,7 +35,5 @@ data class ItemsList(
 @Serializable
 @SerialName("ImageGallery")
 data class ImageGallery(
-    private val items: MutableList<Image> = mutableListOf()
-): Card {
-    fun addImage(image: Image) = apply { items.add(image) }
-}
+    private val items: MutableList<Image>
+): Card
