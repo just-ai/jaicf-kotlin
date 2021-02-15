@@ -35,5 +35,5 @@ data class ItemsList(
 @Serializable
 @SerialName("ImageGallery")
 data class ImageGallery(
-    private val items: MutableList<Image>
+    private val items: List<Image>
 ): Card
