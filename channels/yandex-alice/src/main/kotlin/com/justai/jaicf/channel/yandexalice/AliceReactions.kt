@@ -72,8 +72,6 @@ class AliceReactions(
 
     fun imageGallery(vararg images: Image) = ImageGallery(images.toMutableList()).also { builder.card = it }
 
-    fun imageGallery() = ImageGallery().also { builder.card = it }
-
     override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
         return AudioReaction.create(id)
