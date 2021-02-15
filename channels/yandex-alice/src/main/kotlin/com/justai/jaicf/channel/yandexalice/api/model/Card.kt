@@ -23,11 +23,19 @@ data class ItemsList(
     val items: MutableList<Image> = mutableListOf()
 ): Card {
 
-    fun addImage(image: Image) = items.add(image).run { this@ItemsList }
+    fun addImage(image: Image): ItemsList = apply { items.add(image) }
 
     @Serializable
     data class Header(val text: String? = null)
 
     @Serializable
     data class Footer(val text: String, val button: Button? = null)
+}
+
+@Serializable
+@SerialName("ImageGallery")
+data class ImageGallery(
+    private val items: MutableList<Image> = mutableListOf()
+): Card {
+    fun addImage(image: Image) = apply { items.add(image) }
 }

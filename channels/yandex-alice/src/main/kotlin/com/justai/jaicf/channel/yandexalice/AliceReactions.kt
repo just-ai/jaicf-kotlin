@@ -5,12 +5,14 @@ import com.justai.jaicf.channel.yandexalice.api.AliceBotRequest
 import com.justai.jaicf.channel.yandexalice.api.AliceBotResponse
 import com.justai.jaicf.channel.yandexalice.api.model.Button
 import com.justai.jaicf.channel.yandexalice.api.model.Image
+import com.justai.jaicf.channel.yandexalice.api.model.ImageGallery
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
-import com.justai.jaicf.reactions.*
+import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.ResponseReactions
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
@@ -67,6 +69,10 @@ class AliceReactions(
 
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
+
+    fun imageGallery(vararg images: Image) = ImageGallery(images.toMutableList()).also { builder.card = it }
+
+    fun imageGallery() = ImageGallery().also { builder.card = it }
 
     override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
