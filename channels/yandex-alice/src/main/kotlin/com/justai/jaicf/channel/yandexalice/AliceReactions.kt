@@ -68,10 +68,9 @@ class AliceReactions(
     ) = image(Image(requireNotNull(api).getImageId(url), title, description, button))
 
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
-        builder.card as? ItemsList ?: ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
+        ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
 
-    fun imageGallery(vararg images: Image) =
-        builder.card as? ImageGallery ?: ImageGallery(images.toMutableList()).also { builder.card = it }
+    fun imageGallery(vararg images: Image) = ImageGallery(images.toMutableList()).also { builder.card = it }
 
     override fun audio(id: String): AudioReaction {
         builder.tts += " <speaker audio='dialogs-upload/$skillId/$id.opus'>"
