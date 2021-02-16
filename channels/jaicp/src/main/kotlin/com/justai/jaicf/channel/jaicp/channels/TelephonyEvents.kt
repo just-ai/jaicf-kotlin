@@ -17,4 +17,5 @@ object TelephonyEvents {
     const val HANGUP = "hangup"
     const val RINGING = "ringing"
     const val NO_DTMF_ANSWER = "noDtmfAnswerEvent"
+    const val BARGE_IN_EVENT = "bargeInIntent"
 }

@@ -31,8 +31,8 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
-        val response = channel.process(request)
-        assertEquals(expected, response.jaicp)
+        val response = channel.process(requestFromResources)
+        assertEquals(responseFromResources, response.jaicp)
     }
 
     @Test
@@ -43,8 +43,8 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
-        val response = channel.process(request)
-        assertEquals(expected, response.jaicp)
+        val response = channel.process(requestFromResources)
+        assertEquals(responseFromResources, response.jaicp)
     }
 
     @Test
@@ -60,8 +60,8 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
-        val response = channel.process(request)
-        assertEquals(expected, response.jaicp)
+        val response = channel.process(requestFromResources)
+        assertEquals(responseFromResources, response.jaicp)
     }
 
     @Test
@@ -80,7 +80,7 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
         }
 
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
-        val response = channel.process(request)
-        assertEquals(expected, response.jaicp)
+        val response = channel.process(requestFromResources)
+        assertEquals(responseFromResources, response.jaicp)
     }
 }

@@ -1,15 +1,13 @@
 package com.justai.jaicf.examples.jaicptelephony
 
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.jaicp.channels.TelephonyEvents
-import com.justai.jaicf.channel.jaicp.dto.telephony
-import com.justai.jaicf.channel.jaicp.reactions.telephony
+import com.justai.jaicf.channel.jaicp.telephony
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.model.scenario.getValue
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import com.justai.jaicf.builder.*
-import com.justai.jaicf.channel.jaicp.telephony
-import com.justai.jaicf.model.scenario.getValue
 
 object TelephonyBotScenario : WithLogger, Scenario {
 
@@ -91,7 +89,7 @@ object TelephonyBotScenario : WithLogger, Scenario {
         }
 
         fallback {
-            reactions.say("You said ${request.input}")
+            reactions.say("You said ${request.input}", interruptable = true)
             logger.info("Unrecognized message from caller: ${request.caller}")
         }
     }

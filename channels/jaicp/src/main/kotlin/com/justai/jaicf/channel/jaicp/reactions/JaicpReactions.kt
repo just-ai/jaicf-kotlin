@@ -1,14 +1,18 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
-import com.justai.jaicf.channel.jaicp.dto.*
+import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.dto.JaicpDialerData
+import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
+import com.justai.jaicf.channel.jaicp.dto.Reply
+import com.justai.jaicf.channel.jaicp.dto.TextReply
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.channel.jaicp.reactions.reaction.EndSessionReaction
 import com.justai.jaicf.channel.jaicp.reactions.reaction.NewSessionReaction
-import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 
 val Reactions.jaicp get() = this as? JaicpReactions
 
@@ -16,7 +20,7 @@ open class JaicpReactions : Reactions() {
 
     protected val replies: MutableList<Reply> = mutableListOf()
 
-    internal val dialer by lazy { JaicpDialerAPI() }
+    internal val dialer by lazy { JaicpDialerData() }
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
@@ -54,24 +58,14 @@ open class JaicpReactions : Reactions() {
         registerReaction(EndSessionReaction(getCurrentState()))
     }
 
-    fun collect(): JsonObject {
-        val jsonReplies = replies.map { it.serialized().toJson() }
-        val answer = replies.joinToString(separator = "\n\n") {
-            if (it is TextReply) {
-                it.text
-            } else {
-                ""
-            }
-        }
-        return buildJsonObject {
-            if (this@JaicpReactions is TelephonyReactions) {
-                put("dialer", dialer.getApiResponse())
-            }
-            putJsonArray("replies") {
-                jsonReplies.forEach { add(it) }
-            }
-            put("sessionId", SessionManager.get(executionContext).getOrCreateSessionId().sessionId)
-            put("answer", answer)
-        }
-    }
+    fun collect(): JsonObject = JSON.encodeToJsonElement(
+        serializer = JaicpResponseData.serializer(),
+        value = JaicpResponseData(
+            replies,
+            telephony?.dialer,
+            telephony?.bargeIn,
+            telephony?.bargeInInterrupt,
+            sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId
+        )
+    ).jsonObject
 }

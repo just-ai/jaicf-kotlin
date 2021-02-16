@@ -20,7 +20,7 @@ internal class JaicpLiveChatsTest : JaicpBaseTest() {
         val scenario = echoWithAction {
             reactions.jaicpAsync?.switchToLiveChat(message)
         }
-        JaicpTestChannel(scenario, ChatWidgetChannel).process(request)
+        JaicpTestChannel(scenario, ChatWidgetChannel).process(requestFromResources)
 
         val act = requireNotNull(connectorHttpRequestBody)
         val livechatRequest = JSON.decodeFromString(LiveChatInitRequest.serializer(), act)
@@ -38,7 +38,7 @@ internal class JaicpLiveChatsTest : JaicpBaseTest() {
         val scenario = echoWithAction {
             reactions.jaicpAsync?.switchToLiveChat(expected)
         }
-        JaicpTestChannel(scenario, ChatWidgetChannel).process(request)
+        JaicpTestChannel(scenario, ChatWidgetChannel).process(requestFromResources)
 
         val actual = JSON.decodeFromString(
             LiveChatInitRequest.serializer(),
