@@ -1,11 +1,10 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
-import com.justai.jaicf.channel.jaicp.dto.AudioReply
-import com.justai.jaicf.channel.jaicp.dto.HangupReply
-import com.justai.jaicf.channel.jaicp.dto.JaicpDialerAPI
-import com.justai.jaicf.channel.jaicp.dto.TelephonySwitchReply
+import com.justai.jaicf.channel.jaicp.dto.*
+import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import java.time.DayOfWeek
 import java.time.Duration
@@ -14,11 +13,29 @@ import java.time.Instant
 val Reactions.telephony
     get() = this as? TelephonyReactions
 
+
 class TelephonyReactions : JaicpReactions() {
+
+    internal var bargeIn: SimpleBargeInData? = null
+
+    internal var bargeInInterrupt: BargeInInterruptData? = null
 
     override fun audio(url: String): AudioReaction {
         replies.add(AudioReply(url.toUrl()))
         return AudioReaction.create(url)
+    }
+
+    fun say(text: String, interruptInContext: String = "."): SayReaction {
+        replies.add(TextReply(text, bargeInReply = BargeInReplyData(interruptInContext)))
+        return SayReaction.create(text)
+    }
+
+    fun say(text: String, interruptable: Boolean, interruptionContext: String = "."): SayReaction {
+        if (interruptable) {
+            return say(text, interruptionContext)
+        }
+        replies.add(TextReply(text))
+        return SayReaction.create(text)
     }
 
     /**
@@ -26,6 +43,17 @@ class TelephonyReactions : JaicpReactions() {
      * */
     fun hangup() {
         replies.add(HangupReply())
+    }
+
+    /**
+     * Barge-in is speech synthesis interruption. This reaction enables barge-in for current response.
+     *
+     * @param mode is [BargeInMode] to specify barge-in behaviour
+     * @param trigger is [BargeInTrigger] to specify what triggers barge-in
+     * @param noInterruptTimeMs minimal time in milliseconds for synthesis after which barge-in interruption can be triggered.
+     * */
+    fun bargeIn(mode: BargeInMode, trigger: BargeInTrigger, noInterruptTimeMs: Int) {
+        bargeIn = SimpleBargeInData(mode, trigger, noInterruptTimeMs)
     }
 
     /**
@@ -73,9 +101,9 @@ class TelephonyReactions : JaicpReactions() {
     )
 
     /**
-     * Schedules a redial in outbound call campaign using [JaicpDialerAPI.RedialData].
+     * Schedules a redial in outbound call campaign using [JaicpDialerData.RedialData].
      */
-    fun redial(redialData: JaicpDialerAPI.RedialData) {
+    fun redial(redialData: JaicpDialerData.RedialData) {
         dialer.redial(redialData)
     }
 
@@ -136,7 +164,7 @@ class TelephonyReactions : JaicpReactions() {
      * }
      * */
     fun report(header: String, value: String, order: Int? = null) =
-        dialer.report(header, JaicpDialerAPI.CallReportData(value, order))
+        dialer.report(header, JaicpDialerData.CallReportData(value, order))
 
     /**
      * Transfers call to operator or other person.
@@ -154,5 +182,9 @@ class TelephonyReactions : JaicpReactions() {
      * */
     fun transferCall(reply: TelephonySwitchReply) {
         replies.add(reply)
+    }
+
+    fun allowInterrupt() {
+        bargeInInterrupt = BargeInInterruptData(true)
     }
 }

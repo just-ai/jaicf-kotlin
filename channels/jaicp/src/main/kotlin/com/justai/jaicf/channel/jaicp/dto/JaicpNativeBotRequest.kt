@@ -2,32 +2,89 @@ package com.justai.jaicf.channel.jaicp.dto
 
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestType
+import com.justai.jaicf.api.EventBotRequest
+import com.justai.jaicf.api.QueryBotRequest
+import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInIntentStatus
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-abstract class JaicpNativeBotRequest(
+interface JaicpNativeBotRequest : BotRequest {
     val jaicp: JaicpBotRequest
-) : BotRequest {
-    override val type: BotRequestType = jaicp.type
-    override val clientId: String = jaicp.clientId
-    override val input: String = jaicp.input
 }
 
-data class TelephonyBotRequest(
-    private val request: JaicpBotRequest
-) : JaicpNativeBotRequest(request) {
-    val caller: String? = request.rawRequest["caller"]?.jsonPrimitive?.content
-    val trunk: String? = request.rawRequest["extension"]?.jsonPrimitive?.content
-    val calleePayload = request.rawRequest.jsonObject["originateData"]?.jsonObject?.get("payload")?.jsonObject
+interface TelephonyBotRequest : JaicpNativeBotRequest {
+    val caller: String?
+        get() = jaicp.rawRequest["caller"]?.jsonPrimitive?.content
+    val trunk: String?
+        get() = jaicp.rawRequest["extension"]?.jsonPrimitive?.content
+    val calleePayload: JsonObject?
+        get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("payload")?.jsonObject
+
+    companion object {
+        fun create(jaicp: JaicpBotRequest): TelephonyBotRequest = when (jaicp.type) {
+            BotRequestType.QUERY -> TelephonyQueryRequest(jaicp)
+            BotRequestType.EVENT -> jaicp.rawRequest["bargeInIntentStatus"]
+                ?.let { TelephonyBargeInRequest(jaicp, JSON.decodeFromJsonElement(it)) }
+                ?: TelephonyEventRequest(jaicp)
+            BotRequestType.INTENT -> error("Jaicp intent events are not supported")
+        }
+    }
 }
 
-data class ChatWidgetBotRequest(
-    private val request: JaicpBotRequest
-) : JaicpNativeBotRequest(request)
+data class TelephonyQueryRequest(
+    override val jaicp: JaicpBotRequest,
+) : TelephonyBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
 
-data class ChatApiBotRequest(
-    private val request: JaicpBotRequest
-) : JaicpNativeBotRequest(request)
+data class TelephonyEventRequest(
+    override val jaicp: JaicpBotRequest,
+) : TelephonyBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
+
+data class TelephonyBargeInRequest internal constructor(
+    override val jaicp: JaicpBotRequest,
+    val bargeInStatus: BargeInIntentStatus,
+) : TelephonyBotRequest, QueryBotRequest(jaicp.clientId, bargeInStatus.recognitionResult.text) {
+
+    val transition = bargeInStatus.bargeInTransition.transition
+}
+
+interface ChatWidgetBotRequest : JaicpNativeBotRequest {
+    companion object {
+        fun create(jaicp: JaicpBotRequest) = when (jaicp.type) {
+            BotRequestType.QUERY -> ChatWidgetQueryRequest(jaicp)
+            BotRequestType.EVENT -> ChatWidgetEventRequest(jaicp)
+            BotRequestType.INTENT -> error("Jaicp intent events are not supported")
+        }
+    }
+}
+
+data class ChatWidgetQueryRequest(
+    override val jaicp: JaicpBotRequest,
+) : JaicpNativeBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
+
+data class ChatWidgetEventRequest(
+    override val jaicp: JaicpBotRequest,
+) : JaicpNativeBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
+
+interface ChatApiBotRequest : JaicpNativeBotRequest {
+    companion object {
+        fun create(jaicp: JaicpBotRequest) = when (jaicp.type) {
+            BotRequestType.QUERY -> ChatApiQueryRequest(jaicp)
+            BotRequestType.EVENT -> ChatApiEventRequest(jaicp)
+            BotRequestType.INTENT -> error("Jaicp intent events are not supported")
+        }
+    }
+}
+
+data class ChatApiQueryRequest(
+    override val jaicp: JaicpBotRequest,
+) : JaicpNativeBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
+
+data class ChatApiEventRequest(
+    override val jaicp: JaicpBotRequest,
+) : JaicpNativeBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
 
 val BotRequest.telephony
     get() = this as? TelephonyBotRequest
@@ -43,3 +100,6 @@ internal val BotRequest.jaicp
 
 internal val BotRequest.jaicpNative
     get() = this as? JaicpNativeBotRequest
+
+internal val BotRequest.bargeIn
+    get() = this as? TelephonyBargeInRequest

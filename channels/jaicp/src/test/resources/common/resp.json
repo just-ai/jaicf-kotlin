@@ -1,0 +1,35 @@
+{
+  "data": {
+    "dialer": {
+      "callResult": "call ended",
+      "callResultPayload": "{\"result\":\"Ok\"}",
+      "reportData": {
+        "smoking": {
+          "value": "i love it",
+          "order": null
+        }
+      },
+      "redial": {
+        "startDateTime": 1605189536000,
+        "maxAttempts": 5
+      }
+    },
+    "replies": [
+      {
+        "type": "text",
+        "text": "You said: /start"
+      }
+    ],
+    "answer": "You said: /start"
+  },
+  "botId": "mva_jaicf_project-263-XQt",
+  "accountId": "mva_jaicf_project-263-XQt",
+  "channelType": "resterisk",
+  "channelBotId": "mva_jaicf_project-263-XQt",
+  "channelUserId": "chatapi-mva_jaicf_project-263-XQt-test",
+  "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+  "query": "/start",
+  "timestamp": 0,
+  "currentState": "/fallback",
+  "processingTime": 0
+}

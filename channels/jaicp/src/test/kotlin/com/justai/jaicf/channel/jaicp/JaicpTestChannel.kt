@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.BotEngine
+import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.HttpBotChannel
 import com.justai.jaicf.channel.http.HttpBotRequest
@@ -13,7 +14,9 @@ class JaicpTestChannel(
     factory: JaicpNativeChannelFactory
 ) : HttpBotChannel {
 
-    constructor(scenario: Scenario, factory: JaicpNativeChannelFactory) : this(BotEngine(scenario), factory)
+    constructor(scenario: Scenario, factory: JaicpNativeChannelFactory) : this(
+        BotEngine(scenario, activators = arrayOf(RegexActivator)), factory
+    )
 
     private val channel = factory.create(botApi)
 

@@ -20,7 +20,7 @@ import com.justai.jaicf.channel.jaicp.reactions.ChatApiReactions
  * */
 class ChatApiChannel(override val botApi: BotApi) : JaicpNativeChannel(botApi) {
 
-    override fun createRequest(request: JaicpBotRequest) = ChatApiBotRequest(request)
+    override fun createRequest(request: JaicpBotRequest) = ChatApiBotRequest.create(request)
     override fun createReactions() = ChatApiReactions()
 
     companion object : JaicpNativeChannelFactory {

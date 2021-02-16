@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp.dto
 
 import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInReplyData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
@@ -15,7 +16,8 @@ data class TextReply(
     val text: String,
     val markup: String? = null,
     val tts: String? = null,
-    val state: String? = null
+    val state: String? = null,
+    val bargeInReply: BargeInReplyData? = null
 ) : Reply("text") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }

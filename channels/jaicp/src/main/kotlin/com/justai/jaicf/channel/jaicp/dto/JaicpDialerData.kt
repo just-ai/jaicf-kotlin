@@ -9,7 +9,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Serializable
-class JaicpDialerAPI {
+class JaicpDialerData {
 
     private var callResult: String? = null
     private var callResultPayload: String? = null
@@ -105,10 +105,6 @@ class JaicpDialerAPI {
         callResult = result
         callResultPayload = resultPayload
     }
-
-    internal fun getApiResponse(): JsonElement {
-        return JSON.encodeToJsonElement(serializer(), this)
-    }
 }
 
 private fun List<DayOfWeek>.mapToDialerDays(): List<String> = map {
@@ -123,7 +119,7 @@ private fun List<DayOfWeek>.mapToDialerDays(): List<String> = map {
     }
 }
 
-private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
+private fun checkStartFinishTime(data: JaicpDialerData.RedialData) {
     val st = data.startDateTime
     val fin = data.finishDateTime
     if (st != null && fin != null) {
@@ -133,7 +129,7 @@ private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
     }
 }
 
-private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
+private fun checkLocalTime(data: JaicpDialerData.RedialData) {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
     val start = data.localTimeFrom?.let { LocalTime.parse(it, formatter) }
     val end = data.localTimeTo?.let { LocalTime.parse(it, formatter) }
@@ -144,7 +140,7 @@ private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
     }
 }
 
-private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {
+private fun checkRetryAndInterval(data: JaicpDialerData.RedialData) {
     data.retryIntervalInMinutes?.let {
         require(it >= 1) {
             "The retry interval in minutes must be a positive number. Given: $it"

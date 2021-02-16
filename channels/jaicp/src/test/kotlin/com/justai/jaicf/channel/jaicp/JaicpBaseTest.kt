@@ -2,9 +2,13 @@ package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
+import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.features.json.*
@@ -14,21 +18,38 @@ import kotlinx.serialization.json.*
 import org.junit.jupiter.api.*
 import java.io.File
 import java.io.FileInputStream
+import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 @Suppress("MemberVisibilityCanBePrivate")
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
-open class JaicpBaseTest {
+open class JaicpBaseTest(
+    private val useCommonResources: Boolean = false,
+    private val ignoreSessionId: Boolean = true
+) :
+    WithLogger {
     protected lateinit var testName: String
     protected lateinit var testNumber: String
     protected lateinit var testPackage: String
 
-    protected val request: HttpBotRequest get() = HttpBotRequest(getResourceAsInputStream("req.json"))
-    protected val expected: JaicpBotResponse get() = getResourceAsString("resp.json").asJsonHttpBotResponse().jaicp
+    protected val requestFromResources: HttpBotRequest get() = HttpBotRequest(getResourceAsInputStream("req.json"))
+    protected val responseFromResources: JaicpBotResponse get() = getResourceAsString("resp.json").asJsonHttpBotResponse().jaicp
+
     protected var connectorHttpRequestBody: String? = null
+
+    protected val commonRequestFactory = RequestFactory()
+    protected var clientId = "test-client-id"
+        private set
 
     @BeforeEach
     fun setUp(testInfo: TestInfo) {
+        if (useCommonResources) {
+            clientId = UUID.randomUUID().toString()
+            return
+        }
         testName = testInfo.displayName
         testNumber = testName.split(" ")[0]
         testPackage = testName.split(" ")[1]
@@ -42,7 +63,10 @@ open class JaicpBaseTest {
     }
 
     private fun getResource(name: String): File {
-        val path = "$RESOURCES_PATH/$testPackage/$testNumber/$name"
+        val path = when (useCommonResources) {
+            true -> "$COMMON_RESOURCES_PATH/$name"
+            false -> "$RESOURCES_PATH/$testPackage/$testNumber/$name"
+        }
         val file = File(path)
         if (!file.exists()) {
             fail("File for path $path does not exist")
@@ -60,20 +84,73 @@ open class JaicpBaseTest {
 
     companion object {
         const val RESOURCES_PATH = "./src/test/resources"
+        const val COMMON_RESOURCES_PATH = "./src/test/resources/common"
+        const val COMMON_REQUEST_PATH = "req.json"
     }
 
+    protected inner class RequestFactory {
+        fun query(query: String, additionalRequestData: Pair<String, JsonElement>? = null) =
+            getResourceAsString(COMMON_REQUEST_PATH).asJaicpBotRequest()
+                .withAdditionalData(additionalRequestData)
+                .copy(query = query, event = null, channelUserId = clientId)
+                .stringify()
+                .asHttpBotRequest()
+
+
+        fun event(event: String, additionalData: Pair<String, JsonElement>? = null) =
+            getResourceAsString(COMMON_REQUEST_PATH).asJaicpBotRequest()
+                .withAdditionalData(additionalData)
+                .copy(query = null, event = event, channelUserId = clientId)
+                .stringify()
+                .asHttpBotRequest()
+
+        private fun JaicpBotRequest.withAdditionalData(additionalRequestData: Pair<String, JsonElement>?): JaicpBotRequest {
+            val requestData = additionalRequestData?.run {
+                rawRequest.toMutableMap().apply {
+                    put(additionalRequestData.first, additionalRequestData.second)
+                }
+            } ?: return this
+            return copy(rawRequest = JSON.encodeToJsonElement(requestData).jsonObject)
+        }
+    }
+
+    fun HttpBotResponse.answers(text: String) = apply {
+        assertEquals(text, jaicp.responseData.answer)
+    }
+
+    fun HttpBotResponse.doesInterrupt() = apply {
+        assertTrue(jaicp.responseData.bargeInInterrupt?.interrupt ?: false)
+    }
+
+    fun HttpBotResponse.failsInterrupt() = apply {
+        assertFalse(jaicp.responseData.bargeInInterrupt?.interrupt ?: false)
+    }
+
+    private val JaicpBotResponse.responseData: JaicpResponseData
+        get() = logger.info(JSON.encodeToString(JaicpBotResponse.serializer(), this)).let {
+            JSON.decodeFromJsonElement(data)
+        }
+
+    internal val HttpBotResponse.responseData
+        get() = jaicp.responseData
+
+    internal fun JaicpResponseData.parseReplies() = TestJaicpRepliesParser.parse(replies)
 
     protected val HttpBotResponse.jaicp: JaicpBotResponse
         get() {
-            val response = output.toString().asJaicpBotResponse().apply {
-                processingTime = 0
-                timestamp = 0
+            val response = JSON.parseToJsonElement(output.toString()).jsonObject.toMutableMap().apply {
+                // nullify timestamp and processing
+                put("timestamp", JsonPrimitive(0))
+                put("processingTime", JsonPrimitive(0))
+
+                // sessionId is UUID and we skip it in some tests
+                if (ignoreSessionId) {
+                    put("data", JsonObject(requireNotNull(get("data")).jsonObject.toMutableMap().apply {
+                        remove("sessionId")
+                    }))
+                }
             }
-            return response.copy(data = buildJsonObject {
-                copyField(response.data, "answer")
-                copyField(response.data, "replies")
-                copyField(response.data, "dialer")
-            })
+            return JSON.decodeFromJsonElement(JaicpBotResponse.serializer(), JsonObject(response))
         }
 
     private fun configureMockHttp() {
@@ -93,4 +170,7 @@ open class JaicpBaseTest {
 }
 
 private fun JsonObjectBuilder.copyField(from: JsonElement, field: String) =
+    from.jsonObject[field]?.let { put(field, it) }
+
+private fun JsonObjectBuilder.ignoreField(from: JsonElement, field: String) =
     from.jsonObject[field]?.let { put(field, it) }
