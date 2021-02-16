@@ -143,10 +143,6 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
         JaicpTestChannel(echoBot, TelephonyChannel).process(request.withClientId(testNumber))
         verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
 
-        val exp = JSON.encodeToString(JaicpLogModel.serializer(), expLog)
-        val act = JSON.encodeToString(JaicpLogModel.serializer(), actLog)
-        println(exp)
-        println(act)
         assertEquals(
             expLog.withInvalidatedTime().withInvalidatedSessionId().withUserId(testNumber),
             actLog.withInvalidatedTime().withInvalidatedSessionId()
