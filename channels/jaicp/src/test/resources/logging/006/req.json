@@ -1,0 +1,60 @@
+{
+  "data": {
+    "resterisk": {
+      "callRecordingFile": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
+      "channel": "SIP/-666-00011e46",
+      "isIncoming": true
+    }
+  },
+  "version": 1,
+  "botId": "250311145-regression-250311145-yTv-11636342721",
+  "channelType": "resterisk",
+  "channelBotId": "250311145-regression-250311145-yTv-11636342721",
+  "channelUserId": "resterisk-250311145-regression-250311145-yTv-11636342721-471177",
+  "questionId": "27e1004e-d8ee-4e2a-8a3a-c19a9a429b58",
+  "query": "сел",
+  "timestamp": 1613471080.132,
+  "rawRequest": {
+    "event": "asr",
+    "trunkId": 11636330465,
+    "accountId": 250311145,
+    "caller": "471177",
+    "extension": "140160",
+    "channel": "SIP/-666-00011e46",
+    "data": {
+      "cause": "OK",
+      "text": "сел",
+      "resourcePath": "250311145/2021-02-16/11636330465/471177/10-24-37.978-wAv0O",
+      "callRecordingFile": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
+      "interrupted": false
+    },
+    "webhookData": {},
+    "utterances": [
+      {
+        "requestId": "1ba62b0d-ea83-4544-b904-81fddc361d8f",
+        "createdAt": 0,
+        "text": "сел",
+        "status": "Ok",
+        "resourcePath": "250311145/2021-02-16/11636330465/471177/10-24-37.978-wAv0O"
+      }
+    ]
+  },
+  "userFrom": {
+    "id": "471177",
+    "firstName": "471177"
+  },
+  "channelData": {
+    "@type": "resterisk",
+    "callRecording": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
+    "isCallIncoming": true,
+    "utterances": [
+      {
+        "requestId": "1ba62b0d-ea83-4544-b904-81fddc361d8f",
+        "createdAt": 0,
+        "text": "сел",
+        "status": "Ok",
+        "resourcePath": "250311145/2021-02-16/11636330465/471177/10-24-37.978-wAv0O"
+      }
+    ]
+  }
+}

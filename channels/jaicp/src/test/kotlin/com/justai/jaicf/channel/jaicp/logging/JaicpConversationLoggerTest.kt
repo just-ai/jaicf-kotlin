@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
 import com.justai.jaicf.channel.jaicp.channels.ChatApiChannel
+import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
@@ -135,6 +136,21 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
 
         assertTrue(actLog.isNewSession)
         assertNotEquals(sessionInitial, sessionAfterNewRequest)
+    }
+
+    @Test
+    fun `006 logging should create log model with channel data for telephony channel`() {
+        JaicpTestChannel(echoBot, TelephonyChannel).process(request.withClientId(testNumber))
+        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+
+        val exp = JSON.encodeToString(JaicpLogModel.serializer(), expLog)
+        val act = JSON.encodeToString(JaicpLogModel.serializer(), actLog)
+        println(exp)
+        println(act)
+        assertEquals(
+            expLog.withInvalidatedTime().withInvalidatedSessionId().withUserId(testNumber),
+            actLog.withInvalidatedTime().withInvalidatedSessionId()
+        )
     }
 }
 

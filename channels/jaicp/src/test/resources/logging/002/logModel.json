@@ -50,5 +50,6 @@
   "answer": "reply \"You said: /start\" from state /fallback",
   "channelType": "resterisk",
   "sessionId": "chatapi-mva_jaicf_project-263-XQt-testc2325f96-ec3a-4e63-ba05-5f582c4ad521",
-  "isNewSession": true
+  "isNewSession": true,
+  "channelData": null
 }
