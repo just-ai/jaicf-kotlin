@@ -16,6 +16,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.*
 
 
+@Suppress("DataClassPrivateConstructor")
 @Serializable
 internal data class JaicpLogModel private constructor(
     val bot: String,
@@ -33,7 +34,8 @@ internal data class JaicpLogModel private constructor(
     var answer: String?,
     val channelType: String,
     val sessionId: String,
-    val isNewSession: Boolean
+    val isNewSession: Boolean,
+    val channelData: JsonObject?
 ) {
     @Serializable
     data class NlpInfo(
@@ -78,8 +80,8 @@ internal data class JaicpLogModel private constructor(
             ) = Request(
                 type = req.type.toString().toLowerCase(),
                 query = input,
-                requestData = req.data?.jsonObject ?: buildJsonObject {  },
-                data = req.data?.jsonObject ?: buildJsonObject {  }
+                requestData = req.data?.jsonObject ?: buildJsonObject { },
+                data = req.data?.jsonObject ?: buildJsonObject { }
             )
         }
     }
@@ -158,7 +160,8 @@ internal data class JaicpLogModel private constructor(
                 response = Response(response),
                 user = user,
                 sessionId = session.sessionId,
-                isNewSession = session.isNewSession
+                isNewSession = session.isNewSession,
+                channelData = jaicpBotRequest.channelData
             )
         }
     }
