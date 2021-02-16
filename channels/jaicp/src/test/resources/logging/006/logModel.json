@@ -1,0 +1,72 @@
+{
+  "bot": "250311145-regression-250311145-yTv-11636342721",
+  "channel": "resterisk",
+  "userId": "006",
+  "user": {
+    "id": "471177",
+    "firstName": "471177"
+  },
+  "questionId": "27e1004e-d8ee-4e2a-8a3a-c19a9a429b58",
+  "request": {
+    "type": "query",
+    "query": "сел",
+    "requestData": {
+      "resterisk": {
+        "callRecordingFile": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
+        "channel": "SIP/-666-00011e46",
+        "isIncoming": true
+      }
+    },
+    "data": {
+      "resterisk": {
+        "callRecordingFile": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
+        "channel": "SIP/-666-00011e46",
+        "isIncoming": true
+      }
+    }
+  },
+  "nlpInfo": {
+    "fromState": "/",
+    "nlpClass": "/fallback",
+    "confidence": 1,
+    "rule": "catchAll",
+    "ruleType": "catchAllActivator"
+  },
+  "response": {
+    "responseData": {
+      "nlpClass": "/fallback",
+      "confidence": 1,
+      "replies": [
+        {
+          "type": "text",
+          "text": "You said: сел",
+          "state": "/fallback"
+        }
+      ],
+      "answer": "reply \"You said: сел\" from state /fallback",
+      "sessionId": null
+    }
+  },
+  "timestamp": 1613471959417,
+  "processingTime": 238,
+  "query": "сел",
+  "botId": "250311145-regression-250311145-yTv-11636342721",
+  "answer": "reply \"You said: сел\" from state /fallback",
+  "channelType": "resterisk",
+  "sessionId": "006-d29b3a8b-9b09-4cea-8d3f-0d3b7b95a648",
+  "isNewSession": true,
+  "channelData": {
+    "@type": "resterisk",
+    "callRecording": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
+    "isCallIncoming": true,
+    "utterances": [
+      {
+        "requestId": "1ba62b0d-ea83-4544-b904-81fddc361d8f",
+        "createdAt": 0,
+        "text": "сел",
+        "status": "Ok",
+        "resourcePath": "250311145/2021-02-16/11636330465/471177/10-24-37.978-wAv0O"
+      }
+    ]
+  }
+}
