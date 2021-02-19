@@ -31,10 +31,10 @@ class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @see BotHook
      */
     @ScenarioDsl
-    fun <T : BotHook> handle(klass: KClass<T>, listener: Dummy.(T) -> Unit) = addHandler(klass) { Dummy.listener(it) }
+    fun <T : BotHook> handle(klass: KClass<T>, listener: T.() -> Unit) = addHandler(klass) { listener.invoke(it) }
 
     @ScenarioDsl
-    inline fun <reified T : BotHook> handle(noinline listener: Dummy.(T) -> Unit) = handle(T::class, listener)
+    inline fun <reified T : BotHook> handle(noinline listener: T.() -> Unit) = handle(T::class, listener)
 
     private fun <T: BotHook> addHandler(klass: KClass<T>, listener: (T) -> Unit) {
         val hooks = scenarioModelBuilder.hooks.computeIfAbsent(klass) { mutableListOf() }
