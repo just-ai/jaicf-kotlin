@@ -101,9 +101,10 @@ class SlackChannel private constructor(
 
     override fun provideTimestamp(): String = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString()
 
-    override fun processExternalInvocation(request: InvocationRequest, requestContext: RequestContext) {
+    override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val invocationRequest = SlackInvocationRequest.create(request) ?: return
-        val slackRequest = buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
+        val slackRequest =
+            buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
         botApi.process(invocationRequest, SlackReactions(slackRequest.context), requestContext)
     }
 

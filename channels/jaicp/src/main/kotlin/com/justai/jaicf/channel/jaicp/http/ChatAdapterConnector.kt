@@ -48,19 +48,17 @@ internal class ChatAdapterConnector private constructor(
 
     fun initLiveChat(liveChatInitRequest: LiveChatInitRequest) {
         try {
-            initLiveChat0(liveChatInitRequest)
-        } catch (e: ClientRequestException){
-            when(e.response?.status){
+            runBlocking {
+                httpClient.post<String>("$baseUrl/initLiveChatSwitch") {
+                    body = liveChatInitRequest
+                    contentType(ContentType.Application.Json)
+                }
+            }
+        } catch (e: ClientRequestException) {
+            when (e.response?.status) {
                 HttpStatusCode.NotFound -> throw NoOperatorsOnlineException(liveChatInitRequest.request)
                 HttpStatusCode.BadRequest -> throw NoOperatorChannelConfiguredException(liveChatInitRequest.request)
             }
-        }
-    }
-
-    private fun initLiveChat0(liveChatInitRequest: LiveChatInitRequest) = runBlocking {
-        httpClient.post<String>("$baseUrl/initLiveChatSwitch") {
-            body = liveChatInitRequest
-            contentType(ContentType.Application.Json)
         }
     }
 

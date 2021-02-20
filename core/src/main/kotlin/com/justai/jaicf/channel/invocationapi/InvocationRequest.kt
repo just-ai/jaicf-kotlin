@@ -4,7 +4,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 
-val BotRequest.invocationApi get() = this as? InvocationRequest
+val BotRequest.invocationRequest get() = this as? InvocationRequest
 
 /**
  * A request processed by [InvocableBotChannel] implementation.

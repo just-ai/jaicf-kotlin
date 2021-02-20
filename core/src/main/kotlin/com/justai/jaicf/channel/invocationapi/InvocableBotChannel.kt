@@ -1,6 +1,5 @@
 package com.justai.jaicf.channel.invocationapi
 
-import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -9,10 +8,11 @@ import kotlin.random.Random
 
 /**
  * Base class for all channels able to process requests from external service.
- * Allows to send [InvocationEventRequest] or [InvocationQueryRequest] with client identifier to implementations at any time.
+ * Any class implementing [InvocableBotChannel] receives method [processInvocation] allowing to process query or event requests with client identifier from any external source.
  *
  * @see InvocationRequest
- *
+ * @see InvocationQueryRequest
+ * @see InvocationEventRequest
  * */
 interface InvocableBotChannel : WithLogger {
     /**
@@ -23,7 +23,7 @@ interface InvocableBotChannel : WithLogger {
      *
      * @see InvocableBotChannel
      */
-    fun processExternalInvocation(request: InvocationRequest, requestContext: RequestContext)
+    fun processInvocation(request: InvocationRequest, requestContext: RequestContext)
 
     /**
      * Provides a messageId for substitution in request template
@@ -64,10 +64,10 @@ interface InvocableBotChannel : WithLogger {
  * @see InvocationServlet
  * @see botInvocationRouting
  * */
-internal fun InvocableBotChannel.processExternalInvocation(
+internal fun InvocableBotChannel.processInvocation(
     queryParams: InvocationQueryParams,
     requestData: String
-) = processExternalInvocation(
+) = processInvocation(
     request = when (queryParams.type) {
         InvocationRequestType.EVENT -> InvocationEventRequest(queryParams.clientId, queryParams.input, requestData)
         InvocationRequestType.QUERY -> InvocationQueryRequest(queryParams.clientId, queryParams.input, requestData)

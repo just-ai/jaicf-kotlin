@@ -33,16 +33,16 @@ typealias RouteToInvocableChannel = Pair<String, InvocableBotChannel>
 fun Routing.botInvocationRouting(vararg routes: RouteToInvocableChannel) {
     routes.forEach { channel ->
         post(channel.first) {
-            channel.second.processExternalInvocation(call)
+            channel.second.processInvocation(call)
         }
 
         get(channel.first) {
-            channel.second.processExternalInvocation(call)
+            channel.second.processInvocation(call)
         }
     }
 }
 
-private suspend fun InvocableBotChannel.processExternalInvocation(call: ApplicationCall) =
-    processExternalInvocation(queryParams = InvocationQueryParams(call.request), requestData = call.receiveText())
+private suspend fun InvocableBotChannel.processInvocation(call: ApplicationCall) =
+    processInvocation(queryParams = InvocationQueryParams(call.request), requestData = call.receiveText())
 
 

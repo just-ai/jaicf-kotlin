@@ -34,16 +34,16 @@ open class InvocationServlet(
 ) : HttpServlet(), WithLogger {
 
     override fun doPost(req: HttpServletRequest?, resp: HttpServletResponse?) {
-        req?.run { channel.processExternalInvocation(req) }
+        req?.run { channel.processInvocation(req) }
     }
 
     override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse?) {
-        req?.run { channel.processExternalInvocation(req) }
+        req?.run { channel.processInvocation(req) }
     }
 }
 
 /**
  * Processes invocation request from [InvocationServlet]
  * */
-private fun InvocableBotChannel.processExternalInvocation(req: HttpServletRequest) =
-    processExternalInvocation(InvocationQueryParams(req), req.inputStream.bufferedReader().readText())
+private fun InvocableBotChannel.processInvocation(req: HttpServletRequest) =
+    processInvocation(InvocationQueryParams(req), req.inputStream.bufferedReader().readText())
