@@ -59,7 +59,7 @@ class FacebookChannel private constructor(
         internal const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
     }
 
-    override fun processExternalInvocation(request: InvocationRequest, requestContext: RequestContext) {
+    override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
         messenger.onReceiveEvents(template, Optional.empty()) { event ->
             FacebookInvocationRequest.create(request, event.asTextMessageEvent())?.let {

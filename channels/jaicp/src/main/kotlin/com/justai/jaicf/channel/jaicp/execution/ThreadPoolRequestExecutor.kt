@@ -94,7 +94,7 @@ private fun tryProcessAsExternalInvocation(
     } catch (e: Exception) {
         return false
     }
-    channel.processExternalInvocation(
+    channel.processInvocation(
         request = InvocationEventRequest(data.chatId, event, request.raw),
         requestContext = RequestContext.fromHttp(request.asHttpBotRequest())
     )

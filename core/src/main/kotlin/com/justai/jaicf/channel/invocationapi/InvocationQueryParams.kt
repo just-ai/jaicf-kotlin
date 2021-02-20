@@ -33,7 +33,7 @@ internal class InvocationQueryParams(queryParamsMap: Map<String, List<String>>) 
     }
 
     val clientId: String = requireNotNull(queryParamsMap["clientId"]?.firstOrNull()) {
-        "clientId path variable must be specified for gateway call"
+        "clientId path variable must be specified for invocation api call"
     }
 }
 
