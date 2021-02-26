@@ -15,6 +15,7 @@ import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
 import com.justai.jaicf.channel.invocationapi.InvocationRequest
+import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -101,14 +102,15 @@ class TelegramChannel(
         return null
     }
 
-    override fun getRequestTemplateFromResources(request: InvocationRequest, resourceName: String): String =
-        super.getRequestTemplateFromResources(request, resourceName)
+    private fun generateRequestFromTemplate(request: InvocationRequest) =
+        getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
             .replace("\"{{ timestamp }}\"", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString())
             .replace("{{ messageId }}", UUID.randomUUID().toString())
 
+
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
-        val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
-        val message = gson.fromJson(template, Update::class.java).message ?: return
+        val generatedRequest = generateRequestFromTemplate(request)
+        val message = gson.fromJson(generatedRequest, Update::class.java).message ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, message) ?: return
         botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest), requestContext)
     }

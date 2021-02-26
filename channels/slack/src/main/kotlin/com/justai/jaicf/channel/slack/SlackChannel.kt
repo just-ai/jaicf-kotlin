@@ -9,6 +9,7 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
 import com.justai.jaicf.channel.invocationapi.InvocationRequest
+import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.slack.api.Slack
@@ -23,6 +24,7 @@ import com.slack.api.methods.MethodsConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class SlackChannel private constructor(
@@ -99,12 +101,14 @@ class SlackChannel private constructor(
         botApi.process(request, reactions, RequestContext.fromHttp(httpBotRequest))
     }
 
-    override fun provideTimestamp(): String = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString()
+    private fun generateRequestFromTemplate(request: InvocationRequest) =
+        getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
+            .replace("\"{{ timestamp }}\"", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString())
+            .replace("{{ messageId }}", UUID.randomUUID().toString())
 
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val invocationRequest = SlackInvocationRequest.create(request) ?: return
-        val slackRequest =
-            buildSlackRequest(getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH).asHttpBotRequest())
+        val slackRequest = buildSlackRequest(generateRequestFromTemplate(request).asHttpBotRequest())
         botApi.process(invocationRequest, SlackReactions(slackRequest.context), requestContext)
     }
 
