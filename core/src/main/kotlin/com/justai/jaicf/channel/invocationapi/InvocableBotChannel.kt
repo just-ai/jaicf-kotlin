@@ -24,35 +24,6 @@ interface InvocableBotChannel : WithLogger {
      * @see InvocableBotChannel
      */
     fun processInvocation(request: InvocationRequest, requestContext: RequestContext)
-
-    /**
-     * Provides a messageId for substitution in request template
-     * */
-    fun provideMessageId(): String = UUID.randomUUID().toString()
-
-    /**
-     * Provides a timestamp for substitution in request template
-     * */
-    fun provideTimestamp(): String = System.currentTimeMillis().toString()
-
-    /**
-     * Loads a channel request template from resources and substitutes essential parameters (clientId, input) in request
-     *
-     * @return serialized JSON with substituted request parameters
-     * */
-    @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-    fun getRequestTemplateFromResources(request: InvocationRequest, resourceName: String) =
-        this.javaClass.getResource(resourceName).readText()
-            .replace("{{ clientId }}", request.clientId)
-            .replace("{{ text }}", request.input)
-
-            .replace("\"{{ timestamp }}\"", provideTimestamp())
-            .replace("{{ messageId }}", provideMessageId())
-
-            .replace("\"{{ randomInt }}\"", randomInt.toString())
-            .replace("\"{{ randomLong }}\"", randomLong.toString())
-
-            .also { logger.trace("Generated template request: $it") }
 }
 
 /**
@@ -79,3 +50,17 @@ private val randomInt get() = Random.nextInt()
 
 private val randomLong get() = Random.nextLong()
 
+/**
+ * Loads a channel request template from resources and substitutes essential parameters (clientId, input) in request
+ *
+ * @return serialized JSON with substituted request parameters
+ * */
+fun InvocableBotChannel.getRequestTemplateFromResources(request: InvocationRequest, resourceName: String) =
+    this.javaClass.getResource(resourceName).readText()
+        .replace("{{ clientId }}", request.clientId)
+        .replace("{{ text }}", request.input)
+
+        .replace("\"{{ randomInt }}\"", randomInt.toString())
+        .replace("\"{{ randomLong }}\"", randomLong.toString())
+
+        .also { logger.trace("Generated template request: $it") }

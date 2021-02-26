@@ -8,11 +8,10 @@ import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asTextHttpBotResponse
+import com.justai.jaicf.channel.invocationapi.*
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
-import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import java.util.*
 
 class FacebookChannel private constructor(
@@ -59,9 +58,15 @@ class FacebookChannel private constructor(
         internal const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
     }
 
+    private fun generateRequestFromTemplate(request: InvocationRequest) =
+        getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
+            .replace("\"{{ timestamp }}\"", System.currentTimeMillis().toString())
+            .replace("{{ messageId }}", UUID.randomUUID().toString())
+
+
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
-        val template = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
-        messenger.onReceiveEvents(template, Optional.empty()) { event ->
+        val generatedRequest = generateRequestFromTemplate(request)
+        messenger.onReceiveEvents(generatedRequest, Optional.empty()) { event ->
             FacebookInvocationRequest.create(request, event.asTextMessageEvent())?.let {
                 botApi.process(it, FacebookReactions(messenger, it), requestContext)
             }

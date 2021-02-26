@@ -24,7 +24,7 @@ internal class InvocationQueryParams(queryParamsMap: Map<String, List<String>>) 
     val type: InvocationRequestType = when {
         event != null -> InvocationRequestType.EVENT
         query != null -> InvocationRequestType.QUERY
-        else -> error("event or query must be specified in query parameters")
+        else -> throw HttpRequestException("event or query must be specified in query parameters")
     }
 
     val input = when (type) {
@@ -32,9 +32,8 @@ internal class InvocationQueryParams(queryParamsMap: Map<String, List<String>>) 
         InvocationRequestType.QUERY -> requireNotNull(query)
     }
 
-    val clientId: String = requireNotNull(queryParamsMap["clientId"]?.firstOrNull()) {
-        "clientId path variable must be specified for invocation api call"
-    }
+    val clientId: String = queryParamsMap["clientId"]?.firstOrNull()
+        ?: throw HttpRequestException("clientId path variable must be specified for invocation api call")
 }
 
 /**
@@ -43,3 +42,5 @@ internal class InvocationQueryParams(queryParamsMap: Map<String, List<String>>) 
 internal enum class InvocationRequestType {
     EVENT, QUERY;
 }
+
+private class HttpRequestException(override val message: String) : RuntimeException()
