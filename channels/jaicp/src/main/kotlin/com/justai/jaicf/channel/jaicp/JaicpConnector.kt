@@ -37,7 +37,6 @@ abstract class JaicpConnector(
     protected val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
     private val chatAdapterConnector = ChatAdapterConnector.getOrCreate(accessToken, url, httpClient)
     private var registeredChannels = fetchChannels()
-    protected val useLegacyPollingApi = chatAdapterConnector.getVersion() in listOf("release-1.10.1", "release-1.10.2")
 
     protected fun loadConfig() {
         registeredChannels.forEach { (factory, cfg) ->
@@ -97,9 +96,6 @@ abstract class JaicpConnector(
     private fun getApiProxyUrl(config: ChannelConfig) =
         "$apiProxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
 
-    private val proxyUrl: String
-        get() = if (useLegacyPollingApi) "$url/proxy" else "$url/proxy/$accessToken"
-
     protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpBotResponse? =
         threadPoolRequestExecutor.executeSync(request, channel)
 
@@ -112,3 +108,6 @@ internal const val DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE = 5
 
 val JaicpConnector.apiProxyUrl: String
     get() = "$url/api-proxy/$accessToken"
+
+val JaicpConnector.proxyUrl: String
+    get() = "$url/proxy/$accessToken"
