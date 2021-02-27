@@ -1,8 +1,9 @@
 package com.justai.jaicf.hook
 
-import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.*
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 
@@ -25,14 +26,20 @@ import com.justai.jaicf.reactions.Reactions
  */
 interface BotHook
 
-interface BotProcessHook: BotHook {
+interface BotPreProcessHook : BotHook {
+    val context: BotContext
+    val request: BotRequest
+    val reactions: Reactions
+}
+
+interface BotProcessHook : BotHook {
     val context: BotContext
     val request: BotRequest
     val reactions: Reactions
     val activator: ActivatorContext
 }
 
-interface BotActionHook: BotProcessHook {
+interface BotActionHook : BotProcessHook {
     val state: State
 }
 
@@ -40,21 +47,21 @@ data class BotRequestHook(
     val context: BotContext,
     val request: BotRequest,
     val reactions: Reactions
-): BotHook
+) : BotHook
 
 data class BeforeProcessHook(
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext
-): BotProcessHook
+) : BotProcessHook
 
 data class AfterProcessHook(
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext
-): BotProcessHook
+) : BotProcessHook
 
 data class BeforeActionHook(
     override val context: BotContext,
@@ -62,7 +69,7 @@ data class BeforeActionHook(
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val state: State
-): BotActionHook
+) : BotActionHook
 
 data class AfterActionHook(
     override val context: BotContext,
@@ -70,7 +77,7 @@ data class AfterActionHook(
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val state: State
-): BotActionHook
+) : BotActionHook
 
 data class ActionErrorHook(
     override val context: BotContext,
@@ -79,4 +86,25 @@ data class ActionErrorHook(
     override val activator: ActivatorContext,
     override val state: State,
     val exception: Exception
-): BotActionHook
+) : BotActionHook
+
+data class BeforeActivationHook(
+    override val context: BotContext,
+    override val request: BotRequest,
+    override val reactions: Reactions
+) : BotPreProcessHook, WithLogger {
+
+    fun setRequestType(type: BotRequestType) = when (request) {
+        is QueryBotRequest -> request.setType(type)
+        is EventBotRequest -> request.setType(type)
+        is IntentBotRequest -> request.setType(type)
+        else -> logger.debug("Request type setters are not configured for ${request::class.simpleName} request")
+    }
+
+    fun setRequestInput(input: String) = when (request) {
+        is QueryBotRequest -> request.setInput(input)
+        is EventBotRequest -> request.setInput(input)
+        is IntentBotRequest -> request.setInput(input)
+        else -> logger.debug("Request input setters are not configured for ${request::class.simpleName} request")
+    }
+}

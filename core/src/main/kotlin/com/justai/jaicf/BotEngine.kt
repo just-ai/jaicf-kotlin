@@ -123,6 +123,7 @@ class BotEngine(
         val slotFillingContext = if (isActiveSlotFilling(botContext)) {
             getSlotFillingContext(botContext)!!
         } else {
+            withHook(BeforeActivationHook(botContext, request, reactions))
             selectActivation(botContext, request)?.let {
                 startSlotFilling(botContext, it)
             } ?: run {
