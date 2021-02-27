@@ -13,17 +13,16 @@ import kotlin.coroutines.CoroutineContext
 
 internal class Dispatcher(
     private val client: HttpClient,
-    private val isLegacy: Boolean,
     private val executor: ThreadPoolRequestExecutor
 ) : WithLogger, CoroutineScope {
 
     private val supervisor = SupervisorJob()
     override val coroutineContext: CoroutineContext = supervisor + MDCContext()
     private val pollingChannels = mutableListOf<PollingChannel>()
-    private val sender = ResponseSender(client, isLegacy)
+    private val sender = ResponseSender(client)
 
     fun registerPolling(channel: JaicpBotChannel, proxyUrl: String) = pollingChannels
-        .add(PollingChannel(proxyUrl, channel, RequestPollerFactory.getPoller(client, proxyUrl, isLegacy)))
+        .add(PollingChannel(proxyUrl, channel, RequestPoller(client, proxyUrl)))
         .also { logger.info("Registered polling for channel $channel") }
 
     fun startPollingBlocking() = runBlocking {

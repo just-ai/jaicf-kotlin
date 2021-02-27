@@ -91,7 +91,7 @@ open class JaicpWebhookConnector(
         val channel = channelMap[botRequest.channelBotId]
             ?: error("Channel ${botRequest.channelType} is not configured or not supported")
 
-        return processJaicpRequest(botRequest, channel)?.deserialized()?.asJsonHttpBotResponse()
+        return processJaicpRequest(botRequest, channel)?.serialized()?.asJsonHttpBotResponse()
     }
 
     private fun isHandledPingQuery(request: String): Boolean = try {
