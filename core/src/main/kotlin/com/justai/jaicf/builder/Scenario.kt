@@ -11,23 +11,12 @@ import com.justai.jaicf.reactions.Reactions
 fun <B : BotRequest, R : Reactions> Scenario(
     channelToken: ChannelTypeToken<B, R>,
     body: ScenarioBuilder<B, R>.() -> Unit
-): Scenario = createScenario { ScenarioBuilder(channelToken).apply(body).build() }
+): Scenario = createScenario { ScenarioBuilder(channelToken).apply(body).buildScenario() }
 
 @ScenarioDsl
 fun Scenario(
     body: ScenarioBuilder<BotRequest, Reactions>.() -> Unit
 ): Scenario = Scenario(ChannelTypeToken.Default, body)
-
-@ScenarioDsl
-fun <B : BotRequest, R : Reactions> startScenario(
-    channelToken: ChannelTypeToken<B, R>,
-    body: RootBuilder<B, R>.() -> Unit
-): Scenario = Scenario(channelToken) { start(body) }
-
-@ScenarioDsl
-fun startScenario(
-    body: RootBuilder<BotRequest, Reactions>.() -> Unit
-): Scenario = Scenario(ChannelTypeToken.Default) { start(body) }
 
 infix fun Scenario.append(other: Scenario): Scenario = createScenario {
     ScenarioModelBuilder().also {

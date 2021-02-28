@@ -21,100 +21,98 @@ object HelloWorldScenario : Scenario {
 
         append(HelperScenario)
 
-        start {
-            state("main") {
+        state("main") {
 
+            activators {
+                catchAll()
+                event(AlexaEvent.LAUNCH)
+                event(DialogflowIntent.WELCOME)
+                event(AimyboxEvent.START)
+            }
+
+            action {
+                var name = context.client["name"]
+
+                if (name == null) {
+                    telegram {
+                        name = request.message.chat.firstName ?: request.message.chat.username
+                    }
+                    facebook {
+                        name = reactions.queryUserProfile()?.firstName()
+                    }
+                }
+
+                if (name == null) {
+                    reactions.askForName("Hello! What is your name?", "name")
+                } else {
+                    reactions.run {
+                        image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
+                        sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
+                        buttons("Mew" to "/mew", "Wake up" to "wakeup")
+                        aimybox?.endConversation()
+                    }
+                }
+            }
+
+            state("inner", modal = true) {
                 activators {
                     catchAll()
-                    event(AlexaEvent.LAUNCH)
-                    event(DialogflowIntent.WELCOME)
-                    event(AimyboxEvent.START)
                 }
 
                 action {
-                    var name = context.client["name"]
-
-                    if (name == null) {
-                        telegram {
-                            name = request.message.chat.firstName ?: request.message.chat.username
-                        }
-                        facebook {
-                            name = reactions.queryUserProfile()?.firstName()
-                        }
-                    }
-
-                    if (name == null) {
-                        reactions.askForName("Hello! What is your name?", "name")
-                    } else {
-                        reactions.run {
-                            image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
-                            sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
-                            buttons("Mew" to "/mew", "Wake up" to "wakeup")
-                            aimybox?.endConversation()
-                        }
-                    }
-                }
-
-                state("inner", modal = true) {
-                    activators {
-                        catchAll()
-                    }
-
-                    action {
-                        reactions.apply {
-                            sayRandom("What?", "Sorry, I didn't get that.")
-                            say("Could you repeat please?")
-                            changeState("/")
-                        }
-                    }
-                }
-
-                state("name") {
-                    action {
-                        context.client["name"] = context.result
-                        reactions.say("Nice to meet you ${context.result}")
+                    reactions.apply {
+                        sayRandom("What?", "Sorry, I didn't get that.")
+                        say("Could you repeat please?")
+                        changeState("/")
                     }
                 }
             }
 
-            state("stop") {
-                activators {
-                    intent(AlexaIntent.STOP)
-                }
-
-                action(alexa.intent) {
-                    reactions.endSession("See you latter! Bye bye!")
-                }
-            }
-
-            state("mew") {
-                activators {
-                    regex("mew")
-                }
-
+            state("name") {
                 action {
-                    reactions.image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
+                    context.client["name"] = context.result
+                    reactions.say("Nice to meet you ${context.result}")
                 }
             }
+        }
 
-            state("wakeup") {
-                activators {
-                    intent("wake_up")
-                }
-
-                action(dialogflow) {
-                    val dt = activator.slots["date-time"]
-                    reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
-                }
+        state("stop") {
+            activators {
+                intent(AlexaIntent.STOP)
             }
 
-            state("cancel") {
-                activators {
-                    intent("cancel")
-                }
-                action {
-                    reactions.say("Okay, canceling.")
-                }
+            action(alexa.intent) {
+                reactions.endSession("See you latter! Bye bye!")
+            }
+        }
+
+        state("mew") {
+            activators {
+                regex("mew")
+            }
+
+            action {
+                reactions.image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
+            }
+        }
+
+        state("wakeup") {
+            activators {
+                intent("wake_up")
+            }
+
+            action(dialogflow) {
+                val dt = activator.slots["date-time"]
+                reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
+            }
+        }
+
+        state("cancel") {
+            activators {
+                intent("cancel")
+            }
+            action {
+                reactions.say("Okay, canceling.")
             }
         }
     }

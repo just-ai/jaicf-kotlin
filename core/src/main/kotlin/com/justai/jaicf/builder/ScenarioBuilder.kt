@@ -16,9 +16,9 @@ annotation class ScenarioDsl
 
 @ScenarioDsl
 class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
-    private val channelToken: ChannelTypeToken<B, R>
-) {
-    private val scenarioModelBuilder = ScenarioModelBuilder()
+    channelToken: ChannelTypeToken<B, R>
+) : RootBuilder<B, R>(ScenarioModelBuilder(), channelToken) {
+
     private var model: ScenarioModel? = null
 
     /**
@@ -59,21 +59,10 @@ class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
         scenarioModelBuilder.dependencies += others.map { it.scenario }
     }
 
-    /**
-     * The starting point of a scenario building, builds the root state of the scenario.
-     * Every conversation starts in the root state.
-     *
-     * @param body a code block that builds the root state.
-     *
-     * @see RootBuilder
-     */
-    @ScenarioDsl
-    fun start(body: RootBuilder<B, R>.() -> Unit) {
-        val root = RootBuilder(scenarioModelBuilder, channelToken).apply(body).build()
-        scenarioModelBuilder.states.add(root)
+    internal fun buildScenario(): ScenarioModel {
+        val root = build()
+        return model ?: scenarioModelBuilder.apply { states += root }.build().also { model = it }
     }
-
-    internal fun build(): ScenarioModel = model ?: scenarioModelBuilder.build().also { model = it }
 }
 
 @ScenarioDsl
