@@ -31,6 +31,6 @@ fun startScenario(
 
 infix fun Scenario.append(other: Scenario): Scenario = createScenario {
     ScenarioModelBuilder().also {
-        it.dependencies += listOf(model, other.model)
+        it.dependencies += listOf(scenario, other.scenario)
     }.build()
 }

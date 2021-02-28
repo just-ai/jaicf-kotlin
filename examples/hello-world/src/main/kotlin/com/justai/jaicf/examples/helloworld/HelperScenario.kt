@@ -5,42 +5,45 @@ import com.justai.jaicf.activator.dialogflow.dialogflow
 import com.justai.jaicf.builder.startScenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.model.scenario.getValue
 import com.justai.jaicf.reactions.Reactions
 
-object HelperScenario : Scenario by startScenario ({
+object HelperScenario : Scenario {
 
-    state("helper") {
-        state("ask4name") {
-            activators {
-                catchAll()
-                intent("name")
-            }
+    override val scenario by startScenario {
 
-            action {
-                var name: String? = null
-
-                activator.dialogflow?.run {
-                    name = slots["name"]?.stringValue
+        state("helper") {
+            state("ask4name") {
+                activators {
+                    catchAll()
+                    intent("name")
                 }
 
-                activator.alexaIntent?.run {
-                    name = slots["firstName"]?.value
-                }
+                action {
+                    var name: String? = null
 
-                activator.catchAll?.run {
-                    name = request.input
-                }
+                    activator.dialogflow?.run {
+                        name = slots["name"]?.stringValue
+                    }
 
-                if (name.isNullOrBlank()) {
-                    reactions.say("Sorry, I didn't get it. Could you repeat please?")
-                } else {
-                    reactions.goBack(name)
+                    activator.alexaIntent?.run {
+                        name = slots["firstName"]?.value
+                    }
+
+                    activator.catchAll?.run {
+                        name = request.input
+                    }
+
+                    if (name.isNullOrBlank()) {
+                        reactions.say("Sorry, I didn't get it. Could you repeat please?")
+                    } else {
+                        reactions.goBack(name)
+                    }
                 }
             }
         }
     }
-
-})
+}
 
 fun Reactions.askForName(
     question: String,

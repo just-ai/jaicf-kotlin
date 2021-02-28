@@ -1,14 +1,15 @@
 package com.justai.jaicf.model.scenario
 
 import com.justai.jaicf.builder.Scenario
-import kotlin.properties.ReadOnlyProperty
+import com.justai.jaicf.builder.ScenarioBuilder
 import kotlin.reflect.KProperty
 
-interface Scenario : ReadOnlyProperty<Any, ScenarioModel> {
-    val model: ScenarioModel
-    override fun getValue(thisRef: Any, property: KProperty<*>) = model
+interface Scenario {
+    val scenario: ScenarioModel
 }
 
+operator fun Scenario.getValue(thisRef: Scenario, property: KProperty<*>): ScenarioModel = scenario
+
 fun createScenario(model: () -> ScenarioModel): Scenario = object : Scenario {
-    override val model by lazy(model)
+    override val scenario by lazy(model)
 }

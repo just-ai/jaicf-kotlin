@@ -55,8 +55,8 @@ class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
      */
     @ScenarioDsl
     fun append(first: Scenario, vararg others: Scenario) {
-        scenarioModelBuilder.dependencies += first.model
-        scenarioModelBuilder.dependencies += others.map { it.model }
+        scenarioModelBuilder.dependencies += first.scenario
+        scenarioModelBuilder.dependencies += others.map { it.scenario }
     }
 
     /**

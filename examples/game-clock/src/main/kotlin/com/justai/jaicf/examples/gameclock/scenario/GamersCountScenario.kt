@@ -9,6 +9,7 @@ import com.justai.jaicf.channel.googleactions.dialogflow.actionsDialogflow
 import com.justai.jaicf.channel.googleactions.intent
 import com.justai.jaicf.helpers.ssml.breakMs
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.model.scenario.getValue
 import com.justai.jaicf.test.context.runInTest
 
 class GamersCountScenario(private val min: Int, private val max: Int) : Scenario {
@@ -17,7 +18,7 @@ class GamersCountScenario(private val min: Int, private val max: Int) : Scenario
         const val state = "/setup/gamers"
     }
 
-    override val model by startScenario {
+    override val scenario by startScenario {
 
         state(state) {
             action {

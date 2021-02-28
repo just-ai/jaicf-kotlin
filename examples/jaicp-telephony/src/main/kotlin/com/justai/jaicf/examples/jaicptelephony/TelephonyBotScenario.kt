@@ -9,10 +9,11 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import com.justai.jaicf.builder.*
 import com.justai.jaicf.channel.jaicp.telephony
+import com.justai.jaicf.model.scenario.getValue
 
 object TelephonyBotScenario : WithLogger, Scenario {
 
-    override val model by startScenario(telephony) {
+    override val scenario by startScenario(telephony) {
 
         state("ringing") {
             activators {
