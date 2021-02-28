@@ -31,10 +31,10 @@ class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @see BotHook
      */
     @ScenarioDsl
-    fun <T : BotHook> handle(klass: KClass<T>, listener: T.() -> Unit) = addHandler(klass) { listener.invoke(it) }
+    fun <T : BotHook> handle(klass: KClass<T>, listener: @ScenarioDsl T.() -> Unit) = addHandler(klass) { listener.invoke(it) }
 
     @ScenarioDsl
-    inline fun <reified T : BotHook> handle(noinline listener: T.() -> Unit) = handle(T::class, listener)
+    inline fun <reified T : BotHook> handle(noinline listener: @ScenarioDsl T.() -> Unit) = handle(T::class, listener)
 
     private fun <T: BotHook> addHandler(klass: KClass<T>, listener: (T) -> Unit) {
         @Suppress("UNCHECKED_CAST")
@@ -64,6 +64,3 @@ class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
         return model ?: scenarioModelBuilder.apply { states += root }.build().also { model = it }
     }
 }
-
-@ScenarioDsl
-object Dummy
