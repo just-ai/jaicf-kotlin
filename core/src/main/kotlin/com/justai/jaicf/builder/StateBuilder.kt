@@ -90,7 +90,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     internal open fun build(): State = State(path, noContext, modal)
 }
 
-class RootBuilder<B : BotRequest, R : Reactions> internal constructor(
+open class RootBuilder<B : BotRequest, R : Reactions> internal constructor(
     scenarioModelBuilder: ScenarioModelBuilder, channelToken: ChannelTypeToken<B, R>
 ) : ScenarioGraphBuilder<B, R>(scenarioModelBuilder, channelToken, StatePath.root(), false, false)
 

@@ -13,7 +13,7 @@ import com.justai.jaicf.model.scenario.getValue
 
 object TelephonyBotScenario : WithLogger, Scenario {
 
-    override val scenario by startScenario(telephony) {
+    override val scenario by Scenario(telephony) {
 
         state("ringing") {
             activators {

@@ -5,7 +5,7 @@ import com.google.api.services.actions_fulfillment.v2.model.TableCardCell
 import com.google.api.services.actions_fulfillment.v2.model.TableCardColumnProperties
 import com.google.api.services.actions_fulfillment.v2.model.TableCardRow
 import com.justai.jaicf.activator.intent.intent
-import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.alexa.AlexaReactions
 import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
@@ -26,7 +26,7 @@ object GameLoopScenario : Scenario {
 
     const val play = "/play"
 
-    override val scenario by startScenario {
+    override val scenario by Scenario {
 
         state(play) {
 

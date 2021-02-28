@@ -1,12 +1,12 @@
 package com.justai.jaicf.core.test.activators
 
-import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 
-private val strictActivationScenario = startScenario {
+private val strictActivationScenario = Scenario {
     state("activate") {
         activators {
             regex("activate")

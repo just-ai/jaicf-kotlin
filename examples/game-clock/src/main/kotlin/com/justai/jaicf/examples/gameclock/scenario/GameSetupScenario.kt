@@ -14,36 +14,33 @@ object GameSetupScenario : Scenario {
 
         append(GamersCountScenario(2, supportedColors.size), GamersColorsScenario)
 
-        start {
+        state(state) {
+            action {
+                val game = GameController(context)
 
-            state(state) {
+                if (game.gamers == null) {
+                    reactions.say("Okay! Let's start a new game!")
+                    reactions.go(GamersCountScenario.state, "next")
+                } else {
+                    reactions.go("next")
+                }
+            }
+
+            state("next") {
                 action {
                     val game = GameController(context)
+                    game.gamers = game.gamers ?: context.result as Int
 
-                    if (game.gamers == null) {
-                        reactions.say("Okay! Let's start a new game!")
-                        reactions.go(GamersCountScenario.state, "next")
-                    } else {
-                        reactions.go("next")
+                    reactions.run {
+                        say("${game.gamers} gamers! Cool! Now you have to choose a color for each of you!")
+                        go(GamersColorsScenario.state, "../complete")
                     }
                 }
+            }
 
-                state("next") {
-                    action {
-                        val game = GameController(context)
-                        game.gamers = game.gamers ?: context.result as Int
-
-                        reactions.run {
-                            say("${game.gamers} gamers! Cool! Now you have to choose a color for each of you!")
-                            go(GamersColorsScenario.state, "../complete")
-                        }
-                    }
-                }
-
-                state("complete") {
-                    action {
-                        reactions.goBack()
-                    }
+            state("complete") {
+                action {
+                    reactions.goBack()
                 }
             }
         }

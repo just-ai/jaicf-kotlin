@@ -1,6 +1,6 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
 import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.intent
@@ -18,7 +18,7 @@ class GamersCountScenario(private val min: Int, private val max: Int) : Scenario
         const val state = "/setup/gamers"
     }
 
-    override val scenario by startScenario {
+    override val scenario by Scenario {
 
         state(state) {
             action {

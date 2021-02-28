@@ -22,162 +22,160 @@ object MainScenario : Scenario {
 
         append(GameSetupScenario, GameLoopScenario)
 
-        start {
-            state("launch") {
-                activators {
-                    event(AlexaEvent.LAUNCH)
-                    intent(DialogflowIntent.WELCOME)
-                }
-
-                action {
-                    val game = GameController(context)
-                    if (game.isReady()) {
-                        reactions.go("/start")
-                    } else {
-                        reactions.run {
-                            say(
-                                "Hi gamers! ${breakMs(300)}" +
-                                        "Game clock keeps track of the time for each player during the board game session." +
-                                        "$break500ms Are you ready to start a game?"
-                            )
-                            buttons("Yes", "No")
-                        }
-                    }
-                }
-
-                state("yes") {
-                    activators {
-                        intent(AlexaIntent.YES)
-                        intent("YesIntent")
-                    }
-
-                    action {
-                        reactions.go("/start")
-                    }
-                }
-
-                state("no") {
-                    activators {
-                        intent(AlexaIntent.NO)
-                        intent("NoIntent")
-                    }
-
-                    action {
-                        reactions.go("/cancel")
-                    }
-                }
+        state("launch") {
+            activators {
+                event(AlexaEvent.LAUNCH)
+                intent(DialogflowIntent.WELCOME)
             }
 
-            state("cancel") {
-                activators {
-                    intent(AlexaIntent.CANCEL)
-                }
-
-                action {
+            action {
+                val game = GameController(context)
+                if (game.isReady()) {
+                    reactions.go("/start")
+                } else {
                     reactions.run {
-                        say("Okay $break200ms See you latter then! Bye bye!")
-
-                        actions {
-                            reactions.endConversation()
-                        }
-
-                        alexa {
-                            reactions.stopAudioPlayer()
-                            reactions.endSession()
-                        }
-                    }
-                }
-            }
-
-            state("start") {
-                activators {
-                    intent("StartIntent")
-                }
-
-                action {
-                    val game = GameController(context)
-                    var gamers: Int? = null
-
-                    alexa.intent {
-                        gamers = activator.slots["gamers"]?.value?.toInt()
-                    }
-
-                    actions.intent {
-                        gamers = (activator.slots["gamers"] as? Number)?.toInt()
-                    }
-
-                    when {
-                        gamers != null -> {
-                            game.gamers = gamers
-                            reactions.go(GameSetupScenario.state)
-                        }
-                        game.isReady() -> {
-                            reactions.go("/restart")
-                        }
-                        else -> {
-                            game.reset()
-                            reactions.go(GameSetupScenario.state, GameLoopScenario.play)
-                        }
-                    }
-                }
-
-            }
-
-            state("restart") {
-
-                action {
-                    val game = GameController(context)
-                    reactions.run {
-                        say("Hello! Would you like to restart your previous game for ${game.gamers} gamers?")
+                        say(
+                            "Hi gamers! ${breakMs(300)}" +
+                                    "Game clock keeps track of the time for each player during the board game session." +
+                                    "$break500ms Are you ready to start a game?"
+                        )
                         buttons("Yes", "No")
                     }
                 }
+            }
 
-                state("yes") {
-                    activators {
-                        intent(AlexaIntent.YES)
-                        intent("YesIntent")
-                    }
-
-                    action {
-                        GameController(context).restart()
-                        reactions.go(GameLoopScenario.play)
-                    }
+            state("yes") {
+                activators {
+                    intent(AlexaIntent.YES)
+                    intent("YesIntent")
                 }
 
-                state("no") {
-                    activators {
-                        intent(AlexaIntent.NO)
-                        intent("NoIntent")
-                        catchAll()
+                action {
+                    reactions.go("/start")
+                }
+            }
+
+            state("no") {
+                activators {
+                    intent(AlexaIntent.NO)
+                    intent("NoIntent")
+                }
+
+                action {
+                    reactions.go("/cancel")
+                }
+            }
+        }
+
+        state("cancel") {
+            activators {
+                intent(AlexaIntent.CANCEL)
+            }
+
+            action {
+                reactions.run {
+                    say("Okay $break200ms See you latter then! Bye bye!")
+
+                    actions {
+                        reactions.endConversation()
                     }
 
-                    action {
-                        GameController(context).reset()
+                    alexa {
+                        reactions.stopAudioPlayer()
+                        reactions.endSession()
+                    }
+                }
+            }
+        }
+
+        state("start") {
+            activators {
+                intent("StartIntent")
+            }
+
+            action {
+                val game = GameController(context)
+                var gamers: Int? = null
+
+                alexa.intent {
+                    gamers = activator.slots["gamers"]?.value?.toInt()
+                }
+
+                actions.intent {
+                    gamers = (activator.slots["gamers"] as? Number)?.toInt()
+                }
+
+                when {
+                    gamers != null -> {
+                        game.gamers = gamers
+                        reactions.go(GameSetupScenario.state)
+                    }
+                    game.isReady() -> {
+                        reactions.go("/restart")
+                    }
+                    else -> {
+                        game.reset()
                         reactions.go(GameSetupScenario.state, GameLoopScenario.play)
                     }
                 }
             }
 
-            state("help", noContext = true) {
-                globalActivators {
-                    intent(AlexaIntent.HELP)
-                    intent("HelpIntent")
+        }
+
+        state("restart") {
+
+            action {
+                val game = GameController(context)
+                reactions.run {
+                    say("Hello! Would you like to restart your previous game for ${game.gamers} gamers?")
+                    buttons("Yes", "No")
+                }
+            }
+
+            state("yes") {
+                activators {
+                    intent(AlexaIntent.YES)
+                    intent("YesIntent")
                 }
 
                 action {
-                    reactions.run {
-                        say("Game clock keeps track of the time for each player during the board game session. ")
-                        say("Just say me $break300ms Start new game $break200ms to start a new round.")
-
-                        buttons("Start new game")
-                    }
+                    GameController(context).restart()
+                    reactions.go(GameLoopScenario.play)
                 }
             }
 
-            fallback {
-                reactions.say("Sorry, I didn't get it... Please try again or say cancel to stop me.")
+            state("no") {
+                activators {
+                    intent(AlexaIntent.NO)
+                    intent("NoIntent")
+                    catchAll()
+                }
+
+                action {
+                    GameController(context).reset()
+                    reactions.go(GameSetupScenario.state, GameLoopScenario.play)
+                }
             }
+        }
+
+        state("help", noContext = true) {
+            globalActivators {
+                intent(AlexaIntent.HELP)
+                intent("HelpIntent")
+            }
+
+            action {
+                reactions.run {
+                    say("Game clock keeps track of the time for each player during the board game session. ")
+                    say("Just say me $break300ms Start new game $break200ms to start a new round.")
+
+                    buttons("Start new game")
+                }
+            }
+        }
+
+        fallback {
+            reactions.say("Sorry, I didn't get it... Please try again or say cancel to stop me.")
         }
     }
 }

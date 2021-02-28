@@ -1,11 +1,11 @@
 package com.justai.jaicf.core.test.activators
 
-import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 
-private val catchAllScenario = startScenario {
+private val catchAllScenario = Scenario {
     fallback {
         reactions.say("Got it.")
     }

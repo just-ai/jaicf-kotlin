@@ -2,7 +2,7 @@ package com.justai.jaicf.channel.jaicp.logging
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.regex.RegexActivator
-import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.asHttpBotRequest
 import com.justai.jaicf.channel.jaicp.*
@@ -72,7 +72,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
 
     @Test
     fun `004 logging should start new session`() {
-        val scenario = startScenario {
+        val scenario = Scenario {
 
             state("sid") {
                 activators { regex("start session") }
@@ -106,7 +106,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
 
     @Test
     fun `005 logging should end current session, next request should go to new session`() {
-        val scenario = startScenario {
+        val scenario = Scenario {
 
             state("sid") {
                 activators { regex("end session") }

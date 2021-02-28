@@ -2,7 +2,7 @@ package com.justai.jaicf.examples.helloworld
 
 import com.justai.jaicf.activator.catchall.catchAll
 import com.justai.jaicf.activator.dialogflow.dialogflow
-import com.justai.jaicf.builder.startScenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.getValue
@@ -10,7 +10,7 @@ import com.justai.jaicf.reactions.Reactions
 
 object HelperScenario : Scenario {
 
-    override val scenario by startScenario {
+    override val scenario by Scenario {
 
         state("helper") {
             state("ask4name") {
