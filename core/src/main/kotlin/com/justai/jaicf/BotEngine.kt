@@ -21,7 +21,6 @@ import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import com.justai.jaicf.slotfilling.*
@@ -65,7 +64,7 @@ class BotEngine(
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
-    val model = scenario.model
+    val model = scenario.scenario
 
     private val activators = activators.map { it.create(model) }.addBuiltinActivators()
 

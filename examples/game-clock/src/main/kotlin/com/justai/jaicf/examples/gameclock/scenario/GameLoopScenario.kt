@@ -14,9 +14,9 @@ import com.justai.jaicf.channel.googleactions.ActionsReactions
 import com.justai.jaicf.channel.googleactions.actions
 import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.examples.gameclock.model.colorLink
-import com.justai.jaicf.examples.gameclock.scenario.GameLoopScenario.playStream
 import com.justai.jaicf.helpers.ssml.*
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.model.scenario.getValue
 import kotlin.math.floor
 
 object GameLoopScenario : Scenario {
@@ -26,7 +26,7 @@ object GameLoopScenario : Scenario {
 
     const val play = "/play"
 
-    override val model by startScenario {
+    override val scenario by startScenario {
 
         state(play) {
 
