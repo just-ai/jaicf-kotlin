@@ -5,7 +5,7 @@ import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.hook.BotHook
-import com.justai.jaicf.hook.BotHookAction
+import com.justai.jaicf.hook.BotHookListener
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.transition.Transition
@@ -16,7 +16,7 @@ internal class ScenarioModelBuilder {
     val dependencies: MutableList<ScenarioModel>
     val states: MutableList<State>
     val transitions: MutableList<Transition>
-    val hooks: MutableMap<KClass<out BotHook>, MutableList<BotHookAction<in BotHook>>>
+    val hooks: MutableMap<KClass<out BotHook>, MutableList<BotHookListener<BotHook>>>
 
     constructor() {
         dependencies = mutableListOf()

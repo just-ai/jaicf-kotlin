@@ -1,7 +1,7 @@
 package com.justai.jaicf.model.scenario
 
 import com.justai.jaicf.hook.BotHook
-import com.justai.jaicf.hook.BotHookAction
+import com.justai.jaicf.hook.BotHookListener
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.transition.Transition
 import kotlin.reflect.KClass
@@ -17,5 +17,5 @@ import kotlin.reflect.KClass
 data class ScenarioModel(
     val states: Map<String, State> = mapOf(),
     val transitions: List<Transition> = listOf(),
-    val hooks: Map<KClass<out BotHook>, MutableList<BotHookAction<in BotHook>>> = mapOf()
+    val hooks: Map<KClass<out BotHook>, MutableList<BotHookListener<BotHook>>> = mapOf()
 )
