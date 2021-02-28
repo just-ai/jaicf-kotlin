@@ -25,10 +25,12 @@ import com.justai.jaicf.reactions.Reactions
  *
  * It's useful if you need to log, append some data or transparently change the behaviour of the dialogue in some cases.
  */
-interface BotHook
+interface BotHook {
+    val context: BotContext
+}
 
 interface BotPreProcessHook : BotHook, WithLogger {
-    val context: BotContext
+    override val context: BotContext
     val request: BotRequest
     val reactions: Reactions
 
@@ -36,8 +38,8 @@ interface BotPreProcessHook : BotHook, WithLogger {
         ?: logger.trace("Request ${request::class.simpleName} does not inherit MutableBotRequest, therefore input setters are unavailable")
 }
 
-interface BotProcessHook : BotHook {
-    val context: BotContext
+interface BotProcessHook: BotHook {
+    override val context: BotContext
     val request: BotRequest
     val reactions: Reactions
     val activator: ActivatorContext

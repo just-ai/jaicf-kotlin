@@ -3,7 +3,7 @@ package com.justai.jaicf.builder
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.hook.BotHook
-import com.justai.jaicf.hook.BotHookAction
+import com.justai.jaicf.hook.BotHookListener
 import com.justai.jaicf.model.ScenarioModelBuilder
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
@@ -37,9 +37,9 @@ class ScenarioBuilder<B : BotRequest, R : Reactions> internal constructor(
     inline fun <reified T : BotHook> handle(noinline listener: T.() -> Unit) = handle(T::class, listener)
 
     private fun <T: BotHook> addHandler(klass: KClass<T>, listener: (T) -> Unit) {
-        val hooks = scenarioModelBuilder.hooks.computeIfAbsent(klass) { mutableListOf() }
         @Suppress("UNCHECKED_CAST")
-        hooks += listener as BotHookAction<in BotHook>
+        val hookAction = listener as (BotHook) -> Unit
+        scenarioModelBuilder.hooks.computeIfAbsent(klass) { mutableListOf() }.add(BotHookListener(hookAction, { true }))
     }
 
     /**
