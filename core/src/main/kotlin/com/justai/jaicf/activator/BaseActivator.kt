@@ -79,12 +79,18 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
 
     private fun generateTransitions(botContext: BotContext): List<Transition> {
         val currentState = botContext.dialogContext.currentContext
-        val isModal = currentState != "/" && model.states[currentState]?.modal
-                ?: error("State $currentState is not registered in model")
-
         val currentPath = StatePath.parse(currentState)
-        val availableStates = mutableListOf(currentPath.toString()).apply {
-            if (!isModal) addAll(currentPath.parents.reversedArray())
+
+        val allStatesBack = listOf(currentPath.toString()) + currentPath.parents.reversedArray()
+
+        val availableStates = mutableListOf<String>()
+        for (state in allStatesBack) {
+            availableStates += state
+
+            val isModal = model.states[state]?.modal ?: error("State $state is not registered in model")
+            if (isModal) {
+                break
+            }
         }
 
         val transitionsMap = model.transitions.groupBy { it.fromState }
