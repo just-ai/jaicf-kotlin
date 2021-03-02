@@ -261,6 +261,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @param body a code block of the action
      */
     fun action(body: @ScenarioDsl ActionContext<ActivatorContext, B, R>.() -> Unit) {
+        check(action == null) { "Multiple actions are not available in a single state: ${path}" }
         action = { channelToken.invoke(body) }
     }
 
