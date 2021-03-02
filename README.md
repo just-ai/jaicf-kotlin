@@ -12,21 +12,19 @@ JAICF is a comprehensive enterprise-level framework from [Just AI](https://just-
 [![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin)
 
 ```kotlin
-object HelloWorldScenario: Scenario() {
-    init {
-        state("main") {
-            activators {
-                event(AlexaEvent.LAUNCH)
-                intent(DialogflowIntent.WELCOME)
-                regex("/start")
-            }
-            
-            action {
-                reactions.run {
-                    sayRandom("Hi!", "Hello there!")
-                    say("How are you?")
-                    telegram?.image("https://somecutecats.com/cat.jpg")
-                }
+val HelloWorldScenario = Scenario {
+    state("main") {
+        activators {
+            event(AlexaEvent.LAUNCH)
+            intent(DialogflowIntent.WELCOME)
+            regex("/start")
+        }
+        
+        action {
+            reactions.run {
+                sayRandom("Hi!", "Hello there!")
+                say("How are you?")
+                telegram?.image("https://somecutecats.com/cat.jpg")
             }
         }
     }
