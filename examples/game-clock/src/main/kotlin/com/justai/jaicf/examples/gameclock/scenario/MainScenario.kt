@@ -20,7 +20,8 @@ object MainScenario : Scenario {
 
     override val scenario by Scenario {
 
-        append(GameSetupScenario, GameLoopScenario)
+        append(GameSetupScenario)
+        append(GameLoopScenario)
 
         state("launch") {
             activators {

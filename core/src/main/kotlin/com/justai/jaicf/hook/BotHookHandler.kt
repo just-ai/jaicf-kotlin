@@ -4,31 +4,19 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.state.StatePath
 import kotlin.reflect.KClass
 
-class BotHookListener<in T: BotHook>(
+data class BotHookListener<T: BotHook>(
+    val klass: KClass<T>,
     val action: (T) -> Unit,
-    val isAvailable: (T) -> Boolean
+    val availableFrom: StatePath = StatePath.root(),
+    val exceptFrom: Set<StatePath> = setOf<StatePath>()
 ) {
-    companion object {
-        class Builder<T: BotHook>(val action: (T) -> Unit) {
-            private val availableFrom = mutableSetOf<StatePath>()
-            private val exceptFrom = mutableSetOf<StatePath>()
+    fun execute(hook: T) {
+        val current = hook.context.dialogContext.currentContext.toString()
+        val isAvailable = current.startsWith(availableFrom.toString())
+        val isException = exceptFrom.any { current.startsWith(it.toString()) }
 
-            fun addAvailableFrom(state: StatePath) {
-                availableFrom += state
-            }
-
-            fun addExceptFrom(state: StatePath) {
-                exceptFrom += state
-            }
-
-            fun build(): BotHookListener<T> {
-                return BotHookListener(action) { hook ->
-                    val current = hook.context.dialogContext.currentContext.toString()
-                    val isAvailable = availableFrom.any { current.startsWith(it.toString()) }
-                    val isException = exceptFrom.any { current.startsWith(it.toString()) }
-                    isAvailable && !isException
-                }
-            }
+        if (isAvailable && !isException) {
+            action.invoke(hook)
         }
     }
 }
@@ -48,9 +36,9 @@ class BotHookHandler {
      * @see BotHook
      */
     inline fun <reified T: BotHook> addHookAction(noinline action: T.() -> Unit) {
+        val listener = BotHookListener<T>(T::class, { hook: T -> hook.action() })
         @Suppress("UNCHECKED_CAST")
-        val hookAction = { hook: T -> hook.action() } as (BotHook) -> Unit
-        actions.computeIfAbsent(T::class) { mutableListOf() }.add(BotHookListener(hookAction, { true }))
+        actions.computeIfAbsent(T::class) { mutableListOf() }.add(listener as BotHookListener<BotHook>)
     }
 
     /**
@@ -63,9 +51,7 @@ class BotHookHandler {
     fun triggerHook(hook: BotHook) {
         actions[hook::class]?.forEach { listener ->
             try {
-                if (listener.isAvailable(hook)) {
-                    listener.action(hook)
-                }
+                listener.execute(hook)
             } catch (e: BotHookException) {
                 throw e
             } catch (e: Exception) {

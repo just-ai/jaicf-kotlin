@@ -12,7 +12,8 @@ object GameSetupScenario : Scenario {
 
     override val scenario by Scenario {
 
-        append(GamersCountScenario(2, supportedColors.size), GamersColorsScenario)
+        append(GamersCountScenario(2, supportedColors.size))
+        append(GamersColorsScenario)
 
         state(state) {
             action {
