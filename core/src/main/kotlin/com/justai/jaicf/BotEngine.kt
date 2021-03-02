@@ -91,7 +91,7 @@ class BotEngine(
      * @see BotHook
      */
     val hooks = BotHookHandler().also { handler ->
-        handler.actions.putAll(model.hooks)
+        handler.actions.putAll(model.hooks.groupBy { it.klass }.mapValues { it.value.toMutableList() })
     }
 
     override fun process(

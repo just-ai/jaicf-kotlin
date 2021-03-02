@@ -17,5 +17,5 @@ import kotlin.reflect.KClass
 data class ScenarioModel(
     val states: Map<String, State> = mapOf(),
     val transitions: List<Transition> = listOf(),
-    val hooks: Map<KClass<out BotHook>, MutableList<BotHookListener<BotHook>>> = mapOf()
+    val hooks: List<BotHookListener<BotHook>> = listOf()
 )

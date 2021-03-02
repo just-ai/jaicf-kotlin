@@ -6,45 +6,56 @@ import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookListener
+import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
+import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 import kotlin.reflect.KClass
 
 internal class ScenarioModelBuilder {
 
-    val dependencies: MutableList<ScenarioModel>
     val states: MutableList<State>
     val transitions: MutableList<Transition>
-    val hooks: MutableMap<KClass<out BotHook>, MutableList<BotHookListener<BotHook>>>
+    val hooks: MutableList<BotHookListener<BotHook>>
 
     constructor() {
-        dependencies = mutableListOf()
         states = mutableListOf()
         transitions = mutableListOf()
-        hooks = mutableMapOf()
+        hooks = mutableListOf()
     }
 
     private constructor(other: ScenarioModelBuilder) {
-        dependencies = mutableListOf()
         states = other.states
         transitions = other.transitions
         hooks = other.hooks
     }
 
-    fun build(): ScenarioModel = concatenate().verify().postProcess()
+    fun append(path: StatePath, other: Scenario, ignoreHooks: Boolean, exposeHooks: Boolean, propagateHooks: Boolean) {
+        val otherModel = other.scenario.resolve(path)
+        states += otherModel.states.values.filterNot { it.path.toString() == path.toString() }
+        transitions += otherModel.transitions
 
-    private fun concatenate(): ScenarioModelBuilder {
-        return dependencies.fold(ScenarioModelBuilder(this)) { builder, model ->
-            builder.apply {
-                states.addAll(model.states.values.filterNot { it.path.isRoot })
-                transitions.addAll(model.transitions)
-                model.hooks.entries.forEach { (klass, listeners) ->
-                    builder.hooks.computeIfAbsent(klass) { mutableListOf() }.addAll(listeners)
+        if (!propagateHooks) {
+            hooks.replaceAll { hook ->
+                if (path.toString().startsWith(hook.availableFrom.toString())) {
+                    hook.copy(exceptFrom = hook.exceptFrom + path)
+                } else {
+                    hook
                 }
             }
         }
+
+        if (!ignoreHooks) {
+            hooks += if (exposeHooks) {
+                otherModel.hooks.map { hook -> hook.copy(availableFrom = StatePath.root()) }
+            } else {
+                otherModel.hooks
+            }
+        }
     }
+
+    fun build(): ScenarioModel = verify().postProcess()
 
     private fun verify(): ScenarioModelBuilder {
         val paths = mutableSetOf<String>()
@@ -76,5 +87,27 @@ internal class ScenarioModelBuilder {
         }
 
         return ScenarioModel(states.associateBy { it.path.toString() }, newTransitions, hooks)
+    }
+
+    private fun ScenarioModel.resolve(statePath: StatePath): ScenarioModel {
+        fun StatePath.resolveRelatively(other: String): StatePath = resolve(other.substring(1))
+        fun StatePath.resolveRelatively(other: StatePath): StatePath = resolveRelatively(other.toString())
+
+        val newStates = states.values.map {
+            it.copy(path = statePath.resolveRelatively(it.path))
+        }
+        val newTransitions = transitions.map {
+            it.copy(
+                fromState = statePath.resolveRelatively(it.fromState).toString(),
+                toState = statePath.resolveRelatively(it.toState).toString()
+            )
+        }
+        val newHooks = hooks.map { hook ->
+            hook.copy(
+                availableFrom = statePath.resolveRelatively(hook.availableFrom),
+                exceptFrom = hook.exceptFrom.map { statePath.resolveRelatively(it) }.toSet(),
+            )
+        }
+        return ScenarioModel(newStates.associateBy { it.path.toString() }, newTransitions, newHooks)
     }
 }
