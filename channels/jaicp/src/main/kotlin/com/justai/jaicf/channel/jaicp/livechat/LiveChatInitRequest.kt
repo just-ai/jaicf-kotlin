@@ -19,7 +19,7 @@ internal data class LiveChatInitRequest(
             return LiveChatInitRequest(
                 request = req,
                 switchData = reply,
-                sessionId = SessionManager.getOrCreateSessionId(lc).sessionId
+                sessionId = SessionManager.get(lc).getOrCreateSessionId().sessionId
             )
         }
     }

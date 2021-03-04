@@ -2,6 +2,8 @@ package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
+import com.justai.jaicf.channel.jaicp.reactions.reaction.EndSessionReaction
+import com.justai.jaicf.channel.jaicp.reactions.reaction.NewSessionReaction
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.SayReaction
@@ -13,6 +15,7 @@ val Reactions.jaicp get() = this as? JaicpReactions
 open class JaicpReactions : Reactions() {
 
     protected val replies: MutableList<Reply> = mutableListOf()
+
     internal val dialer by lazy { JaicpDialerAPI() }
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
@@ -32,7 +35,7 @@ open class JaicpReactions : Reactions() {
      * */
     fun startNewSession() {
         botContext.cleanSessionData()
-        SessionManager.processStartSessionReaction(botContext)
+        registerReaction(NewSessionReaction(getCurrentState()))
     }
 
     /**
@@ -48,7 +51,7 @@ open class JaicpReactions : Reactions() {
     fun endSession() {
         botContext.dialogContext.currentState = "/"
         botContext.dialogContext.currentContext = "/"
-        SessionManager.processEndSessionReaction(botContext)
+        registerReaction(EndSessionReaction(getCurrentState()))
     }
 
     fun collect(): JsonObject {
@@ -67,7 +70,7 @@ open class JaicpReactions : Reactions() {
             putJsonArray("replies") {
                 jsonReplies.forEach { add(it) }
             }
-            put("sessionId", SessionManager.getOrCreateSessionId(loggingContext).sessionId)
+            put("sessionId", SessionManager.get(loggingContext).getOrCreateSessionId().sessionId)
             put("answer", answer)
         }
     }
