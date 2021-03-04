@@ -1,33 +1,84 @@
 package com.justai.jaicf.channel.jaicp.logging.internal
 
-import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.reactions.reaction.EndSessionReaction
+import com.justai.jaicf.channel.jaicp.reactions.reaction.NewSessionReaction
 import com.justai.jaicf.logging.LoggingContext
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import java.util.*
 
-internal object SessionManager {
 
-    fun processStartSessionReaction(ctx: BotContext) = SessionStarted.saveToContext(ctx)
+internal const val SESSION_MANAGER_KEY = "com/justai/jaicf/jaicp/logging/conversationSession/sessionManager"
 
-    fun processEndSessionReaction(ctx: BotContext) = SessionEnded.saveToContext(ctx)
+@Serializable
+internal data class SessionData(
+    val sessionId: String,
+    val isNewSession: Boolean
+)
 
-    fun getOrCreateSessionId(loggingContext: LoggingContext): SessionData {
-        val ctx = loggingContext.botContext
-        val sessionData = SessionDataService.fromContext(ctx)
-        val sessionEvent = SessionEventService.fromContext(ctx)
-        SessionEventService.cleanup(ctx)
+@Serializable
+internal class SessionManager {
+    private var sessionId: String? = null
+    private var isNewSession: Boolean = false
 
-        if (sessionData == null || loggingContext.requestContext.newSession) {
-            return SessionData.new(ctx).apply { saveToContext(ctx) }
+    @Transient
+    private var thisRequestSessionData: SessionData? = null
+
+    @Transient
+    lateinit var loggingContext: LoggingContext
+
+    fun getOrCreateSessionId(): SessionData = thisRequestSessionData ?: runAndSave {
+        val sessionData = when {
+            hasNewSessionReaction() -> SessionData(createSessionId(), true)
+            hasEndSessionReaction() -> when (sessionId) {
+                null -> SessionData(createSessionId(), true)
+                else -> SessionData(requireNotNull(sessionId), false)
+            }
+            shouldStartNewSession() -> SessionData(createSessionId(), true)
+            else -> SessionData(requireNotNull(sessionId), false)
+
         }
 
-        return when (sessionEvent) {
-            // if session started, create new session and save it for further requests
-            SessionStarted -> SessionData.new(ctx).apply { saveToContext(ctx) }
-            // if session ended, delete current session
-            SessionEnded -> sessionData.also {
-                SessionDataService.cleanup(ctx)
-                ctx.cleanSessionData()
-            }
-            null -> sessionData
+        sessionId = when (hasEndSessionReaction()) {
+            true -> null
+            false -> sessionData.sessionId
+        }
+        sessionData
+    }
+
+    private fun hasNewSessionReaction() = loggingContext.reactions.any { it is NewSessionReaction }
+
+    private fun hasEndSessionReaction() = loggingContext.reactions.any { it is EndSessionReaction }
+
+    private fun shouldStartNewSession() = sessionId == null || loggingContext.requestContext.newSession
+
+    private fun runAndSave(block: SessionManager.() -> SessionData): SessionData {
+        val sessionData = block.invoke(this)
+        thisRequestSessionData = sessionData
+
+        loggingContext.botContext.session[SESSION_MANAGER_KEY] = JSON.encodeToString(serializer(), this)
+        loggingContext.botContext.temp[SESSION_MANAGER_KEY] = this
+        return sessionData
+    }
+
+    private fun createSessionId() = "${loggingContext.botContext.clientId}-${UUID.randomUUID()}"
+
+    override fun toString(): String {
+        return "SessionManager(sessionId=$sessionId, isNewSession=$isNewSession, thisRequestSessionData=$thisRequestSessionData, loggingContext=$loggingContext)"
+    }
+
+
+    companion object {
+        fun get(loggingContext: LoggingContext): SessionManager {
+            // if any component requested session, we finalize session and use it during all request processing
+            (loggingContext.botContext.temp[SESSION_MANAGER_KEY] as? SessionManager)?.let { return it }
+
+            // this is the first call for sessionData, we try to decode it from BotContext and reuse.
+            val storedSessionState = loggingContext.botContext.session[SESSION_MANAGER_KEY] as? String
+            val sessionManager = storedSessionState?.let { JSON.decodeFromString(serializer(), it) } ?: SessionManager()
+            sessionManager.loggingContext = loggingContext
+            return sessionManager
         }
     }
 }

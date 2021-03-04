@@ -2,13 +2,16 @@ package com.justai.jaicf.channel.jaicp.logging
 
 
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.channel.jaicp.*
+import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
+import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
+import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
-import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager.getOrCreateSessionId
+import com.justai.jaicf.channel.jaicp.jaicpRequest
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
+import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
@@ -46,7 +49,7 @@ open class JaicpConversationLogger(
     override fun doLog(loggingContext: LoggingContext) {
         try {
             val req = loggingContext.jaicpRequest ?: return
-            val session = getOrCreateSessionId(loggingContext)
+            val session = SessionManager.get(loggingContext).getOrCreateSessionId()
             launch { doLogAsync(req, loggingContext, session) }
         } catch (e: Exception) {
             logger.debug("Failed to produce JAICP LogRequest: ", e)
