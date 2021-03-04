@@ -1,23 +1,23 @@
 package com.justai.jaicf.core.test.hooks
 
-import com.justai.jaicf.hook.BeforeActivationHook
+import com.justai.jaicf.hook.BotRequestHook
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 
-private val withBeforeActivationHook = object : Scenario() {
+private val withBeforeProcessHook = object : Scenario() {
     init {
-        handle<BeforeActivationHook> {
+        handle<BotRequestHook> {
             it.setRequestInput(it.request.input.removePrefix("bad-prefix-"))
         }
-        state("error") {
+        state("ok") {
             activators { regex("some-query") }
             action { reactions.say("ok") }
         }
     }
 }
 
-class BeforeActivationHookTest : ScenarioTest(withBeforeActivationHook.model) {
+class BeforeProcessHookTest : ScenarioTest(withBeforeProcessHook.model) {
 
     @Test
     fun `should modify input and process`() {

@@ -1,6 +1,7 @@
 package com.justai.jaicf.hook
 
-import com.justai.jaicf.api.*
+import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.MutableBotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -26,10 +27,15 @@ import com.justai.jaicf.reactions.Reactions
  */
 interface BotHook
 
-interface BotPreProcessHook : BotHook {
+interface BotPreProcessHook : BotHook, WithLogger {
     val context: BotContext
     val request: BotRequest
     val reactions: Reactions
+
+    fun setRequestInput(input: String): Unit = (request as? MutableBotRequest)
+        ?.run { this.input = input }
+        ?: logger.debug("Request ${request::class.simpleName} does not inherit MutableBotRequest, therefore input setters are unavailable")
+
 }
 
 interface BotProcessHook : BotHook {
@@ -44,10 +50,10 @@ interface BotActionHook : BotProcessHook {
 }
 
 data class BotRequestHook(
-    val context: BotContext,
-    val request: BotRequest,
-    val reactions: Reactions
-) : BotHook
+    override val context: BotContext,
+    override val request: BotRequest,
+    override val reactions: Reactions
+) : BotPreProcessHook
 
 data class BeforeProcessHook(
     override val context: BotContext,
@@ -92,19 +98,4 @@ data class BeforeActivationHook(
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions
-) : BotPreProcessHook, WithLogger {
-
-    fun setRequestType(type: BotRequestType) = when (request) {
-        is QueryBotRequest -> request.setType(type)
-        is EventBotRequest -> request.setType(type)
-        is IntentBotRequest -> request.setType(type)
-        else -> logger.debug("Request type setters are not configured for ${request::class.simpleName} request")
-    }
-
-    fun setRequestInput(input: String) = when (request) {
-        is QueryBotRequest -> request.setInput(input)
-        is EventBotRequest -> request.setInput(input)
-        is IntentBotRequest -> request.setInput(input)
-        else -> logger.debug("Request input setters are not configured for ${request::class.simpleName} request")
-    }
-}
+) : BotPreProcessHook, WithLogger

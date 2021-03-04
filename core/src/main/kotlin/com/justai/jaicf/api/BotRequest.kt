@@ -22,6 +22,11 @@ enum class BotRequestType {
     QUERY, EVENT, INTENT
 }
 
+abstract class MutableBotRequest(input: String) : BotRequest {
+    override var input: String = input
+        internal set
+}
+
 /**
  * The request that contains a raw text query.
  * Every activator that handles query requests should use this class or create an own subclass.
@@ -29,25 +34,8 @@ enum class BotRequestType {
 open class QueryBotRequest(
     override val clientId: String,
     input: String
-) : BotRequest {
-
-    private var inputValue = input
-
-    override val input: String
-        get() = inputValue
-
-    internal fun setInput(input: String) {
-        inputValue = input
-    }
-
-    private var typeValue = BotRequestType.QUERY
-
-    override val type
-        get() = typeValue
-
-    internal fun setType(type: BotRequestType) {
-        typeValue = type
-    }
+) : MutableBotRequest(input) {
+    override val type = BotRequestType.QUERY
 }
 
 /**
@@ -57,24 +45,8 @@ open class QueryBotRequest(
 open class EventBotRequest(
     override val clientId: String,
     input: String
-) : BotRequest {
-    private var inputValue = input
-
-    override val input: String
-        get() = inputValue
-
-    internal fun setInput(input: String) {
-        inputValue = input
-    }
-
-    private var typeValue = BotRequestType.EVENT
-
-    override val type
-        get() = typeValue
-
-    internal fun setType(type: BotRequestType) {
-        typeValue = type
-    }
+) : MutableBotRequest(input) {
+    override val type = BotRequestType.EVENT
 }
 
 /**
@@ -84,24 +56,8 @@ open class EventBotRequest(
 open class IntentBotRequest(
     override val clientId: String,
     input: String
-) : BotRequest {
-    private var inputValue = input
-
-    override val input: String
-        get() = inputValue
-
-    internal fun setInput(input: String) {
-        inputValue = input
-    }
-
-    private var typeValue = BotRequestType.INTENT
-
-    override val type
-        get() = typeValue
-
-    internal fun setType(type: BotRequestType) {
-        typeValue = type
-    }
+) : MutableBotRequest(input) {
+    override val type = BotRequestType.INTENT
 }
 
 /**
