@@ -23,8 +23,14 @@ enum class BotRequestType {
 }
 
 abstract class MutableBotRequest(input: String) : BotRequest {
-    override var input: String = input
-        internal set
+    private var inputValue = input
+
+    override val input: String
+        get() = inputValue
+
+    internal fun setInput(input: String) {
+        inputValue = input
+    }
 }
 
 /**

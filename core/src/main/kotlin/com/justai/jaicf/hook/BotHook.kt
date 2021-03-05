@@ -32,10 +32,8 @@ interface BotPreProcessHook : BotHook, WithLogger {
     val request: BotRequest
     val reactions: Reactions
 
-    fun setRequestInput(input: String): Unit = (request as? MutableBotRequest)
-        ?.run { this.input = input }
-        ?: logger.debug("Request ${request::class.simpleName} does not inherit MutableBotRequest, therefore input setters are unavailable")
-
+    fun setRequestInput(input: String): Unit = (request as? MutableBotRequest)?.setInput(input)
+        ?: logger.trace("Request ${request::class.simpleName} does not inherit MutableBotRequest, therefore input setters are unavailable")
 }
 
 interface BotProcessHook : BotHook {
