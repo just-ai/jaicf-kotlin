@@ -9,8 +9,8 @@ import com.justai.jaicf.context.StrictActivatorContext
  * @property event an event's name that activated a state
  * @see com.justai.jaicf.context.ActionContext
  */
-data class EventActivatorContext(
-    val event: String
+open class EventActivatorContext(
+    open val event: String
 ): StrictActivatorContext()
 
 val ActivatorContext.event
