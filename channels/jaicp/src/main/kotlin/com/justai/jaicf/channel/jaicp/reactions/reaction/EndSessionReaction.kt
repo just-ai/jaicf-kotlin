@@ -4,4 +4,6 @@ import com.justai.jaicf.logging.Reaction
 
 data class EndSessionReaction(
     override val fromState: String
-) : Reaction(fromState)
+) : Reaction(fromState) {
+    override fun toString(): String = """end current session from state $fromState"""
+}
