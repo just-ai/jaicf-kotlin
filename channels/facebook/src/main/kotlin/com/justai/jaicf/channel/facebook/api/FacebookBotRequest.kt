@@ -99,7 +99,7 @@ internal fun Event.toBotRequest(): FacebookBotRequest = when {
 
 interface FacebookInvocationRequest : FacebookBotRequest, InvocationRequest {
     companion object {
-        fun create(r: InvocationRequest, event: BaseEvent) = when (r) {
+        fun create(r: InvocationRequest, event: BaseEvent): FacebookInvocationRequest? = when (r) {
             is InvocationEventRequest -> FacebookInvocationEventRequest(event, r.clientId, r.input, r.requestData)
             is InvocationQueryRequest -> FacebookInvocationQueryRequest(event, r.clientId, r.input, r.requestData)
             else -> null

@@ -1,6 +1,9 @@
 package com.justai.jaicf.channel.telegram
 
-import com.github.kotlintelegrambot.entities.*
+import com.github.kotlintelegrambot.entities.Contact
+import com.github.kotlintelegrambot.entities.Game
+import com.github.kotlintelegrambot.entities.Location
+import com.github.kotlintelegrambot.entities.Message
 import com.github.kotlintelegrambot.entities.files.*
 import com.github.kotlintelegrambot.entities.stickers.Sticker
 import com.justai.jaicf.api.BotRequest
@@ -99,7 +102,7 @@ data class TelegramVoiceRequest(
 
 interface TelegramInvocationRequest : TelegramBotRequest, InvocationRequest {
     companion object {
-        fun create(r: InvocationRequest, message: Message) = when (r) {
+        fun create(r: InvocationRequest, message: Message): TelegramInvocationRequest? = when (r) {
             is InvocationEventRequest -> TelegramInvocationEventRequest(message, r.clientId, r.input, r.requestData)
             is InvocationQueryRequest -> TelegramInvocationQueryRequest(message, r.clientId, r.input, r.requestData)
             else -> null
