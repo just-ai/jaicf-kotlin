@@ -9,7 +9,7 @@ import kotlinx.serialization.Transient
 import java.util.*
 
 
-internal const val SESSION_MANAGER_KEY = "com/justai/jaicf/jaicp/logging/conversationSession/sessionManager"
+private const val SESSION_MANAGER_KEY = "com/justai/jaicf/jaicp/logging/conversationSession/sessionManager"
 
 @Serializable
 internal data class SessionData(
