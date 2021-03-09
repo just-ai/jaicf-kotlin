@@ -69,22 +69,52 @@ data class ProcessResult(
         assertTrue(getAllForType<GoReaction>().any { it.transition == state }) // TODO: this is invalid
     }
 
-    infix fun endsWithState(context: String) = apply {
-        assertEquals(context, botContext.dialogContext.currentContext)
+    /**
+     * Asserts a state request ended processing in.
+     *
+     * @param state a full path of the expected state
+     * @return this [ProcessResult] for chaining
+     */
+    infix fun endsWithState(state: String) = apply {
+        assertEquals(state, botContext.dialogContext.currentContext)
     }
 
+    /**
+     * Asserts a state request ended processing in.
+     *
+     * @param text an expected test of single reply
+     * @return this [ProcessResult] for chaining
+     */
     infix fun hasAnswer(text: String) = apply {
         assertTrue(getAllForType<SayReaction>().any { it.text == text })
     }
 
+    /**
+     * Asserts buttons sent from scenario
+     *
+     * @param buttons an expected list of buttons sent from scenario
+     * @return this [ProcessResult] for chaining
+     */
     infix fun hasButtons(buttons: List<String>) = apply {
         assertTrue(getAllForType<ButtonsReaction>().any { it.buttons == buttons })
     }
 
+    /**
+     * Asserts an image sent from scenario
+     *
+     * @param image an expected image url sent from scenario
+     * @return this [ProcessResult] for chaining
+     */
     infix fun hasImage(image: String) = apply {
         assertTrue(getAllForType<ImageReaction>().any { it.imageUrl == image })
     }
 
+    /**
+     * Asserts an audio sent from scenario
+     *
+     * @param audio an expected audio url sent from scenario
+     * @return this [ProcessResult] for chaining
+     */
     infix fun hasAudio(audio: String) = apply {
         assertTrue(getAllForType<AudioReaction>().any { it.audioUrl == audio })
     }
