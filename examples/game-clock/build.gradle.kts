@@ -1,6 +1,5 @@
 plugins {
-    `jaicf-kotlin`
-    `jaicf-junit`
+    kotlin("jvm") version Version.kotlin
     id("com.github.johnrengelman.shadow") version "5.0.0"
 }
 
@@ -9,19 +8,32 @@ repositories {
 }
 
 dependencies {
-    core()
+    implementation(kotlin("stdlib", Version.stdLib))
 
+    implementation(project(":core"))
     implementation(project(":channels:jaicp"))
     implementation(project(":channels:alexa"))
     implementation(project(":channels:google-actions"))
 
-    implementation(ktor("ktor-server-netty"))
+    implementation("io.ktor:ktor-server-netty" version {ktor})
 
-    implementation(slf4j("slf4j-simple"))
-    implementation(slf4j("slf4j-log4j12"))
+    implementation("org.slf4j:slf4j-simple" version {slf4j})
+    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
+    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
 
 tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+    test {
+        useJUnitPlatform()
+    }
     build {
         dependsOn(shadowJar)
     }
