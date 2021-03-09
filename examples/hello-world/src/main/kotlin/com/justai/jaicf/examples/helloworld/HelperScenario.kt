@@ -4,42 +4,35 @@ import com.justai.jaicf.activator.catchall.catchAll
 import com.justai.jaicf.activator.dialogflow.dialogflow
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.alexa.activator.alexaIntent
-import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.getValue
 import com.justai.jaicf.reactions.Reactions
 
-object HelperScenario : Scenario {
+val HelperScenario = Scenario {
 
-    override val scenario by Scenario {
+    state("ask4name") {
+        activators {
+            catchAll()
+            intent("name")
+        }
 
-        state("helper") {
-            state("ask4name") {
-                activators {
-                    catchAll()
-                    intent("name")
-                }
+        action {
+            var name: String? = null
 
-                action {
-                    var name: String? = null
+            activator.dialogflow?.run {
+                name = slots["name"]?.stringValue
+            }
 
-                    activator.dialogflow?.run {
-                        name = slots["name"]?.stringValue
-                    }
+            activator.alexaIntent?.run {
+                name = slots["firstName"]?.value
+            }
 
-                    activator.alexaIntent?.run {
-                        name = slots["firstName"]?.value
-                    }
+            activator.catchAll?.run {
+                name = request.input
+            }
 
-                    activator.catchAll?.run {
-                        name = request.input
-                    }
-
-                    if (name.isNullOrBlank()) {
-                        reactions.say("Sorry, I didn't get it. Could you repeat please?")
-                    } else {
-                        reactions.goBack(name)
-                    }
-                }
+            if (name.isNullOrBlank()) {
+                reactions.say("Sorry, I didn't get it. Could you repeat please?")
+            } else {
+                reactions.goBack(name)
             }
         }
     }
