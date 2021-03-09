@@ -1,14 +1,17 @@
 package com.justai.jaicf.test
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.api.*
+import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.EventBotRequest
+import com.justai.jaicf.api.IntentBotRequest
+import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.reactions.TextReactions
-import com.justai.jaicf.reactions.text
 import com.justai.jaicf.test.context.TestRequestContext
 import com.justai.jaicf.test.model.ProcessResult
-import org.junit.jupiter.api.Assertions.*
+import com.justai.jaicf.test.reactions.TestReactions
+import com.justai.jaicf.test.reactions.answer
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import java.util.*
 
@@ -16,7 +19,7 @@ import java.util.*
  * Main abstraction for every bot test. Contains helper methods for bot behaviour testing.
  * Executes each request to the bot with [TestRequestContext].
  * Each action block of the scenario runs in [com.justai.jaicf.test.context.TestActionContext] context.
- * Once this test doesn't involve a channel, you have to create [Reactions] instance or use [TextReactions] by default.
+ * Once this test doesn't involve a channel, you have to create [Reactions] instance or use [TestReactions] by default.
  *
  * Usage example:
  *
@@ -32,20 +35,22 @@ import java.util.*
  * ```
  *
  * @param bot a configured [BotEngine] instance to be tested
- * @see TextReactions
+ * @see TestReactions
  * @see TestRequestContext
  * @see com.justai.jaicf.test.context.TestActionContext
  */
 open class BotTest(private val bot: BotEngine) {
 
     private lateinit var botContext: BotContext
-    private var requestContext: TestRequestContext = TestRequestContext(false)
     private lateinit var reactions: Reactions
+    lateinit var clientId: String
+
+    private var requestContext: TestRequestContext = TestRequestContext(false)
 
     @BeforeEach
     fun init() {
         withClientId(UUID.randomUUID().toString())
-        reactions = TextReactions(TextResponse())
+        reactions = TestReactions()
         requestContext = TestRequestContext()
     }
 
@@ -68,6 +73,7 @@ open class BotTest(private val bot: BotEngine) {
      */
     fun withClientId(clientId: String) {
         botContext = bot.defaultContextManager.loadContext(EventBotRequest(clientId, ""), requestContext)
+        this.clientId = clientId
     }
 
     /**
@@ -155,7 +161,11 @@ open class BotTest(private val bot: BotEngine) {
     fun process(request: BotRequest): ProcessResult {
         bot.process(request, reactions, requestContext = requestContext)
         botContext = bot.defaultContextManager.loadContext(request, requestContext)
-        return ProcessResult(botContext, reactions).also { reactions = TextReactions(TextResponse()) }
+        reactions.executionContext.scenarioException?.let {
+            if (it is Throwable) throw it
+            else error(it)
+        }
+        return ProcessResult(botContext, reactions)
     }
 
     /**
@@ -186,11 +196,11 @@ open class BotTest(private val bot: BotEngine) {
     fun query(query: String) = process(QueryBotRequest(botContext.clientId, query))
 
     /**
-     * Asserts text response in the case if reactions is [TextReactions]
+     * Asserts text response in the case if reactions is [TestReactions]
      * @param response an expected raw text
      */
     fun isTextResponse(response: String) {
-        assertEquals(response, reactions.text?.response?.text)
+        assertEquals(response, reactions.answer)
     }
 
     /**

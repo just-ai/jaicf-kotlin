@@ -43,7 +43,7 @@ class GamersCountScenario(private val min: Int, private val max: Int) : Scenario
                     }
 
                     runInTest {
-                        gamers = getVar("gamers") as? Int
+                        gamers = gamers ?: getVar("gamers") as? Int
                     }
 
                     if (gamers == null) {

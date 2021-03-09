@@ -1,6 +1,7 @@
 package com.justai.jaicf.reactions
 
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.logging.*
 import com.justai.jaicf.model.state.StatePath
 
@@ -27,11 +28,11 @@ import com.justai.jaicf.model.state.StatePath
  * @see ResponseReactions
  * @see Reaction
  */
-abstract class Reactions : ReactionRegistrar() {
+abstract class Reactions : ReactionRegistrar {
 
     override lateinit var botContext: BotContext
 
-    override lateinit var loggingContext: LoggingContext
+    override lateinit var executionContext: ExecutionContext
 
     /**
      * Changes the state of scenario and executes it's action block immediately.

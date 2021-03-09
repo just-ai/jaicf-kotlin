@@ -2,8 +2,8 @@ package com.justai.jaicf.activator.caila
 
 import com.justai.jaicf.activator.ActivationContext
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.ConversationLogObfuscator
+import com.justai.jaicf.context.ExecutionContext
 
 /**
  * Hides named entities in client [BotRequest] text and uses [CailaIntentActivator] for named entity recognition.
@@ -24,9 +24,9 @@ class CailaNamedEntityLogObfuscator private constructor(
      * */
     constructor(entities: List<String>) : this({ it in entities })
 
-    override fun obfuscateInput(loggingContext: LoggingContext): String {
-        var out = loggingContext.request.input
-        getEntityTexts(loggingContext.activationContext).forEach { (text, entityName) ->
+    override fun obfuscateInput(executionContext: ExecutionContext): String {
+        var out = executionContext.request.input
+        getEntityTexts(executionContext.activationContext).forEach { (text, entityName) ->
             out = out.replace(text, entityName)
         }
         return out

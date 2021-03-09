@@ -4,7 +4,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.LiveChatSwitchReply
 import com.justai.jaicf.channel.jaicp.jaicpRequest
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
-import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.context.ExecutionContext
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -14,12 +14,12 @@ internal data class LiveChatInitRequest(
     val switchData: LiveChatSwitchReply
 ) {
     companion object {
-        fun create(lc: LoggingContext, reply: LiveChatSwitchReply): LiveChatInitRequest? {
-            val req = lc.jaicpRequest ?: return null
+        fun create(executionContext: ExecutionContext, reply: LiveChatSwitchReply): LiveChatInitRequest? {
+            val req = executionContext.jaicpRequest ?: return null
             return LiveChatInitRequest(
                 request = req,
                 switchData = reply,
-                sessionId = SessionManager.get(lc).getOrCreateSessionId().sessionId
+                sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId
             )
         }
     }

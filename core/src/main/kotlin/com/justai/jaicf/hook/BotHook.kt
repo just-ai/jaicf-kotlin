@@ -4,6 +4,8 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.MutableBotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.exceptions.BotException
+import com.justai.jaicf.exceptions.BotExecutionException
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
@@ -91,7 +93,7 @@ data class ActionErrorHook(
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val state: State,
-    val exception: Exception
+    val exception: BotExecutionException
 ) : BotActionHook
 
 data class BeforeActivationHook(
@@ -99,3 +101,10 @@ data class BeforeActivationHook(
     override val request: BotRequest,
     override val reactions: Reactions
 ) : BotPreProcessHook, WithLogger
+
+data class AnyErrorHook(
+    override val context: BotContext,
+    override val request: BotRequest,
+    override val reactions: Reactions,
+    val exception: BotException,
+) : BotPreProcessHook

@@ -1,6 +1,7 @@
 package com.justai.jaicf.logging
 
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.context.ExecutionContext
 
 
 /**
@@ -15,18 +16,18 @@ interface ConversationLogObfuscator {
     /**
      * Obfuscates user input from [BotRequest] in [ConversationLogger] implementation.
      *
-     * @param loggingContext current request's [LoggingContext]
+     * @param executionContext current request's [ExecutionContext]
      *
      * @return obfuscated input
      * */
-    fun obfuscateInput(loggingContext: LoggingContext): String
+    fun obfuscateInput(executionContext: ExecutionContext): String
 
     /**
      * Obfuscates bot reactions in [ConversationLogger] implementation.
      *
-     * @param loggingContext current request's [LoggingContext]
+     * @param executionContext current request's [ExecutionContext]
      *
      * @return list of obfuscated [Reaction]
      * */
-    fun obfuscateReactions(loggingContext: LoggingContext): MutableList<Reaction> = loggingContext.reactions
+    fun obfuscateReactions(executionContext: ExecutionContext): MutableList<Reaction> = executionContext.reactions
 }

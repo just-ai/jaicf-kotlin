@@ -1,5 +1,6 @@
 package com.justai.jaicf.logging
 
+import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.helpers.logging.WithLogger
 
 /**
@@ -21,17 +22,17 @@ class Slf4jConversationLogger(
     WithLogger {
 
     /**
-     * @param loggingContext current request's [LoggingContext] with obfuscated input and reactions
+     * @param executionContext current request's [ExecutionContext] with obfuscated input and reactions
      * */
-    override fun doLog(loggingContext: LoggingContext) {
-        val replies = loggingContext.reactions.joinToString(separator = "\n\t\t", prefix = "\n\t\t") {
+    override fun doLog(executionContext: ExecutionContext) {
+        val replies = executionContext.reactions.joinToString(separator = "\n\t\t", prefix = "\n\t\t") {
             it.toString().replace("\n", "\\n")
         }
         logger.info(
             """
             |
-            |  Processing ${loggingContext.request::class.simpleName} with input "${loggingContext.input}"
-            |  SelectedActivator: ${loggingContext.activationContext?.activator?.name} with state ${loggingContext.activationContext?.activation?.state}
+            |  Processing ${executionContext.request::class.simpleName} with input "${executionContext.input}"
+            |  SelectedActivator: ${executionContext.activationContext?.activator?.name} with state ${executionContext.activationContext?.activation?.state}
             |  Reactions: $replies""".trimMargin()
         )
     }

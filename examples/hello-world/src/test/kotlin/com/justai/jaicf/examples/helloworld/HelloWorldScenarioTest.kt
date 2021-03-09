@@ -21,7 +21,7 @@ class HelloWorldScenarioTest: ScenarioTest(HelloWorldScenario) {
     fun `Accepts any name`() {
         withCurrentContext("/helper")
         withBackState("/main/name")
-        query("any name") goesToState "/main/name"
+        query("any name") goesToState "/helper/ask4name" endsWithState "/main/name"
     }
 
     @RepeatedTest(10)

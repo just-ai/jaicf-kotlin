@@ -15,12 +15,15 @@ import com.justai.jaicf.context.ProcessContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.exceptions.ActionException
+import com.justai.jaicf.exceptions.BotExecutionException
+import com.justai.jaicf.exceptions.NoStateFoundException
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
-import com.justai.jaicf.logging.LoggingContext
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import com.justai.jaicf.slotfilling.*
@@ -98,23 +101,38 @@ class BotEngine(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
-        contextManager: BotContextManager?
+        contextManager: BotContextManager?,
     ) {
         val manager = contextManager ?: defaultContextManager
         val botContext = manager.loadContext(request, requestContext)
-        val loggingContext = LoggingContext(requestContext, null, botContext, request)
-        reactions.loggingContext = loggingContext
+        val executionContext = ExecutionContext(requestContext, null, botContext, request)
+        reactions.executionContext = executionContext
         reactions.botContext = botContext
 
         processContext(botContext, requestContext)
-
-        withHook(BotRequestHook(botContext, request, reactions)) {
-            processRequest(botContext, request, requestContext, reactions, loggingContext)
-        }
+        processRequestHandled(botContext, request, reactions, requestContext, executionContext)
 
         botContext.cleanTempData()
-        conversationLoggers.forEach { it.obfuscateAndLog(loggingContext) }
+        conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
         saveContext(manager, botContext, request, reactions, requestContext)
+    }
+
+    private fun processRequestHandled(
+        botContext: BotContext,
+        request: BotRequest,
+        reactions: Reactions,
+        requestContext: RequestContext,
+        executionContext: ExecutionContext
+    ) {
+        try {
+            withHook(BotRequestHook(botContext, request, reactions)) {
+                processRequest(botContext, request, requestContext, reactions, executionContext)
+            }
+        } catch (e: BotExecutionException) {
+            withHook(AnyErrorHook(botContext, request, reactions, e))
+        } catch (e: Exception) {
+            withHook(AnyErrorHook(botContext, request, reactions, BotExecutionException(e, botContext.currentState)))
+        }
     }
 
     private fun processRequest(
@@ -122,7 +140,7 @@ class BotEngine(
         request: BotRequest,
         requestContext: RequestContext,
         reactions: Reactions,
-        loggingContext: LoggingContext
+        executionContext: ExecutionContext,
     ) {
         val slotFillingContext = if (isActiveSlotFilling(botContext)) {
             getSlotFillingContext(botContext)!!
@@ -143,19 +161,21 @@ class BotEngine(
                 is SlotFillingInProgress -> return
                 is SlotFillingInterrupted -> {
                     cancelSlotFilling(botContext)
-                    processRequest(botContext, request, requestContext, reactions, loggingContext)
+                    processRequest(botContext, request, requestContext, reactions, executionContext)
                 }
                 is SlotFillingFinished -> {
                     val activation = finishSlotFilling(botContext, res)
-                    loggingContext.activationContext = activation
-                    processStates(ProcessContext(
-                        request,
-                        reactions,
-                        requestContext,
-                        botContext,
-                        activation,
-                        loggingContext
-                    ))
+                    executionContext.activationContext = activation
+                    processStates(
+                        ProcessContext(
+                            request,
+                            reactions,
+                            requestContext,
+                            botContext,
+                            activation,
+                            executionContext
+                        )
+                    )
                 }
             }
         }
@@ -180,7 +200,12 @@ class BotEngine(
 
     private fun selectActivation(botContext: BotContext, request: BotRequest): ActivationContext? {
         activators.filter { it.canHandle(request) }.forEach { a ->
-            val activation = a.activate(botContext, request, activationSelector)
+            val activation = try {
+                a.activate(botContext, request, activationSelector)
+            } catch (e: Exception) {
+                throw BotExecutionException(e, botContext.currentState)
+            }
+
             if (activation != null) {
                 return ActivationContext(a, activation)
             }
@@ -193,35 +218,47 @@ class BotEngine(
         val activator = activationContext.activation.context
         val dc = botContext.dialogContext
         dc.nextState = activationContext.activation.state
+        var lastState = dc.nextState
 
         withHook(BeforeProcessHook(botContext, request, reactions, activator)) {
             while (dc.nextState() != null) {
                 val state = model.states[dc.currentState]
+                    ?: throw NoStateFoundException(requireNotNull(lastState), dc.currentState)
+                dc.nextContext(model)
 
-                if (state == null) {
-                    logger.warn("No state to execute ${dc.currentState}")
-                } else {
-                    dc.nextContext(model)
-
-                    withHook(BeforeActionHook(botContext, request, reactions, activator, state)) {
-                        if (state.action == null) {
-                            logger.warn("No action on state ${dc.currentState}")
-                        } else {
-                            try {
-                                logger.trace("Executing state: $state")
-                                state.action.execute(this)
-                                withHook(AfterActionHook(botContext, request, reactions, activator, state))
-                            } catch (e: Exception) {
-                                logger.error("Action exception on state ${dc.currentState}", e)
-                                hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, e))
-                            }
-                        }
-                    }
+                withHook(BeforeActionHook(botContext, request, reactions, activator, state)) {
+                    executeAction(state, dc, activator)
                 }
+
+                lastState = dc.currentState
             }
 
             dc.nextContext(model)
             withHook(AfterProcessHook(botContext, request, reactions, activationContext.activation.context))
+        }
+    }
+
+    private fun ProcessContext.executeAction(
+        state: State,
+        dc: DialogContext,
+        activator: ActivatorContext
+    ) {
+        if (state.action == null) {
+            logger.warn("No action on state ${dc.currentState}")
+        } else {
+            try {
+                logger.trace("Executing state: $state")
+                state.action.execute(this)
+                withHook(AfterActionHook(botContext, request, reactions, activator, state))
+            } catch (e: Exception) {
+                logger.error("Action exception on state ${dc.currentState}", e)
+                val exception = ActionException(e, state.toString())
+                try {
+                    hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, exception))
+                } catch (e: Exception) {
+                    reactions.executionContext.scenarioException = exception
+                }
+            }
         }
     }
 
@@ -230,7 +267,9 @@ class BotEngine(
         botContext: BotContext,
         request: BotRequest,
         reactions: Reactions,
-        requestContext: RequestContext
+        requestContext: RequestContext,
     ) = cm.saveContext(botContext, request, (reactions as? ResponseReactions<*>)?.response, requestContext)
-
 }
+
+private val BotContext.currentState: String
+    get() = dialogContext.currentState
