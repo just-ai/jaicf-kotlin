@@ -1,6 +1,5 @@
 plugins {
-    `jaicf-kotlin`
-    `jaicf-junit`
+    kotlin("jvm") version Version.kotlin
 }
 
 repositories {
@@ -8,11 +7,12 @@ repositories {
 }
 
 dependencies {
-    core()
+    implementation(kotlin("stdlib", Version.stdLib))
 
-    implementation(slf4j("slf4j-simple"))
-    implementation(slf4j("slf4j-log4j12"))
-    implementation(ktor("ktor-server-netty"))
+    implementation(project(":core"))
+    implementation("org.slf4j:slf4j-simple" version {slf4j})
+    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
+    implementation("io.ktor:ktor-server-netty" version {ktor})
 
     implementation(project(":channels:jaicp"))
     implementation(project(":channels:telegram"))
@@ -22,4 +22,19 @@ dependencies {
     implementation(project(":channels:aimybox"))
 
     implementation(project(":activators:dialogflow"))
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
+    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+}
+
+tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+    test {
+        useJUnitPlatform()
+    }
 }
