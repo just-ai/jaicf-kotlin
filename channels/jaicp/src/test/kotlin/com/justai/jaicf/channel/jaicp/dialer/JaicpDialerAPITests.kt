@@ -2,12 +2,9 @@ package com.justai.jaicf.channel.jaicp.dialer
 
 import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
-import com.justai.jaicf.channel.jaicp.ScenarioFactory
 import com.justai.jaicf.channel.jaicp.ScenarioFactory.echoWithAction
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.reactions.telephony
-import com.justai.jaicf.context.ActionContext
-import com.justai.jaicf.model.scenario.Scenario
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.Test
