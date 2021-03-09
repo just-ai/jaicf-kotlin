@@ -1,16 +1,11 @@
 package com.justai.jaicf.channel.jaicp.http
 
 import com.justai.jaicf.channel.jaicp.JSON
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.engine.cio.endpoint
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.features.logging.DEFAULT
-import io.ktor.client.features.logging.LogLevel
-import io.ktor.client.features.logging.Logger
-import io.ktor.client.features.logging.Logging
-import kotlinx.serialization.json.Json
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.features.logging.*
 
 internal object HttpClientFactory {
     fun create(logLevel: LogLevel) = HttpClient(CIO) {

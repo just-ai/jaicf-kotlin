@@ -12,8 +12,6 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import org.jetbrains.annotations.TestOnly
 
 internal class ChatAdapterConnector private constructor(
