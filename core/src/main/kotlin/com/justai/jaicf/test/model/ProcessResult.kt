@@ -30,23 +30,23 @@ data class ProcessResult(
 
     val answer = getAllForType<SayReaction>().joinToString(separator = "\n") { it.text }.trimIndent()
 
-    inline fun <reified T : Reaction> getAllForType() = reactionList.filterIsInstance<T>()
-
     /**
-     * JAVADOC ME
+     * Asserts a reaction registered during scenario execution
+     *
+     * @param reaction a [Reaction] from scenario
      * */
-    inline fun <reified T : Reaction> hasReaction(reaction: T) {
+    inline fun <reified T : Reaction> hasReaction(reaction: T) = apply {
         assertTrue(reactionList.contains(reaction))
     }
 
     /**
-     * Asserts that scenario was in state [state] before processing request
+     * Asserts that scenario was in state [context] before processing request
      *
-     * @param state a full path of the expected state
+     * @param context a full path of the expected state
      * @return this [ProcessResult] for chaining
      */
-    infix fun startsWithState(state: String) = apply {
-        assertEquals(state, executionContext.firstState)
+    infix fun startsWithContext(context: String) = apply {
+        assertEquals(context, executionContext.firstState, "scenario execution did not start from context $context")
     }
 
     /**
@@ -56,7 +56,7 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun goesToState(state: String) = apply {
-        assertEquals(state, executionContext.activationContext?.activation?.state)
+        assertEquals(state, executionContext.activationContext?.activation?.state, "go to state $state not found")
     }
 
     /**
@@ -66,7 +66,9 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun visitsState(state: String) = apply {
-        assertTrue(getAllForType<GoReaction>().any { it.transition == state }) // TODO: this is invalid
+        val anyGoReaction = getAllForType<GoReaction>().any { it.transition == state }
+        val isActivationState = executionContext.activationContext?.activation?.state == state
+        assertTrue(isActivationState || anyGoReaction, "transition to state $state not found")
     }
 
     /**
@@ -76,7 +78,7 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun endsWithState(state: String) = apply {
-        assertEquals(state, botContext.dialogContext.currentContext)
+        assertEquals(state, botContext.dialogContext.currentContext, "scenario execution did not end in state $state")
     }
 
     /**
@@ -86,7 +88,7 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun hasAnswer(text: String) = apply {
-        assertTrue(getAllForType<SayReaction>().any { it.text == text })
+        assertTrue(getAllForType<SayReaction>().any { it.text == text }, "say $text not found")
     }
 
     /**
@@ -96,7 +98,10 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun hasButtons(buttons: List<String>) = apply {
-        assertTrue(getAllForType<ButtonsReaction>().any { it.buttons == buttons })
+        assertTrue(
+            getAllForType<ButtonsReaction>().any { it.buttons == buttons },
+            "buttons ${buttons.joinToString()} not found"
+        )
     }
 
     /**
@@ -106,7 +111,7 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun hasImage(image: String) = apply {
-        assertTrue(getAllForType<ImageReaction>().any { it.imageUrl == image })
+        assertTrue(getAllForType<ImageReaction>().any { it.imageUrl == image }, "image $image not found")
     }
 
     /**
@@ -116,7 +121,7 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun hasAudio(audio: String) = apply {
-        assertTrue(getAllForType<AudioReaction>().any { it.audioUrl == audio })
+        assertTrue(getAllForType<AudioReaction>().any { it.audioUrl == audio }, "audio $audio not found")
     }
 
     /**
@@ -136,4 +141,6 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun returnsResult(result: Any?) = apply { assertEquals(result, botContext.result) }
+
+    private inline fun <reified T : Reaction> getAllForType() = reactionList.filterIsInstance<T>()
 }

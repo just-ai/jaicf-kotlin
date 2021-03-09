@@ -21,6 +21,12 @@ class TestReactions : Reactions() {
     override fun say(text: String): SayReaction {
         return SayReaction.create(text)
     }
+
+    override fun image(url: String) = super.image(url).register()
+
+    override fun buttons(vararg buttons: String) = super.buttons(*buttons).register()
+
+    override fun audio(url: String) = super.audio(url).register()
 }
 
 val Reactions.test

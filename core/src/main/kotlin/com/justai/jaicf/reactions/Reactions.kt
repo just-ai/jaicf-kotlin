@@ -114,7 +114,9 @@ abstract class Reactions : ReactionRegistrar {
      *
      * @param url a full URL of the image file
      */
-    open fun image(url: String): ImageReaction = ImageReaction(url, currentState)
+    open fun image(url: String): ImageReaction = ImageReaction(url, currentState).also {
+
+    }
 
     /**
      * Appends buttons to the response.
