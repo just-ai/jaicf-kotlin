@@ -6,4 +6,4 @@ abstract class EventActivationRule(val matches: (EventActivatorContext) -> Boole
 
 open class EventByNameActivationRule(val event: String): EventActivationRule({ it.event == event})
 
-class AnyEventActivationRule(val except: MutableList<String> = mutableListOf()): EventActivationRule({ it.event !in except })
+class AnyEventActivationRule(val except: List<String> = mutableListOf()): EventActivationRule({ it.event !in except })
