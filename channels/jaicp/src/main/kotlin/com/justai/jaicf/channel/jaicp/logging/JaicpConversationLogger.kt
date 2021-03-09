@@ -15,7 +15,7 @@ import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
-import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.context.ExecutionContext
 import io.ktor.client.*
 import io.ktor.client.features.logging.*
 import kotlinx.coroutines.CoroutineScope
@@ -46,20 +46,20 @@ open class JaicpConversationLogger(
     private val client = httpClient ?: HttpClientFactory.create(logLevel)
     private val connector = ChatAdapterConnector.getOrCreate(accessToken, url, client)
 
-    override fun doLog(loggingContext: LoggingContext) {
+    override fun doLog(executionContext: ExecutionContext) {
         try {
-            val req = loggingContext.jaicpRequest ?: return
-            val session = SessionManager.get(loggingContext).getOrCreateSessionId()
-            launch { doLogAsync(req, loggingContext, session) }
+            val req = executionContext.jaicpRequest ?: return
+            val session = SessionManager.get(executionContext).getOrCreateSessionId()
+            launch { doLogAsync(req, executionContext, session) }
         } catch (e: Exception) {
             logger.debug("Failed to produce JAICP LogRequest: ", e)
         }
     }
 
-    private suspend fun doLogAsync(req: JaicpBotRequest, ctx: LoggingContext, session: SessionData) =
+    private suspend fun doLogAsync(req: JaicpBotRequest, ctx: ExecutionContext, session: SessionData) =
         connector.processLogAsync(createLog(req, ctx, session))
 
-    internal open fun createLog(req: JaicpBotRequest, ctx: LoggingContext, session: SessionData) =
+    internal open fun createLog(req: JaicpBotRequest, ctx: ExecutionContext, session: SessionData) =
         JaicpLogModel.fromRequest(req, ctx, session).also {
             logger.trace("Send log with sessionId: ${it.sessionId} isNewSession: ${it.isNewSession}")
         }

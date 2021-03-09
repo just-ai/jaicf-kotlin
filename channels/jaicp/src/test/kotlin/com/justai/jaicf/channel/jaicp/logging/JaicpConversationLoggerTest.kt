@@ -12,7 +12,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.reactions.chatapi
-import com.justai.jaicf.logging.LoggingContext
+import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.model.scenario.Scenario
 import io.mockk.spyk
 import io.mockk.verify
@@ -28,7 +28,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     private val conversationLogger = object : JaicpConversationLogger("", emptyList(), "") {
         override fun createLog(
             req: JaicpBotRequest,
-            ctx: LoggingContext,
+            ctx: ExecutionContext,
             session: SessionData
         ): JaicpLogModel = super.createLog(req, ctx, session).also { actLog = it }
     }

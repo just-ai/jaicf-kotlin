@@ -7,13 +7,14 @@ import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.toJson
+import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.*
 
 
 @Suppress("DataClassPrivateConstructor")
@@ -46,7 +47,7 @@ internal data class JaicpLogModel private constructor(
         val ruleType: String?
     ) {
         companion object Factory {
-            fun create(lc: LoggingContext) = NlpInfo(
+            fun create(lc: ExecutionContext) = NlpInfo(
                 nlpClass = lc.activationContext?.activation?.state,
                 ruleType = lc.activationContext?.activator?.name,
                 rule = when (val ctx = lc.activationContext?.activation?.context) {
@@ -112,7 +113,7 @@ internal data class JaicpLogModel private constructor(
         val sessionId: String?
     ) {
         companion object Factory {
-            fun create(lc: LoggingContext): ResponseData {
+            fun create(lc: ExecutionContext): ResponseData {
                 val nlpInfo = NlpInfo.create(lc)
                 return ResponseData(
                     answer = buildAnswer(lc.reactions),
@@ -135,14 +136,14 @@ internal data class JaicpLogModel private constructor(
     companion object Factory {
         fun fromRequest(
             jaicpBotRequest: JaicpBotRequest,
-            loggingContext: LoggingContext,
+            executionContext: ExecutionContext,
             session: SessionData
         ): JaicpLogModel {
             val currentTimeUTC = System.currentTimeMillis()
-            val request = Request.fromRequest(jaicpBotRequest, loggingContext.input)
+            val request = Request.fromRequest(jaicpBotRequest, executionContext.input)
             val user = User.fromRequest(jaicpBotRequest)
-            val nlp = NlpInfo.create(loggingContext)
-            val response = ResponseData.create(loggingContext)
+            val nlp = NlpInfo.create(executionContext)
+            val response = ResponseData.create(executionContext)
 
             return JaicpLogModel(
                 botId = jaicpBotRequest.botId,
@@ -151,7 +152,7 @@ internal data class JaicpLogModel private constructor(
                 userId = jaicpBotRequest.channelUserId,
                 questionId = jaicpBotRequest.questionId,
                 request = request,
-                query = loggingContext.input,
+                query = executionContext.input,
                 timestamp = currentTimeUTC,
                 processingTime = currentTimeUTC - jaicpBotRequest.startProcessingTime,
                 answer = response.answer,

@@ -70,7 +70,7 @@ open class JaicpReactions : Reactions() {
             putJsonArray("replies") {
                 jsonReplies.forEach { add(it) }
             }
-            put("sessionId", SessionManager.get(loggingContext).getOrCreateSessionId().sessionId)
+            put("sessionId", SessionManager.get(executionContext).getOrCreateSessionId().sessionId)
             put("answer", answer)
         }
     }

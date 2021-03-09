@@ -1,42 +1,43 @@
 package com.justai.jaicf.logging
 
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.ExecutionContext
 
 /**
  * Reactions logging methods holder.
  * */
-abstract class ReactionRegistrar {
+interface ReactionRegistrar {
 
-    abstract var botContext: BotContext
+    var botContext: BotContext
 
-    abstract var loggingContext: LoggingContext
+    var executionContext: ExecutionContext
 
-    protected fun registerReaction(reaction: Reaction) {
-        loggingContext.reactions.add(reaction)
+    fun registerReaction(reaction: Reaction) {
+        executionContext.reactions.add(reaction)
     }
 
-    protected fun SayReaction.Companion.create(text: String) =
+    fun SayReaction.Companion.create(text: String) =
         SayReaction(text, currentState).register()
 
-    protected fun ImageReaction.Companion.create(imageUrl: String) =
+    fun ImageReaction.Companion.create(imageUrl: String) =
         ImageReaction(imageUrl, currentState).register()
 
-    protected fun AudioReaction.Companion.create(audioUrl: String) =
+    fun AudioReaction.Companion.create(audioUrl: String) =
         AudioReaction(audioUrl, currentState).register()
 
-    protected fun ButtonsReaction.Companion.create(buttons: List<String>) =
+    fun ButtonsReaction.Companion.create(buttons: List<String>) =
         ButtonsReaction(buttons, currentState).register()
 
-    protected fun GoReaction.Companion.create(path: String) =
+    fun GoReaction.Companion.create(path: String) =
         GoReaction(path, currentState).register()
 
-    protected fun ChangeStateReaction.Companion.create(path: String) =
+    fun ChangeStateReaction.Companion.create(path: String) =
         ChangeStateReaction(path, currentState).register()
 
-    protected fun <T : Reaction> T.register() = apply {
+    fun <T : Reaction> T.register() = apply {
         registerReaction(this)
     }
-
-    protected val currentState: String
-        get() = botContext.dialogContext.currentState
 }
+
+val ReactionRegistrar.currentState
+    get() = botContext.dialogContext.currentState

@@ -21,7 +21,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  */
 open class ScenarioTest(
     scenario: Scenario
-): BotTest(
+) : BotTest(
     BotEngine(scenario, InMemoryBotContextManager, DEFAULT_ACTIVATORS)
 ) {
     companion object {
