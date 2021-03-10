@@ -9,6 +9,7 @@ import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.context.StrictActivatorContext
+import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -36,7 +37,8 @@ internal data class JaicpLogModel private constructor(
     val channelType: String,
     val sessionId: String,
     val isNewSession: Boolean,
-    val channelData: JsonObject?
+    val channelData: JsonObject?,
+    val exception: String? = null
 ) {
     @Serializable
     data class NlpInfo(
@@ -47,22 +49,22 @@ internal data class JaicpLogModel private constructor(
         val ruleType: String?
     ) {
         companion object Factory {
-            fun create(lc: ExecutionContext) = NlpInfo(
-                nlpClass = lc.activationContext?.activation?.state,
-                ruleType = lc.activationContext?.activator?.name,
-                rule = when (val ctx = lc.activationContext?.activation?.context) {
+            fun create(executionContext: ExecutionContext) = NlpInfo(
+                nlpClass = executionContext.activationContext?.activation?.state,
+                ruleType = executionContext.activationContext?.activator?.name,
+                rule = when (val ctx = executionContext.activationContext?.activation?.context) {
                     is RegexActivatorContext -> ctx.pattern.pattern()
                     is EventActivatorContext -> ctx.event
                     is CatchAllActivatorContext -> "catchAll"
                     is IntentActivatorContext -> ctx.intent
                     else -> null
                 },
-                confidence = when (val ctx = lc.activationContext?.activation?.context) {
+                confidence = when (val ctx = executionContext.activationContext?.activation?.context) {
                     is StrictActivatorContext -> 1.0
                     is IntentActivatorContext -> ctx.confidence.toDouble()
                     else -> null
                 },
-                fromState = lc.firstState
+                fromState = executionContext.firstState
             )
         }
     }
@@ -113,11 +115,16 @@ internal data class JaicpLogModel private constructor(
         val sessionId: String?
     ) {
         companion object Factory {
-            fun create(lc: ExecutionContext): ResponseData {
-                val nlpInfo = NlpInfo.create(lc)
+            fun create(executionContext: ExecutionContext): ResponseData {
+                val nlpInfo = NlpInfo.create(executionContext)
+                val replies = buildReplies(executionContext.reactions)
+
+                executionContext.scenarioException?.toReply()?.let {
+                    replies.add(JSON.encodeToJsonElement(ErrorReply.serializer(), it))
+                }
                 return ResponseData(
-                    answer = buildAnswer(lc.reactions),
-                    replies = buildReplies(lc.reactions),
+                    answer = buildAnswer(executionContext.reactions),
+                    replies = replies,
                     sessionId = null,
                     confidence = nlpInfo.confidence,
                     nlpClass = nlpInfo.nlpClass
@@ -128,8 +135,8 @@ internal data class JaicpLogModel private constructor(
                 .filterIsInstance<SayReaction>()
                 .joinToString(separator = "\n\n")
 
-            private fun buildReplies(reactions: List<Reaction>) =
-                reactions.toReplies().map { it.serialized().toJson() }
+            private fun buildReplies(reactions: List<Reaction>): MutableList<JsonElement> =
+                reactions.toReplies().map { it.serialized().toJson() }.toMutableList()
         }
     }
 
@@ -162,7 +169,8 @@ internal data class JaicpLogModel private constructor(
                 user = user,
                 sessionId = session.sessionId,
                 isNewSession = session.isNewSession,
-                channelData = jaicpBotRequest.channelData
+                channelData = jaicpBotRequest.channelData,
+                exception = executionContext.scenarioException?.message
             )
         }
     }
@@ -176,6 +184,6 @@ private fun List<Reaction>.toReplies() = mapNotNull { r ->
         is ButtonsReaction -> ButtonsReply(buttons = r.buttons.map { Button(it) }, state = r.fromState)
         else -> null
     }
-}
+}.toMutableList()
 
-
+private fun BotException.toReply() = ErrorReply(message ?: "", currentState, "")
