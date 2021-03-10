@@ -15,9 +15,7 @@ import com.justai.jaicf.context.ProcessContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.exceptions.ActionException
-import com.justai.jaicf.exceptions.BotExecutionException
-import com.justai.jaicf.exceptions.NoStateFoundException
+import com.justai.jaicf.exceptions.*
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
@@ -110,29 +108,19 @@ class BotEngine(
         reactions.botContext = botContext
 
         processContext(botContext, requestContext)
-        processRequestHandled(botContext, request, reactions, requestContext, executionContext)
-
-        botContext.cleanTempData()
-        conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
-        saveContext(manager, botContext, request, reactions, requestContext)
-    }
-
-    private fun processRequestHandled(
-        botContext: BotContext,
-        request: BotRequest,
-        reactions: Reactions,
-        requestContext: RequestContext,
-        executionContext: ExecutionContext
-    ) {
         try {
             withHook(BotRequestHook(botContext, request, reactions)) {
                 processRequest(botContext, request, requestContext, reactions, executionContext)
             }
-        } catch (e: BotExecutionException) {
+        } catch (e: BotException) {
             withHook(AnyErrorHook(botContext, request, reactions, e))
         } catch (e: Exception) {
             withHook(AnyErrorHook(botContext, request, reactions, BotExecutionException(e, botContext.currentState)))
         }
+
+        botContext.cleanTempData()
+        conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
+        saveContext(manager, botContext, request, reactions, requestContext)
     }
 
     private fun processRequest(
@@ -203,7 +191,7 @@ class BotEngine(
             val activation = try {
                 a.activate(botContext, request, activationSelector)
             } catch (e: Exception) {
-                throw BotExecutionException(e, botContext.currentState)
+                throw ActivationException(e, botContext.currentState, a)
             }
 
             if (activation != null) {
