@@ -2,14 +2,14 @@ package com.justai.jaicf.exceptions
 
 import com.justai.jaicf.activator.Activator
 
-interface BotException {
-    val currentState: String
+abstract class BotException : RuntimeException() {
+    abstract val currentState: String
 }
 
 data class NoStateFoundException(
     override val currentState: String,
     val targetState: String
-) : BotException, RuntimeException() {
+) : BotException() {
 
     override val message: String = "No transition possible found from state $currentState to $targetState"
 }
@@ -17,7 +17,7 @@ data class NoStateFoundException(
 open class BotExecutionException(
     open val exception: Throwable,
     override val currentState: String
-) : BotException, RuntimeException()
+) : BotException()
 
 data class ActivationException(
     override val exception: Exception,
