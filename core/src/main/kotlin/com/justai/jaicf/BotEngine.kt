@@ -111,9 +111,12 @@ class BotEngine(
                 processRequest(botContext, request, requestContext, reactions, executionContext)
             }
         } catch (e: BotException) {
+            executionContext.scenarioException = e
             withHook(AnyErrorHook(botContext, request, reactions, e))
         } catch (e: Exception) {
-            withHook(AnyErrorHook(botContext, request, reactions, BotExecutionException(e, botContext.currentState)))
+            val exception = BotExecutionException(e, botContext.currentState)
+            executionContext.scenarioException = exception
+            withHook(AnyErrorHook(botContext, request, reactions, exception))
         }
 
         botContext.cleanTempData()
@@ -239,6 +242,7 @@ class BotEngine(
             } catch (e: Exception) {
                 logger.error("Action exception on state ${dc.currentState}", e)
                 val exception = ActionException(e, state.toString())
+                reactions.executionContext.scenarioException = exception
                 try {
                     hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, exception))
                 } catch (e: Exception) {
