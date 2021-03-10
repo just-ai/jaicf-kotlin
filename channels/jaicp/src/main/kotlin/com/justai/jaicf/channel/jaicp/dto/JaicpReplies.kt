@@ -68,6 +68,7 @@ class HangupReply(val state: String? = null) : Reply("hangup") {
  * @param continueCall - whether to return call back to bot after transfer. True to return call back.
  * @param continueRecording - whether to continue recording after transfer. True to continue recording after transfer.
  *  */
+@Suppress("MemberVisibilityCanBePrivate")
 @Serializable
 class TelephonySwitchReply(
     val phoneNumber: String? = null,
@@ -111,5 +112,14 @@ data class LiveChatSwitchReply(
     val sendMessagesToOperator: Boolean = false,
     val sendMessageHistoryAmount: Int? = null
 ) : Reply("switch") {
+    override fun serialized() = JSON.encodeToString(serializer(), this)
+}
+
+@Serializable
+data class ErrorReply(
+    val errorStacktrace: String,
+    val state: String,
+    val text: String,
+) : Reply("text") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
