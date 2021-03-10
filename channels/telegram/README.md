@@ -120,16 +120,14 @@ The most known command of the Telegram is "/start" that is sending once the user
 Your scenario must handle this command via [regex activator](https://github.com/just-ai/jaicf-kotlin/wiki/Regex-Activator) to react on the first user's request.
 
 ```kotlin
-object HelloWorldScenario: Scenario() {
-    init {
-        state("main") {
-            activators {
-                regex("/start")
-            }
-    
-            action {
-                reactions.say("Hello there!")
-            }
+val HelloWorldScenario = Scenario {
+    state("main") {
+        activators {
+            regex("/start")
+        }
+
+        action {
+            reactions.say("Hello there!")
         }
     }
 }
@@ -139,7 +137,7 @@ To make it work, just add `RegexActivator` to the array of activators in your ag
 
 ```kotlin
 val helloWorldBot = BotEngine(
-    model = HelloWorldScenario.model,
+    scenario = HelloWorldScenario,
     activators = arrayOf(
         RegexActivator,
         CatchAllActivator
