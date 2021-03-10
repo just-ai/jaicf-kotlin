@@ -1,34 +1,33 @@
 package com.justai.jaicf.core.test.processresult
 
-import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-private val stateAssertionScenario = object : Scenario() {
-    init {
-        state("first") {
-            activators {
-                regex("first")
-            }
-            action {
-                reactions.go("/middle")
-            }
+private val stateAssertionScenario = Scenario {
+    state("first") {
+        activators {
+            regex("first")
         }
-
-        state("middle") {
-            action {
-                reactions.go("/last")
-            }
+        action {
+            reactions.go("/middle")
         }
+    }
 
-        state("last") {
-            action {
-                reactions.say("i'm in last")
-            }
+    state("middle") {
+        action {
+            reactions.go("/last")
+        }
+    }
+
+    state("last") {
+        action {
+            reactions.say("i'm in last")
         }
     }
 }
+
 
 class StateAssertionTest : ScenarioTest(stateAssertionScenario) {
 

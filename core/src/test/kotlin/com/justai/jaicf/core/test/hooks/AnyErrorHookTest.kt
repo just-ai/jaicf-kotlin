@@ -1,44 +1,43 @@
 package com.justai.jaicf.core.test.hooks
 
 import com.justai.jaicf.BotEngine
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.ConsoleChannel
 import com.justai.jaicf.hook.ActionErrorHook
 import com.justai.jaicf.hook.AnyErrorHook
-import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 
-private val scenarioWithAnyErrorHook = object : Scenario() {
-    init {
-        handle<AnyErrorHook> {
-            it.reactions.say("anyError")
-        }
+private val scenarioWithAnyErrorHook = Scenario {
 
-        handle<ActionErrorHook> {
-            it.reactions.say("actionError")
-        }
+    handle<AnyErrorHook> {
+        reactions.say("anyError")
+    }
 
-        state("error") {
-            activators {
-                regex("goToUnknownState")
-            }
-            action {
-                reactions.go("unknownState")
-            }
-        }
+    handle<ActionErrorHook> {
+        reactions.say("actionError")
+    }
 
-        state("ok") {
-            activators {
-                regex("ok")
-            }
-            action {
-                reactions.say("ok")
-            }
+    state("error") {
+        activators {
+            regex("goToUnknownState")
+        }
+        action {
+            reactions.go("unknownState")
+        }
+    }
+
+    state("ok") {
+        activators {
+            regex("ok")
+        }
+        action {
+            reactions.say("ok")
         }
     }
 }
 
-class AnyErrorHookTest : ScenarioTest(scenarioWithAnyErrorHook.model) {
+class AnyErrorHookTest : ScenarioTest(scenarioWithAnyErrorHook) {
 
     @Test
     fun `should handle noStateFound exception with anyError hook`() {
@@ -53,5 +52,5 @@ class AnyErrorHookTest : ScenarioTest(scenarioWithAnyErrorHook.model) {
 }
 
 fun main() {
-    ConsoleChannel(BotEngine(scenarioWithAnyErrorHook.model)).run("/start")
+    ConsoleChannel(BotEngine(scenarioWithAnyErrorHook)).run("/start")
 }

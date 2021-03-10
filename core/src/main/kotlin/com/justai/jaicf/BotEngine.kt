@@ -10,9 +10,7 @@ import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.ProcessContext
-import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.exceptions.*

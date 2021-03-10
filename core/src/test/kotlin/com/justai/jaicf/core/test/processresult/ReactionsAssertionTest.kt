@@ -1,22 +1,20 @@
 package com.justai.jaicf.core.test.processresult
 
-import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-private val reactionsAssertionScenario = object : Scenario() {
-    init {
-        state("first") {
-            activators {
-                regex("first")
-            }
-            action {
-                reactions.image("image")
-                reactions.buttons("buttons")
-                reactions.say("say")
-                reactions.audio("audio")
-            }
+private val reactionsAssertionScenario = Scenario {
+    state("first") {
+        activators {
+            regex("first")
+        }
+        action {
+            reactions.image("image")
+            reactions.buttons("buttons")
+            reactions.say("say")
+            reactions.audio("audio")
         }
     }
 }
