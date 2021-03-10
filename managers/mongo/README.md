@@ -33,7 +33,7 @@ val manager = MongoBotContextManager(
 )
 
 val templateBot = BotEngine(
-    model = MainScenario.model,
+    scenario = MainScenario,
     contextManager = manager,
     activators = arrayOf(
         ActionsDialogflowActivator,

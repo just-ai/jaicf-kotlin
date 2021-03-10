@@ -82,7 +82,7 @@ To configure Dialogflow fulfillment add `ActionsDialogflowActivator` to the arra
 
 ```kotlin
 val helloWorldBot = BotEngine(
-    model = MainScenario.model,
+    scenario = MainScenario,
     activators = arrayOf(
         ActionsDialogflowActivator
     )
@@ -137,7 +137,7 @@ Using [Spring Boot](https://github.com/just-ai/jaicf-kotlin/wiki/Spring-Boot)
 
 ```kotlin
 @WebServlet("/")
-class AlexaController: HttpBotChannelServlet(
+class ActionsController: HttpBotChannelServlet(
     ActionsFulfillment.dialogflow(helloWorldBot)
 )
 ```

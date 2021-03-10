@@ -63,7 +63,7 @@ To make this channel work, you have to add [AlexaActivator](https://github.com/j
 
 ```kotlin
 val helloWorldBot = BotEngine(
-    model = MainScenario.model,
+    scenario = MainScenario,
     activators = arrayOf(
         AlexaActivator
     )
