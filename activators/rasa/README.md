@@ -51,7 +51,7 @@ Then you have to provide your Rasa public URL in the activator's configuration:
 
 ```kotlin
 val helloWorldBot = BotEngine(
-    model = HelloWorldScenario,
+    scenario = HelloWorldScenario,
     activators = arrayOf(
         RasaIntentActivator.Factory(RasaApi("https://your-rasa-server.com"))
     )
