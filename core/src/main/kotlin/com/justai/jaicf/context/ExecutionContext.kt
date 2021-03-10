@@ -19,8 +19,6 @@ data class ExecutionContext(
     val request: BotRequest,
     val firstState: String = botContext.dialogContext.currentState,
     val reactions: MutableList<Reaction> = mutableListOf(),
-    val input: String = request.input
-) {
+    val input: String = request.input,
     var scenarioException: BotException? = null
-        internal set
-}
+)
