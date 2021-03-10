@@ -29,7 +29,7 @@ implementation("com.justai.jaicf:mapdb:$jaicfVersion")
 
 ```kotlin
 val templateBot = BotEngine(
-    model = MainScenario.model,
+    scenario = MainScenario,
     contextManager = MapDbBotContextManager(".db"),
     activators = arrayOf(
         ActionsDialogflowActivator,
