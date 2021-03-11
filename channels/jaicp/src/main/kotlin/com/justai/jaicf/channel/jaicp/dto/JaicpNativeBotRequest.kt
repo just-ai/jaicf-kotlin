@@ -5,7 +5,7 @@ import com.justai.jaicf.api.BotRequestType
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInIntentStatus
+import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -44,10 +44,10 @@ data class TelephonyEventRequest(
 
 data class TelephonyBargeInRequest internal constructor(
     override val jaicp: JaicpBotRequest,
-    val bargeInStatus: BargeInIntentStatus,
-) : TelephonyBotRequest, QueryBotRequest(jaicp.clientId, bargeInStatus.recognitionResult.text) {
+    val bargeInRequest: BargeInRequest,
+) : TelephonyBotRequest, QueryBotRequest(jaicp.clientId, bargeInRequest.recognitionResult.text) {
 
-    val transition = bargeInStatus.bargeInTransition.transition
+    val transition = bargeInRequest.bargeInTransition.transition
 }
 
 interface ChatWidgetBotRequest : JaicpNativeBotRequest {

@@ -4,6 +4,7 @@ import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyBotRequest
+import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInProperties
 import com.justai.jaicf.channel.jaicp.reactions.TelephonyReactions
 import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
 
@@ -26,7 +27,8 @@ import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
  * */
 class TelephonyChannel(
     override val botApi: BotApi,
-    private val bargeInProcessor: BargeInProcessor = BargeInProcessor()
+    private val bargeInProcessor: BargeInProcessor = BargeInProcessor.NON_FALLBACK,
+    private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT
 ) : JaicpNativeChannel(botApi) {
 
     init {
@@ -38,15 +40,18 @@ class TelephonyChannel(
 
     override fun createRequest(request: JaicpBotRequest) = TelephonyBotRequest.create(request)
 
-    override fun createReactions() = TelephonyReactions()
+    override fun createReactions() = TelephonyReactions(defaultBargeInProperties)
 
     companion object : JaicpNativeChannelFactory {
         override val channelType = "resterisk"
         override fun create(botApi: BotApi) = TelephonyChannel(botApi)
     }
 
-    class Factory(private val bargeInProcessor: BargeInProcessor) : JaicpNativeChannelFactory {
+    class Factory(
+        private val bargeInProcessor: BargeInProcessor = BargeInProcessor.NON_FALLBACK,
+        private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT
+    ) : JaicpNativeChannelFactory {
         override val channelType = "resterisk"
-        override fun create(botApi: BotApi) = TelephonyChannel(botApi, bargeInProcessor)
+        override fun create(botApi: BotApi) = TelephonyChannel(botApi, bargeInProcessor, defaultBargeInProperties)
     }
 }
