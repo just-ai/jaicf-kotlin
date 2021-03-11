@@ -31,6 +31,10 @@ interface BotHook {
     val context: BotContext
 }
 
+interface BotExceptionHandlingHook : BotHook {
+    val exception: BotException
+}
+
 interface BotPreProcessHook : BotHook, WithLogger {
     override val context: BotContext
     val request: BotRequest
@@ -40,7 +44,7 @@ interface BotPreProcessHook : BotHook, WithLogger {
         ?: logger.trace("Request ${request::class.simpleName} does not inherit MutableBotRequest, therefore input setters are unavailable")
 }
 
-interface BotProcessHook: BotHook {
+interface BotProcessHook : BotHook {
     override val context: BotContext
     val request: BotRequest
     val reactions: Reactions
@@ -93,8 +97,8 @@ data class ActionErrorHook(
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val state: State,
-    val exception: BotExecutionException
-) : BotActionHook
+    override val exception: BotExecutionException
+) : BotActionHook, BotExceptionHandlingHook
 
 data class BeforeActivationHook(
     override val context: BotContext,
@@ -106,5 +110,5 @@ data class AnyErrorHook(
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
-    val exception: BotException,
-) : BotPreProcessHook
+    override val exception: BotException,
+) : BotPreProcessHook, BotExceptionHandlingHook

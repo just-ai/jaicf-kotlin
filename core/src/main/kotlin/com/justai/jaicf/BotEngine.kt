@@ -111,12 +111,10 @@ class BotEngine(
                 processRequest(botContext, request, requestContext, reactions, executionContext)
             }
         } catch (e: BotException) {
-            executionContext.scenarioException = e
-            withHook(AnyErrorHook(botContext, request, reactions, e))
+            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext)
         } catch (e: Exception) {
             val exception = BotExecutionException(e, botContext.currentState)
-            executionContext.scenarioException = exception
-            withHook(AnyErrorHook(botContext, request, reactions, exception))
+            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext)
         }
 
         botContext.cleanTempData()
@@ -181,6 +179,14 @@ class BotEngine(
         }
     }
 
+    private inline fun <reified T : BotExceptionHandlingHook> tryHandleWithHook(
+        hook: T,
+        executionContext: ExecutionContext
+    ) = when (hooks.hasHook<T>()) {
+        true -> withHook(hook)
+        false -> executionContext.scenarioException = hook.exception
+    }
+
     private fun processContext(botContext: BotContext, requestContext: RequestContext) {
         if (requestContext.newSession) {
             botContext.cleanSessionData()
@@ -234,20 +240,21 @@ class BotEngine(
     ) {
         if (state.action == null) {
             logger.warn("No action on state ${dc.currentState}")
-        } else {
+            return
+        }
+        try {
+            logger.trace("Executing state: $state")
+            state.action.execute(this)
+            withHook(AfterActionHook(botContext, request, reactions, activator, state))
+        } catch (e: Exception) {
+            logger.error("Action exception on state ${dc.currentState}", e)
+            val exception = ActionException(e, state.toString())
+            val hook = ActionErrorHook(botContext, request, reactions, activator, state, exception)
             try {
-                logger.trace("Executing state: $state")
-                state.action.execute(this)
-                withHook(AfterActionHook(botContext, request, reactions, activator, state))
-            } catch (e: Exception) {
-                logger.error("Action exception on state ${dc.currentState}", e)
-                val exception = ActionException(e, state.toString())
-                reactions.executionContext.scenarioException = exception
-                try {
-                    hooks.triggerHook(ActionErrorHook(botContext, request, reactions, activator, state, exception))
-                } catch (e: Exception) {
-                    reactions.executionContext.scenarioException = exception
-                }
+                tryHandleWithHook(hook, reactions.executionContext)
+            } catch (e: BotHookException) {
+                reactions.executionContext.scenarioException = BotExecutionException(e, dc.currentState)
+                throw e
             }
         }
     }

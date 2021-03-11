@@ -1,10 +1,9 @@
 package com.justai.jaicf.hook
 
-import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.state.StatePath
 import kotlin.reflect.KClass
 
-data class BotHookListener<T: BotHook>(
+data class BotHookListener<T : BotHook>(
     val klass: KClass<T>,
     val action: (T) -> Unit,
     val availableFrom: StatePath = StatePath.root(),
@@ -35,7 +34,7 @@ class BotHookHandler {
      * @param action a block that will be invoked once specified [BotHook] was triggered.
      * @see BotHook
      */
-    inline fun <reified T: BotHook> addHookAction(noinline action: T.() -> Unit) {
+    inline fun <reified T : BotHook> addHookAction(noinline action: T.() -> Unit) {
         val listener = BotHookListener<T>(T::class, { hook: T -> hook.action() })
         @Suppress("UNCHECKED_CAST")
         actions.computeIfAbsent(T::class) { mutableListOf() }.add(listener as BotHookListener<BotHook>)
@@ -58,4 +57,6 @@ class BotHookHandler {
             }
         }
     }
+
+    internal inline fun <reified T : BotHook> hasHook() = actions[T::class] != null
 }

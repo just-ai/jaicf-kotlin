@@ -162,8 +162,7 @@ open class BotTest(private val bot: BotEngine) {
         bot.process(request, reactions, requestContext = requestContext)
         botContext = bot.defaultContextManager.loadContext(request, requestContext)
         reactions.executionContext.scenarioException?.let {
-            if (it is Throwable) throw it
-            else error(it)
+            throw it
         }
         return ProcessResult(botContext, reactions)
     }
