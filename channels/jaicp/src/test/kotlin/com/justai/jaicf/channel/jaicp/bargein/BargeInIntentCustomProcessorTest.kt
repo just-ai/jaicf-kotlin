@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.bargeIn
-import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInIntentStatus
+import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
 import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
 import com.justai.jaicf.channel.jaicp.telephony
 import com.justai.jaicf.hook.BeforeActivationHook
@@ -21,7 +21,7 @@ private val scenario = Scenario {
         }
         action(telephony) {
             request.bargeIn?.let {
-                if (it.bargeInStatus.recognitionResult.text == "оператор") {
+                if (it.bargeInRequest.recognitionResult.text == "оператор") {
                     reactions.allowInterrupt()
                 }
             }
@@ -41,9 +41,9 @@ class BargeInIntentCustomProcessorTest : JaicpBaseTest(useCommonResources = true
 
     @Test
     fun `should maintain ability to handle bargeInIntent event without helper scenario -- positive case`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("."),
-            BargeInIntentStatus.RecognitionResult("оператор", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("."),
+            BargeInRequest.RecognitionResult("оператор", "FINAL")
         ).toJson()
 
         event("activate my custom processor", "bargeInIntentStatus" to data).doesInterrupt()
@@ -51,9 +51,9 @@ class BargeInIntentCustomProcessorTest : JaicpBaseTest(useCommonResources = true
 
     @Test
     fun `should maintain ability to handle bargeInIntent event without helper scenario -- negative case`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("."),
-            BargeInIntentStatus.RecognitionResult("совсем не оператор", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("."),
+            BargeInRequest.RecognitionResult("совсем не оператор", "FINAL")
         ).toJson()
 
         event("activate my custom processor", "bargeInIntentStatus" to data).failsInterrupt()
@@ -63,4 +63,4 @@ class BargeInIntentCustomProcessorTest : JaicpBaseTest(useCommonResources = true
         channel.process(commonRequestFactory.event(event, additionalData))
 }
 
-private fun BargeInIntentStatus.toJson() = JSON.encodeToJsonElement(serializer(), this)
+private fun BargeInRequest.toJson() = JSON.encodeToJsonElement(serializer(), this)

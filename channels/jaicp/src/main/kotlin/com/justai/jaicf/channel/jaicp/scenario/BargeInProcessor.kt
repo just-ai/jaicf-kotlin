@@ -26,9 +26,14 @@ import com.justai.jaicf.model.state.StatePath
 open class BargeInProcessor : WithLogger {
 
     companion object {
-        const val IS_ACTIVATION_KEY = "isBargeInIntentActivation"
-        const val CURRENT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/scenario/bargeInHelper/currentContext"
-        const val NEXT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/scenario/bargeInHelper/nextContext"
+        protected const val IS_ACTIVATION_KEY = "isBargeInIntentActivation"
+        protected const val CURRENT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/scenario/bargeInHelper/currentContext"
+        protected const val NEXT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/scenario/bargeInHelper/nextContext"
+
+        val NON_FALLBACK = object : BargeInProcessor() {
+            override fun isAllowInterruption(hook: BeforeProcessHook) =
+                hook.context.dialogContext.nextState?.endsWith("/fallback") != true
+        }
     }
 
     /**
@@ -102,12 +107,5 @@ open class BargeInProcessor : WithLogger {
      *
      * @return true if interruption is allowed.
      * */
-    open fun isAllowInterruption(hook: BeforeProcessHook) = allowInterruptionForNonFallback(
-        requireNotNull(hook.context.dialogContext.nextState)
-    )
-
-    /**
-     * Allows bargeIn interruption for any non-fallback target state
-     * */
-    private fun allowInterruptionForNonFallback(targetState: String) = targetState.endsWith("/fallback").not()
+    open fun isAllowInterruption(hook: BeforeProcessHook) = true
 }

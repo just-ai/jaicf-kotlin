@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
+import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.helpers.http.toUrl
@@ -14,28 +15,74 @@ val Reactions.telephony
     get() = this as? TelephonyReactions
 
 
-class TelephonyReactions : JaicpReactions() {
+class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : JaicpReactions() {
 
-    internal var bargeIn: SimpleBargeInData? = null
+    internal var bargeIn: BargeInProperties? = null
 
-    internal var bargeInInterrupt: BargeInInterruptData? = null
+    internal var bargeInInterrupt: BargeInResponse? = null
 
+    companion object {
+        const val CURRENT_CONTEXT_PATH = "."
+    }
+
+    /**
+     * Sends text to synthesis in telephony channel.
+     * Allows to interrupt synthesis only by phrases which we can handle in scenario.
+     *
+     * @param text to synthesis speech from speech from
+     * @param bargeInContext scenario context with states which should handle possible interruptions.
+     * */
+    fun say(text: String, bargeInContext: String): SayReaction {
+        ensureBargeInProps()
+        replies.add(TextReply(text, bargeInReply = BargeInReplyData(bargeInContext)))
+        return SayReaction.create(text)
+    }
+
+    /**
+     * Sends text to synthesis in telephony channel.
+     * Allows to interrupt synthesis only by phrases which we can handle in scenario.
+     *
+     * @param text to synthesis speech from
+     * @param bargeIn true to allow interruption and handle in in current dialog context
+     * */
+    fun say(text: String, bargeIn: Boolean): SayReaction {
+        if (bargeIn) {
+            return say(text, CURRENT_CONTEXT_PATH)
+        }
+        replies.add(TextReply(text))
+        return SayReaction.create(text)
+    }
+
+    /**
+     * Plays audio in a telephony call.
+     *
+     * @param url to play during call
+     * */
     override fun audio(url: String): AudioReaction {
         replies.add(AudioReply(url.toUrl()))
         return AudioReaction.create(url)
     }
 
-    fun say(text: String, interruptInContext: String = "."): SayReaction {
-        replies.add(TextReply(text, bargeInReply = BargeInReplyData(interruptInContext)))
-        return SayReaction.create(text)
+    /**
+     * Plays audio in a telephony call.
+     * Allows to barge in audio playback only by phrases which we can handle in scenario.
+     *
+     * @param url to play during call
+     * @param bargeIn true to allow interruption and handle in in current dialog context
+     * */
+    fun audio(url: String, bargeIn: Boolean): AudioReaction {
+        TODO("do it and cover")
     }
 
-    fun say(text: String, interruptable: Boolean, interruptionContext: String = "."): SayReaction {
-        if (interruptable) {
-            return say(text, interruptionContext)
-        }
-        replies.add(TextReply(text))
-        return SayReaction.create(text)
+    /**
+     * Plays audio in a telephony call.
+     * Allows to barge in audio playback only by phrases which we can handle in scenario.
+     *
+     * @param url to play during call
+     * @param bargeInContext scenario context with states which should handle possible interruptions.
+     * */
+    fun audio(url: String, bargeInContext: String): AudioReaction {
+        TODO("do it and cover")
     }
 
     /**
@@ -46,14 +93,19 @@ class TelephonyReactions : JaicpReactions() {
     }
 
     /**
-     * Barge-in is speech synthesis interruption. This reaction enables barge-in for current response.
+     * Barge-in is speech synthesis interruption.
+     *
+     * If response uses barge-in by calling [say] or [audio] with arguments `bargeIn = true` or `bargeInContext = "..."`,
+     *  calling this reaction will override [bargeInDefaultProps] from [TelephonyChannel.Factory].
+     *
+     * Otherwise it will enable just interrupting speech synthesis or audio playback,
      *
      * @param mode is [BargeInMode] to specify barge-in behaviour
      * @param trigger is [BargeInTrigger] to specify what triggers barge-in
      * @param noInterruptTimeMs minimal time in milliseconds for synthesis after which barge-in interruption can be triggered.
      * */
     fun bargeIn(mode: BargeInMode, trigger: BargeInTrigger, noInterruptTimeMs: Int) {
-        bargeIn = SimpleBargeInData(mode, trigger, noInterruptTimeMs)
+        bargeIn = BargeInProperties(mode, trigger, noInterruptTimeMs)
     }
 
     /**
@@ -185,6 +237,10 @@ class TelephonyReactions : JaicpReactions() {
     }
 
     fun allowInterrupt() {
-        bargeInInterrupt = BargeInInterruptData(true)
+        bargeInInterrupt = BargeInResponse(true)
+    }
+
+    private fun ensureBargeInProps() {
+        bargeIn = bargeIn ?: bargeInDefaultProps
     }
 }

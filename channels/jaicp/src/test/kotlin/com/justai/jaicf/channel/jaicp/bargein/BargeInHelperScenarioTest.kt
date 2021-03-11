@@ -5,7 +5,8 @@ import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
-import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInIntentStatus
+import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
+import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
 import com.justai.jaicf.channel.jaicp.telephony
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
@@ -19,7 +20,7 @@ private val scenario = Scenario {
             regex("start")
         }
         action(telephony) {
-            reactions.say("ok", interruptable = true)
+            reactions.say("ok", bargeIn = true)
         }
 
         state("nested") {
@@ -64,7 +65,7 @@ private val scenario = Scenario {
             regex("InvalidContext")
         }
         action(telephony) {
-            reactions.say("i'm in InvalidContext", interruptInContext = "/InvalidContextPath")
+            reactions.say("i'm in InvalidContext", bargeInContext = "/InvalidContextPath")
         }
     }
 
@@ -73,7 +74,7 @@ private val scenario = Scenario {
     }
 }
 
-private val channel = JaicpTestChannel(scenario, TelephonyChannel)
+private val channel = JaicpTestChannel(scenario, TelephonyChannel.Factory(BargeInProcessor.NON_FALLBACK))
 
 class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
 
@@ -89,9 +90,9 @@ class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessio
 
     @Test
     fun `should interrupt query with nested state`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("."),
-            BargeInIntentStatus.RecognitionResult("nested", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("."),
+            BargeInRequest.RecognitionResult("nested", "FINAL")
         ).toJson()
 
         query("start").answers("ok")
@@ -100,9 +101,9 @@ class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessio
 
     @Test
     fun `should fail to interrupt with no state possible`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("."),
-            BargeInIntentStatus.RecognitionResult("some-unknown-state", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("."),
+            BargeInRequest.RecognitionResult("some-unknown-state", "FINAL")
         ).toJson()
 
         query("start").answers("ok")
@@ -111,9 +112,9 @@ class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessio
 
     @Test
     fun `should fail to interrupt with another context`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("/ModalContext"),
-            BargeInIntentStatus.RecognitionResult("nested", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("/ModalContext"),
+            BargeInRequest.RecognitionResult("nested", "FINAL")
         ).toJson()
 
         query("start").answers("ok")
@@ -122,9 +123,9 @@ class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessio
 
     @Test
     fun `should fail to interrupt into fallback`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("/OpenContext"),
-            BargeInIntentStatus.RecognitionResult("nested", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("/OpenContext"),
+            BargeInRequest.RecognitionResult("nested", "FINAL")
         ).toJson()
 
         query("start").answers("ok")
@@ -134,9 +135,9 @@ class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessio
     @Test
     @Disabled("wait until #147 with AnyErrorHook is merged, test is also invalid btw")
     fun `should restore after invalid context path transition`() {
-        val data = BargeInIntentStatus(
-            BargeInIntentStatus.BargeInTransition("/InvalidContextPath"),
-            BargeInIntentStatus.RecognitionResult("nested", "FINAL")
+        val data = BargeInRequest(
+            BargeInRequest.BargeInTransition("/InvalidContextPath"),
+            BargeInRequest.RecognitionResult("nested", "FINAL")
         ).toJson()
 
         query("InvalidContext").answers("i'm in InvalidContext")
@@ -156,4 +157,4 @@ class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessio
         channel.process(commonRequestFactory.event(event, additionalData))
 }
 
-private fun BargeInIntentStatus.toJson() = JSON.encodeToJsonElement(serializer(), this)
+private fun BargeInRequest.toJson() = JSON.encodeToJsonElement(serializer(), this)
