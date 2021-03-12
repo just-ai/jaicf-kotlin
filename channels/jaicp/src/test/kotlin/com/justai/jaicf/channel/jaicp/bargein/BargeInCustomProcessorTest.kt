@@ -7,7 +7,6 @@ import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.bargeIn
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
-import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
 import com.justai.jaicf.channel.jaicp.telephony
 import com.justai.jaicf.hook.BeforeActivationHook
 import kotlinx.serialization.json.JsonElement
@@ -37,7 +36,7 @@ private val customBargeInProcessor = object : BargeInProcessor() {
 
 private val channel = JaicpTestChannel(scenario, TelephonyChannel.Factory(customBargeInProcessor))
 
-class BargeInIntentCustomProcessorTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
+class BargeInCustomProcessorTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
 
     @Test
     fun `should maintain ability to handle bargeInIntent event without helper scenario -- positive case`() {

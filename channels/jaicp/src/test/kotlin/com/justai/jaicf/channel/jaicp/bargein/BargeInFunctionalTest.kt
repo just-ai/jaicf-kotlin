@@ -6,7 +6,6 @@ import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
-import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
 import com.justai.jaicf.channel.jaicp.telephony
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
@@ -76,10 +75,10 @@ private val scenario = Scenario {
 
 private val channel = JaicpTestChannel(scenario, TelephonyChannel.Factory(BargeInProcessor.NON_FALLBACK))
 
-class BargeInIntentsTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
+class BargeInFunctionalTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
 
     @Test
-    fun `query requests should not trigger any barge-in-intent interruption handlers`() {
+    fun `query requests should not trigger any barge-in interruption handlers`() {
         query("start").answers("ok")
     }
 

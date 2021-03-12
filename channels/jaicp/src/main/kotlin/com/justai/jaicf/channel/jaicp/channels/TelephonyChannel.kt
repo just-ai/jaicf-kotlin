@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyBotRequest
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInProperties
 import com.justai.jaicf.channel.jaicp.reactions.TelephonyReactions
-import com.justai.jaicf.channel.jaicp.scenario.BargeInProcessor
+import com.justai.jaicf.channel.jaicp.bargein.BargeInProcessor
 
 /**
  * JAICP Telephony channel

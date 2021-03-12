@@ -36,7 +36,7 @@ private val scenario = Scenario {
 
 private val channel = JaicpTestChannel(scenario, TelephonyChannel)
 
-class BargeInIntentsDTOTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
+class BargeInModelTest : JaicpBaseTest(useCommonResources = true, ignoreSessionId = false) {
 
     @Test
     fun `should send correct dto with bargeIn flag`() {
