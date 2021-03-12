@@ -50,9 +50,9 @@ data class ImageReply(
 @Serializable
 data class AudioReply(
     val audioUrl: String,
-    val state: String? = null
+    val state: String? = null,
+    val bargeInReply: BargeInReplyData? = null
 ) : Reply("audio") {
-
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
 
