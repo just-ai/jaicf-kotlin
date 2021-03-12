@@ -1,4 +1,4 @@
-package com.justai.jaicf.channel.jaicp.scenario
+package com.justai.jaicf.channel.jaicp.bargein
 
 import com.justai.jaicf.channel.jaicp.dto.TelephonyBargeInRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyQueryRequest
@@ -18,7 +18,7 @@ import com.justai.jaicf.model.state.StatePath
  * The logic behind this processor is:
  *  1. Once [TelephonyBargeInRequest] is received, a [handleBeforeActivation] is invoked to set dialog context to find transitions in.
  *  2. [handleBeforeActivation] mutates current dialog context and stores a number of keys in context.
- *  3. [handleBeforeProcess] checks keys to resolve if we're inside barge-in-intent transition. It blocks this transition.
+ *  3. [handleBeforeProcess] checks keys to resolve if we're inside barge-in transition. It blocks this transition.
  *  4. [handleBeforeProcess] calls [isAllowInterruption] to resolve if we need to interrupt. The [TelephonyBargeInRequest] is finished.
  *  5. After we responded and allowed interruption, next [TelephonyQueryRequest] will contain request which we should process.
  *  6. After next [TelephonyQueryRequest] is received, we set stored dialog context and clean session keys.
@@ -26,9 +26,9 @@ import com.justai.jaicf.model.state.StatePath
 open class BargeInProcessor : WithLogger {
 
     companion object {
-        protected const val IS_ACTIVATION_KEY = "isBargeInIntentActivation"
-        protected const val CURRENT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/scenario/bargeInHelper/currentContext"
-        protected const val NEXT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/scenario/bargeInHelper/nextContext"
+        protected const val IS_ACTIVATION_KEY = "isBargeInActivation"
+        protected const val CURRENT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/currentContext"
+        protected const val NEXT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/nextContext"
 
         val NON_FALLBACK = object : BargeInProcessor() {
             override fun isAllowInterruption(hook: BeforeProcessHook) =
@@ -37,8 +37,8 @@ open class BargeInProcessor : WithLogger {
     }
 
     /**
-     * Appended as hook to scenario in TelephonyChannel to process bargeInIntent events.
-     * Mutates [DialogContext] to select states from another context with bargeInIntent speech synthesis interruption.
+     * Appended as hook to scenario in TelephonyChannel to process bargeIn events.
+     * Mutates [DialogContext] to select states from another context with bargeIn speech synthesis interruption.
      *
      * @see DialogContext
      * @see TelephonyBargeInRequest
@@ -86,12 +86,12 @@ open class BargeInProcessor : WithLogger {
             hook.context.dialogContext.nextState = null
             hook.context.dialogContext.nextContext = null
             hook.context.dialogContext.nextContext = null
-            logger.trace("Skip processing states by bargeInIntent activation")
+            logger.trace("Skip processing states by bargeIn activation")
         }
     }
 
     /**
-     * Appended as hook to scenario in TelephonyChannel to process bargeInIntent events.
+     * Appended as hook to scenario in TelephonyChannel to process bargeIn events.
      * Handles error in activation and restores dialogContext after unsuccessful barge-in attempt.
      *
      * @see DialogContext
@@ -101,7 +101,7 @@ open class BargeInProcessor : WithLogger {
     open fun handleActivationError(hook: ActionErrorHook) {}
 
     /**
-     * Resolves if bargeInIntent should allow interruption for state
+     * Resolves if bargeIn should interrupt synthesis or playback.
      *
      * @param hook is [BeforeProcessHook] containing request processing information
      *
