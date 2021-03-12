@@ -4,6 +4,7 @@ import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
+import com.justai.jaicf.channel.jaicp.dto.AudioReply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInType
 import com.justai.jaicf.channel.jaicp.telephony
@@ -17,6 +18,7 @@ private val scenario = Scenario {
         }
         action(telephony) {
             reactions.say("this is fine im in state start", bargeIn = true)
+            reactions.audio("http://url.com", bargeIn = true)
         }
     }
 
@@ -26,6 +28,7 @@ private val scenario = Scenario {
         }
         action(telephony) {
             reactions.say("this is fine im in state start", bargeInContext = "/Some/Test/State")
+            reactions.audio("http://url.com", bargeInContext = "/Some/Test/State")
         }
     }
 
@@ -40,6 +43,11 @@ class BargeInIntentsDTOTest : JaicpBaseTest(useCommonResources = true, ignoreSes
         val textReply = query("bargeIn").responseData.parseReplies().filterIsInstance<TextReply>().first()
         assertEquals(".", textReply.bargeInReply?.bargeInTransition)
         assertEquals(BargeInType.INTENT, textReply.bargeInReply?.bargeInIntent?.type)
+
+
+        val audioReply = query("bargeIn").responseData.parseReplies().filterIsInstance<AudioReply>().first()
+        assertEquals(".", audioReply.bargeInReply?.bargeInTransition)
+        assertEquals(BargeInType.INTENT, audioReply.bargeInReply?.bargeInIntent?.type)
     }
 
     @Test
@@ -47,6 +55,10 @@ class BargeInIntentsDTOTest : JaicpBaseTest(useCommonResources = true, ignoreSes
         val textReply = query("bargeInContext").responseData.parseReplies().filterIsInstance<TextReply>().first()
         assertEquals("/Some/Test/State", textReply.bargeInReply?.bargeInTransition)
         assertEquals(BargeInType.INTENT, textReply.bargeInReply?.bargeInIntent?.type)
+
+        val audioReply = query("bargeInContext").responseData.parseReplies().filterIsInstance<AudioReply>().first()
+        assertEquals("/Some/Test/State", audioReply.bargeInReply?.bargeInTransition)
+        assertEquals(BargeInType.INTENT, audioReply.bargeInReply?.bargeInIntent?.type)
     }
 
     private fun query(query: String) = channel.process(commonRequestFactory.query(query))

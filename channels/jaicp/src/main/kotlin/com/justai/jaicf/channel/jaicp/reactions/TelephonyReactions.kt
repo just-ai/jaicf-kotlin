@@ -22,7 +22,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     internal var bargeInInterrupt: BargeInResponse? = null
 
     companion object {
-        const val CURRENT_CONTEXT_PATH = "."
+        private const val CURRENT_CONTEXT_PATH = "."
     }
 
     /**
@@ -71,7 +71,11 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param bargeIn true to allow interruption and handle in in current dialog context
      * */
     fun audio(url: String, bargeIn: Boolean): AudioReaction {
-        TODO("do it and cover")
+        if (bargeIn) {
+            return audio(url, CURRENT_CONTEXT_PATH)
+        }
+        replies.add(AudioReply(url.toUrl()))
+        return AudioReaction.create(url)
     }
 
     /**
@@ -82,7 +86,9 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param bargeInContext scenario context with states which should handle possible interruptions.
      * */
     fun audio(url: String, bargeInContext: String): AudioReaction {
-        TODO("do it and cover")
+        ensureBargeInProps()
+        replies.add(AudioReply(url.toUrl(), bargeInReply = BargeInReplyData(bargeInContext)))
+        return AudioReaction.create(url)
     }
 
     /**
