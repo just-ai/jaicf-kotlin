@@ -26,13 +26,17 @@ class VkChannel(
     private val group: GroupActor = GroupActor(configuration.groupId, configuration.accessToken)
 
     override fun messageNew(groupId: Int, message: Message) {
-        process(VkBotRequestFactory.getRequestForMessage(message))
+        process(message)
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
         parse(request.receiveText())
         return "".asJsonHttpBotResponse()
     }
+
+    private fun process(message: Message) = VkBotRequestFactory.getRequestForMessage(message)
+        ?.let { process(it) }
+        ?: logger.debug("No request converter found for message: $message")
 
     private fun process(request: VkBotRequest): HttpBotResponse {
         val reactions = VkReactions(vk, group, request)
@@ -46,7 +50,7 @@ class VkChannel(
             VkChannel(botApi, VkChannelConfiguration("", 0), apiUrl)
     }
 
-    fun runPolling() = object : CallbackApiLongPoll(vk, group) {
+    fun run() = object : CallbackApiLongPoll(vk, group) {
         override fun messageNew(groupId: Int, message: Message) = this@VkChannel.messageNew(groupId, message)
     }.run()
 }
