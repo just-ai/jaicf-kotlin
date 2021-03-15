@@ -13,14 +13,10 @@ import com.vk.api.sdk.objects.messages.Keyboard
 import com.vk.api.sdk.objects.messages.KeyboardButton
 import com.vk.api.sdk.objects.messages.KeyboardButtonAction
 import com.vk.api.sdk.objects.messages.KeyboardButtonActionType
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.util.cio.*
-import io.ktor.utils.io.*
-import kotlinx.coroutines.runBlocking
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import java.io.File
+import java.net.URL
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -31,7 +27,7 @@ val Reactions.vk
 class VkReactions(
     private val vk: VkApiClient,
     private val groupActor: GroupActor,
-    private val httpClient: HttpClient,
+//    private val httpClient: HttpClient,
     request: BotRequest
 ) : Reactions() {
 
@@ -39,6 +35,7 @@ class VkReactions(
     val userId: Int = request.clientId.toInt()
 
     companion object {
+        // extract to VK API
         private val random = Random()
         private val imagesMap = ConcurrentHashMap<String, String>()
     }
@@ -97,7 +94,7 @@ class VkReactions(
     private fun uploadPhoto(url: String): String {
         val ext = FilenameUtils.getExtension(url).orIfEmpty("jpeg")
         val file = File.createTempFile("image", "vk_upload.$ext")
-        httpClient.copyUrlToTempFile(url, file)
+        FileUtils.copyURLToFile(URL(url), file)
         return uploadPhoto(file)
     }
 
@@ -113,7 +110,3 @@ class VkReactions(
 }
 
 private fun String.orIfEmpty(other: String) = if (isNullOrEmpty()) other else this
-
-private fun HttpClient.copyUrlToTempFile(url: String, file: File) = runBlocking {
-    get<HttpResponse>(url).content.copyAndClose(file.writeChannel())
-}

@@ -8,7 +8,7 @@ object VkEvent {
     const val DOCUMENT = "document"
     const val ANIMATION = "animation"
     const val GAME = "game"
-    const val PHOTOS = "photos"
+    const val PHOTO = "photo"
     const val STICKER = "sticker"
     const val VIDEO = "video"
     const val VIDEO_NOTE = "video_note"
