@@ -56,7 +56,11 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun goesToState(state: String) = apply {
-        assertEquals(state, executionContext.activationContext?.activation?.state, "go to state $state not found")
+        assertEquals(
+            state,
+            executionContext.activationContext?.activation?.state,
+            "scenario execution did not start in state: $state"
+        )
     }
 
     /**
