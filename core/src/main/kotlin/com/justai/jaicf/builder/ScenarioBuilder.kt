@@ -109,7 +109,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     @ScenarioDsl
     fun append(other: Scenario) {
         val isRoot = this is RootBuilder
-        doAppend(other, ignoreHooks = true, exposeHooks = isRoot, propagateHooks = true)
+        doAppend(other, ignoreHooks = !isRoot, exposeHooks = isRoot, propagateHooks = true)
     }
 
     /**
