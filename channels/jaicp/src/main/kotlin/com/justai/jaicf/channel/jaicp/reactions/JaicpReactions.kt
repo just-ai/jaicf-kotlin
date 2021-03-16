@@ -1,7 +1,7 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.dto.JaicpDialerData
+import com.justai.jaicf.channel.jaicp.dto.JaicpDialerAPI
 import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
@@ -20,7 +20,7 @@ open class JaicpReactions : Reactions() {
 
     protected val replies: MutableList<Reply> = mutableListOf()
 
-    internal val dialer by lazy { JaicpDialerData() }
+    internal val dialer by lazy { JaicpDialerAPI() }
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 

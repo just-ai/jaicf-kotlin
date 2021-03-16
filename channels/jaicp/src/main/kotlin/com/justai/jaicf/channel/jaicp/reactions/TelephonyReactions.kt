@@ -159,9 +159,9 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     )
 
     /**
-     * Schedules a redial in outbound call campaign using [JaicpDialerData.RedialData].
+     * Schedules a redial in outbound call campaign using [JaicpDialerAPI.RedialData].
      */
-    fun redial(redialData: JaicpDialerData.RedialData) {
+    fun redial(redialData: JaicpDialerAPI.RedialData) {
         dialer.redial(redialData)
     }
 
@@ -222,7 +222,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * }
      * */
     fun report(header: String, value: String, order: Int? = null) =
-        dialer.report(header, JaicpDialerData.CallReportData(value, order))
+        dialer.report(header, JaicpDialerAPI.CallReportData(value, order))
 
     /**
      * Transfers call to operator or other person.

@@ -65,9 +65,6 @@ open class BargeInProcessor : WithLogger {
                 hook.context.session.remove(ORIGINAL_CONTEXT_KEY)
             }
         }
-
-        logger.debug("Exit beforeActivationHook with dialogContext")
-        logger.debug("Current context: ${hook.context.dialogContext.currentContext}")
     }
 
     /**
@@ -86,7 +83,7 @@ open class BargeInProcessor : WithLogger {
                 hook.restoreContextAndExit()
             }
 
-            logger.trace("Skip processing states by bargeIn activation")
+            logger.debug("Skip processing states by bargeIn activation")
             hook.context.dialogContext.nextState = null
             hook.context.dialogContext.nextContext = null
             hook.context.dialogContext.nextContext = null
