@@ -111,10 +111,10 @@ class BotEngine(
                 processRequest(botContext, request, requestContext, reactions, executionContext)
             }
         } catch (e: BotException) {
-            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext)
+            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext, false)
         } catch (e: Exception) {
             val exception = BotExecutionException(e, botContext.currentState)
-            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext)
+            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext, false)
         }
 
         botContext.cleanTempData()
@@ -181,10 +181,14 @@ class BotEngine(
 
     private inline fun <reified T : BotExceptionHandlingHook> tryHandleWithHook(
         hook: T,
-        executionContext: ExecutionContext
+        executionContext: ExecutionContext,
+        rethrow: Boolean
     ) = when (hooks.hasHook<T>()) {
         true -> withHook(hook)
-        false -> executionContext.scenarioException = hook.exception
+        false -> {
+            logger.error("Unhandled exception for ${T::class.simpleName} handler: ", hook.exception.scenarioCause)
+            if (rethrow) throw hook.exception else executionContext.scenarioException = hook.exception
+        }
     }
 
     private fun processContext(botContext: BotContext, requestContext: RequestContext) {
@@ -200,7 +204,6 @@ class BotEngine(
             } catch (e: Exception) {
                 throw ActivationException(e, botContext.currentState, a)
             }
-
             if (activation != null) {
                 return ActivationContext(a, activation)
             }
@@ -247,11 +250,10 @@ class BotEngine(
             state.action.execute(this)
             withHook(AfterActionHook(botContext, request, reactions, activator, state))
         } catch (e: Exception) {
-            logger.error("Action exception on state ${dc.currentState}", e)
             val exception = ActionException(e, state.toString())
             val hook = ActionErrorHook(botContext, request, reactions, activator, state, exception)
             try {
-                tryHandleWithHook(hook, reactions.executionContext)
+                tryHandleWithHook(hook, reactions.executionContext, rethrow = true)
             } catch (e: BotHookException) {
                 reactions.executionContext.scenarioException = BotExecutionException(e, dc.currentState)
                 throw e
