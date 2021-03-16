@@ -9,9 +9,7 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
 import com.justai.jaicf.channel.jaicp.telephony
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 private val scenario = Scenario {
     state("start") {
@@ -132,7 +130,6 @@ class BargeInFunctionalTest : JaicpBaseTest(useCommonResources = true, ignoreSes
     }
 
     @Test
-    @Disabled("wait until #147 with AnyErrorHook is merged, test is also invalid btw")
     fun `should restore after invalid context path transition`() {
         val data = BargeInRequest(
             BargeInRequest.BargeInTransition("/InvalidContextPath"),
@@ -140,12 +137,8 @@ class BargeInFunctionalTest : JaicpBaseTest(useCommonResources = true, ignoreSes
         ).toJson()
 
         query("InvalidContext").answers("i'm in InvalidContext")
-
-        assertThrows<IllegalStateException> {
-            event("bargeInIntent", "bargeInIntentStatus" to data).failsInterrupt()
-        }.apply { printStackTrace() }
-
-        query("/start").answers("ok")
+        event("bargeInIntent", "bargeInIntentStatus" to data).failsInterrupt()
+        query("start").answers("ok")
     }
 
     private fun query(query: String) = channel.process(commonRequestFactory.query(query))

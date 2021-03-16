@@ -5,10 +5,12 @@ import com.justai.jaicf.channel.jaicp.dto.TelephonyQueryRequest
 import com.justai.jaicf.channel.jaicp.dto.bargeIn
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.exceptions.scenarioCause
 import com.justai.jaicf.helpers.logging.WithLogger
-import com.justai.jaicf.hook.ActionErrorHook
+import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.hook.BeforeActivationHook
 import com.justai.jaicf.hook.BeforeProcessHook
+import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.model.state.StatePath
 
 
@@ -26,10 +28,11 @@ import com.justai.jaicf.model.state.StatePath
 open class BargeInProcessor : WithLogger {
 
     companion object {
-        protected const val IS_ACTIVATION_KEY = "isBargeInActivation"
-        protected const val CURRENT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/currentContext"
-        protected const val NEXT_CONTEXT_KEY = "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/nextContext"
-
+        protected const val TEMP_ACTIVATION_KEY = "isBargeInActivation"
+        protected const val ORIGINAL_CONTEXT_KEY =
+            "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/originalContext"
+        protected const val BARGEIN_CONTEXT_KEY =
+            "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/bargeInContext"
         val NON_FALLBACK = object : BargeInProcessor() {
             override fun isAllowInterruption(hook: BeforeProcessHook) =
                 hook.context.dialogContext.nextState?.endsWith("/fallback") != true
@@ -46,20 +49,20 @@ open class BargeInProcessor : WithLogger {
     open fun handleBeforeActivation(hook: BeforeActivationHook) {
         hook.request.bargeIn?.run {
             // stores current context to restore it if something's gone wrong on activation
-            hook.context.session[CURRENT_CONTEXT_KEY] = hook.context.dialogContext.currentContext
+            hook.context.session[ORIGINAL_CONTEXT_KEY] = hook.context.dialogContext.currentContext
 
             val current = StatePath.parse(hook.context.dialogContext.currentContext)
             val resolved = current.resolve(transition)
             if (current != resolved) {
                 hook.context.dialogContext.currentContext = resolved.toString()
             }
-            hook.context.session[NEXT_CONTEXT_KEY] = resolved.toString()
-            hook.context.temp[IS_ACTIVATION_KEY] = true
+            hook.context.session[BARGEIN_CONTEXT_KEY] = resolved.toString()
+            hook.context.temp[TEMP_ACTIVATION_KEY] = true
         } ?: run {
-            val bargedInContext = hook.context.session[NEXT_CONTEXT_KEY] as? String
+            val bargedInContext = hook.context.session[BARGEIN_CONTEXT_KEY] as? String
             if (bargedInContext != null) {
                 hook.context.dialogContext.currentContext = bargedInContext
-                hook.context.session.remove(CURRENT_CONTEXT_KEY)
+                hook.context.session.remove(ORIGINAL_CONTEXT_KEY)
             }
         }
 
@@ -76,17 +79,17 @@ open class BargeInProcessor : WithLogger {
      * @see TelephonyBargeInRequest
      * */
     open fun handleBeforeProcess(hook: BeforeProcessHook) {
-        val isBargeInIntentActivation = hook.context.temp[IS_ACTIVATION_KEY] as? Boolean ?: false
-        if (isBargeInIntentActivation) {
+        if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
             if (isAllowInterruption(hook)) {
                 hook.reactions.telephony?.allowInterrupt()
             } else {
-                hook.context.dialogContext.currentContext = hook.context.session[CURRENT_CONTEXT_KEY] as String
+                hook.restoreContextAndExit()
             }
+
+            logger.trace("Skip processing states by bargeIn activation")
             hook.context.dialogContext.nextState = null
             hook.context.dialogContext.nextContext = null
             hook.context.dialogContext.nextContext = null
-            logger.trace("Skip processing states by bargeIn activation")
         }
     }
 
@@ -97,8 +100,14 @@ open class BargeInProcessor : WithLogger {
      * @see DialogContext
      * @see TelephonyBargeInRequest
      * */
-    // TODO: CTX RESTORE with AnyErrorHook (PR #147)
-    open fun handleActivationError(hook: ActionErrorHook) {}
+    open fun handleActivationError(hook: AnyErrorHook) {
+        if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
+            logger.debug("Handling barge-in hook error: ", hook.exception.scenarioCause)
+            hook.restoreContextAndExit()
+        } else {
+            throw hook.exception.scenarioCause
+        }
+    }
 
     /**
      * Resolves if bargeIn should interrupt synthesis or playback.
@@ -108,4 +117,9 @@ open class BargeInProcessor : WithLogger {
      * @return true if interruption is allowed.
      * */
     open fun isAllowInterruption(hook: BeforeProcessHook) = true
+
+    private fun BotHook.restoreContextAndExit() {
+        context.dialogContext.currentContext = context.session[ORIGINAL_CONTEXT_KEY] as String
+        context.session.remove(BARGEIN_CONTEXT_KEY)
+    }
 }
