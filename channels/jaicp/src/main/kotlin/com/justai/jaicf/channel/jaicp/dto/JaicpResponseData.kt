@@ -12,14 +12,14 @@ import kotlinx.serialization.json.JsonElement
 internal class JaicpResponseData private constructor(
     val replies: List<JsonElement>,
     val answer: String,
-    val dialer: JaicpDialerData? = null,
+    val dialer: JaicpDialerAPI? = null,
     val bargeIn: BargeInProperties? = null,
     val bargeInInterrupt: BargeInResponse? = null,
     val sessionId: String
 ) {
     internal constructor(
         replies: List<Reply>,
-        dialer: JaicpDialerData?,
+        dialer: JaicpDialerAPI?,
         bargeInData: BargeInProperties?,
         bargeInInterrupt: BargeInResponse?,
         sessionId: String

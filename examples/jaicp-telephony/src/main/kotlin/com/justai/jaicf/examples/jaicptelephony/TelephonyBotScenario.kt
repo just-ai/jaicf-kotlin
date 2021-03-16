@@ -83,18 +83,6 @@ val TelephonyBotScenario = Scenario(telephony) {
         }
     }
 
-    state("привет") {
-        activators {
-            regex("привет")
-        }
-        action {
-            reactions.say(
-                text = "это очень длинная фраза с заебанным синтезом чтобы ты мог меня перебить так что я буду пиздеть",
-                bargeIn = true
-            )
-        }
-    }
-
     fallback {
         reactions.say("You said ${request.input}", bargeIn = true)
         logger.info("Unrecognized message from caller: ${request.caller}")

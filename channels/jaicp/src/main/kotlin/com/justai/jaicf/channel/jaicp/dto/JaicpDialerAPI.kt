@@ -1,15 +1,13 @@
 package com.justai.jaicf.channel.jaicp.dto
 
-import com.justai.jaicf.channel.jaicp.JSON
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Serializable
-class JaicpDialerData {
+class JaicpDialerAPI {
 
     private var callResult: String? = null
     private var callResultPayload: String? = null
@@ -119,7 +117,7 @@ private fun List<DayOfWeek>.mapToDialerDays(): List<String> = map {
     }
 }
 
-private fun checkStartFinishTime(data: JaicpDialerData.RedialData) {
+private fun checkStartFinishTime(data: JaicpDialerAPI.RedialData) {
     val st = data.startDateTime
     val fin = data.finishDateTime
     if (st != null && fin != null) {
@@ -129,7 +127,7 @@ private fun checkStartFinishTime(data: JaicpDialerData.RedialData) {
     }
 }
 
-private fun checkLocalTime(data: JaicpDialerData.RedialData) {
+private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
     val start = data.localTimeFrom?.let { LocalTime.parse(it, formatter) }
     val end = data.localTimeTo?.let { LocalTime.parse(it, formatter) }
@@ -140,7 +138,7 @@ private fun checkLocalTime(data: JaicpDialerData.RedialData) {
     }
 }
 
-private fun checkRetryAndInterval(data: JaicpDialerData.RedialData) {
+private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {
     data.retryIntervalInMinutes?.let {
         require(it >= 1) {
             "The retry interval in minutes must be a positive number. Given: $it"
