@@ -78,7 +78,7 @@ open class BargeInProcessor : WithLogger {
     open fun handleBeforeProcess(hook: BeforeProcessHook) {
         if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
             if (isAllowInterruption(hook)) {
-                hook.reactions.telephony?.allowInterrupt()
+                hook.reactions.telephony?.allowBargeIn()
             } else {
                 hook.restoreContextAndExit()
             }

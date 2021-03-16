@@ -101,5 +101,5 @@ internal val BotRequest.jaicp
 internal val BotRequest.jaicpNative
     get() = this as? JaicpNativeBotRequest
 
-internal val BotRequest.bargeIn
+val BotRequest.bargeIn
     get() = this as? TelephonyBargeInRequest
