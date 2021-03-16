@@ -10,6 +10,7 @@ import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.exceptions.BotException
+import com.justai.jaicf.exceptions.scenarioCause
 import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
@@ -170,7 +171,7 @@ internal data class JaicpLogModel private constructor(
                 sessionId = session.sessionId,
                 isNewSession = session.isNewSession,
                 channelData = jaicpBotRequest.channelData,
-                exception = executionContext.scenarioException?.message
+                exception = executionContext.scenarioException?.scenarioCause?.stackTraceToString()
             )
         }
     }
@@ -186,4 +187,4 @@ private fun List<Reaction>.toReplies() = mapNotNull { r ->
     }
 }.toMutableList()
 
-private fun BotException.toReply() = ErrorReply(message ?: "", currentState, "")
+private fun BotException.toReply() = ErrorReply(scenarioCause.stackTraceToString(), currentState, "")
