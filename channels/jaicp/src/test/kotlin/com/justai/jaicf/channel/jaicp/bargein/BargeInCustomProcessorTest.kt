@@ -21,7 +21,7 @@ private val scenario = Scenario {
         action(telephony) {
             request.bargeIn?.let {
                 if (it.bargeInRequest.recognitionResult.text == "оператор") {
-                    reactions.allowInterrupt()
+                    reactions.allowBargeIn()
                 }
             }
         }

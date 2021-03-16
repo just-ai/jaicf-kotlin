@@ -104,7 +104,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * If response uses barge-in by calling [say] or [audio] with arguments `bargeIn = true` or `bargeInContext = "..."`,
      *  calling this reaction will override [bargeInDefaultProps] from [TelephonyChannel.Factory].
      *
-     * Otherwise it will enable just interrupting speech synthesis or audio playback,
+     * Otherwise it will enable just interrupting speech synthesis or audio playback.
      *
      * @param mode is [BargeInMode] to specify barge-in behaviour
      * @param trigger is [BargeInTrigger] to specify what triggers barge-in
@@ -242,7 +242,15 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
         replies.add(reply)
     }
 
-    fun allowInterrupt() {
+    /**
+     * Allows to barge in speech synthesis or audio playback during handling bargeIn event.
+     *
+     * This reaction works only when manually handling bargeIn event.
+     * In general case you should use [com.justai.jaicf.channel.jaicp.bargein.BargeInProcessor] to implement any custom bargeIn logic.
+     *
+     * @see com.justai.jaicf.channel.jaicp.bargein.BargeInProcessor
+     * */
+    fun allowBargeIn() {
         bargeInInterrupt = BargeInResponse(true)
     }
 
