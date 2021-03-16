@@ -2,11 +2,11 @@ package com.justai.jaicf.channel.jaicp.channels
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.jaicp.bargein.BargeInProcessor
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyBotRequest
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInProperties
 import com.justai.jaicf.channel.jaicp.reactions.TelephonyReactions
-import com.justai.jaicf.channel.jaicp.bargein.BargeInProcessor
 
 /**
  * JAICP Telephony channel
@@ -35,6 +35,7 @@ class TelephonyChannel(
         (botApi as? BotEngine)?.hooks?.apply {
             addHookAction(bargeInProcessor::handleBeforeProcess)
             addHookAction(bargeInProcessor::handleBeforeActivation)
+            addHookAction(bargeInProcessor::handleActivationError)
         }
     }
 
