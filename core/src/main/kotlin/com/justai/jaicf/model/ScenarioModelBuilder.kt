@@ -11,7 +11,6 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
-import kotlin.reflect.KClass
 
 internal class ScenarioModelBuilder {
 
@@ -61,13 +60,6 @@ internal class ScenarioModelBuilder {
         val paths = mutableSetOf<String>()
         states.map { it.path.toString() }.forEach {
             check(paths.add(it)) { "Duplicated declaration of state with path '$it'." }
-        }
-        transitions.forEach {
-            val missing = it.fromState.takeIf { it !in paths } ?: it.toState.takeIf { it !in paths }
-            check(missing == null) {
-                "Cannot create transition from '${it.fromState}' to '${it.toState}'" +
-                        " as the state with path '${it.fromState}' doesn't exist."
-            }
         }
         return this
     }

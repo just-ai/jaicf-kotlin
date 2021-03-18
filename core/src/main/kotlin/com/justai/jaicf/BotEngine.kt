@@ -63,7 +63,7 @@ class BotEngine(
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
 ) : BotApi, WithLogger {
 
-    val model = scenario.scenario
+    val model = scenario.scenario.verify()
 
     private val activators = activators.map { it.create(model) }.addBuiltinActivators()
 

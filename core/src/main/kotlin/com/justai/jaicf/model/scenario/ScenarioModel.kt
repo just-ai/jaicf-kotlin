@@ -4,7 +4,6 @@ import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookListener
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.transition.Transition
-import kotlin.reflect.KClass
 
 /**
  * Represents a model of the dialog scenario.
@@ -18,4 +17,17 @@ data class ScenarioModel(
     val states: Map<String, State> = mapOf(),
     val transitions: List<Transition> = listOf(),
     val hooks: List<BotHookListener<BotHook>> = listOf()
-)
+) {
+
+    fun verify(): ScenarioModel {
+        val paths = states.keys
+        transitions.forEach {
+            val missing = it.fromState.takeIf { it !in paths } ?: it.toState.takeIf { it !in paths }
+            check(missing == null) {
+                "Cannot create transition from '${it.fromState}' to '${it.toState}'" +
+                        " as the state with path '${it.fromState}' doesn't exist."
+            }
+        }
+        return this
+    }
+}
