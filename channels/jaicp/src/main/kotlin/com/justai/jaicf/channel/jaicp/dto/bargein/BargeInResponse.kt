@@ -14,7 +14,11 @@ data class BargeInReplyData(
     val bargeInTransition: String,
     val bargeInIntent: BargeInIntentData
 ) {
-    constructor(transition: String) : this(transition, BargeInIntentData(BargeInType.INTENT))
+    constructor(transition: String, type: BargeInType) : this(transition, BargeInIntentData(type))
+
+    companion object {
+        val IGNORE = BargeInReplyData(".", BargeInType.IGNORE)
+    }
 }
 
 @Serializable
@@ -25,5 +29,8 @@ data class BargeInIntentData(
 @Serializable
 enum class BargeInType {
     @SerialName("intent")
-    INTENT
+    INTENT,
+
+    @SerialName("ignoreBargeIn")
+    IGNORE
 }

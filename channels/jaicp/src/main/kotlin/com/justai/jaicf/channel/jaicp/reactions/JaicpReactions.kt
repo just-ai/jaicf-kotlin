@@ -24,6 +24,18 @@ open class JaicpReactions : Reactions() {
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
+    /**
+     * Manual way to add reply in JAICP channels.
+     *
+     * @param reply to send in response
+     *
+     * @see [Reply]
+     * @see [TextReply]
+     * */
+    fun reply(reply: Reply) {
+        replies.add(reply)
+    }
+
     override fun say(text: String): SayReaction {
         replies.add(TextReply(text))
         return SayReaction.create(text)
@@ -58,14 +70,20 @@ open class JaicpReactions : Reactions() {
         registerReaction(EndSessionReaction(getCurrentState()))
     }
 
-    fun collect(): JsonObject = JSON.encodeToJsonElement(
-        serializer = JaicpResponseData.serializer(),
-        value = JaicpResponseData(
-            replies,
-            telephony?.dialer,
-            telephony?.bargeIn,
-            telephony?.bargeInInterrupt,
-            sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId
-        )
-    ).jsonObject
+    fun collect(): JsonObject {
+        doBeforeCollect()
+
+        return JSON.encodeToJsonElement(
+            serializer = JaicpResponseData.serializer(),
+            value = JaicpResponseData(
+                replies,
+                telephony?.dialer,
+                telephony?.bargeIn,
+                telephony?.bargeInInterrupt,
+                sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId
+            )
+        ).jsonObject
+    }
+
+    internal open fun doBeforeCollect() {}
 }
