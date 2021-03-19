@@ -10,13 +10,14 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInType
 import com.justai.jaicf.channel.jaicp.telephony
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
-private val scenario = Scenario {
+private val scenario = Scenario(telephony) {
     state("bargeIn") {
         activators {
             regex("bargeIn")
         }
-        action(telephony) {
+        action {
             reactions.say("this is fine im in state start", bargeIn = true)
             reactions.audio("http://url.com", bargeIn = true)
         }
@@ -26,9 +27,20 @@ private val scenario = Scenario {
         activators {
             regex("bargeInContext")
         }
-        action(telephony) {
+        action {
             reactions.say("this is fine im in state start", bargeInContext = "/Some/Test/State")
             reactions.audio("http://url.com", bargeInContext = "/Some/Test/State")
+        }
+    }
+
+    state("mixedBargeIn") {
+        activators {
+            regex("mixedBargeIn")
+        }
+        action {
+            reactions.say("phrase1") // should not barge in -> type: IGNORE
+            reactions.say("phrase2", bargeIn = true) // should interrupt -> type: INTENT
+            reactions.say("phrase3", bargeIn = false) // should not barge in -> type: IGNORE
         }
     }
 
@@ -59,6 +71,25 @@ class BargeInModelTest : JaicpBaseTest(useCommonResources = true, ignoreSessionI
         val audioReply = query("bargeInContext").responseData.parseReplies().filterIsInstance<AudioReply>().first()
         assertEquals("/Some/Test/State", audioReply.bargeInReply?.bargeInTransition)
         assertEquals(BargeInType.INTENT, audioReply.bargeInReply?.bargeInIntent?.type)
+    }
+
+    @Test
+    fun `should send correct dto with mixed bargeIn replies`() {
+        val textReplies = query("mixedBargeIn").responseData.parseReplies().filterIsInstance<TextReply>()
+        textReplies[0].apply {
+            assertNotNull(bargeInReply)
+            assertEquals(BargeInType.IGNORE, bargeInReply?.bargeInIntent?.type)
+        }
+
+        textReplies[1].apply {
+            assertNotNull(bargeInReply)
+            assertEquals(BargeInType.INTENT, bargeInReply?.bargeInIntent?.type)
+        }
+
+        textReplies[2].apply {
+            assertNotNull(bargeInReply)
+            assertEquals(BargeInType.IGNORE, bargeInReply?.bargeInIntent?.type)
+        }
     }
 
     private fun query(query: String) = channel.process(commonRequestFactory.query(query))

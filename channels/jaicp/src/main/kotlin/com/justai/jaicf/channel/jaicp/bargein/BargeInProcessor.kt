@@ -7,10 +7,7 @@ import com.justai.jaicf.channel.jaicp.reactions.telephony
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.exceptions.scenarioCause
 import com.justai.jaicf.helpers.logging.WithLogger
-import com.justai.jaicf.hook.AnyErrorHook
-import com.justai.jaicf.hook.BeforeActivationHook
-import com.justai.jaicf.hook.BeforeProcessHook
-import com.justai.jaicf.hook.BotHook
+import com.justai.jaicf.hook.*
 import com.justai.jaicf.model.state.StatePath
 
 
@@ -33,9 +30,11 @@ open class BargeInProcessor : WithLogger {
             "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/originalContext"
         protected const val BARGEIN_CONTEXT_KEY =
             "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/bargeInContext"
+        protected const val IS_INVALID_CONTEXT_KEY =
+            "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/isErrorContext"
         val NON_FALLBACK = object : BargeInProcessor() {
             override fun isAllowInterruption(hook: BeforeProcessHook) =
-                hook.context.dialogContext.nextState?.endsWith("/fallback") != true
+                hook.context.dialogContext.nextState?.endsWith("/fallback") == false
         }
     }
 
@@ -48,8 +47,14 @@ open class BargeInProcessor : WithLogger {
      * */
     open fun handleBeforeActivation(hook: BeforeActivationHook) {
         hook.request.bargeIn?.run {
-            // stores current context to restore it if something's gone wrong on activation
-            hook.context.session[ORIGINAL_CONTEXT_KEY] = hook.context.dialogContext.currentContext
+            if (hook.context.session[IS_INVALID_CONTEXT_KEY] == true) {
+                throw BotHookException("Invalid transition context detected. Request execution will be aborted")
+            }
+
+            // stores initial context when we first receive bargeIn event to restore it if something goes wrong on activation
+            if (hook.context.session[BARGEIN_CONTEXT_KEY] == null) {
+                hook.context.session[ORIGINAL_CONTEXT_KEY] = hook.context.dialogContext.currentContext
+            }
 
             val current = StatePath.parse(hook.context.dialogContext.currentContext)
             val resolved = current.resolve(transition)
@@ -59,11 +64,21 @@ open class BargeInProcessor : WithLogger {
             hook.context.session[BARGEIN_CONTEXT_KEY] = resolved.toString()
             hook.context.temp[TEMP_ACTIVATION_KEY] = true
         } ?: run {
+            // this is invoked on every non-bargein request.
+            // we use some labels that we put ourselves in bargeIn processing to set proper dialogContext
             val bargedInContext = hook.context.session[BARGEIN_CONTEXT_KEY] as? String
-            if (bargedInContext != null) {
-                hook.context.dialogContext.currentContext = bargedInContext
-                hook.context.session.remove(ORIGINAL_CONTEXT_KEY)
+            val originalContext = hook.context.session[ORIGINAL_CONTEXT_KEY] as? String
+            val invalidContext = hook.context.session[IS_INVALID_CONTEXT_KEY] as? Boolean
+
+            hook.context.dialogContext.currentContext = when {
+                invalidContext == true -> requireNotNull(originalContext)
+                bargedInContext != null -> bargedInContext
+                originalContext != null -> originalContext
+                else -> hook.context.dialogContext.currentContext
             }
+            hook.context.session.remove(ORIGINAL_CONTEXT_KEY)
+            hook.context.session.remove(BARGEIN_CONTEXT_KEY)
+            hook.context.session.remove(IS_INVALID_CONTEXT_KEY)
         }
     }
 
@@ -76,17 +91,16 @@ open class BargeInProcessor : WithLogger {
      * @see TelephonyBargeInRequest
      * */
     open fun handleBeforeProcess(hook: BeforeProcessHook) {
-        if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
-            if (isAllowInterruption(hook)) {
-                hook.reactions.telephony?.allowBargeIn()
-            } else {
-                hook.restoreContextAndExit()
+        hook.request.bargeIn?.let {
+            if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
+                if (isAllowInterruption(hook)) {
+                    hook.reactions.telephony?.allowBargeIn()
+                }
+                logger.debug("Skip processing states by bargeIn activation")
+                hook.context.dialogContext.nextState = null
+                hook.context.dialogContext.nextContext = null
+                hook.context.dialogContext.nextContext = null
             }
-
-            logger.debug("Skip processing states by bargeIn activation")
-            hook.context.dialogContext.nextState = null
-            hook.context.dialogContext.nextContext = null
-            hook.context.dialogContext.nextContext = null
         }
     }
 
@@ -100,6 +114,7 @@ open class BargeInProcessor : WithLogger {
     open fun handleActivationError(hook: AnyErrorHook) {
         if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
             logger.debug("Handling barge-in hook error: ", hook.exception.scenarioCause)
+            hook.context.session[IS_INVALID_CONTEXT_KEY] = true
             hook.restoreContextAndExit()
         } else {
             throw hook.exception.scenarioCause

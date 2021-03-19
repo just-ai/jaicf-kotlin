@@ -34,7 +34,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun say(text: String, bargeInContext: String): SayReaction {
         ensureBargeInProps()
-        replies.add(TextReply(text, bargeInReply = BargeInReplyData(bargeInContext)))
+        replies.add(TextReply(text, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
         return SayReaction.create(text)
     }
 
@@ -45,12 +45,9 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param text to synthesis speech from
      * @param bargeIn true to allow interruption and handle in in current dialog context
      * */
-    fun say(text: String, bargeIn: Boolean): SayReaction {
-        if (bargeIn) {
-            return say(text, CURRENT_CONTEXT_PATH)
-        }
-        replies.add(TextReply(text))
-        return SayReaction.create(text)
+    fun say(text: String, bargeIn: Boolean) = when (bargeIn) {
+        true -> say(text, CURRENT_CONTEXT_PATH)
+        false -> say(text)
     }
 
     /**
@@ -70,12 +67,9 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param url to play during call
      * @param bargeIn true to allow interruption and handle in in current dialog context
      * */
-    fun audio(url: String, bargeIn: Boolean): AudioReaction {
-        if (bargeIn) {
-            return audio(url, CURRENT_CONTEXT_PATH)
-        }
-        replies.add(AudioReply(url.toUrl()))
-        return AudioReaction.create(url)
+    fun audio(url: String, bargeIn: Boolean) = when (bargeIn) {
+        true -> audio(url, CURRENT_CONTEXT_PATH)
+        false -> audio(url)
     }
 
     /**
@@ -87,7 +81,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun audio(url: String, bargeInContext: String): AudioReaction {
         ensureBargeInProps()
-        replies.add(AudioReply(url.toUrl(), bargeInReply = BargeInReplyData(bargeInContext)))
+        replies.add(AudioReply(url.toUrl(), bargeInReply = BargeInReplyData(bargeInContext, type = BargeInType.INTENT)))
         return AudioReaction.create(url)
     }
 
@@ -252,6 +246,18 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun allowBargeIn() {
         bargeInInterrupt = BargeInResponse(true)
+    }
+
+    override fun doBeforeCollect() {
+        this.bargeIn ?: return
+        replies.replaceAll { reply ->
+            when (reply) {
+                is TextReply -> if (reply.bargeInReply == null) reply.copy(bargeInReply = BargeInReplyData.IGNORE) else reply
+                is AudioReply -> if (reply.bargeInReply == null) reply.copy(bargeInReply = BargeInReplyData.IGNORE) else reply
+                else -> reply
+            }
+
+        }
     }
 
     private fun ensureBargeInProps() {
