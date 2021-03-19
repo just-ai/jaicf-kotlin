@@ -1,18 +1,25 @@
 {
   "data": {
-    "dialer": {},
     "replies": [
       {
         "type": "text",
-        "text": "You said: /start from TelephonyReactions"
+        "text": "You said: /start from TelephonyReactions",
+        "bargeInReply": {
+          "bargin_transition": ".",
+          "bargeInIntent": {
+            "type": "intent"
+          }
+        }
       }
     ],
     "answer": "You said: /start from TelephonyReactions",
+    "dialer": {},
     "bargeIn": {
-      "bargeIn": "forced",
-      "bargeInTrigger": "interim",
-      "noInterruptTime": 0
-    }
+      "bargin": "forced",
+      "bargin_trigger": "interim",
+      "no_interupt_time": 101
+    },
+    "sessionId": "chatapi-mva_jaicf_project-263-XQt-test-99d9b928-e8b0-4931-847a-73f80af8b20a"
   },
   "botId": "mva_jaicf_project-263-XQt",
   "accountId": "mva_jaicf_project-263-XQt",
@@ -21,9 +28,9 @@
   "channelUserId": "chatapi-mva_jaicf_project-263-XQt-test",
   "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
   "query": "/start",
-  "timestamp": 0,
+  "timestamp": 1616155742992,
   "currentState": "/fallback",
-  "processingTime": 0,
+  "processingTime": 5921,
   "requestData": {
     "token": "GNVXJdeo:718e36f7005fbba3e2a9696784b83dc3bd0f3d9a",
     "clientId": "test",
