@@ -8,7 +8,6 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInMode
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInTrigger
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class JaicpNativeChannelTests : JaicpBaseTest() {
@@ -37,12 +36,15 @@ internal class JaicpNativeChannelTests : JaicpBaseTest() {
     }
 
     @Test
-    @Disabled("fix later")
-    fun `004 webhooks should answer telephony with simple bargeIn`() {
+//    @Disabled("fix later")
+    fun `004 webhooks should answer telephony with bargeIn`() {
         val bot = BotEngine(
             echoWithAction {
-                reactions.say("You said: ${request.input} from ${reactions::class.simpleName}",)
-                reactions.telephony?.bargeIn(mode = BargeInMode.FORCED, trigger = BargeInTrigger.INTERIM, 0)
+                reactions.telephony?.say(
+                    "You said: ${request.input} from ${reactions::class.simpleName}",
+                    bargeIn = true
+                )
+                reactions.telephony?.bargeIn(mode = BargeInMode.FORCED, trigger = BargeInTrigger.INTERIM, 101)
             }
         )
 

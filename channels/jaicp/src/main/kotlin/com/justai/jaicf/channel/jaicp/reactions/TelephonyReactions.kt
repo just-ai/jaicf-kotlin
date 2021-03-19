@@ -98,8 +98,6 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * If response uses barge-in by calling [say] or [audio] with arguments `bargeIn = true` or `bargeInContext = "..."`,
      *  calling this reaction will override [bargeInDefaultProps] from [TelephonyChannel.Factory].
      *
-     * Otherwise it will enable just interrupting speech synthesis or audio playback.
-     *
      * @param mode is [BargeInMode] to specify barge-in behaviour
      * @param trigger is [BargeInTrigger] to specify what triggers barge-in
      * @param noInterruptTimeMs minimal time in milliseconds for synthesis after which barge-in interruption can be triggered.
