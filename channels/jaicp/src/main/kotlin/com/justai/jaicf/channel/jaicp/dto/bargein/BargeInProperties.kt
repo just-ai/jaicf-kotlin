@@ -14,13 +14,13 @@ import kotlinx.serialization.Serializable
  * @param noInterruptTimeMs minimal time in milliseconds for synthesis after which barge-in interruption can be triggered.*/
 @Serializable
 data class BargeInProperties(
-    @SerialName("bargeIn")
+    @SerialName("bargin")
     val mode: BargeInMode,
 
-    @SerialName("bargeInTrigger")
+    @SerialName("bargin_trigger")
     val trigger: BargeInTrigger,
 
-    @SerialName("noInterruptTime")
+    @SerialName("no_interupt_time")
     val noInterruptTimeMs: Int
 ) {
     companion object {
