@@ -43,8 +43,7 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
             }
 
             val sourcesJar = tasks.register<Jar>("sourcesJar") {
-                val allSource =
-                    project.extensions.getByName<SourceSetContainer>("sourceSets").getByName("main").allSource
+                val allSource = project.extensions.getByName<SourceSetContainer>("sourceSets").getByName("main").allSource
                 archiveClassifier.set("sources")
                 from(allSource)
             }
@@ -99,8 +98,6 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
 
                     artifact(sources)
                     artifact(javadoc)
-
-
                 }
             }
         }
