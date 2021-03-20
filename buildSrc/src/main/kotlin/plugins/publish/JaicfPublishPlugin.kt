@@ -43,7 +43,8 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
             }
 
             val sourcesJar = tasks.register<Jar>("sourcesJar") {
-                val allSource = project.extensions.getByName<SourceSetContainer>("sourceSets").getByName("main").allSource
+                val allSource =
+                    project.extensions.getByName<SourceSetContainer>("sourceSets").getByName("main").allSource
                 archiveClassifier.set("sources")
                 from(allSource)
             }
@@ -66,8 +67,40 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
                 create<MavenPublication>(name) {
                     from(components["java"])
 
+                    pom {
+                        licenses {
+                            license {
+                                name.set("The Apache License, Version 2.0")
+                                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id.set("morfeusys")
+                                id.set("che@just-ai.com")
+                            }
+                            developer {
+                                id.set("denire")
+                                email.set("v.metelyagin@just-ai.com ")
+                            }
+                            developer {
+                                id.set("nikvoloshin")
+                                email.set("n.voloshin@just-ai.com")
+                            }
+                        }
+
+                        scm {
+                            connection.set("scm:git:git@github.com:just-ai/jaicf-kotlin.git")
+                            developerConnection.set("scm:git:git@github.com:just-ai/jaicf-kotlin.git")
+                            url.set("https://github.com/just-ai/jaicf-kotlin")
+                        }
+                    }
+
                     artifact(sources)
                     artifact(javadoc)
+
+
                 }
             }
         }
