@@ -91,7 +91,7 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
                             }
                             developer {
                                 id.set("denire")
-                                email.set("v.metelyagin@just-ai.com ")
+                                email.set("v.metelyagin@just-ai.com")
                             }
                             developer {
                                 id.set("nikvoloshin")
