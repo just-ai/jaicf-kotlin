@@ -1,3 +1,9 @@
+import plugins.publish.POM_DESCRIPTION
+import plugins.publish.POM_NAME
+
+ext[POM_NAME] = "JAICF-Kotlin Facebook Channel"
+ext[POM_DESCRIPTION] = "JAICF-Kotlin Facebook Channel implementation. Enables JAICF-Kotlin integration with Facebook."
+
 plugins {
     `jaicf-kotlin`
     `jaicf-kotlin-serialization`

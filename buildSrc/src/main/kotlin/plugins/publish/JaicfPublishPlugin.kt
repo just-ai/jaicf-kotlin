@@ -15,6 +15,9 @@ import org.jetbrains.dokka.gradle.*
 import plugins.*
 import plugins.utils.*
 
+const val POM_NAME = "pomName"
+const val POM_DESCRIPTION = "pomDescription"
+
 class JaicfPublishPlugin : Plugin<Project> by apply<JaicfPublish>()
 
 class JaicfPublish(project: Project) : PluginAdapter(project) {
@@ -43,7 +46,8 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
             }
 
             val sourcesJar = tasks.register<Jar>("sourcesJar") {
-                val allSource = project.extensions.getByName<SourceSetContainer>("sourceSets").getByName("main").allSource
+                val allSource =
+                    project.extensions.getByName<SourceSetContainer>("sourceSets").getByName("main").allSource
                 archiveClassifier.set("sources")
                 from(allSource)
             }
@@ -65,8 +69,14 @@ class JaicfPublish(project: Project) : PluginAdapter(project) {
             publications {
                 create<MavenPublication>(name) {
                     from(components["java"])
+                    val pomName = project.extra.properties[POM_NAME] as? String ?: error("No pomName defined")
+                    val pomDescription = project.extra.properties[POM_DESCRIPTION] as? String ?: error("No pomDescription defined")
 
                     pom {
+                        name.set(pomName)
+                        description.set(pomDescription)
+                        url.set("https://framework.just-ai.com")
+
                         licenses {
                             license {
                                 name.set("The Apache License, Version 2.0")
