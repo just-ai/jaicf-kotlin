@@ -1,3 +1,9 @@
+import plugins.publish.POM_DESCRIPTION
+import plugins.publish.POM_NAME
+
+ext[POM_NAME] = "JAICF-Kotlin Core component"
+ext[POM_DESCRIPTION] = "JAICF-Kotlin Core component. Provides DSL, Tests API and multiple implementable interfaces."
+
 plugins {
     `jaicf-kotlin`
     `jaicf-publish`
