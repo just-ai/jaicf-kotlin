@@ -8,8 +8,8 @@ repositories {
     maven("https://plugins.gradle.org/m2")
 }
 
-val kotlinVersion = "1.4.10"
-val reflectVersion = "1.4.0"
+val kotlinVersion = "1.4.21"
+val reflectVersion = "1.4.21"
 
 dependencies {
     implementation(kotlin("gradle-plugin", kotlinVersion))

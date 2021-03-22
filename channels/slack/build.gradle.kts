@@ -6,5 +6,5 @@ plugins {
 dependencies {
     core()
     api(`coroutines-core`())
-    api("com.slack.api:bolt:1.0.1")
+    api("com.slack.api:bolt:1.6.1")
 }
