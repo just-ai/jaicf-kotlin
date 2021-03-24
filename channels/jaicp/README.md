@@ -100,6 +100,8 @@ See full example for JAICP channel [here](https://github.com/just-ai/jaicf-kotli
 
 ## ChatWidgetChannel
 
+> ChatWidget JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/channels/chatwidget/chatwidget).
+
 ChatWidgetChannel can be used to insert a widget onto your page and process incoming messages from it.
 
 ![Create first channel](https://i.imgur.com/wsfuFoh.gif)
@@ -130,6 +132,7 @@ it [referenced in widget documentation](https://help.just-ai.com/#/docs/en/chann
 retrieved in scenario from `reactions.chatwidget.jaicp.data` json object.
 
 ## TelephonyChannel
+> TelephonyChannel JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/telephony/telephony).
 
 TelephonyChannel can be used to process incoming calls and make smart outgoing calls with JAICP. It provides a list of
 TelephonyEvents, for example, **TelephonyEvents.speechNotRecognized**, which will be sent if ASR service cannot
@@ -277,6 +280,7 @@ We provide an open class `BargeInProcessor` which performs low-level logics to r
 speech synthesis or audio playback.
 
 ## ChatApiChannel
-
+> ChatApiChannel JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/chat_api/chat_api).
+ 
 ChatApiChannel can be used to process simple POST and GET requests with queries. The only reaction this channel can
 process is `reactions.say`.
