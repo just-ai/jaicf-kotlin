@@ -98,6 +98,8 @@ Or use **long polling** connection. This connection does not require public webh
 
 See full example for JAICP channel [here](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/jaicp-telephony).
 
+# Channels
+
 ## ChatWidgetChannel
 
 > ChatWidget JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/channels/chatwidget/chatwidget).
@@ -132,6 +134,7 @@ it [referenced in widget documentation](https://help.just-ai.com/#/docs/en/chann
 retrieved in scenario from `reactions.chatwidget.jaicp.data` json object.
 
 ## TelephonyChannel
+
 > TelephonyChannel JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/telephony/telephony).
 
 TelephonyChannel can be used to process incoming calls and make smart outgoing calls with JAICP. It provides a list of
@@ -280,7 +283,64 @@ We provide an open class `BargeInProcessor` which performs low-level logics to r
 speech synthesis or audio playback.
 
 ## ChatApiChannel
+
 > ChatApiChannel JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/chat_api/chat_api).
- 
+
 ChatApiChannel can be used to process simple POST and GET requests with queries. The only reaction this channel can
 process is `reactions.say`.
+
+# Features
+
+## Live Chats
+
+Connecting your bot via JAICP enables a lot of customer engagement platform integrations, such
+as [Chat2Desk](https://help.just-ai.com/#/docs/en/operator_channels/chat2desk/incoming_chat2desk)
+, [Salesforce](https://help.just-ai.com/#/docs/en/operator_channels/salesforce/salesforce)
+, [JivoSite](https://help.just-ai.com/#/docs/en/operator_channels/jivosite/jivosite), and many others.
+
+After you created a project
+in [JAICP Application Panel](https://app.jaicp.com/register?utm_source=github&utm_medium=article&utm_campaign=quickstart)
+, you can create a customer engagement platform channel and connect it to your messaging channel.
+
+#### Usage in scenario:
+
+If you added dependency on `jaicp` channel your channel's `JaicpCompatibleAsyncReactions` (such as `TelegramReactions`
+, `FacebookReactions`, etc.) will receive extension method receive method `switchToLiveChat` to switch to live chat
+operator if channel is configured in **JAICP App Console**.
+
+```kotlin
+state("HelpMe") {
+    activators {
+        intent("HelpMe")
+    }
+    action {
+        reactions.telegram?.say("We will shortly find someone to help you!")
+        reactions.telegram?.switchToLiveChat(message = "Client ${request.clientId} requested help.")
+    }
+}
+```
+
+## Analytics and Session Management
+
+JAICP has a built-in **Session** mechanics to separate dialogs into sessions for better dialogue conversation analytics.
+It not only allows to use session data from a channel request (for example, from Yandex-Alice), but also create an
+internal session in channels which don't support sessions out of the box.
+
+#### Usage in scenario:
+
+```kotlin
+state("NewGame") {
+    activators {
+        regex("/start")
+        intent("NewGame")
+    }
+    action {
+        reactions.jaicp?.startNewSession()
+        reactions.say("Hello there! Let's play a game of numbers!")
+        reacions.say("I've picked a number from 1 to 100 and it's time for you to guess it right")
+    }
+}
+```
+
+In this case whenever a new game starts we create a new dialogue session. This will afterwards allow us, for example, to
+generate some statistics like how many steps it takes for a client to guess a number. 
