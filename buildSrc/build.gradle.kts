@@ -16,7 +16,6 @@ dependencies {
     implementation(kotlin("serialization", kotlinVersion))
     implementation(kotlin("reflect", reflectVersion))
     implementation("com.github.breadmoirai:github-release:2.2.12")
-    implementation("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5")
     implementation("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
     implementation(gradleApi())
 }

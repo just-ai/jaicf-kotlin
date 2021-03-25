@@ -17,7 +17,7 @@ buildscript {
 }
 
 subprojects {
-    group = "com.justai.jaicf"
+    group = "com.just-ai.jaicf"
 
     repositories {
         google()
