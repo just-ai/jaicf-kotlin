@@ -49,6 +49,8 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
         applySafely<DokkaPlugin>()
         applySafely<SigningPlugin>()
 
+
+
         afterEvaluate {
             val dokkaJavadoc = tasks.register<DokkaTask>("dokkaJavadoc") {
                 outputFormat = "javadoc"
@@ -73,24 +75,26 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
 
             configurePublication(sourcesJar, javadocJar)
         }
-
-        val isSnapshot = true // TODO: Dynamic depending on project version
-        repositories {
-            maven {
-                url = when (isSnapshot) {
-                    true -> URI(SNAPSHOTS_REPO)
-                    false -> URI(RELEASE_REPO)
-                }
-                credentials {
-                    username = sonatypeUser
-                    password = sonatypePassword
-                }
-            }
-        }
     }
 
     private fun Project.configurePublication(sources: Any, javadoc: Any) {
         configure<PublishingExtension> {
+
+            val isSnapshot = true // TODO: Dynamic depending on project version
+            repositories {
+                maven {
+                    name = "MavenCentral"
+                    url = when (isSnapshot) {
+                        true -> URI(SNAPSHOTS_REPO)
+                        false -> URI(RELEASE_REPO)
+                    }
+                    credentials {
+                        username = sonatypeUser
+                        password = sonatypePassword
+                    }
+                }
+            }
+
             publications {
                 create<MavenPublication>(name) {
                     from(components["java"])
