@@ -7,9 +7,9 @@ version = "0.1.1"
 gradlePlugin {
     plugins {
         create("jaicp-build-plugin") {
-            id = "com.justai.jaicf.jaicp-build-plugin"
+            id = "com.just-ai.jaicf.jaicp-build-plugin"
             displayName = "JAICP Cloud build plugin"
-            implementationClass = "com.justai.jaicf.plugins.jaicp.build.JaicpBuildPlugin"
+            implementationClass = "com.just-ai.jaicf.plugins.jaicp.build.JaicpBuildPlugin"
             description = "Is used for deploying JAICF projects in a JAICP Cloud."
         }
     }
