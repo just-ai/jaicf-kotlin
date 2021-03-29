@@ -1,14 +1,13 @@
 package com.justai.jaicf.channel.http
 
-import io.ktor.application.call
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.receiveStream
-import io.ktor.response.respond
-import io.ktor.response.respondOutputStream
-import io.ktor.routing.Routing
-import io.ktor.routing.post
-import io.ktor.util.toMap
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * A helper extension for Ktor framework.
@@ -33,11 +32,13 @@ import io.ktor.util.toMap
 fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
     channels.forEach { channel ->
         post(channel.first) {
-            val request = HttpBotRequest(
-                stream = call.receiveStream(),
-                headers = call.request.headers.toMap(),
-                parameters = call.request.queryParameters.toMap()
-            )
+            val request = withContext(Dispatchers.IO) {
+                HttpBotRequest(
+                    stream = call.receiveStream(),
+                    headers = call.request.headers.toMap(),
+                    parameters = call.request.queryParameters.toMap()
+                )
+            }
 
             val response = channel.second.process(request)
             response?.headers?.forEach { call.response.headers.append(it.key, it.value, false) }
