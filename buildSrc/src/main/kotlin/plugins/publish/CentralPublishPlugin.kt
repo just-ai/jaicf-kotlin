@@ -49,8 +49,6 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
         applySafely<DokkaPlugin>()
         applySafely<SigningPlugin>()
 
-
-
         afterEvaluate {
             val dokkaJavadoc = tasks.register<DokkaTask>("dokkaJavadoc") {
                 outputFormat = "javadoc"
@@ -79,8 +77,8 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
 
     private fun Project.configurePublication(sources: Any, javadoc: Any) {
         configure<PublishingExtension> {
+            val isSnapshot = (project.version as String).endsWith("SNAPSHOT")
 
-            val isSnapshot = true // TODO: Dynamic depending on project version
             repositories {
                 maven {
                     name = "MavenCentral"
@@ -108,14 +106,18 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
                 }
             }
 
-            configure<SigningExtension> {
-                useInMemoryPgpKeys(secKey, File(secRing).readText(), secPass)
-                sign(publications)
+            if (!isLocalPublication) {
+                configure<SigningExtension> {
+                    useInMemoryPgpKeys(secKey, File(secRing).readText(), secPass)
+                    sign(publications)
+                }
             }
         }
-
     }
 }
+
+private val Project.isLocalPublication: Boolean
+    get() = project.gradle.startParameter.taskNames.firstOrNull()?.endsWith("MavenLocal") ?: false
 
 private fun Project.extraProperty(name: String) =
     project.extra.properties[name] as? String ?: error("No $name defined")
