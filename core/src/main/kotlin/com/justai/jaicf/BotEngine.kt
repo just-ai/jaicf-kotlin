@@ -99,27 +99,32 @@ class BotEngine(
         requestContext: RequestContext,
         contextManager: BotContextManager?,
     ) {
-        val manager = contextManager ?: defaultContextManager
-        val botContext = manager.loadContext(request, requestContext)
-        val executionContext = ExecutionContext(requestContext, null, botContext, request)
-        reactions.executionContext = executionContext
-        reactions.botContext = botContext
-
-        processContext(botContext, requestContext)
         try {
-            withHook(BotRequestHook(botContext, request, reactions)) {
-                processRequest(botContext, request, requestContext, reactions, executionContext)
-            }
-        } catch (e: BotException) {
-            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext, false)
-        } catch (e: Exception) {
-            val exception = BotExecutionException(e, botContext.currentState)
-            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext, false)
-        }
+            val manager = contextManager ?: defaultContextManager
+            val botContext = manager.loadContext(request, requestContext)
+            val executionContext = ExecutionContext(requestContext, null, botContext, request)
+            reactions.executionContext = executionContext
+            reactions.botContext = botContext
 
-        botContext.cleanTempData()
-        conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
-        saveContext(manager, botContext, request, reactions, requestContext)
+            processContext(botContext, requestContext)
+            try {
+                withHook(BotRequestHook(botContext, request, reactions)) {
+                    processRequest(botContext, request, requestContext, reactions, executionContext)
+                }
+            } catch (e: BotException) {
+                tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext, false)
+            } catch (e: Exception) {
+                val exception = BotExecutionException(e, botContext.currentState)
+                tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext, false)
+            }
+
+            botContext.cleanTempData()
+            conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
+            saveContext(manager, botContext, request, reactions, requestContext)
+        } catch (e: Exception) {
+            logger.error("", e)
+            throw e
+        }
     }
 
     private fun processRequest(
