@@ -50,7 +50,7 @@ internal class ChatAdapterConnector private constructor(
                 }
             }
         } catch (e: ClientRequestException) {
-            when (e.response?.status) {
+            when (e.response.status) {
                 HttpStatusCode.NotFound -> throw NoOperatorsOnlineException(liveChatInitRequest.request)
                 HttpStatusCode.BadRequest -> throw NoOperatorChannelConfiguredException(liveChatInitRequest.request)
             }
