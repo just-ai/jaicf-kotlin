@@ -97,3 +97,5 @@ open class ActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     operator fun <A1: A, B1: B, R1: R, T> ContextTypeToken<A1, B1, R1>.invoke(action: ActionContext<A1, B1, R1>.() -> T): T? =
         safeCast(this)?.run(action)
 }
+
+typealias DefaultActionContext = ActionContext<out ActivatorContext, out BotRequest, out Reactions>
