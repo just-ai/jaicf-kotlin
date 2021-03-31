@@ -32,9 +32,7 @@ internal class CailaSlotFillingHelper(
             return SlotFillingFinished(ctx.initialActivatorContext)
         }
 
-        val actionContext =
-            ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions)
-
+        val actionContext = ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions)
         val filled = fillSlots(ctx, botRequest.input)
         for (slot in required) {
             if (slot.required && !known.any { k -> slot.name == k.name }) {
@@ -89,18 +87,14 @@ internal class CailaSlotFillingHelper(
         default.forEach { entity -> tryFillSlot(ctx, entity) }
         other.forEach { entity -> tryFillSlot(ctx, entity) }
 
-        return ctx.knownSlots.map { it.name }
+        return ctx.filledSlots
     }
 
     private fun tryFillSlot(ctx: CailaSlotFillingContext, e: CailaEntityMarkupData) {
-        val filledSlots = ctx.knownSlots.map { it.name }
-        val filledValues = ctx.knownEntities.map { "${it.value}-${it.startPos}" }
-        val slotsForEntity = ctx.requiredSlots.filter { s -> s.entity == e.entity }
-
-        for (s in slotsForEntity) {
+        for (s in ctx.slotForEntity(e)) {
             val valueAtPos = "${e.value}-${e.startPos}"
             val isArray = s.array ?: false
-            if (isArray || (!filledSlots.contains(s.name) && !filledValues.contains(valueAtPos))) {
+            if (isArray || (!ctx.filledSlots.contains(s.name) && !ctx.filledValues.contains(valueAtPos))) {
                 e.slot = s.name
                 ctx.knownSlots.add(CailaKnownSlotData(s.name, e.value, isArray))
                 ctx.knownEntities.add(e)
@@ -155,3 +149,12 @@ internal class CailaSlotFillingHelper(
         private const val SLOTFILLING_CONTEXT_KEY = "com/justai/jaicf/activator/caila/slotfilling/context"
     }
 }
+
+private val CailaSlotFillingContext.filledSlots: List<String>
+    get() = knownSlots.map { it.name }
+
+private val CailaSlotFillingContext.filledValues: List<String>
+    get() = knownEntities.map { "${it.value}-${it.startPos}" }
+
+private fun CailaSlotFillingContext.slotForEntity(e: CailaEntityMarkupData) =
+    requiredSlots.filter { s -> s.entity == e.entity }
