@@ -118,8 +118,8 @@ class BotEngine(
                 tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext, false)
             }
 
-            botContext.cleanTempData()
             conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
+            botContext.cleanTempData()
             saveContext(manager, botContext, request, reactions, requestContext)
         } catch (e: Exception) {
             logger.error("", e)
