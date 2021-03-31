@@ -2,7 +2,7 @@ package com.justai.jaicf.channel.jaicp.reactions.reaction
 
 import com.justai.jaicf.channel.jaicp.dto.LiveChatSwitchReply
 import com.justai.jaicf.logging.Reaction
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 
 data class SwitchReaction(
     val firstMessage: String? = null,
@@ -12,11 +12,12 @@ data class SwitchReaction(
     val oneTimeMessage: Boolean = false,
     val destination: String? = null,
     val lastMessage: String? = null,
-    val attributes: JsonObject? = null,
-    val hiddenAttributes: JsonObject? = null,
+    val attributes: Map<String, String>? = emptyMap(),
+    val hiddenAttributes: Map<String, String>? = emptyMap(),
     val sendMessagesToOperator: Boolean = false,
     val sendMessageHistoryAmount: Int? = null,
-    override val fromState: String
+    override val fromState: String,
+    val customData: JsonElement? = null,
 ) : Reaction(fromState) {
     companion object {
         fun fromReply(switchReply: LiveChatSwitchReply, state: String) = SwitchReaction(
@@ -31,7 +32,8 @@ data class SwitchReaction(
             hiddenAttributes = switchReply.hiddenAttributes,
             sendMessageHistoryAmount = switchReply.sendMessageHistoryAmount,
             sendMessagesToOperator = switchReply.sendMessagesToOperator,
-            fromState = state
+            fromState = state,
+            customData = switchReply.customData
         )
     }
 }

@@ -4,7 +4,7 @@ import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInReplyData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonElement
 
 @Serializable
 abstract class Reply(val type: String) {
@@ -93,10 +93,11 @@ class TelephonySwitchReply(
  * @param oneTimeMessage - to send text from [firstMessage] to operator but not to execute switch. Conversation with bot will continue. Default false.
  * @param destination - a group of operators to switch conversation to.
  * @param lastMessage - a message sent to operator when user ended conversation with any of [closeChatPhrases]
- * @param attributes - a json with data sent to operator when livechat started.
- * @param hiddenAttributes - a json with data sent to operator channel.
+ * @param attributes - a key-value map with data sent to operator when livechat started.
+ * @param hiddenAttributes - a key-value map with data sent to operator in livechat channel (invisible to client).
  * @param sendMessagesToOperator - true to send conversation history to operator.
  * @param sendMessageHistoryAmount - amount of last conversation history messages to send to operator.
+ * @param customData - a JSON object with custom data to send to livechat provider
  *
  * @see com.justai.jaicf.channel.jaicp.reactions.switchToLiveChat
  * */
@@ -109,12 +110,52 @@ data class LiveChatSwitchReply(
     val oneTimeMessage: Boolean = false,
     val destination: String? = null,
     val lastMessage: String? = null,
-    val attributes: JsonObject? = null,
-    val hiddenAttributes: JsonObject? = null,
+    val attributes: Map<String, String>? = emptyMap(),
+    val hiddenAttributes: Map<String, String>? = emptyMap(),
     val sendMessagesToOperator: Boolean = false,
-    val sendMessageHistoryAmount: Int? = null
+    val sendMessageHistoryAmount: Int? = null,
+    val customData: JsonElement? = null
 ) : Reply("switch") {
+
+    constructor(
+        firstMessage: String? = null,
+        closeChatPhrases: List<String> = emptyList(),
+        appendCloseChatButton: Boolean = false,
+        ignoreOffline: Boolean = false,
+        oneTimeMessage: Boolean = false,
+        destination: String? = null,
+        lastMessage: String? = null,
+        attributes: Map<String, String>? = emptyMap(),
+        hiddenAttributes: Map<String, String>? = emptyMap(),
+        sendMessagesToOperator: Boolean = false,
+        sendMessageHistoryAmount: Int? = null,
+        customData: LiveChatCustomData
+    ) : this(
+        firstMessage,
+        closeChatPhrases,
+        appendCloseChatButton,
+        ignoreOffline,
+        oneTimeMessage,
+        destination,
+        lastMessage,
+        attributes,
+        hiddenAttributes,
+        sendMessagesToOperator,
+        sendMessageHistoryAmount,
+        JSON.parseToJsonElement(customData.serialized())
+    )
+
     override fun serialized() = JSON.encodeToString(serializer(), this)
+}
+
+/**
+ * Enables customData with any JSON serializer.
+ * Eliminates requirement to use Kotlinx.serialization and mark all DTO with `@Serializable`
+ *
+ * @see LiveChatSwitchReply
+ * */
+interface LiveChatCustomData {
+    fun serialized(): String
 }
 
 @Serializable
