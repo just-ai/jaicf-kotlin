@@ -32,6 +32,8 @@ private const val SECRING_FILE = "signing.secretKeyRingFile"
 private const val RELEASE_REPO = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
 private const val SNAPSHOTS_REPO = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
 
+private const val MAVEN_CENTRAL = "MavenCentral"
+
 class CentralPublishPlugin : Plugin<Project> by apply<CentralPublish>()
 
 @Suppress("DuplicatedCode", "UnstableApiUsage")
@@ -81,7 +83,7 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
 
             repositories {
                 maven {
-                    name = "MavenCentral"
+                    name = MAVEN_CENTRAL
                     url = when (isSnapshot) {
                         true -> URI(SNAPSHOTS_REPO)
                         false -> URI(RELEASE_REPO)
@@ -106,7 +108,7 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
                 }
             }
 
-            if (!isLocalPublication) {
+            if (isMavenCentralPublication) {
                 configure<SigningExtension> {
                     useInMemoryPgpKeys(secKey, File(secRing).readText(), secPass)
                     sign(publications)
@@ -116,8 +118,11 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
     }
 }
 
-private val Project.isLocalPublication: Boolean
-    get() = project.gradle.startParameter.taskNames.firstOrNull()?.endsWith("MavenLocal") ?: false
+private val Project.isMavenCentralPublication: Boolean
+    get() {
+        val task = project.gradle.startParameter.taskNames.firstOrNull()
+        return task?.endsWith("${MAVEN_CENTRAL}Repository") ?: task?.endsWith("publish") ?: false
+    }
 
 private fun Project.extraProperty(name: String) =
     project.extra.properties[name] as? String ?: error("No $name defined")
