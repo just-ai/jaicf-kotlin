@@ -4,7 +4,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.ProcessContext
+import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -34,7 +34,7 @@ data class TestActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 /**
  * Indicates if scenario is running in test mode
  */
-fun ActionContext<*, *, *>.isTestMode() = this is TestActionContext
+fun DefaultActionContext.isTestMode() = this is TestActionContext
 
 /**
  * Runs this block of code only if the scenario is running in test mode

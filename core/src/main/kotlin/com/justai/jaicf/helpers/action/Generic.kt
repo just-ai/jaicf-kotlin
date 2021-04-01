@@ -3,18 +3,19 @@ package com.justai.jaicf.helpers.action
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
+import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.generic.ActivatorTypeToken
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.generic.ContextTypeToken
 import com.justai.jaicf.reactions.Reactions
 
-fun ActionContext<*, *, *>.ofType(activatorToken: ActivatorTypeToken<*>): Boolean =
+fun DefaultActionContext.ofType(activatorToken: ActivatorTypeToken<*>): Boolean =
     activatorToken.isInstance(activator)
 
-fun ActionContext<*, *, *>.ofType(channelToken: ChannelTypeToken<*, *>): Boolean =
+fun DefaultActionContext.ofType(channelToken: ChannelTypeToken<*, *>): Boolean =
     channelToken.isInstance(request) && channelToken.isInstance(reactions)
 
-fun ActionContext<*, *, *>.ofType(contextToken: ContextTypeToken<*, *, *>): Boolean =
+fun DefaultActionContext.ofType(contextToken: ContextTypeToken<*, *, *>): Boolean =
     contextToken.isInstance(activator) && contextToken.isInstance(request) && contextToken.isInstance(reactions)
 
 @Suppress("UNCHECKED_CAST", "UNUSED_PARAMETER")
