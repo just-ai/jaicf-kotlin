@@ -1,17 +1,17 @@
 package com.justai.jaicf.helpers.action
 
-import com.justai.jaicf.context.ActionContext
+import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.test.context.TestActionContext
 import kotlin.random.Random
 
-internal fun random(max: Int, context: ActionContext<*, *, *>): Int {
+internal fun random(max: Int, context: DefaultActionContext): Int {
     return when(context) {
         is TestActionContext -> context.nextRandomInt()
         else -> Random.nextInt(max)
     }
 }
 
-internal fun smartRandom(max: Int, context: ActionContext<*, *, *>): Int {
+internal fun smartRandom(max: Int, context: DefaultActionContext): Int {
     val bc = context.context
     val id = "${bc.dialogContext.currentState}_$max"
     var smartRandom: MutableMap<String, MutableList<Int>>? by bc.session

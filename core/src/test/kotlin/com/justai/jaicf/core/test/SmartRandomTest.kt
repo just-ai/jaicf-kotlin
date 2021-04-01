@@ -3,6 +3,7 @@ package com.justai.jaicf.core.test
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.helpers.action.smartRandom
 import com.justai.jaicf.test.reactions.TestReactions
@@ -13,7 +14,7 @@ import java.util.*
 
 class SmartRandomTest {
 
-    private lateinit var context: ActionContext<*, *, *>
+    private lateinit var context: DefaultActionContext
 
     @BeforeEach
     fun createContext() {
