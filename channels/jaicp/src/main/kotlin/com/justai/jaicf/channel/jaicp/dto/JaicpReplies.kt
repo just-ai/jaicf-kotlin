@@ -110,8 +110,8 @@ data class LiveChatSwitchReply(
     val oneTimeMessage: Boolean = false,
     val destination: String? = null,
     val lastMessage: String? = null,
-    val attributes: Map<String, String>? = emptyMap(),
-    val hiddenAttributes: Map<String, String>? = emptyMap(),
+    val attributes: Map<String, String> = emptyMap(),
+    val hiddenAttributes: Map<String, String> = emptyMap(),
     val sendMessagesToOperator: Boolean = false,
     val sendMessageHistoryAmount: Int? = null,
     val customData: JsonElement? = null
@@ -125,8 +125,8 @@ data class LiveChatSwitchReply(
         oneTimeMessage: Boolean = false,
         destination: String? = null,
         lastMessage: String? = null,
-        attributes: Map<String, String>? = emptyMap(),
-        hiddenAttributes: Map<String, String>? = emptyMap(),
+        attributes: Map<String, String> = emptyMap(),
+        hiddenAttributes: Map<String, String> = emptyMap(),
         sendMessagesToOperator: Boolean = false,
         sendMessageHistoryAmount: Int? = null,
         customData: LiveChatCustomData
