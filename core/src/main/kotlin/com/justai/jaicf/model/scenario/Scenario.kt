@@ -12,12 +12,12 @@ interface Scenario {
     val scenario: ScenarioModel
 
     @ScenarioDsl
-    fun createScenario(
+    fun Scenario.createScenario(
         body: RootBuilder<BotRequest, Reactions>.() -> Unit
     ): ScenarioModel = Scenario(ChannelTypeToken.Default, body).scenario
 
     @ScenarioDsl
-    fun <B : BotRequest, R : Reactions> createScenario(
+    fun <B : BotRequest, R : Reactions> Scenario.createScenario(
         channelToken: ChannelTypeToken<B, R>,
         body: RootBuilder<B, R>.() -> Unit
     ): ScenarioModel = Scenario(channelToken, body).scenario
