@@ -1,15 +1,12 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.channel.alexa.activator.alexaIntent
+import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.intent
 import com.justai.jaicf.channel.googleactions.actions
-import com.justai.jaicf.channel.googleactions.dialogflow.actionsDialogflow
 import com.justai.jaicf.channel.googleactions.intent
 import com.justai.jaicf.helpers.ssml.breakMs
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.getValue
 import com.justai.jaicf.test.context.runInTest
 
 class GamersCountScenario(private val min: Int, private val max: Int) : Scenario {
@@ -18,7 +15,7 @@ class GamersCountScenario(private val min: Int, private val max: Int) : Scenario
         const val state = "/setup/gamers"
     }
 
-    override val scenario by Scenario {
+    override val model = createModel {
 
         state(state) {
             action {

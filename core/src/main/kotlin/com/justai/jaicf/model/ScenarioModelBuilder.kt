@@ -31,7 +31,7 @@ internal class ScenarioModelBuilder {
     }
 
     fun append(path: StatePath, other: Scenario, ignoreHooks: Boolean, exposeHooks: Boolean, propagateHooks: Boolean) {
-        val otherModel = other.scenario.resolve(path)
+        val otherModel = other.model.resolve(path)
         states += otherModel.states.values.filterNot { it.path.toString() == path.toString() }
         transitions += otherModel.transitions
 

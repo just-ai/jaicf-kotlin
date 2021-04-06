@@ -1,6 +1,6 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.justai.jaicf.builder.Scenario
+import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.intent
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
@@ -14,11 +14,10 @@ import com.justai.jaicf.helpers.ssml.break300ms
 import com.justai.jaicf.helpers.ssml.break500ms
 import com.justai.jaicf.helpers.ssml.breakMs
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.getValue
 
 object MainScenario : Scenario {
 
-    override val scenario by Scenario {
+    override val model = createModel {
 
         append(GameSetupScenario)
         append(GameLoopScenario)

@@ -1,16 +1,15 @@
 package com.justai.jaicf.examples.gameclock.scenario
 
-import com.justai.jaicf.builder.Scenario
+import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.examples.gameclock.model.supportedColors
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.getValue
 
 object GameSetupScenario : Scenario {
 
     const val state = "/setup"
 
-    override val scenario by Scenario {
+    override val model = createModel {
 
         append(GamersCountScenario(2, supportedColors.size))
         append(GamersColorsScenario)
