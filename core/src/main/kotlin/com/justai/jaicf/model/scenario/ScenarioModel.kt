@@ -8,10 +8,11 @@ import com.justai.jaicf.model.transition.Transition
 /**
  * Represents a model of the dialog scenario.
  * Contains a required data that is used by [com.justai.jaicf.api.BotApi] implementation during the user's request processing.
- * This class should not be used directly from your code. You should use [com.justai.jaicf.builder.ScenarioBuilder] instead.
+ * This class should not be used directly from your code. You should use [com.justai.jaicf.builder.Scenario] or [com.justai.jaicf.builder.createModel] instead.
  * Can be concatenated with other models to create a merged [ScenarioModel].
  *
- * @see com.justai.jaicf.builder.ScenarioBuilder
+ * @see com.justai.jaicf.builder.Scenario
+ * @see com.justai.jaicf.builder.createModel
  */
 data class ScenarioModel(
     val states: Map<String, State> = mapOf(),

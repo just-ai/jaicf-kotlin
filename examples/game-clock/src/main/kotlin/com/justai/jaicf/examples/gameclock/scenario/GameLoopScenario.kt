@@ -5,7 +5,7 @@ import com.google.api.services.actions_fulfillment.v2.model.TableCardCell
 import com.google.api.services.actions_fulfillment.v2.model.TableCardColumnProperties
 import com.google.api.services.actions_fulfillment.v2.model.TableCardRow
 import com.justai.jaicf.activator.intent.intent
-import com.justai.jaicf.builder.Scenario
+import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.channel.alexa.AlexaReactions
 import com.justai.jaicf.channel.alexa.alexa
 import com.justai.jaicf.channel.alexa.model.AlexaEvent
@@ -16,7 +16,6 @@ import com.justai.jaicf.examples.gameclock.GameController
 import com.justai.jaicf.examples.gameclock.model.colorLink
 import com.justai.jaicf.helpers.ssml.*
 import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.model.scenario.getValue
 import kotlin.math.floor
 
 object GameLoopScenario : Scenario {
@@ -26,7 +25,7 @@ object GameLoopScenario : Scenario {
 
     const val play = "/play"
 
-    override val scenario by Scenario {
+    override val model = createModel {
 
         state(play) {
 
