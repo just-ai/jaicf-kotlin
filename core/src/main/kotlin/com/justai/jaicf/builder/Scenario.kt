@@ -11,28 +11,28 @@ import com.justai.jaicf.reactions.Reactions
 
 
 @ScenarioDsl
-fun <B : BotRequest, R : Reactions> Scenario(
-    channelToken: ChannelTypeToken<B, R>,
-    body: RootBuilder<B, R>.() -> Unit
-): Scenario = object : Scenario {
-    override val model by lazy { RootBuilder(ScenarioModelBuilder(), channelToken).apply(body).buildScenario() }
-}
-
-@ScenarioDsl
 fun Scenario(
     body: RootBuilder<BotRequest, Reactions>.() -> Unit
 ): Scenario = Scenario(ChannelTypeToken.Default, body)
 
 @ScenarioDsl
+fun <B : BotRequest, R : Reactions> Scenario(
+    channelToken: ChannelTypeToken<B, R>,
+    body: RootBuilder<B, R>.() -> Unit
+): Scenario = object : Scenario {
+    override val model by lazy { createModel(channelToken, body) }
+}
+
+@ScenarioDsl
 fun createModel(
     body: RootBuilder<BotRequest, Reactions>.() -> Unit
-): ScenarioModel = Scenario(ChannelTypeToken.Default, body).model
+): ScenarioModel = createModel(ChannelTypeToken.Default, body)
 
 @ScenarioDsl
 fun <B : BotRequest, R : Reactions> createModel(
     channelToken: ChannelTypeToken<B, R>,
     body: RootBuilder<B, R>.() -> Unit
-): ScenarioModel = Scenario(channelToken, body).model
+): ScenarioModel = RootBuilder(ScenarioModelBuilder(), channelToken).apply(body).buildScenario()
 
 infix fun Scenario.append(other: Scenario): Scenario = object : Scenario {
     override val model by lazy {
