@@ -20,7 +20,7 @@ Please note that all your custom data classes should implement `Serializable` in
 #### 1. Include Map DB dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:mapdb:$jaicfVersion")
+implementation("com.just-ai.jaicf:mapdb:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

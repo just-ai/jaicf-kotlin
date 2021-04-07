@@ -26,7 +26,7 @@ there are JAICP-native channels, such as ChatWidget, ChatApi and Telephony chann
 #### 1. Include JAICP channel dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:jaicp:$jaicfVersion")
+implementation("com.just-ai.jaicf:jaicp:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest

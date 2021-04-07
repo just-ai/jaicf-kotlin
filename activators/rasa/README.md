@@ -18,7 +18,7 @@ This simplifies the process of Rasa NLU server installation and provides a way t
 #### 1. Include Rasa dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:rasa:$jaicfVersion")
+implementation("com.just-ai.jaicf:rasa:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

@@ -13,7 +13,7 @@ _Built on top of [Google Dialogflow API Client for Java](https://github.com/goog
 #### 1. Include Dialogflow dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:dialogflow:$jaicfVersion")
+implementation("com.just-ai.jaicf:dialogflow:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

@@ -9,7 +9,7 @@ Allows to use [Mongo database](https://www.mongodb.com/) to persist [BotContext]
 #### 1. Include Mongo DB dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:mongo:$jaicfVersion")
+implementation("com.just-ai.jaicf:mongo:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

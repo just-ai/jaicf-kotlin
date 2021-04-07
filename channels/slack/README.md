@@ -13,7 +13,7 @@ _Built on top of [Slack Bolt SDK](https://github.com/slackapi/java-slack-sdk) li
 #### 1. Include Slack dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:slack:$jaicfVersion")
+implementation("com.just-ai.jaicf:slack:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

@@ -17,7 +17,7 @@ Here is an [example](https://github.com/just-ai/jaicf-kotlin/tree/master/example
 #### 1. Include Google Actions dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:google-actions:$jaicfVersion")
+implementation("com.just-ai.jaicf:google-actions:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

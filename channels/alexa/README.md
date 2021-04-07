@@ -17,7 +17,7 @@ Here is an [example](https://github.com/just-ai/jaicf-kotlin/tree/master/example
 #### 1. Include Alexa dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:alexa:$jaicfVersion")
+implementation("com.just-ai.jaicf:alexa:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
@@ -143,7 +143,7 @@ In the case of using [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master
 
 - Create new [AWS Lambda](https://aws.amazon.com/lambda/) with Java 11 runtime and add _Alexa Skills Kit_ trigger.
 - Build your JAICF project using shadowJar [as described here](https://github.com/just-ai/jaicf-kotlin/blob/master/examples/game-clock/build.gradle.kts) and upload the resulting JAR file to your lambda.
-- Define the full name of your handler in _Runtime settings_, for example `com.justai.jaicf.examples.gameclock.channel.AWSLambda::handleRequest`
+- Define the full name of your handler in _Runtime settings_, for example `com.just-ai.jaicf.examples.gameclock.channel.AWSLambda::handleRequest`
 
 #### 6. Provide custom intents
 

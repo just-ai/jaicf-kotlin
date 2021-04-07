@@ -13,7 +13,7 @@ _Built on top of [messenger4j library](https://github.com/messenger4j/messenger4
 #### 1. Include Facebook Messenger dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:facebook:$jaicfVersion")
+implementation("com.just-ai.jaicf:facebook:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**

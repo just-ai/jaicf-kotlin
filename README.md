@@ -37,7 +37,7 @@ repositories {
 }
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.justai.jaicf:core:$jaicfVersion")
+    implementation("com.just-ai.jaicf:core:$jaicfVersion")
 }
 ```
 [Or using Maven configuration](https://github.com/just-ai/jaicf-kotlin/wiki/Installing#maven)

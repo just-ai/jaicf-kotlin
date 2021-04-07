@@ -13,7 +13,7 @@ Basic template with Caila activator can be found [here](https://github.com/just-
 #### 1. Include Caila dependency to your _build.gradle_
 
 ```kotlin
-implementation("com.justai.jaicf:caila:$jaicfVersion")
+implementation("com.just-ai.jaicf:caila:$jaicfVersion")
 ```
 
 **Replace `$jaicfVersion` with the latest version ![](https://img.shields.io/github/v/release/just-ai/jaicf-kotlin?color=%23000&label=&style=flat-square)**
