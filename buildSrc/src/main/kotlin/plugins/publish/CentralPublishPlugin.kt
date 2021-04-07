@@ -121,7 +121,9 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
 private val Project.isMavenCentralPublication: Boolean
     get() {
         val task = project.gradle.startParameter.taskNames.firstOrNull()
-        return task?.endsWith("${MAVEN_CENTRAL}Repository") ?: task?.endsWith("publish") ?: false
+        val isPublish = task?.endsWith("publish") ?: false
+        val isByCentralPublishTask = task?.endsWith("${MAVEN_CENTRAL}Repository") ?: false
+        return isPublish || isByCentralPublishTask
     }
 
 private fun Project.extraProperty(name: String) =
