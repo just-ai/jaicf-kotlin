@@ -33,7 +33,6 @@ val HelloWorldScenario = Scenario {
 ```kotlin
 repositories {
     mavenCentral()
-    jcenter()
 }
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
