@@ -6,7 +6,7 @@ JAICF is a comprehensive enterprise-level framework from [Just AI](https://just-
 
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fjust-ai%2Fjaicf-kotlin)](https://twitter.com/intent/tweet?text=Try%20JAICF%20-%20a%20Kotlin%20framework%20for%20conversational%20voice%20assistants%20and%20chatbots%20development&url=https://github.com/just-ai/jaicf-kotlin&via=JustAIglobal)
 [![Build Status](https://travis-ci.org/just-ai/jaicf-kotlin.svg?branch=master)](https://travis-ci.org/just-ai/jaicf-kotlin)
-[![Download](https://api.bintray.com/packages/just-ai/jaicf/core/images/download.svg) ](https://bintray.com/just-ai/jaicf/core/_latestVersion)
+[![Download](https://img.shields.io/maven-central/v/com.just-ai.jaicf/core?label=latest-release)](https://search.maven.org/search?q=jaicf)
 [![GitHub License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://github.com/just-ai/jaicf-kotlin/blob/master/LICENSE)
 [![](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin)
