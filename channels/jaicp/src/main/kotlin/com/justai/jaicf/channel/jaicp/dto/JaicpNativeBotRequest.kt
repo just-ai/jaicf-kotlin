@@ -62,11 +62,11 @@ interface ChatWidgetBotRequest : JaicpNativeBotRequest {
 
 data class ChatWidgetQueryRequest(
     override val jaicp: JaicpBotRequest,
-) : JaicpNativeBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
+) : ChatWidgetBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
 
 data class ChatWidgetEventRequest(
     override val jaicp: JaicpBotRequest,
-) : JaicpNativeBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
+) : ChatWidgetBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
 
 interface ChatApiBotRequest : JaicpNativeBotRequest {
     companion object {
@@ -80,11 +80,11 @@ interface ChatApiBotRequest : JaicpNativeBotRequest {
 
 data class ChatApiQueryRequest(
     override val jaicp: JaicpBotRequest,
-) : JaicpNativeBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
+) : ChatApiBotRequest, QueryBotRequest(jaicp.clientId, jaicp.input)
 
 data class ChatApiEventRequest(
     override val jaicp: JaicpBotRequest,
-) : JaicpNativeBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
+) : ChatApiBotRequest, EventBotRequest(jaicp.clientId, jaicp.input)
 
 val BotRequest.telephony
     get() = this as? TelephonyBotRequest
