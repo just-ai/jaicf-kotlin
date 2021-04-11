@@ -105,3 +105,28 @@ data class AudioReaction internal constructor(
 
     companion object
 }
+
+/**
+ * Reaction that is displayed as a carousel to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class CarouselReaction internal constructor(
+    val title: String,
+    val slides: List<CarouselSlide>,
+    override val fromState: String
+) : Reaction(fromState) {
+
+    data class CarouselSlide(
+        val title: String,
+        val buttonText: String,
+        val description: String? = null,
+        val imageUrl: String? = null,
+        val sourceUrl: String? = null
+    )
+
+    override fun toString(): String = """carousel with title "$title" from state $fromState"""
+
+    companion object
+}

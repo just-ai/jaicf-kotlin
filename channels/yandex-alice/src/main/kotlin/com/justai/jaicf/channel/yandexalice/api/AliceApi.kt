@@ -53,7 +53,9 @@ class AliceApi(
 
     fun getImageId(url: String) = images.getOrPut(url) { uploadImage(url).id }
 
-    fun uploadImage(url: String): Image = runBlocking {
+    fun getImageUrl(id: String) = images.entries.find { id == it.value }?.key
+
+    private fun uploadImage(url: String): Image = runBlocking {
         client.post<UploadedImage>("$apiUrl/skills/$skillId/images") {
             contentType(ContentType.Application.Json)
             body = JsonObject(mapOf("url" to JsonPrimitive(url)))
@@ -62,7 +64,7 @@ class AliceApi(
         imageStorage[skillId]?.put(image.origUrl, image.id)
     }
 
-    fun listImages(): List<Image> = runBlocking {
+    private fun listImages(): List<Image> = runBlocking {
         client.get<Images>("$apiUrl/skills/$skillId/images").images
     }
 }
