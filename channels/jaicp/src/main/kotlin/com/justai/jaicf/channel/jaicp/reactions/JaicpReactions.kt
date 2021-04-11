@@ -6,9 +6,9 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
-import com.justai.jaicf.channel.jaicp.reactions.reaction.EndSessionReaction
 import com.justai.jaicf.channel.jaicp.reactions.reaction.NewSessionReaction
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.logging.EndSessionReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import kotlinx.serialization.json.JsonObject
@@ -64,10 +64,11 @@ open class JaicpReactions : Reactions() {
      *
      * @see [com.justai.jaicf.channel.jaicp.logging.JaicpConversationLogger]
      * */
-    fun endSession() {
+    fun endSession(): EndSessionReaction {
         botContext.dialogContext.currentState = "/"
         botContext.dialogContext.currentContext = "/"
-        registerReaction(EndSessionReaction(getCurrentState()))
+
+        return EndSessionReaction.create()
     }
 
     fun collect(): JsonObject {

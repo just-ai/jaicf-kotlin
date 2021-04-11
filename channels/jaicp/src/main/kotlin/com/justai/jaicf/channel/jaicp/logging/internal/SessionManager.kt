@@ -1,9 +1,9 @@
 package com.justai.jaicf.channel.jaicp.logging.internal
 
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.reactions.reaction.EndSessionReaction
 import com.justai.jaicf.channel.jaicp.reactions.reaction.NewSessionReaction
 import com.justai.jaicf.context.ExecutionContext
+import com.justai.jaicf.logging.EndSessionReaction
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.util.*

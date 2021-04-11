@@ -7,7 +7,11 @@ import com.justai.jaicf.channel.yandexalice.api.model.Button
 import com.justai.jaicf.channel.yandexalice.api.model.Image
 import com.justai.jaicf.channel.yandexalice.api.model.ImageGallery
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
-import com.justai.jaicf.logging.*
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.EndSessionReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import kotlinx.serialization.json.JsonElement
@@ -90,8 +94,9 @@ class AliceReactions(
         return AudioReaction.create(id)
     }
 
-    fun endSession() {
+    fun endSession(): EndSessionReaction {
         builder.endSession = true
+        return EndSessionReaction.create()
     }
 
     fun startAccountLinking() {

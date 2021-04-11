@@ -134,3 +134,18 @@ data class CarouselReaction internal constructor(
 
     companion object
 }
+
+/**
+ * Result of session completion to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class EndSessionReaction internal constructor(
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = "session completion from state $fromState"
+
+    companion object
+}

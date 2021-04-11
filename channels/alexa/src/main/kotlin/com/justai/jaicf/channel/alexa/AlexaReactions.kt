@@ -18,6 +18,7 @@ import com.amazon.ask.request.RequestHelper
 import com.amazon.ask.services.ApacheHttpApiClient
 import com.amazon.ask.util.JacksonSerializer
 import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.EndSessionReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
@@ -105,11 +106,10 @@ class AlexaReactions(
         response.builder.addAudioPlayerStopDirective()
     }
 
-    fun endSession(text: String? = null) {
-        text?.let { say(it) }
-
-        response.builder
-            .withShouldEndSession(true)
+    fun endSession(text: String): EndSessionReaction {
+        say(text)
+        response.builder.withShouldEndSession(true)
+        return EndSessionReaction.create()
     }
 
     fun sendProgressiveResponse(text: String) = sendDirective(
