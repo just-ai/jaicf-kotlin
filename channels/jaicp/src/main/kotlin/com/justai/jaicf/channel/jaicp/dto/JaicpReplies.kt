@@ -57,6 +57,29 @@ data class AudioReply(
 }
 
 @Serializable
+data class CarouselReply(
+    @SerialName("text")
+    val title: String,
+    @SerialName("content")
+    val slides: List<CarouselSlide>
+) : Reply("carousel") {
+
+    @Serializable
+    data class CarouselSlide(
+        val title: String,
+        @SerialName("btnText")
+        val buttonText: String,
+        val description: String? = null,
+        @SerialName("image")
+        val imageUrl: String? = null,
+        @SerialName("url")
+        val sourceUrl: String? = null
+    )
+
+    override fun serialized() = JSON.encodeToString(serializer(), this)
+}
+
+@Serializable
 class HangupReply(val state: String? = null) : Reply("hangup") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }

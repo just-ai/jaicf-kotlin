@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.dto.Button
 import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
+import com.justai.jaicf.channel.jaicp.dto.CarouselReply
 import com.justai.jaicf.channel.jaicp.dto.ImageReply
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -32,5 +33,9 @@ class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
     fun buttons(buttons: List<String>): ButtonsReaction {
         replies.add(ButtonsReply(buttons.map { Button(it) }))
         return ButtonsReaction.create(buttons)
+    }
+
+    fun carousel(text: String, vararg slides: CarouselReply.CarouselSlide) {
+        replies.add(CarouselReply(text, slides.asList()))
     }
 }
