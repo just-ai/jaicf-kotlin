@@ -5,13 +5,19 @@ import com.justai.jaicf.activator.event.EventActivatorContext
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.dto.CarouselReply.CarouselSlide
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.exceptions.scenarioCause
-import com.justai.jaicf.logging.*
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.CarouselReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.Reaction
+import com.justai.jaicf.logging.SayReaction
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -183,8 +189,22 @@ private fun List<Reaction>.toReplies() = mapNotNull { r ->
         is ImageReaction -> ImageReply(r.imageUrl, state = r.fromState)
         is AudioReaction -> AudioReply(audioUrl = r.audioUrl, state = r.fromState)
         is ButtonsReaction -> ButtonsReply(buttons = r.buttons.map { Button(it) }, state = r.fromState)
+        is CarouselReaction -> r.toReply()
         else -> null
     }
 }.toMutableList()
+
+private fun CarouselReaction.toReply() = CarouselReply(
+    title,
+    slides.map {
+        CarouselSlide(
+            title = it.title,
+            buttonText = it.buttonText,
+            description = it.description,
+            imageUrl = it.imageUrl,
+            sourceUrl = it.sourceUrl
+        )
+    }
+)
 
 private fun BotException.toReply() = ErrorReply(scenarioCause.stackTraceToString(), currentState, "")
