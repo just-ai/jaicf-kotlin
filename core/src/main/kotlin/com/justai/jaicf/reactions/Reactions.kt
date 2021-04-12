@@ -133,12 +133,6 @@ abstract class Reactions : ReactionRegistrar {
      * @param url of audio
      * */
     open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
-
-    // TODO: Check alexa and alice
-    open fun endSession(): EndSessionReaction {
-
-        return EndSessionReaction(currentState)
-    }
 }
 
 typealias ButtonToState = Pair<String, String>

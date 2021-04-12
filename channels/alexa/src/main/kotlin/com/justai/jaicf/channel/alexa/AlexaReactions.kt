@@ -111,7 +111,7 @@ class AlexaReactions(
         return endSession()
     }
 
-    override fun endSession(): EndSessionReaction {
+    fun endSession(): EndSessionReaction {
         response.builder.withShouldEndSession(true)
         return EndSessionReaction.create()
     }
