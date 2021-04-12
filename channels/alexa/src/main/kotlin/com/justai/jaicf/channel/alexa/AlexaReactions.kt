@@ -106,12 +106,8 @@ class AlexaReactions(
         response.builder.addAudioPlayerStopDirective()
     }
 
-    fun endSession(text: String): EndSessionReaction {
-        say(text)
-        return endSession()
-    }
-
-    fun endSession(): EndSessionReaction {
+    fun endSession(text: String? = null): EndSessionReaction {
+        text?.let { say(it) }
         response.builder.withShouldEndSession(true)
         return EndSessionReaction.create()
     }
