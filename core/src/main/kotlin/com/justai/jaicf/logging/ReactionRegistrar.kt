@@ -29,8 +29,8 @@ interface ReactionRegistrar {
     fun ButtonsReaction.Companion.create(buttons: List<String>) =
         ButtonsReaction(buttons, currentState).register()
 
-    fun CarouselReaction.Companion.create(text: String, slides: List<Element>) =
-        CarouselReaction(text, slides, currentState).register()
+    fun CarouselReaction.Companion.create(text: String, elements: List<Element>) =
+        CarouselReaction(text, elements, currentState).register()
 
     fun GoReaction.Companion.create(path: String) =
         GoReaction(path, currentState).register()

@@ -61,11 +61,11 @@ data class CarouselReply(
     @SerialName("text")
     val title: String,
     @SerialName("content")
-    val slides: List<CarouselSlide>
+    val elements: List<CarouselElement>
 ) : Reply("carousel") {
 
     @Serializable
-    data class CarouselSlide(
+    data class CarouselElement(
         val title: String,
         @SerialName("btnText")
         val buttonText: String,

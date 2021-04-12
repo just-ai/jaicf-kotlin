@@ -3,7 +3,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.dto.Button
 import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
 import com.justai.jaicf.channel.jaicp.dto.CarouselReply
-import com.justai.jaicf.channel.jaicp.dto.CarouselReply.CarouselSlide
+import com.justai.jaicf.channel.jaicp.dto.CarouselReply.CarouselElement
 import com.justai.jaicf.channel.jaicp.dto.ImageReply
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.CarouselReaction
@@ -16,6 +16,7 @@ val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
 
 class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
+
     override fun image(url: String): ImageReaction {
         return image(imageUrl = url, caption = null)
     }
@@ -37,20 +38,18 @@ class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
         return ButtonsReaction.create(buttons)
     }
 
-    fun carousel(text: String, vararg slides: CarouselSlide): CarouselReaction {
-        replies.add(CarouselReply(text, slides.asList()))
-
-        return CarouselReaction.create(text, slides.toReactionSlides())
+    fun carousel(text: String, vararg elements: CarouselElement): CarouselReaction {
+        replies.add(CarouselReply(text, elements.asList()))
+        return CarouselReaction.create(text, elements.toReactionElements())
     }
+}
 
-    // TODO: Move from class body
-    private fun Array<out CarouselSlide>.toReactionSlides() = map {
-        CarouselReaction.Element(
-            title = it.title,
-            buttons = listOf(it.buttonText),
-            description = it.description,
-            imageUrl = it.imageUrl,
-            buttonRedirectUrl = it.buttonRedirectUrl
-        )
-    }
+private fun Array<out CarouselElement>.toReactionElements() = map {
+    CarouselReaction.Element(
+        title = it.title,
+        buttons = listOf(it.buttonText),
+        description = it.description,
+        imageUrl = it.imageUrl,
+        buttonRedirectUrl = it.buttonRedirectUrl
+    )
 }

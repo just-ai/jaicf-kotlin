@@ -13,8 +13,8 @@ import com.justai.jaicf.channel.facebook.api.FacebookBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ImageReaction
-import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import java.net.URL
 

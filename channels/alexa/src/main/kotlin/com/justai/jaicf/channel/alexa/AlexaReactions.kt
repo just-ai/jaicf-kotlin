@@ -2,17 +2,25 @@ package com.justai.jaicf.channel.alexa
 
 import com.amazon.ask.dispatcher.request.handler.HandlerInput
 import com.amazon.ask.model.interfaces.alexa.presentation.apl.RenderDocumentDirective
-import com.amazon.ask.model.interfaces.audioplayer.*
+import com.amazon.ask.model.interfaces.audioplayer.AudioItem
+import com.amazon.ask.model.interfaces.audioplayer.AudioItemMetadata
+import com.amazon.ask.model.interfaces.audioplayer.PlayBehavior
+import com.amazon.ask.model.interfaces.audioplayer.PlayDirective
+import com.amazon.ask.model.interfaces.audioplayer.Stream
 import com.amazon.ask.model.interfaces.display.Image
 import com.amazon.ask.model.services.DefaultApiConfiguration
-import com.amazon.ask.model.services.directive.*
+import com.amazon.ask.model.services.directive.Directive
+import com.amazon.ask.model.services.directive.DirectiveServiceClient
+import com.amazon.ask.model.services.directive.Header
+import com.amazon.ask.model.services.directive.SendDirectiveRequest
+import com.amazon.ask.model.services.directive.SpeakDirective
 import com.amazon.ask.request.RequestHelper
 import com.amazon.ask.services.ApacheHttpApiClient
 import com.amazon.ask.util.JacksonSerializer
 import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
-import com.justai.jaicf.logging.SayReaction
 
 val Reactions.alexa
     get() = this as? AlexaReactions

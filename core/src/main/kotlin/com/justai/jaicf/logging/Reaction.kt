@@ -118,6 +118,7 @@ data class CarouselReaction internal constructor(
     override val fromState: String
 ) : Reaction(fromState) {
 
+    // TODO выделить кнопку в отдельный класс
     data class Element(
         val title: String,
         val buttons: List<String>,
