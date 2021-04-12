@@ -37,6 +37,9 @@ interface ReactionRegistrar {
     fun ChangeStateReaction.Companion.create(path: String) =
         ChangeStateReaction(path, currentState).register()
 
+    fun NewSessionReaction.Companion.create() =
+        NewSessionReaction(currentState).register()
+
     fun EndSessionReaction.Companion.create() =
         EndSessionReaction(currentState).register()
 
