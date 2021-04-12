@@ -114,16 +114,16 @@ data class AudioReaction internal constructor(
  * */
 data class CarouselReaction internal constructor(
     val title: String,
-    val slides: List<CarouselSlide>,
+    val elements: List<Element>,
     override val fromState: String
 ) : Reaction(fromState) {
 
-    data class CarouselSlide(
+    data class Element(
         val title: String,
-        val buttonText: String,
+        val buttons: List<String>,
         val description: String? = null,
         val imageUrl: String? = null,
-        val sourceUrl: String? = null
+        val buttonRedirectUrl: String? = null
     )
 
     override fun toString(): String = """carousel with title "$title" from state $fromState"""

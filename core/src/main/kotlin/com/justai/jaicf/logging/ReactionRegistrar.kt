@@ -2,7 +2,7 @@ package com.justai.jaicf.logging
 
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.ExecutionContext
-import com.justai.jaicf.logging.CarouselReaction.CarouselSlide
+import com.justai.jaicf.logging.CarouselReaction.Element
 
 /**
  * Reactions logging methods holder.
@@ -29,7 +29,7 @@ interface ReactionRegistrar {
     fun ButtonsReaction.Companion.create(buttons: List<String>) =
         ButtonsReaction(buttons, currentState).register()
 
-    fun CarouselReaction.Companion.create(text: String, slides: List<CarouselSlide>) =
+    fun CarouselReaction.Companion.create(text: String, slides: List<Element>) =
         CarouselReaction(text, slides, currentState).register()
 
     fun GoReaction.Companion.create(path: String) =

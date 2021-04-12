@@ -43,13 +43,14 @@ class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
         return CarouselReaction.create(text, slides.toReactionSlides())
     }
 
+    // TODO: Move from class body
     private fun Array<out CarouselSlide>.toReactionSlides() = map {
-        CarouselReaction.CarouselSlide(
+        CarouselReaction.Element(
             title = it.title,
-            buttonText = it.buttonText,
+            buttons = listOf(it.buttonText),
             description = it.description,
             imageUrl = it.imageUrl,
-            sourceUrl = it.sourceUrl
+            buttonRedirectUrl = it.buttonRedirectUrl
         )
     }
 }

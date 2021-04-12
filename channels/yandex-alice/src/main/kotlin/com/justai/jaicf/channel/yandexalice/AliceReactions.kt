@@ -7,12 +7,8 @@ import com.justai.jaicf.channel.yandexalice.api.model.Button
 import com.justai.jaicf.channel.yandexalice.api.model.Image
 import com.justai.jaicf.channel.yandexalice.api.model.ImageGallery
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
-import com.justai.jaicf.logging.AudioReaction
-import com.justai.jaicf.logging.ButtonsReaction
-import com.justai.jaicf.logging.CarouselReaction
-import com.justai.jaicf.logging.CarouselReaction.CarouselSlide
-import com.justai.jaicf.logging.ImageReaction
-import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.logging.*
+import com.justai.jaicf.logging.CarouselReaction.Element
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import kotlinx.serialization.json.JsonElement
@@ -75,17 +71,7 @@ class AliceReactions(
     fun imageGallery(first: Image, vararg images: Image): CarouselReaction {
         val imageList = listOf(first) + images.toList()
         builder.card = ImageGallery(imageList)
-        return CarouselReaction.create("", imageList.toSlides())
-    }
-
-    private fun List<Image>.toSlides() = map {
-        CarouselSlide(
-            title = it.title ?: "",
-            buttonText = it.button?.title ?: "",
-            description = it.description,
-            imageUrl = api?.getImageUrl(it.imageId),
-            sourceUrl = it.button?.url
-        )
+        return CarouselReaction.create("", mapImagesToReactions(imageList))
     }
 
     override fun audio(id: String): AudioReaction {
@@ -113,4 +99,14 @@ class AliceReactions(
     fun deleteFromUserState(key: String) {
         response.userStateUpdate[key] = null
     }
+}
+
+private fun AliceReactions.mapImagesToReactions(imageList: List<Image>) = imageList.map {
+    Element(
+        title = it.title ?: "",
+        buttons = listOf(it.button?.title ?: ""),
+        description = it.description,
+        imageUrl = api?.getImageUrl(it.imageId),
+        buttonRedirectUrl = it.button?.url
+    )
 }

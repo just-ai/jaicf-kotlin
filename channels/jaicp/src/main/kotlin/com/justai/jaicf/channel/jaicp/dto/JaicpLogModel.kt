@@ -12,12 +12,7 @@ import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.exceptions.scenarioCause
-import com.justai.jaicf.logging.AudioReaction
-import com.justai.jaicf.logging.ButtonsReaction
-import com.justai.jaicf.logging.CarouselReaction
-import com.justai.jaicf.logging.ImageReaction
-import com.justai.jaicf.logging.Reaction
-import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.logging.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -196,13 +191,13 @@ private fun List<Reaction>.toReplies() = mapNotNull { r ->
 
 private fun CarouselReaction.toReply() = CarouselReply(
     title,
-    slides.map {
+    elements.map {
         CarouselSlide(
             title = it.title,
-            buttonText = it.buttonText,
+            buttonText = it.buttons.firstOrNull() ?: "",
             description = it.description,
             imageUrl = it.imageUrl,
-            sourceUrl = it.sourceUrl
+            buttonRedirectUrl = it.buttonRedirectUrl
         )
     }
 )
