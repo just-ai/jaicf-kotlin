@@ -136,6 +136,21 @@ data class CarouselReaction internal constructor(
 }
 
 /**
+ * Result of session start to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class NewSessionReaction internal constructor(
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = """start new session from state $fromState"""
+
+    companion object
+}
+
+/**
  * Result of session completion to store in [ExecutionContext]. May not be supported in some channels.
  *
  * @see [ExecutionContext]

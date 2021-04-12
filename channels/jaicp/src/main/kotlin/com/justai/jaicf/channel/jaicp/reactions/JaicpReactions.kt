@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
-import com.justai.jaicf.channel.jaicp.reactions.reaction.NewSessionReaction
+import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.EndSessionReaction
 import com.justai.jaicf.logging.SayReaction
@@ -49,9 +49,9 @@ open class JaicpReactions : Reactions() {
      *
      * @see [com.justai.jaicf.channel.jaicp.logging.JaicpConversationLogger]
      * */
-    fun startNewSession() {
+    fun startNewSession(): NewSessionReaction {
         botContext.cleanSessionData()
-        registerReaction(NewSessionReaction(getCurrentState()))
+        return NewSessionReaction.create()
     }
 
     /**
