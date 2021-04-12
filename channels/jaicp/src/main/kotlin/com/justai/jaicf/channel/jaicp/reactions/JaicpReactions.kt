@@ -64,10 +64,9 @@ open class JaicpReactions : Reactions() {
      *
      * @see [com.justai.jaicf.channel.jaicp.logging.JaicpConversationLogger]
      * */
-    override fun endSession(text: String?): EndSessionReaction {
+    fun endSession(): EndSessionReaction {
         botContext.dialogContext.currentState = "/"
         botContext.dialogContext.currentContext = "/"
-
         return EndSessionReaction.create()
     }
 

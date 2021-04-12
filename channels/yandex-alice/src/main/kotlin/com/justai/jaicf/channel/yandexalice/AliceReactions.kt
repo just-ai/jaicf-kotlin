@@ -90,7 +90,7 @@ class AliceReactions(
         return AudioReaction.create(id)
     }
 
-    override fun endSession(): EndSessionReaction {
+    fun endSession(): EndSessionReaction {
         builder.endSession = true
         return EndSessionReaction.create()
     }
