@@ -6,9 +6,12 @@ import com.github.messenger4j.send.MessagingType
 import com.github.messenger4j.send.Payload
 import com.github.messenger4j.send.message.Message
 import com.github.messenger4j.send.message.RichMediaMessage
+import com.github.messenger4j.send.message.TemplateMessage
 import com.github.messenger4j.send.message.TextMessage
 import com.github.messenger4j.send.message.richmedia.RichMediaAsset
 import com.github.messenger4j.send.message.richmedia.UrlRichMediaAsset
+import com.github.messenger4j.send.message.template.GenericTemplate
+import com.github.messenger4j.send.message.template.common.Element
 import com.justai.jaicf.channel.facebook.api.FacebookBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.logging.AudioReaction
@@ -60,5 +63,11 @@ class FacebookReactions(
 
     fun file(url: String) {
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.FILE)
+    }
+
+    fun carousel(vararg elements: Element) {
+        val template = GenericTemplate.create(elements.toList())
+        val message = TemplateMessage.create(template)
+        sendResponse(message)
     }
 }
