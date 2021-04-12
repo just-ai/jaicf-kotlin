@@ -73,7 +73,7 @@ data class CarouselReply(
         @SerialName("image")
         val imageUrl: String? = null,
         @SerialName("url")
-        val sourceUrl: String? = null
+        val buttonRedirectUrl: String? = null
     )
 
     override fun serialized() = JSON.encodeToString(serializer(), this)
