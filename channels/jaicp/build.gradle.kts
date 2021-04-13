@@ -16,9 +16,8 @@ dependencies {
 
     implementation(`tomcat-servlet`())
 
-    implementation("de.appelgriepsch.logback:logback-gelf-appender" version { logbackGelfAppender })
-    implementation(kotlinx("kotlinx-coroutines-slf4j") version { coroutinesCore })
-
+    api("de.appelgriepsch.logback:logback-gelf-appender" version { logbackGelfAppender })
+    api(kotlinx("kotlinx-coroutines-slf4j") version { coroutinesCore })
     api(`coroutines-core`())
 
     api(ktor("ktor-client-cio"))
