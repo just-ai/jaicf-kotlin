@@ -221,16 +221,21 @@ public final class Messenger {
       final Optional<String> jsonBody = payload.map(this.gson::toJson);
       final HttpResponse httpResponse =
           this.httpClient.execute(httpMethod, requestUrl, jsonBody.orElse(null));
-      final JsonObject responseJsonObject =
-          this.jsonParser.parse(httpResponse.body()).getAsJsonObject();
-      if (responseJsonObject.size() == 0) {
-        throw new MessengerApiException(
-            "The response JSON does not contain any key/value pair", empty(), empty(), empty());
-      }
-      if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-        return responseTransformer.apply(responseJsonObject);
-      } else {
-        throw MessengerApiExceptionFactory.create(responseJsonObject);
+      try {
+        final JsonObject responseJsonObject =
+            this.jsonParser.parse(httpResponse.body()).getAsJsonObject();
+        if (responseJsonObject.size() == 0) {
+          throw new MessengerApiException(
+              "The response JSON does not contain any key/value pair", empty(), empty(), empty());
+        }
+        if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
+          return responseTransformer.apply(responseJsonObject);
+        } else {
+          throw MessengerApiExceptionFactory.create(responseJsonObject);
+        }
+      } catch (Exception e) {
+        log.error("Http response status: {}, body: {}", httpResponse.statusCode(), httpResponse.body());
+        throw e;
       }
     } catch (IOException e) {
       throw new MessengerIOException(e);
