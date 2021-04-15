@@ -5,7 +5,6 @@ import com.justai.jaicf.activator.event.EventActivatorContext
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.regex.RegexActivatorContext
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.dto.CarouselReply.CarouselElement
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.toJson
 import com.justai.jaicf.context.ExecutionContext
@@ -197,12 +196,12 @@ private fun List<Reaction>.toReplies() = mapNotNull { r ->
 private fun CarouselReaction.toReply() = CarouselReply(
     title,
     elements.map {
-        CarouselElement(
+        CarouselReply.Element(
             title = it.title,
-            buttonText = it.buttons.firstOrNull() ?: "",
+            buttonText = it.buttons.firstOrNull()?.text ?: "",
             description = it.description,
             imageUrl = it.imageUrl,
-            buttonRedirectUrl = it.buttonRedirectUrl
+            buttonRedirectUrl = it.buttons.firstOrNull()?.url
         )
     }
 )
