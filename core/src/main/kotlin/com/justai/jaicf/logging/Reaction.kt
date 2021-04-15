@@ -118,16 +118,19 @@ data class CarouselReaction internal constructor(
     override val fromState: String
 ) : Reaction(fromState) {
 
-    // TODO выделить кнопку в отдельный класс
     data class Element(
         val title: String,
-        val buttons: List<String>,
+        val buttons: List<Button>,
         val description: String? = null,
-        val imageUrl: String? = null,
-        val buttonRedirectUrl: String? = null
+        val imageUrl: String? = null
     )
 
-    override fun toString(): String = """carousel with title "$title" from state $fromState"""
+    data class Button(
+        val text: String,
+        val url: String? = null
+    )
+
+    override fun toString(): String = """carousel with title "$title" containing $elements from state $fromState"""
 
     companion object
 }

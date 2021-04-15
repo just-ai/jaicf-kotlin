@@ -11,10 +11,18 @@ import com.github.messenger4j.send.message.TextMessage
 import com.github.messenger4j.send.message.richmedia.RichMediaAsset
 import com.github.messenger4j.send.message.richmedia.UrlRichMediaAsset
 import com.github.messenger4j.send.message.template.GenericTemplate
-import com.github.messenger4j.send.message.template.common.Element
+import com.github.messenger4j.send.message.template.button.Button
+import com.github.messenger4j.send.message.template.button.CallButton
+import com.github.messenger4j.send.message.template.button.LogInButton
+import com.github.messenger4j.send.message.template.button.LogOutButton
+import com.github.messenger4j.send.message.template.button.PostbackButton
+import com.github.messenger4j.send.message.template.button.UrlButton
+import com.justai.jaicf.channel.facebook.api.CarouselElement
 import com.justai.jaicf.channel.facebook.api.FacebookBotRequest
+import com.justai.jaicf.channel.facebook.api.toTemplateElement
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.CarouselReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
@@ -65,9 +73,30 @@ class FacebookReactions(
         sendUrlRichMediaResponse(url, RichMediaAsset.Type.FILE)
     }
 
-    fun carousel(vararg elements: Element) {
-        val template = GenericTemplate.create(elements.toList())
-        val message = TemplateMessage.create(template)
-        sendResponse(message)
+    fun carousel(first: CarouselElement, vararg elements: CarouselElement): CarouselReaction {
+        val elementsList = listOf(first) + elements.toList()
+        val template = GenericTemplate.create(elementsList.map { it.toTemplateElement() })
+        sendResponse(TemplateMessage.create(template))
+        return CarouselReaction.create("", elementsList.toCarouselReactionElements())
     }
+}
+
+private fun List<CarouselElement>.toCarouselReactionElements() = map {
+    CarouselReaction.Element(
+        title = it.title,
+        buttons = it.buttons?.toReactionButtons() ?: emptyList(),
+        description = it.subtitle,
+        imageUrl = it.imageUrl?.toExternalForm()
+    )
+}
+
+private fun List<Button>.toReactionButtons() = map { it.toReactionButton() }
+
+private fun Button.toReactionButton() = when (this) {
+    is CallButton -> CarouselReaction.Button(title(), "tel:${payload()}")
+    is LogInButton -> CarouselReaction.Button(type().name, url().toExternalForm())
+    is LogOutButton -> CarouselReaction.Button(type().name, "")
+    is PostbackButton -> CarouselReaction.Button(title())
+    is UrlButton -> CarouselReaction.Button(title(), url().toExternalForm())
+    else -> CarouselReaction.Button(type().name)
 }

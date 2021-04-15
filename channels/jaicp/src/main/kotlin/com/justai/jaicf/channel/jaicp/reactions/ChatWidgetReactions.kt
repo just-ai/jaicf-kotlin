@@ -3,7 +3,6 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.dto.Button
 import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
 import com.justai.jaicf.channel.jaicp.dto.CarouselReply
-import com.justai.jaicf.channel.jaicp.dto.CarouselReply.CarouselElement
 import com.justai.jaicf.channel.jaicp.dto.ImageReply
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.CarouselReaction
@@ -38,18 +37,17 @@ class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
         return ButtonsReaction.create(buttons)
     }
 
-    fun carousel(text: String, vararg elements: CarouselElement): CarouselReaction {
+    fun carousel(text: String, vararg elements: CarouselReply.Element): CarouselReaction {
         replies.add(CarouselReply(text, elements.asList()))
-        return CarouselReaction.create(text, elements.toReactionElements())
+        return CarouselReaction.create(text, elements.toCarouselReactionElements())
     }
 }
 
-private fun Array<out CarouselElement>.toReactionElements() = map {
+private fun Array<out CarouselReply.Element>.toCarouselReactionElements() = map {
     CarouselReaction.Element(
         title = it.title,
-        buttons = listOf(it.buttonText),
+        buttons = listOf(CarouselReaction.Button(it.buttonText, it.buttonRedirectUrl)),
         description = it.description,
-        imageUrl = it.imageUrl,
-        buttonRedirectUrl = it.buttonRedirectUrl
+        imageUrl = it.imageUrl
     )
 }

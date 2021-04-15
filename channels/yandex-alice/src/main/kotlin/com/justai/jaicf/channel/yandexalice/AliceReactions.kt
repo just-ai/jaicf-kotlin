@@ -8,7 +8,6 @@ import com.justai.jaicf.channel.yandexalice.api.model.Image
 import com.justai.jaicf.channel.yandexalice.api.model.ImageGallery
 import com.justai.jaicf.channel.yandexalice.api.model.ItemsList
 import com.justai.jaicf.logging.*
-import com.justai.jaicf.logging.CarouselReaction.Element
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import kotlinx.serialization.json.JsonElement
@@ -65,13 +64,25 @@ class AliceReactions(
         button: Button? = null
     ) = image(Image(requireNotNull(api).getImageId(url), title, description, button))
 
+    /**
+     * Sends a message with a list of images and optionaly [Header] and [Footer].
+     * A list must contain from 1 to 5 images. [Image.button] is ignored.
+     *
+     * @see <a href="https://yandex.ru/dev/dialogs/alice/doc/protocol.html#ariaid-title3">yandex-protocol</a>
+     */
     fun itemsList(header: String? = null, footer: ItemsList.Footer? = null) =
         ItemsList(ItemsList.Header(header), footer).also { builder.card = it }
 
+    /**
+     * Sends a message with a carousel of images.
+     * A carousel must contain from 1 to 7 images. [Image.button] is ignored.
+     *
+     * @see <a href="https://yandex.ru/dev/dialogs/alice/doc/protocol.html#ariaid-title3">yandex-protocol</a>
+     */
     fun imageGallery(first: Image, vararg images: Image): CarouselReaction {
         val imageList = listOf(first) + images.toList()
         builder.card = ImageGallery(imageList)
-        return CarouselReaction.create("", mapImagesToReactions(imageList))
+        return CarouselReaction.create("", mapImagesToCarouselReactionElements(imageList))
     }
 
     override fun audio(id: String): AudioReaction {
@@ -101,12 +112,11 @@ class AliceReactions(
     }
 }
 
-private fun AliceReactions.mapImagesToReactions(imageList: List<Image>) = imageList.map {
-    Element(
+private fun AliceReactions.mapImagesToCarouselReactionElements(imageList: List<Image>) = imageList.map {
+    CarouselReaction.Element(
         title = it.title ?: "",
-        buttons = listOf(it.button?.title ?: ""),
+        buttons = emptyList(),
         description = it.description,
-        imageUrl = api?.getImageUrl(it.imageId),
-        buttonRedirectUrl = it.button?.url
+        imageUrl = api?.getImageUrl(it.imageId)
     )
 }
