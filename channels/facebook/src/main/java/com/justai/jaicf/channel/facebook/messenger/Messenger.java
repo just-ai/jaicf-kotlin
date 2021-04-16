@@ -234,7 +234,7 @@ public final class Messenger {
           throw MessengerApiExceptionFactory.create(responseJsonObject);
         }
       } catch (Exception e) {
-        log.error("Http response status: {}, body: {}", httpResponse.statusCode(), httpResponse.body());
+        log.error("Unexpected HTTP response with status: {}, and body: {}", httpResponse.statusCode(), httpResponse.body());
         throw e;
       }
     } catch (IOException e) {
