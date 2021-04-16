@@ -46,7 +46,7 @@ class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
 private fun Array<out CarouselReply.Element>.toCarouselReactionElements() = map {
     CarouselReaction.Element(
         title = it.title,
-        buttons = listOf(CarouselReaction.Button(it.buttonText, it.buttonRedirectUrl)),
+        buttons = listOf(CarouselReaction.Button(it.button, it.buttonRedirectUrl)),
         description = it.description,
         imageUrl = it.imageUrl
     )

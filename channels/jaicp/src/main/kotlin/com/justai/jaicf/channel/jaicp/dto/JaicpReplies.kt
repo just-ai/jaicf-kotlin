@@ -67,7 +67,7 @@ data class CarouselReply(
     data class Element(
         val title: String,
         @SerialName("btnText")
-        val buttonText: String,
+        val button: String,
         val description: String? = null,
         @SerialName("image")
         val imageUrl: String? = null,
