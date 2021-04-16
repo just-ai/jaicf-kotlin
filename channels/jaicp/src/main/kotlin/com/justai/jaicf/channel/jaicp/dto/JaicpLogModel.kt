@@ -198,7 +198,7 @@ private fun CarouselReaction.toReply() = CarouselReply(
     elements.map {
         CarouselReply.Element(
             title = it.title,
-            buttonText = it.buttons.firstOrNull()?.text ?: "",
+            button = it.buttons.firstOrNull()?.text ?: "",
             description = it.description,
             imageUrl = it.imageUrl,
             buttonRedirectUrl = it.buttons.firstOrNull()?.url
