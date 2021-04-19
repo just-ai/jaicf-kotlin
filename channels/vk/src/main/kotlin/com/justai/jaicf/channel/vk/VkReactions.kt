@@ -1,6 +1,5 @@
 package com.justai.jaicf.channel.vk
 
-import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -13,26 +12,28 @@ import com.vk.api.sdk.objects.messages.Keyboard
 import com.vk.api.sdk.objects.messages.KeyboardButton
 import com.vk.api.sdk.objects.messages.KeyboardButtonAction
 import com.vk.api.sdk.objects.messages.KeyboardButtonActionType
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClientBuilder
 import java.io.File
-import java.net.URL
+import java.net.URI
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 val Reactions.vk
     get() = this as? VkReactions
 
+private val httpClient = HttpClientBuilder.create().build()
+
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class VkReactions(
     private val vk: VkApiClient,
     private val groupActor: GroupActor,
-//    private val httpClient: HttpClient,
-    request: BotRequest
+    private val request: VkBotRequest
 ) : Reactions() {
 
     val api: Messages = vk.messages()
-    val userId: Int = request.clientId.toInt()
+    val peerId: Int = request.clientId.toInt()
 
     companion object {
         // extract to VK API
@@ -44,11 +45,12 @@ class VkReactions(
 
     override fun image(url: String): ImageReaction {
         val vkPhoto = imagesMap.computeIfAbsent(url, this::uploadPhoto)
-        vk.messages().send(groupActor).attachment(vkPhoto).userId(userId).randomId(random.nextInt()).execute()
+        vk.messages().send(groupActor).attachment(vkPhoto).peerId(peerId).randomId(random.nextInt()).execute()
         return ImageReaction.create(url)
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
+        // TODO: Async buttons with editing last message
         return super.buttons(*buttons)
     }
 
@@ -88,13 +90,16 @@ class VkReactions(
     private fun sendMessage(text: String, buttons: List<List<KeyboardButton>>) =
         vk.messages().send(groupActor)
             .message(text)
-            .keyboard(Keyboard().setButtons(buttons)).userId(userId).randomId(random.nextInt())
-            .userId(userId).randomId(random.nextInt()).execute()
+            .keyboard(Keyboard().setButtons(buttons)).peerId(request.message.peerId).randomId(random.nextInt())
+            .peerId(request.message.peerId)
+            .randomId(random.nextInt()).execute()
 
     private fun uploadPhoto(url: String): String {
         val ext = FilenameUtils.getExtension(url).orIfEmpty("jpeg")
         val file = File.createTempFile("image", "vk_upload.$ext")
-        FileUtils.copyURLToFile(URL(url), file)
+        httpClient.execute(HttpGet(URI(url))).use {
+            file.writeBytes(it.entity.content.readBytes())
+        }
         return uploadPhoto(file)
     }
 

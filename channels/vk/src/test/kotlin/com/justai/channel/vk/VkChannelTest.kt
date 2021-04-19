@@ -31,6 +31,15 @@ val bot = Scenario(vk) {
         }
     }
 
+    state("send document") {
+        activators {
+            regex("send document")
+        }
+        action {
+            reactions.document("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
+        }
+    }
+
     state("async") {
         activators {
             regex("async")
@@ -74,6 +83,15 @@ val bot = Scenario(vk) {
         }
         action {
             reactions.say("I'm in state multipleAttachments")
+        }
+    }
+
+    state("location") {
+        activators {
+            event(VkEvent.LOCATION)
+        }
+        action {
+            reactions.say("location handled")
         }
     }
 

@@ -14,6 +14,15 @@ import com.vk.api.sdk.objects.messages.MessageAttachmentType
 import com.vk.api.sdk.objects.photos.Photo
 import com.vk.api.sdk.objects.video.Video
 
+val VkBotRequest.audio get() = this as? VkAudioBotRequest
+val VkBotRequest.document get() = this as? VkDocumentBotRequest
+val VkBotRequest.photo get() = this as? VkPhotoBotRequest
+val VkBotRequest.video get() = this as? VkVideoBotRequest
+val VkBotRequest.location get() = this as? VkLocationBotRequest
+val VkBotRequest.sticker get() = this as? VkStickerBotRequest
+val VkBotRequest.audioMessage get() = this as? VkAudioMessageBotRequest
+val VkBotRequest.multipleAttachments get() = this as? VkMultipleAttachmentsBotRequest
+
 @Suppress("unused")
 interface VkBotRequest : BotRequest {
     val message: Message
@@ -28,6 +37,8 @@ object VkBotRequestFactory {
     private val customConverters: MutableList<VKMessageConverter> = mutableListOf()
 
     fun getRequestForMessage(message: Message): VkBotRequest? {
+        message.text = message.text.withoutVkGroupMentions().trim()
+
         if (message.text.isNotEmpty()) {
             return VkQueryBotRequest(message)
         }
@@ -36,34 +47,37 @@ object VkBotRequestFactory {
             converter(message)?.let { return it }
         }
 
-        message.geo?.let { return VkLocationRequest(message) }
+        message.geo?.let { return VkLocationBotRequest(message) }
 
         return when {
             message.hasAudio() -> {
-                if (message.hasOtherExcept(MessageAttachmentType.AUDIO)) VkMultipleAttachments(message)
+                if (message.hasOtherExcept(MessageAttachmentType.AUDIO)) VkMultipleAttachmentsBotRequest(message)
                 else VkAudioBotRequest(message)
             }
             message.hasDocument() -> {
-                if (message.hasOtherExcept(MessageAttachmentType.DOC)) VkMultipleAttachments(message)
+                if (message.hasOtherExcept(MessageAttachmentType.DOC)) VkMultipleAttachmentsBotRequest(message)
                 else VkDocumentBotRequest(message)
             }
             message.hasPhoto() -> {
-                if (message.hasOtherExcept(MessageAttachmentType.PHOTO)) VkMultipleAttachments(message)
+                if (message.hasOtherExcept(MessageAttachmentType.PHOTO)) VkMultipleAttachmentsBotRequest(message)
                 else VkPhotoBotRequest(message)
 
             }
             message.hasVideo() -> {
-                if (message.hasOtherExcept(MessageAttachmentType.VIDEO)) VkMultipleAttachments(message)
+                if (message.hasOtherExcept(MessageAttachmentType.VIDEO)) VkMultipleAttachmentsBotRequest(message)
                 else VkVideoBotRequest(message)
             }
-            message.hasSticker() -> VkStickerRequest(message)
-            message.hasAudioMessage() -> VkAudioMessageRequest(message)
+            message.hasSticker() -> VkStickerBotRequest(message)
+            message.hasAudioMessage() -> VkAudioMessageBotRequest(message)
             else -> null
         }
     }
 
     fun registerConverter(converter: VKMessageConverter) = customConverters.add(converter)
 }
+
+private val GROUP_PREFIX_REGEXP = "\\[club[0-9]+\\|\\@public[0-9]+\\]".toRegex()
+private fun String.withoutVkGroupMentions(): String = GROUP_PREFIX_REGEXP.replaceFirst(this, "")
 
 data class VkQueryBotRequest(
     override val message: Message
@@ -89,22 +103,22 @@ data class VkVideoBotRequest(
     val videos: List<Video> = message.videos
 ) : VkBotRequest, EventBotRequest(message.clientId, VkEvent.VIDEO)
 
-data class VkLocationRequest(
+data class VkLocationBotRequest(
     override val message: Message,
     val geo: Geo = message.geo
 ) : VkBotRequest, EventBotRequest(message.clientId, VkEvent.LOCATION)
 
-data class VkStickerRequest(
+data class VkStickerBotRequest(
     override val message: Message,
     val stickers: List<Sticker> = message.stickers
 ) : VkBotRequest, EventBotRequest(message.clientId, VkEvent.STICKER)
 
-data class VkAudioMessageRequest(
+data class VkAudioMessageBotRequest(
     override val message: Message,
     val audioMessages: List<AudioMessage> = message.audioMessage
 ) : VkBotRequest, EventBotRequest(message.clientId, VkEvent.AUDIO_MESSAGE)
 
-data class VkMultipleAttachments(
+data class VkMultipleAttachmentsBotRequest(
     override val message: Message,
     val audios: List<Audio> = message.attachments.mapNotNull { it.audio },
     val documents: List<Doc> = message.attachments.mapNotNull { it.doc },
