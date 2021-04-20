@@ -1,51 +1,49 @@
 package com.justai.jaicf.channel.vk
 
+import com.justai.jaicf.channel.vk.api.InMemoryVkContentStorage
+import com.justai.jaicf.channel.vk.api.VkReactionsContentStorage
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.DocumentReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import com.vk.api.sdk.actions.Messages
 import com.vk.api.sdk.client.VkApiClient
 import com.vk.api.sdk.client.actors.GroupActor
+import com.vk.api.sdk.objects.enums.DocsType
 import com.vk.api.sdk.objects.messages.Keyboard
 import com.vk.api.sdk.objects.messages.KeyboardButton
 import com.vk.api.sdk.objects.messages.KeyboardButtonAction
 import com.vk.api.sdk.objects.messages.KeyboardButtonActionType
-import org.apache.commons.io.FilenameUtils
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClientBuilder
 import java.io.File
-import java.net.URI
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 val Reactions.vk
     get() = this as? VkReactions
 
-private val httpClient = HttpClientBuilder.create().build()
 
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class VkReactions(
-    private val vk: VkApiClient,
-    private val groupActor: GroupActor,
-    private val request: VkBotRequest
+    val api: VkApiClient,
+    val actor: GroupActor,
+    private val request: VkBotRequest,
+    private val storage: VkReactionsContentStorage = InMemoryVkContentStorage
 ) : Reactions() {
 
-    val api: Messages = vk.messages()
+    val messagesApi: Messages = api.messages()
     val peerId: Int = request.clientId.toInt()
 
     companion object {
         // extract to VK API
         private val random = Random()
-        private val imagesMap = ConcurrentHashMap<String, String>()
     }
 
     override fun say(text: String) = sendMessage(text, emptyList()).let { SayReaction.create(text) }
 
     override fun image(url: String): ImageReaction {
-        val vkPhoto = imagesMap.computeIfAbsent(url, this::uploadPhoto)
-        vk.messages().send(groupActor).attachment(vkPhoto).peerId(peerId).randomId(random.nextInt()).execute()
+        val vkPhoto = storage.getOrUploadImage(api, actor, peerId, url)
+        api.messages().send(actor).attachment(vkPhoto).peerId(peerId).randomId(random.nextInt()).execute()
         return ImageReaction.create(url)
     }
 
@@ -55,20 +53,49 @@ class VkReactions(
     }
 
     override fun audio(url: String): AudioReaction {
-        return super.audio(url)
+        val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
+        api.messages().send(actor).attachment(uploaded).peerId(peerId).randomId(random.nextInt()).execute()
+        return AudioReaction.create(url)
     }
 
-    fun audio(file: File) {}
+    fun audio(file: File): AudioReaction {
+        val uploaded = storage.getOrUploadFile(api, actor, peerId, file, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
+        api.messages().send(actor).attachment(uploaded).peerId(peerId).randomId(random.nextInt()).execute()
+        return AudioReaction.create(file.absolutePath)
+    }
 
-    fun vkAudio(vkAudioUrl: String) {}
+    fun vkAudio(vkAudioUrl: String): AudioReaction {
+        api.messages().send(actor).attachment(vkAudioUrl).peerId(peerId).randomId(random.nextInt()).execute()
+        return AudioReaction.create(vkAudioUrl)
+    }
 
-    fun image(file: File) {}
+    fun image(file: File): ImageReaction {
+        val vkPhoto = storage.getOrUploadImage(api, actor, peerId, file)
+        api.messages().send(actor).attachment(vkPhoto).peerId(peerId).randomId(random.nextInt()).execute()
+        return ImageReaction.create(file.absolutePath)
+    }
 
-    fun vkImage(vkImageUrl: String) {}
+    fun vkImage(vkImageUrl: String): ImageReaction {
+        api.messages().send(actor).attachment(vkImageUrl).peerId(peerId).randomId(random.nextInt()).execute()
+        return ImageReaction.create(vkImageUrl)
+    }
 
-    fun document(file: File) {}
+    fun document(file: File): DocumentReaction {
+        val uploaded = storage.getOrUploadFile(api, actor, peerId, file, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
+        messagesApi.send(actor).attachment(uploaded).randomId(random.nextInt()).peerId(peerId).execute()
+        return DocumentReaction.create(file.absolutePath)
+    }
 
-    fun document(url: String) {}
+    fun document(url: String): DocumentReaction {
+        val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
+        messagesApi.send(actor).attachment(url).randomId(random.nextInt()).peerId(peerId).execute()
+        return DocumentReaction.create(url)
+    }
+
+    fun vkDocument(vkUrl: String): DocumentReaction {
+        messagesApi.send(actor).attachment(vkUrl).randomId(random.nextInt()).peerId(peerId).execute()
+        return DocumentReaction.create(vkUrl)
+    }
 
     fun say(text: String, vararg buttons: String) {
         sendMessage(
@@ -88,30 +115,9 @@ class VkReactions(
     }
 
     private fun sendMessage(text: String, buttons: List<List<KeyboardButton>>) =
-        vk.messages().send(groupActor)
+        api.messages().send(actor)
             .message(text)
             .keyboard(Keyboard().setButtons(buttons)).peerId(request.message.peerId).randomId(random.nextInt())
             .peerId(request.message.peerId)
             .randomId(random.nextInt()).execute()
-
-    private fun uploadPhoto(url: String): String {
-        val ext = FilenameUtils.getExtension(url).orIfEmpty("jpeg")
-        val file = File.createTempFile("image", "vk_upload.$ext")
-        httpClient.execute(HttpGet(URI(url))).use {
-            file.writeBytes(it.entity.content.readBytes())
-        }
-        return uploadPhoto(file)
-    }
-
-    private fun uploadPhoto(file: File): String {
-        val uploadUrl = vk.photos().getMessagesUploadServer(groupActor).execute().uploadUrl.toString()
-        val uploadResponse = vk.upload().photoMessage(uploadUrl, file).execute()
-        val photo = vk.photos().saveMessagesPhoto(groupActor, uploadResponse.photo)
-            .server(uploadResponse.server)
-            .hash(uploadResponse.hash).execute()
-            .first()
-        return "photo${photo.ownerId}_${photo.id}"
-    }
 }
-
-private fun String.orIfEmpty(other: String) = if (isNullOrEmpty()) other else this

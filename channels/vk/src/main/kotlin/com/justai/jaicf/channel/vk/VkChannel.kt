@@ -14,6 +14,7 @@ import com.vk.api.sdk.client.VkApiClient
 import com.vk.api.sdk.client.actors.GroupActor
 import com.vk.api.sdk.httpclient.HttpTransportClient
 import com.vk.api.sdk.objects.messages.Message
+import java.util.concurrent.Executors
 
 class VkChannel(
     override val botApi: BotApi,
@@ -24,6 +25,7 @@ class VkChannel(
     private val transportClient = HttpTransportClient.getInstance()
     private val vk = VkApiClient(transportClient)
     private val group: GroupActor = GroupActor(configuration.groupId, configuration.accessToken)
+    private val storage = configuration.reactionsContentStorage
 
     override fun messageNew(groupId: Int, message: Message) {
         process(message)
@@ -39,7 +41,7 @@ class VkChannel(
         ?: logger.debug("No request converter found for message: $message")
 
     private fun process(request: VkBotRequest): HttpBotResponse {
-        val reactions = VkReactions(vk, group, request)
+        val reactions = VkReactions(vk, group, request, storage)
         botApi.process(request, reactions, RequestContext.DEFAULT)
         return "".asJsonHttpBotResponse()
     }
@@ -51,6 +53,10 @@ class VkChannel(
     }
 
     fun run() = object : CallbackApiLongPoll(vk, group) {
-        override fun messageNew(groupId: Int, message: Message) = this@VkChannel.messageNew(groupId, message)
+        private val executor = Executors.newWorkStealingPool()
+
+        override fun messageNew(groupId: Int, message: Message) {
+            executor.submit { this@VkChannel.messageNew(groupId, message) }
+        }
     }.run()
 }

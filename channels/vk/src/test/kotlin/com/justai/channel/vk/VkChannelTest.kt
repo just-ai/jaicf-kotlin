@@ -40,6 +40,15 @@ val bot = Scenario(vk) {
         }
     }
 
+    state("send audio") {
+        activators {
+            regex("send audio")
+        }
+        action {
+            reactions.audio("https://bitbucket.org/just-ai/examples/downloads/game-timer-1.mp3")
+        }
+    }
+
     state("async") {
         activators {
             regex("async")

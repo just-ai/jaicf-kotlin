@@ -9,11 +9,4 @@ object VkEvent {
     const val PHOTO = "photo"
     const val STICKER = "sticker"
     const val VIDEO = "video"
-
-    // TODO: Define
-    const val CONTACT = "contact"
-    const val ANIMATION = "animation"
-    const val GAME = "game"
-    const val VIDEO_NOTE = "video_note"
-    const val VOICE = "voice"
 }

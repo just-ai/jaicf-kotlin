@@ -172,6 +172,22 @@ data class VideoReaction internal constructor(
 }
 
 /**
+ * Result of performing reactions.audio() to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class DocumentReaction internal constructor(
+    val documentUrl: String,
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = "document $documentUrl from state $fromState"
+
+    companion object
+}
+
+/**
  * Reaction that is displayed as a carousel to store in [ExecutionContext]. May not be supported in some channels.
  *
  * @see [ExecutionContext]
