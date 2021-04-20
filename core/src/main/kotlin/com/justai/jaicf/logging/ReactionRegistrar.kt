@@ -22,20 +22,32 @@ interface ReactionRegistrar {
     fun ImageReaction.Companion.create(imageUrl: String) =
         ImageReaction(imageUrl, currentState).register()
 
-    fun AudioReaction.Companion.create(audioUrl: String) =
-        AudioReaction(audioUrl, currentState).register()
-
     fun ButtonsReaction.Companion.create(buttons: List<String>) =
         ButtonsReaction(buttons, currentState).register()
-
-    fun CarouselReaction.Companion.create(text: String, elements: List<CarouselReaction.Element>) =
-        CarouselReaction(text, elements, currentState).register()
 
     fun GoReaction.Companion.create(path: String) =
         GoReaction(path, currentState).register()
 
     fun ChangeStateReaction.Companion.create(path: String) =
         ChangeStateReaction(path, currentState).register()
+
+    fun AudioReaction.Companion.create(audioUrl: String) =
+        AudioReaction(audioUrl, currentState).register()
+
+    fun FileReaction.Companion.create(fileUrl: String) =
+        FileReaction(fileUrl, currentState).register()
+
+    fun LocationReaction.Companion.create(latitude: Float, longitude: Float) =
+        LocationReaction(latitude, longitude, currentState).register()
+
+    fun UrlReaction.Companion.create(url: String) =
+        UrlReaction(url, currentState).register()
+
+    fun VideoReaction.Companion.create(videoUrl: String) =
+        VideoReaction(videoUrl, currentState).register()
+
+    fun CarouselReaction.Companion.create(text: String, elements: List<CarouselReaction.Element>) =
+        CarouselReaction(text, elements, currentState).register()
 
     fun NewSessionReaction.Companion.create() =
         NewSessionReaction(currentState).register()

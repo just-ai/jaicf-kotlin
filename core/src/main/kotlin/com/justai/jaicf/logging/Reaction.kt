@@ -107,6 +107,71 @@ data class AudioReaction internal constructor(
 }
 
 /**
+ * Result of performing reactions.file() to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class FileReaction internal constructor(
+    val fileUrl: String,
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = "file $fileUrl from state $fromState"
+
+    companion object
+}
+
+/**
+ * Result of performing reactions.location() to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class LocationReaction internal constructor(
+    val latitude: Float,
+    val longitude: Float,
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = "location $latitude, $longitude from state $fromState"
+
+    companion object
+}
+
+/**
+ * Result of performing reactions.url() to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class UrlReaction internal constructor(
+    val url: String,
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = "url $url from state $fromState"
+
+    companion object
+}
+
+/**
+ * Result of performing reactions.video() to store in [ExecutionContext]. May not be supported in some channels.
+ *
+ * @see [ExecutionContext]
+ * @see [com.justai.jaicf.logging.ConversationLogger]
+ * */
+data class VideoReaction internal constructor(
+    val videoUrl: String,
+    override val fromState: String
+) : Reaction(fromState) {
+
+    override fun toString(): String = "video $videoUrl from state $fromState"
+
+    companion object
+}
+
+/**
  * Reaction that is displayed as a carousel to store in [ExecutionContext]. May not be supported in some channels.
  *
  * @see [ExecutionContext]

@@ -14,10 +14,12 @@ import software.amazon.awssdk.regions.Region
 import java.util.*
 
 val dialogflowActivator = DialogflowIntentActivator.Factory(
-    DialogflowConnector(DialogflowAgentConfig(
-        language = "en",
-        credentialsResourcePath = "/dialogflow_account.json"
-    ))
+    DialogflowConnector(
+        DialogflowAgentConfig(
+            language = "en",
+            credentialsResourcePath = "/dialogflow_account.json"
+        )
+    )
 )
 
 val lexActivator = LexIntentActivator.Factory(

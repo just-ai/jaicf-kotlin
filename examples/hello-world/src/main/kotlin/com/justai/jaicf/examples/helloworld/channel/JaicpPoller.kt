@@ -7,6 +7,7 @@ import com.justai.jaicf.channel.googleactions.jaicp.ActionsFulfillmentDialogflow
 import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
 import com.justai.jaicf.channel.jaicp.channels.ChatWidgetChannel
 import com.justai.jaicf.channel.telegram.TelegramChannel
+import com.justai.jaicf.channel.viber.ViberChannel
 import com.justai.jaicf.examples.helloworld.helloWorldBot
 
 fun main() {
@@ -24,6 +25,7 @@ fun main() {
                 FacebookChannel,
                 AimyboxChannel,
                 AlexaChannel,
+                ViberChannel.Factory(),
                 ActionsFulfillmentDialogflow()
             )
         ).runBlocking()
