@@ -20,6 +20,7 @@ dependencies {
     implementation(project(":channels:google-actions"))
     implementation(project(":channels:facebook"))
     implementation(project(":channels:aimybox"))
+    implementation(project(":channels:viber"))
 
     implementation(project(":activators:dialogflow"))
     implementation(project(":activators:lex"))

@@ -31,6 +31,9 @@ data class HttpBotResponse(
     fun isSuccess() = statusCode in (200 until 300)
 
     companion object {
+        fun ok(text: String = "") =
+            HttpBotResponse(text, ContentType.PlainText, statusCode = HttpStatusCode.OK)
+
         fun accepted(text: String = "") =
             HttpBotResponse(text, ContentType.PlainText, statusCode = HttpStatusCode.ACCEPTED)
 

@@ -5,7 +5,6 @@ import com.justai.jaicf.channel.alexa.AlexaChannel
 import com.justai.jaicf.channel.facebook.FacebookChannel
 import com.justai.jaicf.channel.googleactions.jaicp.ActionsFulfillmentDialogflow
 import com.justai.jaicf.channel.jaicp.JaicpServer
-import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
 import com.justai.jaicf.channel.jaicp.channels.ChatWidgetChannel
 import com.justai.jaicf.channel.telegram.TelegramChannel
 import com.justai.jaicf.examples.helloworld.helloWorldBot

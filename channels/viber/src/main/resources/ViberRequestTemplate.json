@@ -1,0 +1,15 @@
+{
+  "event": "message",
+  "timestamp": "{{ timestamp }}",
+  "token": "{{ randomLong }}",
+  "message": {
+    "type": "text",
+    "text": "{{ text }}"
+  },
+  "sender": {
+    "id": "{{ clientId }}",
+    "country": "_",
+    "language": "_",
+    "api_version": 7
+  }
+}

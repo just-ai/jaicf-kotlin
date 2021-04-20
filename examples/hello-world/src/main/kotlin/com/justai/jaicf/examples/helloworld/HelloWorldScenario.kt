@@ -14,7 +14,6 @@ import com.justai.jaicf.channel.googleactions.dialogflow.DialogflowIntent
 import com.justai.jaicf.channel.telegram.telegram
 import com.justai.jaicf.reactions.buttons
 
-
 val HelloWorldScenario = Scenario {
 
     append(context = "helper", HelperScenario)

@@ -8,6 +8,8 @@ include("examples:jaicp-telephony")
 findProject(":examples:jaicp-telephony")?.name = "jaicp-telephony"
 include("examples:game-clock")
 findProject(":examples:game-clock")?.name = "game-clock"
+include("examples:viber-example")
+findProject(":examples:viber-example")?.name = "viber-example"
 
 include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"
@@ -22,6 +24,8 @@ include("channels:slack")
 findProject(":channels:slack")?.name = "slack"
 include("channels:telegram")
 findProject(":channels:telegram")?.name = "telegram"
+include("channels:viber")
+findProject(":channels:viber")?.name = "viber"
 include("channels:google-actions")
 findProject(":channels:google-actions")?.name = "google-actions"
 include("channels:jaicp")
@@ -39,3 +43,5 @@ include("channels:facebook")
 findProject(":channels:facebook")?.name = "facebook"
 include("channels:yandex-alice")
 findProject(":channels:yandex-alice")?.name = "yandex-alice"
+include("channels:viber")
+findProject(":channels:viber")?.name = "viber"
