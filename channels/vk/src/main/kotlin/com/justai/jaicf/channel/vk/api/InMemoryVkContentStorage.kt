@@ -36,7 +36,7 @@ object InMemoryVkContentStorage : VkReactionsContentStorage {
         transformer: (SaveResponse) -> String
     ): String = uploadedUrlResourcesMap.getOrPut(url) {
         transformer(
-            uploadDocument(api, groupActor, peerId, uploadResourceToFile(url, "doc", "doc"), type)
+            uploadDocument(api, groupActor, peerId, uploadResourceToFile(url, type.value, "doc"), type)
         )
     }
 

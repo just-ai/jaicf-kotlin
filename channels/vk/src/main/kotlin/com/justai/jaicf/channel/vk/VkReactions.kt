@@ -34,16 +34,19 @@ class VkReactions(
     val messagesApi: Messages = api.messages()
     val peerId: Int = request.clientId.toInt()
 
+    private val messageTemplate get() = messagesApi.send(actor).peerId(peerId).randomId(random.nextInt())
+
     companion object {
-        // extract to VK API
         private val random = Random()
     }
 
-    override fun say(text: String) = sendMessage(text, emptyList()).let { SayReaction.create(text) }
+    override fun say(text: String): SayReaction {
+        sendMessage(text, emptyList())
+        return SayReaction.create(text)
+    }
 
     override fun image(url: String): ImageReaction {
-        val vkPhoto = storage.getOrUploadImage(api, actor, peerId, url)
-        api.messages().send(actor).attachment(vkPhoto).peerId(peerId).randomId(random.nextInt()).execute()
+        messageTemplate.attachment(storage.getOrUploadImage(api, actor, peerId, url)).execute()
         return ImageReaction.create(url)
     }
 
@@ -53,48 +56,71 @@ class VkReactions(
     }
 
     override fun audio(url: String): AudioReaction {
-        val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
-        api.messages().send(actor).attachment(uploaded).peerId(peerId).randomId(random.nextInt()).execute()
+        val audio = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.AUDIO_MESSAGE) {
+            "doc${audioMessage.ownerId}_${audioMessage.id}"
+        }
+        messageTemplate.attachment(audio).execute()
         return AudioReaction.create(url)
     }
 
     fun audio(file: File): AudioReaction {
-        val uploaded = storage.getOrUploadFile(api, actor, peerId, file, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
-        api.messages().send(actor).attachment(uploaded).peerId(peerId).randomId(random.nextInt()).execute()
+        val audio = storage.getOrUploadFile(api, actor, peerId, file, DocsType.AUDIO_MESSAGE) {
+            "doc${audioMessage.ownerId}_${audioMessage.id}"
+        }
+        messageTemplate.attachment(audio).execute()
         return AudioReaction.create(file.absolutePath)
     }
 
-    fun vkAudio(vkAudioUrl: String): AudioReaction {
-        api.messages().send(actor).attachment(vkAudioUrl).peerId(peerId).randomId(random.nextInt()).execute()
-        return AudioReaction.create(vkAudioUrl)
+    fun audio(ownerId: Int, mediaId: Int, accessKey: Int? = null): AudioReaction {
+        val audioId = when (accessKey) {
+            null -> "audio${ownerId}_$mediaId"
+            else -> "audio${ownerId}_${mediaId}_$accessKey"
+        }
+        messageTemplate.attachment(audioId).execute()
+        return AudioReaction.create(audioId)
+    }
+
+    fun video(ownerId: Int, mediaId: Int, accessKey: Int? = null) {
+        val audioId = when (accessKey) {
+            null -> "video${ownerId}_$mediaId"
+            else -> "video${ownerId}_${mediaId}_$accessKey"
+        }
+        messageTemplate.attachment(audioId).execute()
     }
 
     fun image(file: File): ImageReaction {
-        val vkPhoto = storage.getOrUploadImage(api, actor, peerId, file)
-        api.messages().send(actor).attachment(vkPhoto).peerId(peerId).randomId(random.nextInt()).execute()
+        messageTemplate.attachment(storage.getOrUploadImage(api, actor, peerId, file))
         return ImageReaction.create(file.absolutePath)
     }
 
-    fun vkImage(vkImageUrl: String): ImageReaction {
-        api.messages().send(actor).attachment(vkImageUrl).peerId(peerId).randomId(random.nextInt()).execute()
-        return ImageReaction.create(vkImageUrl)
+    fun image(ownerId: Int, mediaId: Int, accessKey: Int? = null): ImageReaction {
+        val imageId = when (accessKey) {
+            null -> "photo${ownerId}_$mediaId"
+            else -> "photo${ownerId}_${mediaId}_$accessKey"
+        }
+        messageTemplate.attachment(imageId).execute()
+        return ImageReaction.create(imageId)
     }
 
     fun document(file: File): DocumentReaction {
         val uploaded = storage.getOrUploadFile(api, actor, peerId, file, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
-        messagesApi.send(actor).attachment(uploaded).randomId(random.nextInt()).peerId(peerId).execute()
+        messageTemplate.attachment(uploaded).execute()
         return DocumentReaction.create(file.absolutePath)
     }
 
     fun document(url: String): DocumentReaction {
         val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
-        messagesApi.send(actor).attachment(url).randomId(random.nextInt()).peerId(peerId).execute()
+        messageTemplate.attachment(uploaded).execute()
         return DocumentReaction.create(url)
     }
 
-    fun vkDocument(vkUrl: String): DocumentReaction {
-        messagesApi.send(actor).attachment(vkUrl).randomId(random.nextInt()).peerId(peerId).execute()
-        return DocumentReaction.create(vkUrl)
+    fun document(ownerId: Int, mediaId: Int, accessKey: Int? = null): DocumentReaction {
+        val documentId = when (accessKey) {
+            null -> "doc${ownerId}_$mediaId"
+            else -> "doc${ownerId}_${mediaId}_$accessKey"
+        }
+        messageTemplate.attachment(documentId).execute()
+        return DocumentReaction.create(documentId)
     }
 
     fun say(text: String, vararg buttons: String) {
@@ -115,9 +141,5 @@ class VkReactions(
     }
 
     private fun sendMessage(text: String, buttons: List<List<KeyboardButton>>) =
-        api.messages().send(actor)
-            .message(text)
-            .keyboard(Keyboard().setButtons(buttons)).peerId(request.message.peerId).randomId(random.nextInt())
-            .peerId(request.message.peerId)
-            .randomId(random.nextInt()).execute()
+        messageTemplate.message(text).keyboard(Keyboard().setButtons(buttons)).execute()
 }

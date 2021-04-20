@@ -36,7 +36,7 @@ val bot = Scenario(vk) {
             regex("send document")
         }
         action {
-            reactions.document("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
+            reactions.document("http://www.africau.edu/images/default/sample.pdf")
         }
     }
 
@@ -45,7 +45,8 @@ val bot = Scenario(vk) {
             regex("send audio")
         }
         action {
-            reactions.audio("https://bitbucket.org/just-ai/examples/downloads/game-timer-1.mp3")
+//            reactions.audio("https://file-examples-com.github.io/uploads/2017/11/file_example_WAV_1MG.wav")\
+            reactions.audio("https://github.com/prof3ssorSt3v3/media-sample-files/blob/master/fight-club.mp3?raw=true")
         }
     }
 
