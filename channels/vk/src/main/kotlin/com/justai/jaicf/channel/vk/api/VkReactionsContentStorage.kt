@@ -6,8 +6,16 @@ import com.vk.api.sdk.objects.docs.responses.SaveResponse
 import com.vk.api.sdk.objects.enums.DocsType
 import java.io.File
 
+/**
+ * Defines a storage to save image, document or audio identifiers to send in VK Reactions.
+ *
+ * @see InMemoryVkContentStorage in memory storage implementation.
+ * */
 interface VkReactionsContentStorage {
 
+    /**
+     * Get image from storage by url or upload it to VK servers and return String-identifier to send in reaction
+     * */
     fun getOrUploadImage(
         api: VkApiClient,
         actor: GroupActor,
@@ -15,6 +23,9 @@ interface VkReactionsContentStorage {
         url: String
     ): String
 
+    /**
+     * Get image from storage by file or upload it to VK servers and return String-identifier to send in reaction
+     * */
     fun getOrUploadImage(
         api: VkApiClient,
         actor: GroupActor,
@@ -22,6 +33,9 @@ interface VkReactionsContentStorage {
         file: File
     ): String
 
+    /**
+     * Get document from storage by url or upload it to VK servers and return String-identifier to send in reaction
+     * */
     fun getOrUploadUrl(
         api: VkApiClient,
         groupActor: GroupActor,
@@ -31,6 +45,9 @@ interface VkReactionsContentStorage {
         transformer: SaveResponse.() -> String
     ): String
 
+    /**
+     * Get document from storage by file or upload it to VK servers and return String-identifier to send in reaction
+     * */
     fun getOrUploadFile(
         api: VkApiClient,
         groupActor: GroupActor,

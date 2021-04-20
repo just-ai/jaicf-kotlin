@@ -17,5 +17,4 @@ dependencies {
     core()
     api("com.vk.api:sdk:$vkSdk")
     api("org.apache.logging.log4j:log4j-to-slf4j:$log4jAdapter")
-    testImplementation("ch.qos.logback:logback-classic:1.2.3")
 }

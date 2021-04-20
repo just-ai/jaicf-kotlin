@@ -13,6 +13,9 @@ import java.util.concurrent.ConcurrentHashMap
 
 private val httpClient = HttpClientBuilder.create().build()
 
+/**
+ * In-memory implementation of [VkReactionsContentStorage] to persist image/document or audio identifiers sent by reactions.
+ * */
 object InMemoryVkContentStorage : VkReactionsContentStorage {
     private val uploadedUrlResourcesMap = ConcurrentHashMap<String, String>()
     private val uploadedFileResourcesMap = ConcurrentHashMap<File, String>()
