@@ -8,7 +8,6 @@ import com.justai.jaicf.logging.DocumentReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
-import com.vk.api.sdk.actions.Messages
 import com.vk.api.sdk.client.VkApiClient
 import com.vk.api.sdk.client.actors.GroupActor
 import com.vk.api.sdk.objects.enums.DocsType
@@ -31,10 +30,9 @@ class VkReactions(
     private val storage: VkReactionsContentStorage = InMemoryVkContentStorage
 ) : Reactions() {
 
-    val messagesApi: Messages = api.messages()
     val peerId: Int = request.clientId.toInt()
 
-    private val messageTemplate get() = messagesApi.send(actor).peerId(peerId).randomId(random.nextInt())
+    private val messageTemplate get() = api.messages().send(actor).peerId(peerId).randomId(random.nextInt())
 
     companion object {
         private val random = Random()
@@ -48,11 +46,6 @@ class VkReactions(
     override fun image(url: String): ImageReaction {
         messageTemplate.attachment(storage.getOrUploadImage(api, actor, peerId, url)).execute()
         return ImageReaction.create(url)
-    }
-
-    override fun buttons(vararg buttons: String): ButtonsReaction {
-        // TODO: Async buttons with editing last message
-        return super.buttons(*buttons)
     }
 
     override fun audio(url: String): AudioReaction {
