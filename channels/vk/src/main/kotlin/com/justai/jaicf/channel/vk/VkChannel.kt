@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.vk.api.sdk.callback.CallbackApi
@@ -19,11 +20,11 @@ import java.util.concurrent.Executors
 class VkChannel(
     override val botApi: BotApi,
     configuration: VkChannelConfiguration,
-    url: String = "https://api.vk.com/method/"
+    apiEndpoint: String = VkApiClient.DEFAULT_API_ADDR
 ) : JaicpCompatibleAsyncBotChannel, WithLogger, CallbackApi() {
 
     private val transportClient = HttpTransportClient.getInstance()
-    private val vk = VkApiClient(transportClient)
+    private val vk = VkApiClient(transportClient).apply { this.apiEndpoint = apiEndpoint }
     private val group: GroupActor = GroupActor(configuration.groupId, configuration.accessToken)
     private val storage = configuration.reactionsContentStorage
 
@@ -33,7 +34,7 @@ class VkChannel(
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
         parse(request.receiveText())
-        return "".asJsonHttpBotResponse()
+        return HttpBotResponse.accepted()
     }
 
     private fun process(message: Message) = VkBotRequestFactory.getRequestForMessage(message)
@@ -47,9 +48,16 @@ class VkChannel(
     }
 
     companion object : JaicpCompatibleAsyncChannelFactory {
+        private const val TOKEN = "temporary-access-token"
+        private const val GROUP_ID = 0
         override val channelType = "vk"
-        override fun create(botApi: BotApi, apiUrl: String): JaicpCompatibleAsyncBotChannel =
-            VkChannel(botApi, VkChannelConfiguration("", 0), apiUrl)
+
+        override fun create(
+            botApi: BotApi,
+            apiUrl: String,
+            liveChatProvider: JaicpLiveChatProvider
+        ): JaicpCompatibleAsyncBotChannel =
+            VkChannel(botApi, VkChannelConfiguration(TOKEN, GROUP_ID), "$apiUrl/")
     }
 
     fun run() = object : CallbackApiLongPoll(vk, group) {

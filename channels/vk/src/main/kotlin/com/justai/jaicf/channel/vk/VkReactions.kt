@@ -10,11 +10,11 @@ import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import com.vk.api.sdk.client.VkApiClient
 import com.vk.api.sdk.client.actors.GroupActor
-import com.vk.api.sdk.objects.enums.DocsType
+import com.vk.api.sdk.objects.docs.GetMessagesUploadServerType
 import com.vk.api.sdk.objects.messages.Keyboard
 import com.vk.api.sdk.objects.messages.KeyboardButton
 import com.vk.api.sdk.objects.messages.KeyboardButtonAction
-import com.vk.api.sdk.objects.messages.KeyboardButtonActionType
+import com.vk.api.sdk.objects.messages.TemplateActionTypeNames
 import java.io.File
 import java.util.*
 
@@ -49,7 +49,7 @@ class VkReactions(
     }
 
     override fun audio(url: String): AudioReaction {
-        val audio = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.AUDIO_MESSAGE) {
+        val audio = storage.getOrUploadUrl(api, actor, peerId, url, GetMessagesUploadServerType.AUDIO_MESSAGE) {
             "doc${audioMessage.ownerId}_${audioMessage.id}"
         }
         messageTemplate.attachment(audio).execute()
@@ -57,7 +57,7 @@ class VkReactions(
     }
 
     fun audio(file: File): AudioReaction {
-        val audio = storage.getOrUploadFile(api, actor, peerId, file, DocsType.AUDIO_MESSAGE) {
+        val audio = storage.getOrUploadFile(api, actor, peerId, file, GetMessagesUploadServerType.AUDIO_MESSAGE) {
             "doc${audioMessage.ownerId}_${audioMessage.id}"
         }
         messageTemplate.attachment(audio).execute()
@@ -96,13 +96,13 @@ class VkReactions(
     }
 
     fun document(file: File): DocumentReaction {
-        val uploaded = storage.getOrUploadFile(api, actor, peerId, file, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
+        val uploaded = storage.getOrUploadFile(api, actor, peerId, file, GetMessagesUploadServerType.DOC) { "doc${doc.ownerId}_${doc.id}" }
         messageTemplate.attachment(uploaded).execute()
         return DocumentReaction.create(file.absolutePath)
     }
 
     fun document(url: String): DocumentReaction {
-        val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, DocsType.DOC) { "doc${doc.ownerId}_${doc.id}" }
+        val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, GetMessagesUploadServerType.DOC) { "doc${doc.ownerId}_${doc.id}" }
         messageTemplate.attachment(uploaded).execute()
         return DocumentReaction.create(url)
     }
@@ -121,7 +121,7 @@ class VkReactions(
             text, buttons.map { buttonText ->
                 KeyboardButton().apply {
                     action = KeyboardButtonAction().apply {
-                        type = KeyboardButtonActionType.TEXT
+                        type = TemplateActionTypeNames.CALLBACK
                         label = buttonText
                         payload = "{}"
                     }

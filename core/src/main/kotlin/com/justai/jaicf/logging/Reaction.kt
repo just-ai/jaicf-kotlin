@@ -91,7 +91,7 @@ data class ChangeStateReaction internal constructor(
 }
 
 /**
- * Result of performing reactions.audio() to store in [ExecutionContext]. May not be supported in some channels.
+ * Result of sending any documents from scenario to store in [ExecutionContext].
  *
  * @see [ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]

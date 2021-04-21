@@ -10,7 +10,7 @@ plugins {
     `jaicf-junit`
 }
 
-val vkSdk = "1.0.6"
+val vkSdk = "1.0.10-SNAPSHOT"
 val log4jAdapter = "2.14.1"
 
 dependencies {
