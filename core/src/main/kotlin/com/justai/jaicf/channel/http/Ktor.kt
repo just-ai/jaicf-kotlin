@@ -40,7 +40,9 @@ fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
                 )
             }
 
-            val response = channel.second.process(request)
+            val response = withContext(Dispatchers.Default) {
+                channel.second.process(request)
+            }
             response?.headers?.forEach { call.response.headers.append(it.key, it.value, false) }
 
             when (response) {
