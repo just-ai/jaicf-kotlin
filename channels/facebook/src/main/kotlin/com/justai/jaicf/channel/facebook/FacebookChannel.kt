@@ -39,7 +39,7 @@ class FacebookChannel private constructor(
                 )
             }
         }
-        return "".asTextHttpBotResponse()
+        return HttpBotResponse.accepted()
     }
 
     fun verifyToken(mode: String?, token: String?, challenge: String?): String {

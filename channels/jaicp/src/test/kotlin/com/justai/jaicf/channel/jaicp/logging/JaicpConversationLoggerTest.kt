@@ -13,7 +13,6 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.reactions.chatapi
 import com.justai.jaicf.context.ExecutionContext
-import com.justai.jaicf.model.scenario.Scenario
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Test

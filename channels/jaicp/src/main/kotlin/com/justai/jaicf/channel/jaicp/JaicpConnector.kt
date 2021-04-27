@@ -4,7 +4,7 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponseWithStatus
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.execution.ThreadPoolRequestExecutor
 import com.justai.jaicf.helpers.http.toUrl
@@ -96,7 +96,7 @@ abstract class JaicpConnector(
     private fun getApiProxyUrl(config: ChannelConfig) =
         "$apiProxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
 
-    protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpBotResponse? =
+    protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpBotResponseWithStatus =
         threadPoolRequestExecutor.executeSync(request, channel)
 
     companion object {

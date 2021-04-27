@@ -4,7 +4,8 @@ import com.justai.jaicf.channel.aimybox.AimyboxChannel
 import com.justai.jaicf.channel.alexa.AlexaChannel
 import com.justai.jaicf.channel.facebook.FacebookChannel
 import com.justai.jaicf.channel.googleactions.jaicp.ActionsFulfillmentDialogflow
-import com.justai.jaicf.channel.jaicp.JaicpPollingConnector
+import com.justai.jaicf.channel.jaicp.JaicpServer
+import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
 import com.justai.jaicf.channel.jaicp.channels.ChatWidgetChannel
 import com.justai.jaicf.channel.telegram.TelegramChannel
 import com.justai.jaicf.examples.helloworld.helloWorldBot
@@ -14,19 +15,17 @@ fun main() {
         System.getenv("JAICP_API_TOKEN")
             ?: print("Enter your JAICP project API key: ").run { readLine() }*/
 
-    accessToken?.let {
-        JaicpPollingConnector(
-            botApi = helloWorldBot,
-            accessToken = accessToken,
-            channels = listOf(
-                ChatWidgetChannel,
-                TelegramChannel,
-                FacebookChannel,
-                AimyboxChannel,
-                AlexaChannel,
-                ActionsFulfillmentDialogflow()
-            ),
-            url = "http://localhost:9020"
-        ).runBlocking()
-    }
+    JaicpServer(
+        botApi = helloWorldBot,
+        accessToken = accessToken,
+        channels = listOf(
+            ChatWidgetChannel,
+            TelegramChannel,
+            FacebookChannel,
+            AimyboxChannel,
+            AlexaChannel,
+            ActionsFulfillmentDialogflow()
+        ),
+        url = "http://localhost:9020"
+    ).start()
 }

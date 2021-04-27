@@ -30,7 +30,7 @@ class AliceChannel(
         aliceApiUrl = proxyUrl
     }
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         val botRequest = JSON.decodeFromString(AliceBotRequest.serializer(), request.receiveText())
         val botResponse = AliceBotResponse(botRequest)
 

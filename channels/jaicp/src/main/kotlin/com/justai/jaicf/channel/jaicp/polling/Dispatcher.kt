@@ -1,7 +1,7 @@
 package com.justai.jaicf.channel.jaicp.polling
 
 import com.justai.jaicf.channel.jaicp.JaicpBotChannel
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponseWithStatus
 import com.justai.jaicf.channel.jaicp.execution.ThreadPoolRequestExecutor
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
@@ -42,7 +42,7 @@ internal class Dispatcher(
         }
     }
 
-    private fun sendResponse(botResponse: Deferred<JaicpBotResponse?>, url: String) {
+    private fun sendResponse(botResponse: Deferred<JaicpBotResponseWithStatus>, url: String) {
         launch(Dispatchers.IO) {
             sender.send(url, botResponse)
         }

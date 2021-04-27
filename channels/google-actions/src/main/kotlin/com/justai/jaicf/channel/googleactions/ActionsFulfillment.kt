@@ -20,7 +20,7 @@ class ActionsFulfillment private constructor(
 
     private val contextManager = useDataStorage.takeIf { it }?.let { ActionsBotContextManager() }
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         val actionRequest = app.createRequest(request.receiveText(), mapOf<String, String>()).apply {
             userStorage.putIfAbsent(ACTIONS_USER_ID, UUID.randomUUID().toString())
         }

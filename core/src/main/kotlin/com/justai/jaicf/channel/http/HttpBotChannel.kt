@@ -18,5 +18,5 @@ interface HttpBotChannel: BotChannel {
      * @return a serialized channel-related response. Should return null if the request cannot be processed.
      * @see HttpBotRequest
      */
-    fun process(request: HttpBotRequest): HttpBotResponse?
+    fun process(request: HttpBotRequest): HttpBotResponse
 }

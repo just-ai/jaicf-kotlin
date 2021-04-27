@@ -95,11 +95,11 @@ class TelegramChannel(
         }
     }
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         val update = gson.fromJson(request.receiveText(), Update::class.java)
         update.httpBotRequest = request
         bot.processUpdate(update)
-        return null
+        return HttpBotResponse.accepted()
     }
 
     private fun generateRequestFromTemplate(request: InvocationRequest) =
