@@ -67,7 +67,7 @@ action {
 }
 ```
 
-> Learn more about available API methods [here](https://github.com/kotlin-telegram-bot/kotlin-telegram-bot/blob/master/telegram/src/main/kotlin/me/ivmg/telegram/Bot.kt).
+> Learn more about available API methods [here](https://github.com/kotlin-telegram-bot/kotlin-telegram-bot/blob/main/telegram/src/main/kotlin/com/github/kotlintelegrambot/Bot.kt).
 
 #### 3. Create a new bot in Telegram
 
