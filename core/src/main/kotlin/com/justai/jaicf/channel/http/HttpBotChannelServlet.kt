@@ -31,16 +31,13 @@ open class HttpBotChannelServlet(
             val response = channel.process(request)
             logger.info("{} responded with {}", channel, response)
 
-            when (response) {
-                null -> resp?.sendError(HttpServletResponse.SC_NOT_FOUND, "Bot didn't respond")
-                else -> resp?.run {
-                    setStatus(HttpServletResponse.SC_OK)
+            resp?.run {
+                setStatus(response.statusCode.value)
 
-                    contentType = response.contentType
-                    response.headers.forEach { addHeader(it.key, it.value) }
-                    response.output.writeTo(outputStream)
-                    outputStream.flush()
-                }
+                contentType = response.contentType.value
+                response.headers.forEach { addHeader(it.key, it.value) }
+                response.output.writeTo(outputStream)
+                outputStream.flush()
             }
         }
     }

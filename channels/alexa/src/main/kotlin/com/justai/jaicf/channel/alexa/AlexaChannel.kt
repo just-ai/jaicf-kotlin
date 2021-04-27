@@ -16,7 +16,7 @@ class AlexaChannel(
     private val serializer = JacksonSerializer()
     private val skill = AlexaSkill.create(botApi)
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         val botRequest = serializer.deserialize(request.receiveText(), RequestEnvelope::class.java)
         val botResponse = skill.invoke(botRequest, request)
         return serializer.serialize(botResponse).asJsonHttpBotResponse()

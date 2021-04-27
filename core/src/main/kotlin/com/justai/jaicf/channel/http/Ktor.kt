@@ -1,7 +1,8 @@
 package com.justai.jaicf.channel.http
 
 import io.ktor.application.*
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -43,13 +44,13 @@ fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
             val response = withContext(Dispatchers.Default) {
                 channel.second.process(request)
             }
-            response?.headers?.forEach { call.response.headers.append(it.key, it.value, false) }
+            response.headers.forEach { call.response.headers.append(it.key, it.value, false) }
 
-            when (response) {
-                null -> call.respond(HttpStatusCode.NotFound, "Bot didn't respond")
-                else -> call.respondOutputStream(ContentType.parse(response.contentType)) {
-                    response.output.writeTo(this)
-                }
+            call.respondOutputStream(
+                ContentType.parse(response.contentType.value),
+                HttpStatusCode.fromValue(response.statusCode.value)
+            ) {
+                response.output.writeTo(this)
             }
         }
     }

@@ -14,11 +14,11 @@ class AimyboxChannel(
     private val apiKey: String? = null
 ) : JaicpCompatibleBotChannel {
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         val req = JSON.decodeFromString(AimyboxBotRequest.serializer(), request.receiveText())
 
         if (!apiKey.isNullOrEmpty() && apiKey != req.key) {
-            return null
+            return HttpBotResponse.forbidden("Received key does not equal the api key")
         }
 
         val reactions = AimyboxReactions(AimyboxBotResponse(req.query))

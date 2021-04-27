@@ -4,12 +4,13 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
-import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.asJaicpBotRequest
-import com.justai.jaicf.channel.jaicp.serialized
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponseWithStatus
+import com.justai.jaicf.channel.jaicp.dto.asHttpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
+import com.justai.jaicf.channel.jaicp.dto.withStatus
 import com.justai.jaicf.channel.jaicp.reactions.JaicpReactions
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -24,19 +25,19 @@ abstract class JaicpNativeChannel(
 
     abstract fun createReactions(): JaicpReactions
 
-    override fun process(request: HttpBotRequest): HttpBotResponse? {
+    override fun process(request: HttpBotRequest): HttpBotResponse {
         val botRequest = request.receiveText().asJaicpBotRequest()
-        return process(botRequest).serialized().asJsonHttpBotResponse()
+        return process(botRequest).asHttpBotResponse()
     }
 
-    override fun process(request: JaicpBotRequest): JaicpBotResponse {
+    override fun process(request: JaicpBotRequest): JaicpBotResponseWithStatus {
         val reactions = createReactions()
         val executionTime = measureTimeMillis {
             val channelRequest = createRequest(request)
             logger.debug("Processing query: ${request.query} or event: ${request.event}")
             botApi.process(channelRequest, reactions, RequestContext.DEFAULT)
         }
-        return answer(reactions, request, reactions.getCurrentState(), executionTime)
+        return answer(reactions, request, reactions.getCurrentState(), executionTime).withStatus()
     }
 
     private fun answer(
