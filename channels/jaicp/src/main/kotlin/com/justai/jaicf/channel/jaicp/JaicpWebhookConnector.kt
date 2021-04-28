@@ -4,8 +4,10 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.*
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
+import com.justai.jaicf.channel.jaicp.dto.JaicpAsyncResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpErrorResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpPingRequest
-import com.justai.jaicf.channel.jaicp.dto.asHttpBotResponse
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
@@ -92,7 +94,12 @@ open class JaicpWebhookConnector(
         val channel = channelMap[botRequest.channelBotId]
             ?: return HttpBotResponse.notFound("Channel ${botRequest.channelType} is not configured or not supported")
 
-        return processJaicpRequest(botRequest, channel).asHttpBotResponse()
+        val response = processJaicpRequest(botRequest, channel)
+        return when(response){
+            is JaicpAsyncResponse -> HttpBotResponse.accepted()
+            is JaicpBotResponse -> response.serialized().asJsonHttpBotResponse()
+            is JaicpErrorResponse -> HttpBotResponse.error(response.message)
+        }
     }
 
     private fun isHandledPingQuery(request: String): Boolean = try {

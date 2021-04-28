@@ -1,8 +1,6 @@
 package com.justai.jaicf.channel.jaicp.execution
 
 import com.justai.jaicf.channel.BotChannel
-import com.justai.jaicf.channel.http.ContentType
-import com.justai.jaicf.channel.http.HttpStatusCode
 import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
 import com.justai.jaicf.channel.invocationapi.InvocationEventRequest
 import com.justai.jaicf.channel.jaicp.JSON
@@ -10,11 +8,12 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpMDC
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
+import com.justai.jaicf.channel.jaicp.dto.JaicpAsyncResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponseWithStatus
+import com.justai.jaicf.channel.jaicp.dto.JaicpErrorResponse
+import com.justai.jaicf.channel.jaicp.dto.JaicpResponse
 import com.justai.jaicf.channel.jaicp.dto.fromRequest
-import com.justai.jaicf.channel.jaicp.dto.withStatus
 import com.justai.jaicf.channel.jaicp.invocationapi.InvocationRequestData
 import com.justai.jaicf.context.RequestContext
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +22,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -44,16 +42,13 @@ class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
         executeAsync(request, channel).await()
     }
 
-    private fun execute(
-        request: JaicpBotRequest,
-        channel: BotChannel
-    ): JaicpBotResponseWithStatus {
+    private fun execute(request: JaicpBotRequest, channel: BotChannel): JaicpResponse {
         JaicpMDC.setFromRequest(request)
         return when (channel) {
             is JaicpNativeBotChannel -> executeNative(channel, request)
             is JaicpCompatibleBotChannel -> executeCompatible(channel, request)
             is JaicpCompatibleAsyncBotChannel -> executeAsync(channel, request)
-            else -> error("Not supported channel type ${channel.javaClass}")
+            else -> JaicpErrorResponse("Not supported channel type ${channel.javaClass}")
         }
     }
 
@@ -63,45 +58,31 @@ class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope {
     private fun executeCompatible(channel: JaicpCompatibleBotChannel, request: JaicpBotRequest) =
         channel.processCompatible(request)
 
-    private fun executeAsync(
-        channel: JaicpCompatibleAsyncBotChannel,
-        request: JaicpBotRequest
-    ): JaicpBotResponseWithStatus {
-        if (tryProcessAsExternalInvocation(channel, request)) {
-            return JaicpBotResponseWithStatus(null, statusCode = HttpStatusCode.ACCEPTED)
-        }
-        val httpBotResponse = channel.process(request.asHttpBotRequest())
-
-        val response = if (httpBotResponse.contentType == ContentType.PLAIN_TEXT) {
-            JsonNull
-        } else {
-            val rawJson = JSON.decodeFromString<JsonObject>(httpBotResponse.output.toString())
-            addRawReply(rawJson)
+    private fun executeAsync(channel: JaicpCompatibleAsyncBotChannel, request: JaicpBotRequest): JaicpResponse {
+        val isProcessed = tryProcessAsExternalInvocation(channel, request)
+        if (!isProcessed) {
+            channel.process(request.asHttpBotRequest())
         }
 
-        return JaicpBotResponse.fromRequest(request, response)
-            .withStatus(httpBotResponse.statusCode, httpBotResponse.output.toString())
+        return JaicpAsyncResponse
     }
 }
 
 private fun JaicpCompatibleBotChannel.processCompatible(
     botRequest: JaicpBotRequest
-): JaicpBotResponseWithStatus {
+): JaicpResponse {
     val startTime = System.currentTimeMillis()
     val request = botRequest.asHttpBotRequest()
     val httpBotResponse = process(request)
-
     val processingTime = System.currentTimeMillis() - startTime
 
-    val response = if (httpBotResponse.contentType == ContentType.PLAIN_TEXT) {
-        JsonNull
-    } else {
-        val rawJson = JSON.decodeFromString<JsonObject>(httpBotResponse.output.toString())
-        addRawReply(rawJson)
+    if (!httpBotResponse.isSuccess()) {
+        return JaicpErrorResponse(httpBotResponse.output.toString())
     }
 
+    val rawJson = JSON.decodeFromString<JsonObject>(httpBotResponse.output.toString())
+    val response = addRawReply(rawJson)
     return JaicpBotResponse.fromRequest(botRequest, response, processingTime)
-        .withStatus(httpBotResponse.statusCode, httpBotResponse.output.toString())
 }
 
 private fun addRawReply(rawResponse: JsonElement) = buildJsonObject {

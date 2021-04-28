@@ -28,35 +28,44 @@ data class HttpBotResponse(
         statusCode = statusCode
     )
 
+    fun isSuccess() = statusCode.isSuccess()
+
     companion object {
         fun accepted(text: String = "") =
-            HttpBotResponse(text, ContentType.PLAIN_TEXT, statusCode = HttpStatusCode.ACCEPTED)
+            HttpBotResponse(text, ContentType.PlainText, statusCode = HttpStatusCode.ACCEPTED)
 
         fun forbidden(text: String = "") =
-            HttpBotResponse(text, ContentType.PLAIN_TEXT, statusCode = HttpStatusCode.FORBIDDEN)
+            HttpBotResponse(text, ContentType.PlainText, statusCode = HttpStatusCode.FORBIDDEN)
 
         fun notFound(text: String = "") =
-            HttpBotResponse(text, ContentType.PLAIN_TEXT, statusCode = HttpStatusCode.NOT_FOUND)
+            HttpBotResponse(text, ContentType.PlainText, statusCode = HttpStatusCode.NOT_FOUND)
+
+        fun error(text: String = "") =
+            HttpBotResponse(text, ContentType.PlainText, statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR)
     }
 }
 
 fun String.asJsonHttpBotResponse(statusCode: HttpStatusCode = HttpStatusCode.OK) =
-    HttpBotResponse(this, ContentType.JSON, statusCode = statusCode)
+    HttpBotResponse(this, ContentType.Json, statusCode = statusCode)
 
 fun String.asTextHttpBotResponse(statusCode: HttpStatusCode = HttpStatusCode.OK) =
-    HttpBotResponse(this, ContentType.PLAIN_TEXT, statusCode = statusCode)
+    HttpBotResponse(this, ContentType.PlainText, statusCode = statusCode)
 
-// TODO ???
-enum class ContentType(val value: String) {
-    JSON("application/json"),
-    PLAIN_TEXT("text/plain")
+class ContentType private constructor(val value: String) {
+    companion object {
+        val Json = ContentType("application/json")
+        val PlainText = ContentType("text/plain")
+
+        fun parse(value: String) = ContentType(value)
+    }
 }
 
 enum class HttpStatusCode(val value: Int) {
     OK(200),
     ACCEPTED(202),
     FORBIDDEN(403),
-    NOT_FOUND(404)
+    NOT_FOUND(404),
+    INTERNAL_SERVER_ERROR(500)
 }
 
 fun HttpStatusCode.isSuccess() =
