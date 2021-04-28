@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.JaicpBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
-import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponseWithStatus
+import com.justai.jaicf.channel.jaicp.dto.JaicpResponse
 
 /**
  * Interface for JAICP Native Channels, which are:
@@ -24,7 +24,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponseWithStatus
  * @see JaicpNativeChannel
  */
 interface JaicpNativeBotChannel : JaicpBotChannel, HttpBotChannel {
-    fun process(request: JaicpBotRequest): JaicpBotResponseWithStatus
+    fun process(request: JaicpBotRequest): JaicpResponse
 }
 
 interface JaicpNativeChannelFactory : JaicpChannelFactory {

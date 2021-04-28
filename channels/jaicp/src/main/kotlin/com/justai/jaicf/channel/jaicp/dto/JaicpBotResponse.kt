@@ -5,6 +5,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
+sealed class JaicpResponse
+
+object JaicpAsyncResponse : JaicpResponse()
+
+class JaicpErrorResponse(val message: String): JaicpResponse()
+
 @Serializable
 data class JaicpBotResponse(
     val data: JsonElement,
@@ -21,7 +27,7 @@ data class JaicpBotResponse(
     val requestType: String = "query",
     val version: Int = 1,
     val requestData: JsonObject,
-) : BotResponse
+) : BotResponse, JaicpResponse()
 
 fun JaicpBotResponse.Companion.fromRequest(
     jaicpBotRequest: JaicpBotRequest,

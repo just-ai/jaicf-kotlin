@@ -1,15 +1,16 @@
 package com.justai.jaicf.channel.slack
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.http.ContentType
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asHttpBotRequest
-import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
-import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
-import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
 import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
+import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
+import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.slack.api.Slack
@@ -116,11 +117,13 @@ class SlackChannel private constructor(
         val slackRequest = buildSlackRequest(request).apply { context.httpBotRequest = request }
         val slackResponse = app.run(slackRequest)
 
-        return HttpBotResponse(slackResponse.body ?: "", slackResponse.contentType).apply {
+        return HttpBotResponse(
+            slackResponse.body ?: "",
+            ContentType.parse(slackResponse.contentType)
+        ).apply {
             headers.putAll(slackResponse.headers.mapValues { it.value.first() })
         }
     }
-
 
     private fun buildSlackRequest(req: HttpBotRequest) = SlackRequestParser.HttpRequest.builder()
         .queryString(req.parameters.toMutableMap())
