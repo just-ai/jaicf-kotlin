@@ -17,21 +17,22 @@ import javax.servlet.http.HttpServletResponse
 open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotChannelServlet(connector) {
 
     override fun doPut(req: HttpServletRequest?, resp: HttpServletResponse?) {
-        if (req?.requestURI == RELOAD_CONFIGS_URL) {
+        if (req?.requestURI?.endsWith(RELOAD_CONFIGS_URL) == true) {
             connector.reload()
             resp?.ok()
         }
     }
 
-    override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse?) {
-        if (req?.requestURI?.startsWith(CHANNEL_CHECK_URL) == true) {
-            val channelId = req.requestURI.removePrefix("$CHANNEL_CHECK_URL/").split("/").firstOrNull()
-            if (connector.getRunningChannels().contains(channelId)) resp?.ok()
-            else resp?.notFound("Channel $channelId is not configured.")
+    override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse) {
+        if (req?.requestURI?.contains(CHANNEL_CHECK_URL) == true) {
+            val channelId = req.requestURI.substringAfter("$CHANNEL_CHECK_URL/").split("/").firstOrNull()
+            if (connector.getRunningChannels().contains(channelId))
+                resp.ok()
+            else
+                resp.notFound("Channel $channelId is not configured.")
         }
-        if (req?.requestURI == HEALTH_CHECK_URL) {
-            connector.getRunningChannels()
-            resp?.ok()
+        if (req?.requestURI?.endsWith(HEALTH_CHECK_URL) == true) {
+            resp.ok()
         }
     }
 
