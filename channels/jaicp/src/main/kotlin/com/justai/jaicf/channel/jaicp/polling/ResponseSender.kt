@@ -18,7 +18,7 @@ internal class ResponseSender(private val client: HttpClient) : WithLogger {
             when (response) {
                 is JaicpBotResponse -> send(url, response)
                 is JaicpErrorResponse -> logger.warn("Failed to process request, message ${response.message}")
-                is JaicpAsyncResponse -> logger.debug("Ignored an async response")
+                is JaicpAsyncResponse -> logger.trace("Ignored an async response")
             }
         } catch (ex: Exception) {
             logger.debug("Failed to send message, exception: ", ex)

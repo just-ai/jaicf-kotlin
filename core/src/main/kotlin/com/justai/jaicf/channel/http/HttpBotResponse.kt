@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets
 data class HttpBotResponse(
     val output: ByteArrayOutputStream,
     val contentType: ContentType,
-    val statusCode: HttpStatusCode = HttpStatusCode.OK
+    val statusCode: Int = HttpStatusCode.OK
 ) {
     val headers = mutableMapOf<String, String>()
 
@@ -21,14 +21,14 @@ data class HttpBotResponse(
         text: String,
         contentType: ContentType,
         charset: Charset = StandardCharsets.UTF_8,
-        statusCode: HttpStatusCode = HttpStatusCode.OK
+        statusCode: Int = HttpStatusCode.OK
     ) : this(
         output = ByteArrayOutputStream(text.length).apply { write(text.toByteArray(charset)) },
         contentType = contentType,
         statusCode = statusCode
     )
 
-    fun isSuccess() = statusCode.isSuccess()
+    fun isSuccess() = statusCode in (200 until 300)
 
     companion object {
         fun accepted(text: String = "") =
@@ -45,10 +45,10 @@ data class HttpBotResponse(
     }
 }
 
-fun String.asJsonHttpBotResponse(statusCode: HttpStatusCode = HttpStatusCode.OK) =
+fun String.asJsonHttpBotResponse(statusCode: Int = HttpStatusCode.OK) =
     HttpBotResponse(this, ContentType.Json, statusCode = statusCode)
 
-fun String.asTextHttpBotResponse(statusCode: HttpStatusCode = HttpStatusCode.OK) =
+fun String.asTextHttpBotResponse(statusCode: Int = HttpStatusCode.OK) =
     HttpBotResponse(this, ContentType.PlainText, statusCode = statusCode)
 
 class ContentType private constructor(val value: String) {
@@ -60,13 +60,10 @@ class ContentType private constructor(val value: String) {
     }
 }
 
-enum class HttpStatusCode(val value: Int) {
-    OK(200),
-    ACCEPTED(202),
-    FORBIDDEN(403),
-    NOT_FOUND(404),
-    INTERNAL_SERVER_ERROR(500)
+object HttpStatusCode {
+    const val OK = 200
+    const val ACCEPTED = 202
+    const val FORBIDDEN = 403
+    const val NOT_FOUND = 404
+    const val INTERNAL_SERVER_ERROR = 500
 }
-
-fun HttpStatusCode.isSuccess() =
-    value in (200 until 300)

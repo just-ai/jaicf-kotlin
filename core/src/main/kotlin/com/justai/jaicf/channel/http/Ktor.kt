@@ -48,8 +48,9 @@ fun Routing.httpBotRouting(vararg channels: Pair<String, HttpBotChannel>) {
 
             call.respondOutputStream(
                 ContentType.parse(response.contentType.value),
-                HttpStatusCode.fromValue(response.statusCode.value)
+                HttpStatusCode.fromValue(response.statusCode)
             ) {
+                @Suppress("BlockingMethodInNonBlockingContext") // Ktor itself runs it in the IO context
                 response.output.writeTo(this)
             }
         }
