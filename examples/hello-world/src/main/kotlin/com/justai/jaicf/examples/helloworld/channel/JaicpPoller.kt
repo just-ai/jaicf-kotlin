@@ -25,8 +25,7 @@ fun main() {
                 AimyboxChannel,
                 AlexaChannel,
                 ActionsFulfillmentDialogflow()
-            ),
-            url = "http://localhost:9020"
+            )
         ).runBlocking()
     }
 }

@@ -32,7 +32,7 @@ open class HttpBotChannelServlet(
             logger.info("{} responded with {}", channel, response)
 
             resp?.run {
-                setStatus(response.statusCode.value)
+                setStatus(response.statusCode)
 
                 contentType = response.contentType.value
                 response.headers.forEach { addHeader(it.key, it.value) }
