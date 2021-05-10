@@ -32,8 +32,8 @@ fun JaicpCompatibleAsyncReactions.switchToLiveChat(message: String) =
  * */
 fun JaicpCompatibleAsyncReactions.switchToLiveChat(reply: LiveChatSwitchReply): SwitchReaction? {
     val switchRequest = LiveChatInitRequest.create(executionContext, reply) ?: return null
-    val connector = ChatAdapterConnector.getIfExists() ?: return null
-    connector.initLiveChat(switchRequest)
+    val liveChatProvider = liveChatProvider as? ChatAdapterConnector ?: return null
+    liveChatProvider.initLiveChat(switchRequest)
     return SwitchReaction.fromReply(switchRequest.switchData, executionContext.botContext.dialogContext.currentState)
         .also { executionContext.reactions.add(it) }
 }

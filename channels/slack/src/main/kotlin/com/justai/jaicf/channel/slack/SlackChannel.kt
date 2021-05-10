@@ -10,6 +10,7 @@ import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
@@ -36,6 +37,7 @@ class SlackChannel private constructor(
 
     private lateinit var app: App
     private lateinit var parser: SlackRequestParser
+    private var liveChatProvider: JaicpLiveChatProvider? = null
 
     constructor(botApi: BotApi, config: SlackChannelConfig) : this(botApi) {
         val appConfig = AppConfig.builder()
@@ -46,7 +48,7 @@ class SlackChannel private constructor(
         start()
     }
 
-    private constructor(botApi: BotApi, urlPrefix: String) : this(botApi) {
+    private constructor(botApi: BotApi, urlPrefix: String, liveChatProvider: JaicpLiveChatProvider) : this(botApi) {
         val config = SlackConfig().apply {
             methodsEndpointUrlPrefix = "$urlPrefix/".toUrl()
             methodsConfig = MethodsConfig().apply {
@@ -64,6 +66,7 @@ class SlackChannel private constructor(
                 .build(),
             listOf(IgnoringSelfEvents(config))
         )
+        this.liveChatProvider = liveChatProvider
 
         start()
     }
@@ -72,25 +75,25 @@ class SlackChannel private constructor(
         parser = SlackRequestParser(app.config())
 
         app.command(".*".toPattern()) { req, ctx ->
-            launch(SlackCommandRequest(req.payload), SlackReactions(ctx), ctx.httpBotRequest)
+            launch(SlackCommandRequest(req.payload), SlackReactions(ctx, liveChatProvider), ctx.httpBotRequest)
             ctx.ack()
         }
 
         app.message(".*".toPattern()) { payload, ctx ->
-            launch(SlackEventRequest(payload), SlackReactions(ctx), ctx.httpBotRequest)
+            launch(SlackEventRequest(payload), SlackReactions(ctx, liveChatProvider), ctx.httpBotRequest)
             ctx.ack()
         }
 
         app.blockAction(".*".toPattern()) { req, ctx ->
             if (!req.payload.responseUrl.isNullOrEmpty()) {
-                launch(SlackActionRequest(req.payload), SlackReactions(ctx), ctx.httpBotRequest)
+                launch(SlackActionRequest(req.payload), SlackReactions(ctx, liveChatProvider), ctx.httpBotRequest)
             }
             ctx.ack()
         }
 
         slackEvents.forEach {
             app.event(it) { payload, ctx ->
-                launch(SlackEventRequest(payload), SlackReactions(ctx), ctx.httpBotRequest)
+                launch(SlackEventRequest(payload), SlackReactions(ctx, liveChatProvider), ctx.httpBotRequest)
                 ctx.ack()
             }
         }
@@ -110,7 +113,7 @@ class SlackChannel private constructor(
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val invocationRequest = SlackInvocationRequest.create(request) ?: return
         val slackRequest = buildSlackRequest(generateRequestFromTemplate(request).asHttpBotRequest())
-        botApi.process(invocationRequest, SlackReactions(slackRequest.context), requestContext)
+        botApi.process(invocationRequest, SlackReactions(slackRequest.context, liveChatProvider), requestContext)
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
@@ -134,7 +137,11 @@ class SlackChannel private constructor(
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "slack"
-        override fun create(botApi: BotApi, apiUrl: String) = SlackChannel(botApi, apiUrl)
+        override fun create(
+            botApi: BotApi,
+            apiUrl: String,
+            liveChatProvider: JaicpLiveChatProvider
+        ) = SlackChannel(botApi, apiUrl, liveChatProvider)
 
         private const val REQUEST_TEMPLATE_PATH = "/SlackRequestTemplate.json"
     }

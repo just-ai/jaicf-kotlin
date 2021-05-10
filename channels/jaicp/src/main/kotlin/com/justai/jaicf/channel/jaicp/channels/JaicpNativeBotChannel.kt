@@ -4,6 +4,7 @@ import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.HttpBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpChannelFactory
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpResponse
@@ -28,6 +29,6 @@ interface JaicpNativeBotChannel : JaicpBotChannel, HttpBotChannel {
 }
 
 interface JaicpNativeChannelFactory : JaicpChannelFactory {
-    fun create(botApi: BotApi): JaicpNativeBotChannel
+    fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider): JaicpNativeBotChannel
     override val channelType: String
 }

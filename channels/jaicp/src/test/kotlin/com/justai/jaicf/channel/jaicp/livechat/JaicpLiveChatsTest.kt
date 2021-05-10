@@ -20,9 +20,10 @@ internal class JaicpLiveChatsTest : JaicpBaseTest() {
         val scenario = echoWithAction {
             reactions.jaicpAsync?.switchToLiveChat(message)
         }
-        JaicpTestChannel(scenario, ChatWidgetChannel).process(requestFromResources)
+        val channel = JaicpTestChannel(scenario, ChatWidgetChannel)
+        channel.process(requestFromResources)
 
-        val act = requireNotNull(connectorHttpRequestBody)
+        val act = requireNotNull(channel.mockHttpRequestBody)
         val livechatRequest = JSON.decodeFromString(LiveChatInitRequest.serializer(), act)
         assertTrue { livechatRequest.switchData.firstMessage == message }
     }
@@ -38,11 +39,12 @@ internal class JaicpLiveChatsTest : JaicpBaseTest() {
         val scenario = echoWithAction {
             reactions.jaicpAsync?.switchToLiveChat(expected)
         }
-        JaicpTestChannel(scenario, ChatWidgetChannel).process(requestFromResources)
+        val channel = JaicpTestChannel(scenario, ChatWidgetChannel)
+        channel.process(requestFromResources)
 
         val actual = JSON.decodeFromString(
             LiveChatInitRequest.serializer(),
-            requireNotNull(connectorHttpRequestBody)
+            requireNotNull(channel.mockHttpRequestBody)
         ).switchData
 
         assertEquals(expected, actual)

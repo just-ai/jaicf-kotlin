@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp.http
 
 import com.justai.jaicf.channel.jaicp.DEFAULT_PROXY_URL
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpLogModel
 import com.justai.jaicf.channel.jaicp.livechat.LiveChatInitRequest
@@ -12,13 +13,12 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.annotations.TestOnly
 
-internal class ChatAdapterConnector private constructor(
+internal class ChatAdapterConnector(
     val accessToken: String,
     val url: String = DEFAULT_PROXY_URL,
     private val httpClient: HttpClient
-) : WithLogger {
+) : WithLogger, JaicpLiveChatProvider {
 
     private val baseUrl = "$url/restapi/external-bot/$accessToken"
 
@@ -54,24 +54,6 @@ internal class ChatAdapterConnector private constructor(
                 HttpStatusCode.NotFound -> throw NoOperatorsOnlineException(liveChatInitRequest.request)
                 HttpStatusCode.BadRequest -> throw NoOperatorChannelConfiguredException(liveChatInitRequest.request)
             }
-        }
-    }
-
-    companion object {
-        private var INSTANCE: ChatAdapterConnector? = null
-
-        @Synchronized
-        fun getOrCreate(accessToken: String, url: String, httpClient: HttpClient) = INSTANCE
-            ?.apply {
-                if (this.accessToken != accessToken || this.url != url)
-                    error("Multiple connector instances detected. Make sure your JaicpConnection and JaicpConversationLogger are pointed to same host with same access token.")
-            } ?: ChatAdapterConnector(accessToken, url, httpClient).also { INSTANCE = it }
-
-        fun getIfExists() = INSTANCE
-
-        @TestOnly
-        fun removeInstance() {
-            INSTANCE = null
         }
     }
 }

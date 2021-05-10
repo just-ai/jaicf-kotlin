@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp.channels
 
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.jaicp.dto.ChatWidgetBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.reactions.ChatWidgetReactions
@@ -18,13 +19,17 @@ import com.justai.jaicf.channel.jaicp.reactions.ChatWidgetReactions
  *
  * @param botApi the [BotApi] implementation used to process the requests to this channel
  * */
-class ChatWidgetChannel(override val botApi: BotApi) : JaicpNativeChannel(botApi) {
+class ChatWidgetChannel(
+    override val botApi: BotApi,
+    private val liveChatProvider: JaicpLiveChatProvider
+) : JaicpNativeChannel(botApi) {
 
     override fun createRequest(request: JaicpBotRequest) = ChatWidgetBotRequest.create(request)
-    override fun createReactions() = ChatWidgetReactions()
+    override fun createReactions() = ChatWidgetReactions(liveChatProvider)
 
     companion object : JaicpNativeChannelFactory {
         override val channelType = "chatwidget"
-        override fun create(botApi: BotApi) = ChatWidgetChannel(botApi)
+        override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider) =
+            ChatWidgetChannel(botApi, liveChatProvider)
     }
 }
