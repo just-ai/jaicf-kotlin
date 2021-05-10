@@ -5,11 +5,11 @@ import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpResponse
-import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.channel.jaicp.execution.ThreadPoolRequestExecutor
+import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 
 const val DEFAULT_PROXY_URL = "https://bot.jaicp.com"
 
@@ -35,7 +35,7 @@ abstract class JaicpConnector(
 ) : WithLogger {
 
     protected val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
-    private val chatAdapterConnector = ChatAdapterConnector.getOrCreate(accessToken, url, httpClient)
+    private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
     private var registeredChannels = fetchChannels()
 
     protected fun loadConfig() {
@@ -46,8 +46,10 @@ abstract class JaicpConnector(
 
     private fun createChannel(factory: JaicpChannelFactory, cfg: ChannelConfig) = when (factory) {
         is JaicpCompatibleChannelFactory -> registerInternal(factory.create(botApi), cfg)
-        is JaicpNativeChannelFactory -> registerInternal(factory.create(botApi), cfg)
-        is JaicpCompatibleAsyncChannelFactory -> registerInternal(factory.create(botApi, getChannelProxyUrl(cfg)), cfg)
+        is JaicpNativeChannelFactory -> registerInternal(factory.create(botApi, chatAdapterConnector), cfg)
+        is JaicpCompatibleAsyncChannelFactory -> registerInternal(
+            factory.create(botApi, getChannelProxyUrl(cfg), chatAdapterConnector), cfg
+        )
         else -> logger.info("Channel type ${factory.channelType} is not added to list of channels in BotEngine")
     }
 

@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.channels
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.jaicp.bargein.BargeInProcessor
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyBotRequest
@@ -45,7 +46,8 @@ class TelephonyChannel(
 
     companion object : JaicpNativeChannelFactory {
         override val channelType = "resterisk"
-        override fun create(botApi: BotApi) = TelephonyChannel(botApi)
+        override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider): JaicpNativeBotChannel =
+            TelephonyChannel(botApi)
     }
 
     class Factory(
@@ -53,6 +55,7 @@ class TelephonyChannel(
         private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT
     ) : JaicpNativeChannelFactory {
         override val channelType = "resterisk"
-        override fun create(botApi: BotApi) = TelephonyChannel(botApi, bargeInProcessor, defaultBargeInProperties)
+        override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider): JaicpNativeBotChannel =
+            TelephonyChannel(botApi, bargeInProcessor, defaultBargeInProperties)
     }
 }

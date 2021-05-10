@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.jaicp.dto.Button
 import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
 import com.justai.jaicf.channel.jaicp.dto.CarouselReply
@@ -14,7 +15,9 @@ import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
 
-class ChatWidgetReactions : JaicpReactions(), JaicpCompatibleAsyncReactions {
+class ChatWidgetReactions(
+    override val liveChatProvider: JaicpLiveChatProvider
+) : JaicpReactions(), JaicpCompatibleAsyncReactions {
 
     override fun image(url: String): ImageReaction {
         return image(imageUrl = url, caption = null)

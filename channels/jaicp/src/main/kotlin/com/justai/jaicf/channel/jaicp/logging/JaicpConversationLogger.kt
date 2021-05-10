@@ -12,10 +12,10 @@ import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.jaicpRequest
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionData
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
+import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
-import com.justai.jaicf.context.ExecutionContext
 import io.ktor.client.*
 import io.ktor.client.features.logging.*
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +44,7 @@ open class JaicpConversationLogger(
     CoroutineScope by CoroutineScope(Dispatchers.IO + MDCContext()) {
 
     private val client = httpClient ?: HttpClientFactory.create(logLevel)
-    private val connector = ChatAdapterConnector.getOrCreate(accessToken, url, client)
+    private val connector = ChatAdapterConnector(accessToken, url, client)
 
     override fun doLog(executionContext: ExecutionContext) {
         try {

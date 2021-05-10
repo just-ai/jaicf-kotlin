@@ -1,9 +1,10 @@
 package com.justai.jaicf.channel.slack
 
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
-import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import com.slack.api.bolt.context.ActionRespondUtility
 import com.slack.api.bolt.context.Context
@@ -22,7 +23,8 @@ val Reactions.slack
 
 @Suppress("MemberVisibilityCanBePrivate")
 class SlackReactions(
-    val context: Context
+    val context: Context,
+    override val liveChatProvider: JaicpLiveChatProvider?
 ) : Reactions(), JaicpCompatibleAsyncReactions {
 
     val client = context.client()

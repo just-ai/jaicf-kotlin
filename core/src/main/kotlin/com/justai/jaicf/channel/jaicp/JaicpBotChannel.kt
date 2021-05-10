@@ -3,8 +3,6 @@ package com.justai.jaicf.channel.jaicp
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.channel.http.HttpBotChannel
-import com.justai.jaicf.channel.http.HttpBotRequest
-import com.justai.jaicf.reactions.Reactions
 
 /**
  * Basic interface for all (native or compatible) JAICP channels.
@@ -61,7 +59,7 @@ interface JaicpCompatibleAsyncChannelFactory : JaicpChannelFactory {
      * @param botApi a [BotApi] implementation used to process the requests to this channel
      * @param apiUrl an URL where to send a replies
      */
-    fun create(botApi: BotApi, apiUrl: String): JaicpCompatibleAsyncBotChannel
+    fun create(botApi: BotApi, apiUrl: String, liveChatProvider: JaicpLiveChatProvider): JaicpCompatibleAsyncBotChannel
 }
 
 /**

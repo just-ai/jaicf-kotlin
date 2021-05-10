@@ -7,15 +7,18 @@ import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
-import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.helpers.logging.WithLogger
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.content.*
-import kotlinx.serialization.json.*
-import org.junit.jupiter.api.*
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.TestInfo
+import org.junit.jupiter.api.TestMethodOrder
 import java.io.File
 import java.io.FileInputStream
 import java.util.*
@@ -38,8 +41,6 @@ open class JaicpBaseTest(
     protected val requestFromResources: HttpBotRequest get() = HttpBotRequest(getResourceAsInputStream("req.json"))
     protected val responseFromResources: JaicpBotResponse get() = getResourceAsString("resp.json").asJsonHttpBotResponse().jaicp
 
-    protected var connectorHttpRequestBody: String? = null
-
     protected val commonRequestFactory = RequestFactory()
     protected var clientId = "test-client-id"
         private set
@@ -53,13 +54,6 @@ open class JaicpBaseTest(
         testName = testInfo.displayName
         testNumber = testName.split(" ")[0]
         testPackage = testName.split(" ")[1]
-        configureMockHttp()
-    }
-
-    @AfterEach
-    fun tearDown() {
-        ChatAdapterConnector.removeInstance()
-        connectorHttpRequestBody = null
     }
 
     private fun getResource(name: String): File {
@@ -152,21 +146,6 @@ open class JaicpBaseTest(
             }
             return JSON.decodeFromJsonElement(JaicpBotResponse.serializer(), JsonObject(response))
         }
-
-    private fun configureMockHttp() {
-        ChatAdapterConnector.removeInstance()
-        ChatAdapterConnector.getOrCreate("", "", getMockHttp())
-    }
-
-    protected fun getMockHttp() = HttpClient(MockEngine) {
-        install(JsonFeature) { serializer = KotlinxSerializer(JSON) }
-        engine {
-            addHandler { request ->
-                connectorHttpRequestBody = (request.body as TextContent).text
-                respond("ok")
-            }
-        }
-    }
 }
 
 private fun JsonObjectBuilder.copyField(from: JsonElement, field: String) =

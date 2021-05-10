@@ -21,6 +21,7 @@ import com.justai.jaicf.channel.facebook.api.CarouselElement
 import com.justai.jaicf.channel.facebook.api.FacebookBotRequest
 import com.justai.jaicf.channel.facebook.api.toTemplateElement
 import com.justai.jaicf.channel.facebook.messenger.Messenger
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.CarouselReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -34,7 +35,8 @@ val Reactions.facebook
 
 class FacebookReactions(
     private val messenger: Messenger,
-    internal val request: FacebookBotRequest
+    val request: FacebookBotRequest,
+    override val liveChatProvider: JaicpLiveChatProvider?
 ) : Reactions(), JaicpCompatibleAsyncReactions {
 
     fun send(payload: Payload): MessageResponse? {

@@ -1,10 +1,15 @@
 package com.justai.jaicf.channel.telegram
 
 import com.github.kotlintelegrambot.Bot
-import com.github.kotlintelegrambot.entities.*
+import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.InlineKeyboardMarkup
+import com.github.kotlintelegrambot.entities.Message
+import com.github.kotlintelegrambot.entities.ParseMode
+import com.github.kotlintelegrambot.entities.ReplyMarkup
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import com.github.kotlintelegrambot.network.Response
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -18,7 +23,8 @@ val Reactions.telegram
 @Suppress("MemberVisibilityCanBePrivate")
 class TelegramReactions(
     val api: Bot,
-    val request: TelegramBotRequest
+    val request: TelegramBotRequest,
+    override val liveChatProvider: JaicpLiveChatProvider?
 ) : Reactions(), JaicpCompatibleAsyncReactions {
 
     val chatId = ChatId.fromId(request.chatId)
@@ -135,7 +141,12 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVoice(
-        chatId, url, duration = duration, disableNotification = disableNotification, replyToMessageId = replyToMessageId, replyMarkup = replyMarkup
+        chatId,
+        url,
+        duration = duration,
+        disableNotification = disableNotification,
+        replyToMessageId = replyToMessageId,
+        replyMarkup = replyMarkup
     ).also { addResponse(it) }
 
     override fun audio(url: String): AudioReaction {
@@ -180,7 +191,16 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVenue(
-            chatId, latitude, longitude, title, address, foursquareId, foursquareType, disableNotification, replyToMessageId, replyMarkup
+        chatId,
+        latitude,
+        longitude,
+        title,
+        address,
+        foursquareId,
+        foursquareType,
+        disableNotification,
+        replyToMessageId,
+        replyMarkup
     ).also { addResponse(it) }
 
     fun sendContact(

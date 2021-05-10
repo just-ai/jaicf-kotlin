@@ -7,10 +7,12 @@ import com.justai.jaicf.channel.facebook.api.toBotRequest
 import com.justai.jaicf.channel.facebook.messenger.Messenger
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
-import com.justai.jaicf.channel.http.asTextHttpBotResponse
-import com.justai.jaicf.channel.invocationapi.*
+import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
+import com.justai.jaicf.channel.invocationapi.InvocationRequest
+import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
 import java.util.*
 
@@ -20,12 +22,13 @@ class FacebookChannel private constructor(
     InvocableBotChannel {
 
     private lateinit var messenger: Messenger
+    private var liveChatProvider: JaicpLiveChatProvider? = null
 
     constructor(botApi: BotApi, config: FacebookPageConfig) : this(botApi) {
         messenger = Messenger.create(config.pageAccessToken, config.appSecret, config.verifyToken)
     }
 
-    private constructor(botApi: BotApi, baseUrl: String) : this(botApi) {
+    private constructor(botApi: BotApi, baseUrl: String, liveChatProvider: JaicpLiveChatProvider) : this(botApi) {
         messenger = Messenger.create("", "", "", baseUrl)
     }
 
@@ -34,7 +37,7 @@ class FacebookChannel private constructor(
             event.toBotRequest().let { botRequest ->
                 botApi.process(
                     botRequest,
-                    FacebookReactions(messenger, botRequest),
+                    FacebookReactions(messenger, botRequest, liveChatProvider),
                     RequestContext.fromHttp(request)
                 )
             }
@@ -53,7 +56,11 @@ class FacebookChannel private constructor(
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "facebook"
-        override fun create(botApi: BotApi, apiUrl: String) = FacebookChannel(botApi, apiUrl)
+        override fun create(
+            botApi: BotApi,
+            apiUrl: String,
+            liveChatProvider: JaicpLiveChatProvider
+        ): JaicpCompatibleAsyncBotChannel = FacebookChannel(botApi, apiUrl, liveChatProvider)
 
         internal const val REQUEST_TEMPLATE_PATH = "/FacebookRequestTemplate.json"
     }
@@ -68,7 +75,7 @@ class FacebookChannel private constructor(
         val generatedRequest = generateRequestFromTemplate(request)
         messenger.onReceiveEvents(generatedRequest, Optional.empty()) { event ->
             FacebookInvocationRequest.create(request, event.asTextMessageEvent())?.let {
-                botApi.process(it, FacebookReactions(messenger, it), requestContext)
+                botApi.process(it, FacebookReactions(messenger, it, liveChatProvider), requestContext)
             }
         }
     }
