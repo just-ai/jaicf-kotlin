@@ -30,6 +30,7 @@ class FacebookChannel private constructor(
 
     private constructor(botApi: BotApi, baseUrl: String, liveChatProvider: JaicpLiveChatProvider) : this(botApi) {
         messenger = Messenger.create("", "", "", baseUrl)
+        this.liveChatProvider = liveChatProvider
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
