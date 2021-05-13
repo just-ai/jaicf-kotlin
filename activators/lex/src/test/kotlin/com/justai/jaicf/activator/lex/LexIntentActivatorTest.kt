@@ -19,9 +19,18 @@ class LexIntentActivatorTest : LexIntentActivatorBaseTest(TestScenario) {
     }
 
     @Test
-    fun `Activates when Lex tries to fill slots for this intent`() = botTest {
-        respondElicitSlot("intent", slotToElicit = "slot")
-        query("text") endsWithState "/main"
+    fun `Activates and fill slots when intent has slots`() = botTest {
+        respondElicitSlot("intent", responseMessage = "prompt", slotToElicit = "slot")
+        query("text") endsWithState "/" responds "prompt"
+
+        respondElicitSlot("intent", responseMessage = "prompt_2", slotToElicit = "slot_2")
+        query("text") endsWithState "/" responds "prompt_2"
+
+        respondConfirm("intent", confirmationMessage = "confirm")
+        query("text") endsWithState "/" responds "confirm"
+
+        respondReadyForFulfillment("intent", responseMessage = "ok")
+        query("text") endsWithState "/main" responds "ok"
     }
 
     @Test
@@ -41,7 +50,6 @@ class LexIntentActivatorTest : LexIntentActivatorBaseTest(TestScenario) {
         respondFailed()
         query("text") endsWithState "/fallback"
     }
-
 
     object TestScenario : Scenario() {
         init {

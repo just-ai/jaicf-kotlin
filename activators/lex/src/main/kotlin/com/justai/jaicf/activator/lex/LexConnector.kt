@@ -1,30 +1,34 @@
 package com.justai.jaicf.activator.lex
 
+import com.justai.jaicf.activator.lex.sdk.buildLexRuntimeClient
+import com.justai.jaicf.activator.lex.sdk.toResult
 import software.amazon.awssdk.auth.credentials.AwsCredentials
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.lexruntime.LexRuntimeClient
+import software.amazon.awssdk.services.lexruntime.model.PostTextRequest
 
 
 class LexConnector(
-    private val credentials: AwsCredentials,
     private val botName: String,
     private val botAlias: String,
-    private val region: Region = Region.EU_CENTRAL_1
+    private val client: LexRuntimeClient
 ) {
-    private val client: LexRuntimeClient by lazy {
-        LexRuntimeClient.builder()
-            .credentialsProvider { credentials }
-            .region(region)
-            .build()
-    }
+    constructor(
+        botName: String,
+        botAlias: String,
+        credentials: AwsCredentials,
+        region: Region = Region.EU_CENTRAL_1
+    ) : this(botName, botAlias, buildLexRuntimeClient(credentials, region))
 
-    fun postText(userId: String, inputText: String) = client.postText { builder ->
-        builder.run {
+    internal fun recognizeIntent(userId: String, inputText: String): LexIntentData {
+        val request = PostTextRequest.builder().apply {
             botName(botName)
             botAlias(botAlias)
             userId(userId)
             inputText(inputText)
-        }
+        }.build()
+
+        return client.postText(request).toResult()
     }
 
 }
