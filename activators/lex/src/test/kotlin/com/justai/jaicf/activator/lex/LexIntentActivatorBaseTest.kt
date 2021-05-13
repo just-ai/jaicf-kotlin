@@ -10,17 +10,21 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
+import software.amazon.awssdk.services.lexruntime.LexRuntimeClient
 import software.amazon.awssdk.services.lexruntime.model.DialogState
+import software.amazon.awssdk.services.lexruntime.model.PostTextRequest
 import software.amazon.awssdk.services.lexruntime.model.PostTextResponse
 
 @ExtendWith(MockKExtension::class)
 abstract class LexIntentActivatorBaseTest(scenario: Scenario) {
-    private val connector = mockk<LexConnector>()
+    private val client = mockk<LexRuntimeClient>()
 
     private val bot = BotEngine(
         model = scenario.model,
         activators = arrayOf(
-            LexIntentActivator.Factory(connector),
+            LexIntentActivator.Factory(
+                LexConnector("test_name", "test_alias", client)
+            ),
             CatchAllActivator
         )
     )
@@ -49,7 +53,7 @@ abstract class LexIntentActivatorBaseTest(scenario: Scenario) {
             .slots(slots)
             .build()
 
-        every { connector.postText(any(), any()) } returns response
+        every { client.postText(any<PostTextRequest>()) } returns response
     }
 
     fun respondReadyForFulfillment(
@@ -66,6 +70,13 @@ abstract class LexIntentActivatorBaseTest(scenario: Scenario) {
         slotToElicit: String,
         slots: Map<String, String?> = mapOf(slotToElicit to null)
     ) = respondWith(DialogState.ELICIT_SLOT, intent, nluConfidence, responseMessage, slotToElicit, slots)
+
+    fun respondConfirm(
+        intent: String,
+        nluConfidence: Float = 1f,
+        confirmationMessage: String? = null,
+        slots: Map<String, String?> = emptyMap()
+    ) = respondWith(DialogState.CONFIRM_INTENT, intent, nluConfidence, confirmationMessage, slots = slots)
 
     fun respondElicitIntent(responseMessage: String? = null) =
         respondWith(DialogState.ELICIT_INTENT, responseMessage = responseMessage)
