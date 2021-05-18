@@ -16,8 +16,10 @@ open class ViberClient(val apiUrl: String, val httpClient: ViberHttpClient) {
         val responseBody: String = httpClient.post(
             url = "$apiUrl${endpoint.uri}",
             requestBody = json,
-            VIBER_AUTH_TOKEN_HEADER to authToken,
-            CONTENT_TYPE_HEADER_FIELD to "application/json"
+            mapOf(
+                VIBER_AUTH_TOKEN_HEADER to authToken,
+                CONTENT_TYPE_HEADER_FIELD to "application/json"
+            )
         )
 
         if (responseFailed(responseBody)) {

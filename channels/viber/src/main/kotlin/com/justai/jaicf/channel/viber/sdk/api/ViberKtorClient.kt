@@ -14,7 +14,7 @@ class ViberKtorClient(private val logLevel: LogLevel = LogLevel.INFO) : ViberHtt
         Logging(Logger.DEFAULT, logLevel)
     }
 
-    override fun post(url: String, requestBody: String, vararg headers: Pair<String, String>) =
+    override fun post(url: String, requestBody: String, headers: Map<String, String>) =
         runBlocking(Dispatchers.IO) {
             doPost(url, requestBody, headers)
         }
@@ -22,10 +22,11 @@ class ViberKtorClient(private val logLevel: LogLevel = LogLevel.INFO) : ViberHtt
     private suspend fun doPost(
         url: String,
         requestBody: String,
-        headers: Array<out Pair<String, String>>
+        headers: Map<String, String>
     ): String {
+
         val response: HttpResponse = httpClient.post(url) {
-            headers.forEach { header(it.first, it.second) }
+            headers.forEach { header(it.key, it.value) }
             body = requestBody
         }
 
