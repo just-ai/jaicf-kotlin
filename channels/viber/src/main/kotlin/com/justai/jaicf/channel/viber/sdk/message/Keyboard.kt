@@ -12,9 +12,9 @@ data class Keyboard(
     val defaultHeight: Boolean = false
 ) {
     val type = "keyboard"
-}
 
-object KeyboardProperty {
-    const val COLUMNS_COUNT = 6
-    const val ROWS_COUNT = 2
+    companion object {
+        const val DEFAULT_COLUMNS_COUNT = 6
+        const val DEFAULT_ROWS_COUNT = 2
+    }
 }

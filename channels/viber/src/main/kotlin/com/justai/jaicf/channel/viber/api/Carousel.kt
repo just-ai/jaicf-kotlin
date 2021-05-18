@@ -6,7 +6,6 @@ import com.justai.jaicf.channel.viber.sdk.api.ViberButton
 import com.justai.jaicf.channel.viber.sdk.api.toButton
 import com.justai.jaicf.channel.viber.sdk.message.Button
 import com.justai.jaicf.channel.viber.sdk.message.RichMediaObject
-import com.justai.jaicf.channel.viber.sdk.message.RichMediaProperty
 
 data class Carousel(
     val elements: List<CarouselElement>,
@@ -22,24 +21,24 @@ data class CarouselElement(
 
 internal fun Carousel.toRichMediaObject() = RichMediaObject(
     elements.flatMap(CarouselElement::toButtons),
-    RichMediaProperty.COLUMNS_COUNT,
-    RichMediaProperty.ROWS_COUNT,
+    RichMediaObject.DEFAULT_COLUMNS_COUNT,
+    RichMediaObject.DEFAULT_ROWS_COUNT,
     backgroundColor
 )
 
 internal fun CarouselElement.toButtons(): List<Button> = listOf(
-    NoActionButton(text = "", imageUrl = imageUrl, columns = RichMediaProperty.COLUMNS_COUNT, rows = 3).toButton(),
+    NoActionButton(text = "", imageUrl = imageUrl, columns = RichMediaObject.DEFAULT_COLUMNS_COUNT, rows = 3).toButton(),
     NoActionButton(
         text = "<b>$title</b>",
         ViberButton.Style(textSize = Size.LARGE),
-        columns = RichMediaProperty.COLUMNS_COUNT,
+        columns = RichMediaObject.DEFAULT_COLUMNS_COUNT,
         rows = 2
     ).toButton(),
-    NoActionButton(text = subtitle ?: "", columns = RichMediaProperty.COLUMNS_COUNT, rows = 1).toButton(),
-    button?.toButton()?.copy(columns = RichMediaProperty.COLUMNS_COUNT, rows = 1)
+    NoActionButton(text = subtitle ?: "", columns = RichMediaObject.DEFAULT_COLUMNS_COUNT, rows = 1).toButton(),
+    button?.toButton()?.copy(columns = RichMediaObject.DEFAULT_COLUMNS_COUNT, rows = 1)
         ?: NoActionButton(
             text = "",
-            columns = RichMediaProperty.COLUMNS_COUNT,
+            columns = RichMediaObject.DEFAULT_COLUMNS_COUNT,
             rows = 1
         ).toButton()
 )
