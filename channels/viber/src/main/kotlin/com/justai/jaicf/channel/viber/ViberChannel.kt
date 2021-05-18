@@ -49,9 +49,8 @@ class ViberChannel private constructor(
     ) : this(botApi, ViberApi(client), BotProfile(botConfig.botName), botConfig.authToken, channelConfig)
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
-        val text = request.stream.bufferedReader().readText()
+        val viberRequest = request.receiveText().asViberRequest()
 
-        val viberRequest = text.asViberRequest()
         when (viberRequest.event) {
             is IncomingConversationStartedEvent -> processRequest(viberRequest, RequestContext(true, request))
             is IncomingFailedEvent -> logger.warn(viberRequest.event.description)
