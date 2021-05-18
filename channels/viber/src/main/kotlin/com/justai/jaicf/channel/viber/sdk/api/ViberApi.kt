@@ -31,6 +31,7 @@ class ViberApi @JvmOverloads constructor(
         )
     }
 
+    @Suppress("unused")
     @Throws(ApiException::class)
     fun sendMessages(
         from: BotProfile,
@@ -56,10 +57,12 @@ class ViberApi @JvmOverloads constructor(
     fun accountInfo(authToken: String): AccountInfoResponse =
         client.sendRequest(ViberHttpEndpoint.GET_ACCOUNT_INFO, AccountInfoRequest(), authToken)
 
+    @Suppress("unused")
     @Throws(ApiException::class)
     fun getUserDetails(userId: String, authToken: String): UserDetailsResponse =
         client.sendRequest(ViberHttpEndpoint.GET_USER_DETAILS, UserDetailsRequest(userId), authToken)
 
+    @Suppress("unused")
     @Throws(ApiException::class)
     fun getOnlineStatus(userIds: List<String>, authToken: String): OnlineStatusResponse {
         require(userIds.isNotEmpty() && userIds.size < MAX_GET_ONLINE_IDS) {
