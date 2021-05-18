@@ -3,7 +3,6 @@ package com.justai.jaicf.channel.viber.sdk.api
 import com.justai.jaicf.builder.ScenarioDsl
 import com.justai.jaicf.channel.viber.sdk.message.Button
 import com.justai.jaicf.channel.viber.sdk.message.Keyboard
-import com.justai.jaicf.channel.viber.sdk.message.KeyboardProperty
 import com.justai.jaicf.channel.viber.sdk.message.RichMediaObject
 
 class ViberKeyboard {
@@ -21,10 +20,10 @@ class ViberKeyboard {
     }
 
     fun addRow(rowButtons: List<FunctionalButton>) {
-        require(rowButtons.size <= KeyboardProperty.COLUMNS_COUNT)
+        require(rowButtons.size <= Keyboard.DEFAULT_COLUMNS_COUNT)
         require(rowButtons.isNotEmpty())
 
-        val buttonWidth = maxOf(KeyboardProperty.COLUMNS_COUNT / rowButtons.size, 1)
+        val buttonWidth = maxOf(Keyboard.DEFAULT_COLUMNS_COUNT / rowButtons.size, 1)
         rowButtons
             .map { it.toButton() }
             .map { it.copy(rows = 1, columns = buttonWidth) }
@@ -35,7 +34,6 @@ class ViberKeyboard {
 fun ViberKeyboard.toRichMediaObject() = RichMediaObject(buttons, buttonsGroupRows = rowsCount)
 
 fun ViberKeyboard.toKeyboard() = Keyboard(buttons)
-
 
 class KeyboardBuilder(private val defaultStyle: ViberButton.Style = ViberButton.Style()) {
 

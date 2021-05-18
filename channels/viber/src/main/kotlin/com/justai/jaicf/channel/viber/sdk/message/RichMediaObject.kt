@@ -16,9 +16,9 @@ data class RichMediaObject @JvmOverloads constructor(
     val backgroundColor: String? = null
 ) {
     val type: String = "rich_media"
-}
 
-object RichMediaProperty {
-    const val COLUMNS_COUNT = 6
-    const val ROWS_COUNT = 7
+    companion object {
+        const val DEFAULT_COLUMNS_COUNT = 6
+        const val DEFAULT_ROWS_COUNT = 7
+    }
 }
