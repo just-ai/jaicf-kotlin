@@ -30,6 +30,6 @@ class ViberKtorClient(private val logLevel: LogLevel = LogLevel.INFO) : ViberHtt
             body = requestBody
         }
 
-        return response.content.toInputStream().use { it.bufferedReader().readText() }
+        return response.content.toInputStream().bufferedReader().use { it.readText() }
     }
 }

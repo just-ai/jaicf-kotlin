@@ -6,5 +6,5 @@ import java.io.InputStream
 
 class Request internal constructor(val event: IncomingEvent)
 
-fun InputStream.asViberRequest() = this.use { bufferedReader().readText().asViberRequest() }
+fun InputStream.asViberRequest() = bufferedReader().use { it.readText().asViberRequest() }
 fun String.asViberRequest() = Request(viberObjectMapper.readValue(this))
