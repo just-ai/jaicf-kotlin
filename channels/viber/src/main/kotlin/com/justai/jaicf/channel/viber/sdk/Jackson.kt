@@ -1,3 +1,5 @@
+@file:JvmName("ViberObjectMapper")
+
 package com.justai.jaicf.channel.viber.sdk
 
 import com.fasterxml.jackson.annotation.JsonInclude
