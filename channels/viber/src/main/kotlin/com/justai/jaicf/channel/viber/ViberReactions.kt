@@ -9,9 +9,11 @@ import com.justai.jaicf.channel.viber.sdk.api.KeyboardBuilder
 import com.justai.jaicf.channel.viber.sdk.api.ReplyButton
 import com.justai.jaicf.channel.viber.sdk.api.ViberApi
 import com.justai.jaicf.channel.viber.sdk.api.ViberButton
+import com.justai.jaicf.channel.viber.sdk.api.ViberKeyboard
 import com.justai.jaicf.channel.viber.sdk.api.toKeyboard
 import com.justai.jaicf.channel.viber.sdk.api.toRichMediaObject
 import com.justai.jaicf.channel.viber.sdk.message.FileMessage
+import com.justai.jaicf.channel.viber.sdk.message.Keyboard
 import com.justai.jaicf.channel.viber.sdk.message.KeyboardMessage
 import com.justai.jaicf.channel.viber.sdk.message.Location
 import com.justai.jaicf.channel.viber.sdk.message.LocationMessage
@@ -91,8 +93,16 @@ class ViberReactions internal constructor(
     }
 
     fun keyboard(buttons: List<FunctionalButton>): ButtonsReaction {
-        sendMessage(KeyboardMessage(keyboard = buttons.toKeyboard()))
-        return ButtonsReaction.create(buttons.map { it.text })
+        return keyboard(buttons.toKeyboard())
+    }
+
+    fun keyboard(viberKeyboard: ViberKeyboard): ButtonsReaction {
+        return keyboard(viberKeyboard.toKeyboard())
+    }
+
+    fun keyboard(keyboard: Keyboard): ButtonsReaction {
+        sendMessage(KeyboardMessage(keyboard = keyboard))
+        return ButtonsReaction.create(keyboard.buttons.map { it.text ?: "" })
     }
 
     fun inlineButtons(
@@ -100,6 +110,13 @@ class ViberReactions internal constructor(
         builder: KeyboardBuilder.() -> Unit
     ) {
         val viberKeyboard = KeyboardBuilder(defaultStyle).apply(builder).build()
+        inlineButtons(defaultStyle, viberKeyboard)
+    }
+
+    fun inlineButtons(
+        defaultStyle: ViberButton.Style = inlineButtonsDefaultStyle,
+        viberKeyboard: ViberKeyboard
+    ) {
         richObject(viberKeyboard.toRichMediaObject(), "_")
     }
 
