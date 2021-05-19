@@ -144,7 +144,8 @@ val ViberTestScenario = Scenario {
 
         action(viber) {
             reactions.keyboard {
-                row("Timer", "Inline buttons")
+                row("Timer", "Message with keyboard")
+                reply("Inline buttons")
                 reply("Inline buttons without message")
                 row {
                     reply("Map")
@@ -168,9 +169,9 @@ val ViberTestScenario = Scenario {
             }
         }
 
-        state("inline_buttons") {
+        state("message with keyboard") {
             activators {
-                regex("Inline buttons")
+                regex("Message with keyboard")
             }
 
             action(viber.text) {
@@ -184,6 +185,21 @@ val ViberTestScenario = Scenario {
                         keyboard = viberKeyboard.toKeyboard()
                     )
                 )
+            }
+        }
+
+        state("inline_buttons") {
+            activators {
+                regex("Inline buttons")
+            }
+
+            action(viber.text) {
+                val viberKeyboard = KeyboardBuilder(ViberButton.Style(backgroundColor = "#fdebd0")).apply {
+                    row("1", "2", "3")
+                    row("4")
+                }.build()
+                reactions.image("https://sun9-62.userapi.com/srBmxyK8e5SdZ2Yk2ZbqlNSk-966AC3mvMJJZA/xou0d6fBUO0.jpg")
+                reactions.inlineButtons(viberKeyboard = viberKeyboard)
             }
         }
 
