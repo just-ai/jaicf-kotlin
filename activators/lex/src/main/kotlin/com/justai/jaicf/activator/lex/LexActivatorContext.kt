@@ -6,8 +6,7 @@ import com.justai.jaicf.context.ActivatorContext
 open class LexActivatorContext(
     val intentData: LexIntentData.Recognized
 ) : IntentActivatorContext(intentData.confidence, intentData.intent) {
-    val slots: Map<String, String?>
-        get() = intentData.slots
+    val slots = intentData.slots
 }
 
 val ActivatorContext.lex
