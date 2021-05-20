@@ -1,20 +1,19 @@
 package com.justai.jaicf.activator.lex
 
-import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.builder.Scenario
 import org.junit.jupiter.api.Test
 
-
-class LexIntentActivatorTest : LexIntentActivatorBaseTest(TestScenario) {
+class LexIntentActivatorTest : LexIntentActivatorBaseTest(testScenario) {
 
     @Test
     fun `Activates when Lex is ready to fulfill this intent`() = botTest {
-        respondReadyForFulfillment("intent")
+        respondClose("intent")
         query("text") endsWithState "/main"
     }
 
     @Test
     fun `Doesn't activate when Lex is ready to fulfill another intent`() = botTest {
-        respondReadyForFulfillment("different_intent")
+        respondClose("different_intent")
         query("text") endsWithState "/fallback"
     }
 
@@ -29,7 +28,7 @@ class LexIntentActivatorTest : LexIntentActivatorBaseTest(TestScenario) {
         respondConfirm("intent", confirmationMessage = "confirm")
         query("text") endsWithState "/" responds "confirm"
 
-        respondReadyForFulfillment("intent", responseMessage = "ok")
+        respondClose("intent", responseMessage = "ok")
         query("text") endsWithState "/main" responds "ok"
     }
 
@@ -50,20 +49,18 @@ class LexIntentActivatorTest : LexIntentActivatorBaseTest(TestScenario) {
         respondFailed()
         query("text") endsWithState "/fallback"
     }
+}
 
-    object TestScenario : Scenario() {
-        init {
-            state("main") {
-                activators {
-                    intent("intent")
-                }
-            }
+val testScenario = Scenario {
+    state("main") {
+        activators {
+            intent("intent")
+        }
+    }
 
-            state("fallback") {
-                activators {
-                    catchAll()
-                }
-            }
+    state("fallback") {
+        activators {
+            catchAll()
         }
     }
 }
