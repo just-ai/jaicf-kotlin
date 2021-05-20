@@ -1,43 +1,28 @@
+import plugins.publish.POM_DESCRIPTION
+import plugins.publish.POM_NAME
+
+ext[POM_NAME] = "JAICF-Kotlin Lex Activator Adapter"
+ext[POM_DESCRIPTION] = "JAICF-Kotlin Lex Activator Adapter. Provides intent recognition and named entity extraction."
+
 plugins {
-    kotlin("jvm") version Version.kotlin
-    `maven-publish`
+    `jaicf-kotlin`
+    `jaicf-publish`
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(kotlin("stdlib", Version.stdLib))
-
+    core()
+    api(jackson())
     api(platform("software.amazon.awssdk:bom:2.14.3"))
-    api("software.amazon.awssdk:lexruntime")
+    api("software.amazon.awssdk:lexruntimev2:2.15.69")
+    api("software.amazon.awssdk:lexmodelsv2:2.15.69")
 
     testApi("io.mockk:mockk:1.10.0")
     testApi("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
 
-
-
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
-    }
-
     test {
         useJUnitPlatform()
     }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>(project.name) {
-            from(components["java"])
-        }
-    }
-}
-
-apply {
-    from(rootProject.file("release.gradle"))
 }

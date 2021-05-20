@@ -10,20 +10,32 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
-import software.amazon.awssdk.services.lexruntime.LexRuntimeClient
-import software.amazon.awssdk.services.lexruntime.model.DialogState
-import software.amazon.awssdk.services.lexruntime.model.PostTextRequest
-import software.amazon.awssdk.services.lexruntime.model.PostTextResponse
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.lexruntimev2.LexRuntimeV2Client
+import software.amazon.awssdk.services.lexruntimev2.model.DialogActionType
+import software.amazon.awssdk.services.lexruntimev2.model.IntentState
+import software.amazon.awssdk.services.lexruntimev2.model.Message
+import software.amazon.awssdk.services.lexruntimev2.model.MessageContentType
+import software.amazon.awssdk.services.lexruntimev2.model.RecognizeTextRequest
+import software.amazon.awssdk.services.lexruntimev2.model.RecognizeTextResponse
+import software.amazon.awssdk.services.lexruntimev2.model.Slot
+import software.amazon.awssdk.services.lexruntimev2.model.Value
+import java.util.*
 
 @ExtendWith(MockKExtension::class)
 abstract class LexIntentActivatorBaseTest(scenario: Scenario) {
-    private val client = mockk<LexRuntimeClient>()
+    private val client = mockk<LexRuntimeV2Client>()
 
     private val bot = BotEngine(
-        model = scenario.model,
+        scenario = scenario,
         activators = arrayOf(
             LexIntentActivator.Factory(
-                LexConnector("test_name", "test_alias", client)
+                LexConnector(
+                    LexBotConfig(
+                        "botId", "aliasId", Region.AP_NORTHEAST_1, Locale.US
+                    ),
+                    client
+                )
             ),
             CatchAllActivator
         )
@@ -37,50 +49,74 @@ abstract class LexIntentActivatorBaseTest(scenario: Scenario) {
     }
 
     fun respondWith(
-        dialogState: DialogState,
+        dialogActionType: DialogActionType,
+        intentState: IntentState,
         intent: String? = null,
-        nluConfidence: Float? = null,
         responseMessage: String? = null,
         slotToElicit: String? = null,
         slots: Map<String, String?> = emptyMap()
     ) {
-        val response = PostTextResponse.builder()
-            .dialogState(dialogState)
-            .intentName(intent)
-            .nluIntentConfidence { it.score(nluConfidence?.toDouble()) }
-            .message(responseMessage)
-            .slotToElicit(slotToElicit)
-            .slots(slots)
-            .build()
+        val response = RecognizeTextResponse.builder().apply {
+            sessionState {
+                it.dialogAction { action ->
+                    action.type(dialogActionType)
+                    action.slotToElicit(slotToElicit)
+                }
+                it.intent { int ->
+                    int.name(intent)
+                    int.state(intentState)
+                    int.slots(slots.mapValues { entry -> entry.value?.toSlot() })
+                }
+            }
+            messages(
+                Message.builder().apply {
+                    contentType(MessageContentType.PLAIN_TEXT)
+                    content(responseMessage)
+                }.build()
+            )
+        }.build()
 
-        every { client.postText(any<PostTextRequest>()) } returns response
+        every { client.recognizeText(any<RecognizeTextRequest>()) } returns response
     }
 
-    fun respondReadyForFulfillment(
+    fun respondClose(
         intent: String,
-        nluConfidence: Float = 1f,
         responseMessage: String? = null,
         slots: Map<String, String?> = emptyMap()
-    ) = respondWith(DialogState.READY_FOR_FULFILLMENT, intent, nluConfidence, responseMessage, slots = slots)
+    ) = respondWith(DialogActionType.CLOSE, IntentState.FULFILLED, intent, responseMessage, slots = slots)
 
     fun respondElicitSlot(
         intent: String,
-        nluConfidence: Float = 1f,
         responseMessage: String? = null,
         slotToElicit: String,
         slots: Map<String, String?> = mapOf(slotToElicit to null)
-    ) = respondWith(DialogState.ELICIT_SLOT, intent, nluConfidence, responseMessage, slotToElicit, slots)
+    ) = respondWith(DialogActionType.ELICIT_SLOT, IntentState.IN_PROGRESS, intent, responseMessage, slotToElicit, slots)
 
     fun respondConfirm(
         intent: String,
-        nluConfidence: Float = 1f,
         confirmationMessage: String? = null,
         slots: Map<String, String?> = emptyMap()
-    ) = respondWith(DialogState.CONFIRM_INTENT, intent, nluConfidence, confirmationMessage, slots = slots)
+    ) = respondWith(
+        DialogActionType.CONFIRM_INTENT,
+        IntentState.IN_PROGRESS,
+        intent,
+        confirmationMessage,
+        slots = slots
+    )
 
     fun respondElicitIntent(responseMessage: String? = null) =
-        respondWith(DialogState.ELICIT_INTENT, responseMessage = responseMessage)
+        respondWith(DialogActionType.ELICIT_INTENT, IntentState.FULFILLED, responseMessage = responseMessage)
 
     fun respondFailed(responseMessage: String? = null) =
-        respondWith(DialogState.FAILED, responseMessage = responseMessage)
+        respondWith(DialogActionType.CLOSE, IntentState.FAILED, responseMessage = responseMessage)
 }
+
+private fun String.toSlot(): Slot =
+    Slot.builder().value {
+        Value.builder().apply {
+            interpretedValue(this@toSlot)
+            originalValue(this@toSlot)
+            resolvedValues(this@toSlot)
+        }.build()
+    }.build()
+
