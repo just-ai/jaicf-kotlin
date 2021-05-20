@@ -28,7 +28,7 @@ object SlotFillingInProgress : SlotFillingResult()
  *
  * @see [com.justai.jaicf.activator.Activator]
  * */
-object SlotFillingInterrupted : SlotFillingResult()
+class SlotFillingInterrupted(val shouldReprocess: Boolean = true) : SlotFillingResult()
 
 /**
  * This result indicates that slot filling session is finished and returns activator context,

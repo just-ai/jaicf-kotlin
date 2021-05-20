@@ -38,7 +38,7 @@ internal class CailaSlotFillingHelper(
             if (slot.required && !known.any { k -> slot.name == k.name }) {
                 if (checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(botRequest.input)) {
                     clearSlotFillingContext(botContext)
-                    return SlotFillingInterrupted
+                    return SlotFillingInterrupted()
                 }
                 if (slot.name !in filled) {
                     if (slotReactor?.canReact(slot.name) == true) {

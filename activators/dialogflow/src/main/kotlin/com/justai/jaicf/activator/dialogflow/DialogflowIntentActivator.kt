@@ -57,7 +57,7 @@ class DialogflowIntentActivator(
         }
 
         return when {
-            context == null || canInterruptSlotFilling(context, botContext) -> SlotFillingInterrupted
+            context == null || canInterruptSlotFilling(context, botContext) -> SlotFillingInterrupted()
             canFinishSlotFilling(context) -> SlotFillingFinished(context)
 
             else -> SlotFillingInProgress.also {

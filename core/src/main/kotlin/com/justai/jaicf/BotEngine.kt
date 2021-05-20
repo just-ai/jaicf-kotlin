@@ -97,7 +97,7 @@ class BotEngine(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
-        contextManager: BotContextManager?,
+        contextManager: BotContextManager?
     ) {
         try {
             val manager = contextManager ?: defaultContextManager
@@ -132,7 +132,7 @@ class BotEngine(
         request: BotRequest,
         requestContext: RequestContext,
         reactions: Reactions,
-        executionContext: ExecutionContext,
+        executionContext: ExecutionContext
     ) {
         val slotFillingContext = if (isActiveSlotFilling(botContext)) {
             getSlotFillingContext(botContext)!!
@@ -153,7 +153,9 @@ class BotEngine(
                 is SlotFillingInProgress -> return
                 is SlotFillingInterrupted -> {
                     cancelSlotFilling(botContext)
-                    processRequest(botContext, request, requestContext, reactions, executionContext)
+                    if (res.shouldReprocess) {
+                        processRequest(botContext, request, requestContext, reactions, executionContext)
+                    }
                 }
                 is SlotFillingFinished -> {
                     val activation = finishSlotFilling(botContext, res)
@@ -271,7 +273,7 @@ class BotEngine(
         botContext: BotContext,
         request: BotRequest,
         reactions: Reactions,
-        requestContext: RequestContext,
+        requestContext: RequestContext
     ) = cm.saveContext(botContext, request, (reactions as? ResponseReactions<*>)?.response, requestContext)
 }
 
