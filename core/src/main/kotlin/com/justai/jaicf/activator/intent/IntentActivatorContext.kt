@@ -5,7 +5,8 @@ import java.io.Serializable
 
 /**
  * Appears in the context of action block if some [IntentActivator] handled the user's request.
- * Particular intent activators extend this class and add some additional data like named entities. See for the concrete implementations like AlexaIntentActivatorContext, DialogflowActivatorContext and etc.
+ * Particular intent activators extend this class and add some additional data like named entities.
+ * See for the concrete implementations like AlexaIntentActivatorContext, DialogflowActivatorContext and etc.
  *
  * @property intent a name of recognised intent
  */
