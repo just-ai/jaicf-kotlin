@@ -1,6 +1,7 @@
 package com.justai.jaicf.examples.helloworld
 
 import com.justai.jaicf.activator.dialogflow.dialogflow
+import com.justai.jaicf.activator.lex.lex
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.aimybox.AimyboxEvent
 import com.justai.jaicf.channel.aimybox.aimybox
@@ -101,6 +102,18 @@ val HelloWorldScenario = Scenario {
         action(dialogflow) {
             val dt = activator.slots["date-time"]
             reactions.say("Okay! I'll wake you up ${dt?.stringValue}")
+        }
+    }
+
+    state("coffee") {
+        activators {
+            intent("OrderCoffee")
+        }
+
+        action(lex) {
+            val size = activator.slots["Size"]
+            val type = activator.slots["Type"]
+            reactions.say("You ordered a $size cup of $type coffee.")
         }
     }
 
