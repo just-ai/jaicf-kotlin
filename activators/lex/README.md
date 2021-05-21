@@ -50,7 +50,7 @@ Part of the sign-up procedure involves receiving a phone call and entering a ver
 
 #### 4. Sign in Lex console
 
-Open [Lex Console](https://console.aws.amazon.com/lex/) and sign in. Select the second version of the console.
+Open [Lex Console](https://console.aws.amazon.com/lexv2/home) and sign in. Select the second version of the console.
 
 #### 5. Create a bot
 
