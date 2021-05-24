@@ -4,9 +4,11 @@
 
 <h1 style="text-align: center">Lex NLU activator</h1>
 
-Allows using [Amazon Lex](https://aws.amazon.com/lex/) NLU engine as a states activator in JAICF.
+Allows using [Amazon Lex V2](https://aws.amazon.com/lex/) NLU engine as a states activator in JAICF.
 
-_Built on top of [Amazon Lex API Client for Java](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/)._
+_Built on top of 
+[Amazon Lex V2 API Client for Java](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/lexruntimev2/AmazonLexRuntimeV2.html)
+._
 
 ## How Lex works
 
@@ -54,9 +56,8 @@ Open [Lex Console](https://console.aws.amazon.com/lexv2/home) and sign in. Selec
 
 #### 5. Create a bot
 
-You can create a bot using this [blueprint](https://docs.aws.amazon.com/lex/latest/dg/ex-book-trip.html) or create your
-bot from empty. For better understanding, you can read
-this [topic](https://docs.aws.amazon.com/lex/latest/dg/gs-console.html).
+You can [create](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/) a bot using examples or create your bot from
+empty. For better understanding, you can read this [topic](https://docs.aws.amazon.com/lex/latest/dg/gs-console.html).
 
 #### 6. Configure Lex activator
 
@@ -73,14 +74,14 @@ In the form that opens, select "Show access key," then save the access key ID an
 val lexActivator = LexIntentActivator.Factory(
     LexConnector(
         LexBotConfig(
-            "BOT_ID",
-            "BOT_ALIAS_ID",
+            "<bot_id>",
+            "<bot_alias_id>",
             Region.EU_WEST_2,
             Locale.US
         ),
         AwsBasicCredentials.create(
-            "access_key_id",
-            "secret_access_key"
+            "<access_key_id>",
+            "<secret_access_key>"
         )
     )
 )
