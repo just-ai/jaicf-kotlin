@@ -7,6 +7,7 @@ ext[POM_DESCRIPTION] = "JAICF-Kotlin Lex Activator Adapter. Provides intent reco
 plugins {
     `jaicf-kotlin`
     `jaicf-publish`
+    `jaicf-junit`
 }
 
 dependencies {
@@ -14,15 +15,8 @@ dependencies {
     api(jackson())
     api(platform("software.amazon.awssdk:bom:2.14.3"))
     api("software.amazon.awssdk:lexruntimev2:2.15.69")
-    api("software.amazon.awssdk:lexmodelsv2:2.15.69")
 
-    testApi("io.mockk:mockk:1.10.0")
-    testApi("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
-}
-
-tasks {
-    test {
-        useJUnitPlatform()
-    }
+    testImplementation("io.mockk:mockk" version { mockk })
+    testApi("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
