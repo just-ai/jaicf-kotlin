@@ -28,11 +28,8 @@ class LexIntentActivator(
 
     override fun canHandle(request: BotRequest) = request.hasQuery()
 
-    @Suppress("MoveVariableDeclarationIntoWhen")
-    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<LexActivatorContext> {
-        val lexIntentData: LexIntentData = connector.recognizeIntent(request.clientId, request.input)
-
-        return when (lexIntentData) {
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest) =
+        when (val lexIntentData = connector.recognizeIntent(request.clientId, request.input).toIntentData()) {
             is LexIntentData.Recognized.ElicitSlot -> {
                 botContext.session[INTENT_NAME] = lexIntentData.intent
                 botContext.session[SLOT_TO_ELICIT] = lexIntentData.slotToElicit
@@ -50,7 +47,6 @@ class LexIntentActivator(
 
             else -> emptyList()
         }
-    }
 
     override fun fillSlots(
         request: BotRequest,
@@ -73,7 +69,7 @@ class LexIntentActivator(
         }
 
         val slotToElicit = botContext.session[SLOT_TO_ELICIT] as? String
-        val recognizedIntentData = connector.recognizeIntent(request.clientId, request.input)
+        val recognizedIntentData = connector.recognizeIntent(request.clientId, request.input).toIntentData()
 
         if ((recognizedIntentData as? LexIntentData.Recognized)?.intent != botContext.session[INTENT_NAME]) {
             return SlotFillingInterrupted()
@@ -92,7 +88,7 @@ class LexIntentActivator(
                 SlotFillingFinished(LexActivatorContext(recognizedIntentData))
             }
 
-            is LexIntentData.Recognized.Denied -> {
+            is LexIntentData.Recognized.ConfirmationDenied -> {
                 recognizedIntentData.messages
                     .filter { it.content() != null }
                     .forEach { reactions.say(it.content()) }
