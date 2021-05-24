@@ -56,7 +56,7 @@ Open [Lex Console](https://console.aws.amazon.com/lexv2/home) and sign in. Selec
 
 #### 5. Create a bot
 
-You can [create](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/) a bot using examples or create your bot from
+You can [create](https://console.aws.amazon.com/lexv2/home#createBot) a bot using examples or create your bot from
 empty. For better understanding, you can read this [topic](https://docs.aws.amazon.com/lex/latest/dg/gs-console.html).
 
 #### 6. Configure Lex activator
