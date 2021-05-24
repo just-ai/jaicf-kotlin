@@ -35,6 +35,7 @@ data class IncomingConversationStartedEvent(
     val context: String? = null,
     override val timestamp: Long? = null,
     override val chatHostname: String? = null,
+    val sender: UserProfile = user
 ) : IncomingEvent()
 
 /**
@@ -44,7 +45,8 @@ data class IncomingDeliveredEvent(
     val userId: String,
     val messageToken: Long? = null,
     override val timestamp: Long? = null,
-    override val chatHostname: String? = null
+    override val chatHostname: String? = null,
+    val sender: UserProfile? = null
 ) : IncomingEvent()
 
 /**
@@ -56,7 +58,8 @@ data class IncomingFailedEvent(
     val description: String,
     val messageToken: Long? = null,
     override val timestamp: Long? = null,
-    override val chatHostname: String? = null
+    override val chatHostname: String? = null,
+    val sender: UserProfile? = null
 ) : IncomingEvent()
 
 /**
@@ -81,7 +84,8 @@ data class IncomingSeenEvent(
     val userId: String,
     val messageToken: Long? = null,
     override val timestamp: Long? = null,
-    override val chatHostname: String? = null
+    override val chatHostname: String? = null,
+    val sender: UserProfile? = null
 ) : IncomingEvent()
 
 /**
@@ -91,7 +95,8 @@ data class IncomingSubscribedEvent(
     val user: UserProfile,
     override val timestamp: Long? = null,
     override val chatHostname: String? = null,
-    val messageToken: Long? = null
+    val messageToken: Long? = null,
+    val sender: UserProfile = user
 ) : IncomingEvent()
 
 /**
@@ -101,7 +106,8 @@ data class IncomingUnsubscribedEvent(
     val userId: String,
     override val timestamp: Long? = null,
     override val chatHostname: String? = null,
-    val messageToken: Long? = null
+    val messageToken: Long? = null,
+    val sender: UserProfile? = null
 ) : IncomingEvent()
 
 /**
@@ -130,5 +136,9 @@ val IncomingEvent.sender: UserProfile?
         is IncomingConversationStartedEvent -> user
         is IncomingMessageEvent -> sender
         is IncomingSubscribedEvent -> user
-        else -> null
+        is IncomingDeliveredEvent -> sender
+        is IncomingFailedEvent -> sender
+        is IncomingSeenEvent -> sender
+        is IncomingUnsubscribedEvent -> sender
+        is IncomingWebhookEvent -> error("No sender for webhook event")
     }
