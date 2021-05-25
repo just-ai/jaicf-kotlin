@@ -2,10 +2,10 @@ package com.justai.jaicf.activator.lex
 
 import software.amazon.awssdk.services.lexruntimev2.model.ConfirmationState
 import software.amazon.awssdk.services.lexruntimev2.model.DialogActionType
+import software.amazon.awssdk.services.lexruntimev2.model.Intent
 import software.amazon.awssdk.services.lexruntimev2.model.IntentState
 import software.amazon.awssdk.services.lexruntimev2.model.Message
 import software.amazon.awssdk.services.lexruntimev2.model.RecognizeTextResponse
-import software.amazon.awssdk.services.lexruntimev2.model.Slot
 
 sealed class LexIntentData {
 
@@ -56,17 +56,17 @@ fun RecognizeTextResponse.toIntentData() =
 
         DialogActionType.ELICIT_SLOT -> LexIntentData.Recognized.ElicitSlot(
             sessionState().intent().name(),
-            confidence,
+            getConfidence(sessionState().intent()),
             messages() ?: emptyList(),
-            sessionState().intent().slots()?.toInterpretedValueList() ?: emptyMap(),
+            sessionState().intent().getInterpretedSlots(),
             sessionState().dialogAction().slotToElicit()
         )
 
         DialogActionType.CONFIRM_INTENT -> LexIntentData.Recognized.ConfirmIntent(
             sessionState().intent().name(),
-            confidence,
+            getConfidence(sessionState().intent()),
             messages() ?: emptyList(),
-            sessionState().intent().slots()?.toInterpretedValueList() ?: emptyMap()
+            sessionState().intent().getInterpretedSlots(),
         )
 
         else -> LexIntentData.NotRecognized
@@ -78,9 +78,9 @@ private fun RecognizeTextResponse.closedResponseToIntentData() =
         IntentState.READY_FOR_FULFILLMENT ->
             LexIntentData.Recognized.IntentReady(
                 sessionState().intent().name(),
-                confidence,
+                getConfidence(sessionState().intent()),
                 messages() ?: emptyList(),
-                sessionState().intent().slots()?.toInterpretedValueList() ?: emptyMap()
+                sessionState().intent().getInterpretedSlots(),
             )
 
         IntentState.FAILED -> {
@@ -88,7 +88,7 @@ private fun RecognizeTextResponse.closedResponseToIntentData() =
                 LexIntentData.Recognized.ConfirmationDenied(
                     sessionState().intent().name(),
                     messages() ?: emptyList(),
-                    sessionState().intent().slots()?.toInterpretedValueList() ?: emptyMap()
+                    sessionState().intent().getInterpretedSlots()
                 )
             } else {
                 LexIntentData.Failed
@@ -98,10 +98,8 @@ private fun RecognizeTextResponse.closedResponseToIntentData() =
         else -> LexIntentData.Failed
     }
 
-private fun MutableMap<String, Slot?>.toInterpretedValueList(): Map<String, String?> =
-    mapValues { it.value?.value()?.interpretedValue() }
+private fun Intent.getInterpretedSlots() = slots()?.mapValues { it.value?.value()?.interpretedValue() } ?: emptyMap()
 
-private val RecognizeTextResponse.confidence
-    get() = interpretations()
-        .firstOrNull { it.intent().stateAsString() != null }
-        ?.nluConfidence()?.score()?.toFloat() ?: 1f
+private fun RecognizeTextResponse.getConfidence(intent: Intent) = interpretations()
+    .firstOrNull { it.intent().name() == intent.name() }
+    ?.nluConfidence()?.score()?.toFloat() ?: 1f
