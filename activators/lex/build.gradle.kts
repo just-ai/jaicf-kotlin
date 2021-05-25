@@ -13,10 +13,8 @@ plugins {
 dependencies {
     core()
     api(jackson())
-    api(platform("software.amazon.awssdk:bom:2.14.3"))
+    api("software.amazon.awssdk:bom:2.14.3")
     api("software.amazon.awssdk:lexruntimev2:2.15.69")
 
     testImplementation("io.mockk:mockk" version { mockk })
-    testApi("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
