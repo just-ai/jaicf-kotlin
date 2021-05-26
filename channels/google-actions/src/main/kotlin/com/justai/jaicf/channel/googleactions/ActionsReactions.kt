@@ -76,8 +76,6 @@ class ActionsReactions(
         largeImage: Image? = null,
         buttons: List<String>
     ) = withCapability(Capability.MEDIA_RESPONSE_AUDIO) {
-        require(buttons.isNotEmpty())
-
         response.builder
             .add(MediaResponse().also { res ->
                 res.mediaType = "AUDIO"
