@@ -1,10 +1,12 @@
 package com.justai.jaicf.channel.googleactions
 
 import com.google.actions.api.ActionRequest
+import com.google.actions.api.ActionResponse
 import com.google.actions.api.Capability
 import com.google.api.services.actions_fulfillment.v2.model.Image
 import com.google.api.services.actions_fulfillment.v2.model.MediaObject
 import com.google.api.services.actions_fulfillment.v2.model.MediaResponse
+import com.google.api.services.actions_fulfillment.v2.model.RichResponseItem
 import com.google.api.services.actions_fulfillment.v2.model.SimpleResponse
 import com.google.api.services.actions_fulfillment.v2.model.Suggestion
 import com.justai.jaicf.logging.AudioReaction
@@ -13,9 +15,13 @@ import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 val Reactions.actions
     get() = this as? ActionsReactions
+
+private val logger: Logger = LoggerFactory.getLogger("ActionsFulfillment")
 
 class ActionsReactions(
     private val request: ActionRequest,
@@ -93,4 +99,49 @@ class ActionsReactions(
         AudioReaction.create(url)
         buttons(*buttons.toTypedArray())
     }
+}
+
+internal fun ActionResponse.withInternalRestructuring() = apply {
+    richResponse?.items?.run {
+        val textResponseItem = concatenateTextResponses() ?: run {
+            logger.warn("Response must contain at least one text item. Use reactions.say() to generate any.")
+            RichResponseItem().setSimpleResponse(SimpleResponse().setDisplayText(" ").setSsml(" "))
+        }
+
+        val originalRichItems = filter { item -> item.simpleResponse == null }
+        if (originalRichItems.size > 1) {
+            logger.warn("Response can contain only one image, audio or other rich media item")
+        }
+
+        val hasMedia = any { item -> item.mediaResponse != null }
+        val hasSuggestions = richResponse?.suggestions?.any() ?: false
+        if (hasMedia && !hasSuggestions) {
+            logger.warn("Response with media items must contain buttons. Use reactions.buttons() to generate any.")
+        }
+
+        richResponse?.items = listOf(textResponseItem) + originalRichItems
+        webhookResponse?.fulfillmentText = textResponseItem.simpleResponse.displayText
+    }
+}
+
+internal fun List<RichResponseItem>.concatenateTextResponses(): RichResponseItem? =
+    mapNotNull { item -> item.simpleResponse }
+        .ifEmpty { return null }
+        .fold(SimpleResponse()) { acc, response ->
+            acc.apply {
+                displayText = displayText.joinNullable(response.displayText, "  \n")
+                ssml = ssml.joinNullable(response.ssml, " ")
+                textToSpeech = textToSpeech.joinNullable(response.textToSpeech, " ")
+            }
+        }
+        .apply { ssml?.let { ssml = "<speak>$ssml</speak>" } }
+        .let(RichResponseItem()::setSimpleResponse)
+
+private fun String?.joinNullable(other: String?, separator: String): String? {
+    if (this == null && other == null) return null
+
+    val left = this ?: return other
+    val right = other ?: return left
+
+    return left + separator + right
 }
