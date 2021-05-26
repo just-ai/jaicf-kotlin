@@ -23,9 +23,10 @@ val Reactions.actions
 
 private val logger: Logger = LoggerFactory.getLogger("ActionsFulfillment")
 
+@Suppress("MemberVisibilityCanBePrivate")
 class ActionsReactions(
     private val request: ActionRequest,
-    override val response: ActionsBotResponse
+    override val response: ActionsBotResponse,
 ) : ResponseReactions<ActionsBotResponse>(response) {
 
     companion object {
@@ -42,15 +43,11 @@ class ActionsReactions(
 
     private fun clean(text: String) = text.replace(ssmlRegex, " ")
 
-    override fun say(text: String): SayReaction {
-        val simpleResponse = SimpleResponse().also {
-            it.displayText = text
-            it.ssml = clean(text)
-        }
+    override fun say(text: String) = addSimpleResponse(text, clean(text))
 
-        response.builder.add(simpleResponse)
-        return SayReaction.create(text)
-    }
+    fun addSimpleResponse(displayText: String, ssml: String = displayText) =
+        response.builder.add(SimpleResponse().setDisplayText(displayText).setSsml(ssml))
+            .run { SayReaction.create(displayText) }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         buttons.forEach { title ->
@@ -80,7 +77,7 @@ class ActionsReactions(
         description: String? = null,
         icon: Image? = null,
         largeImage: Image? = null,
-        buttons: List<String>
+        vararg buttons: String,
     ) = withCapability(Capability.MEDIA_RESPONSE_AUDIO) {
         response.builder
             .add(MediaResponse().also { res ->
@@ -97,7 +94,10 @@ class ActionsReactions(
             })
 
         AudioReaction.create(url)
-        buttons(*buttons.toTypedArray())
+
+        if (buttons.isNotEmpty()) {
+            buttons(*buttons)
+        }
     }
 }
 
@@ -114,7 +114,7 @@ internal fun ActionResponse.withInternalRestructuring() = apply {
         }
 
         val hasMedia = any { item -> item.mediaResponse != null }
-        val hasSuggestions = richResponse?.suggestions?.any() ?: false
+        val hasSuggestions = richResponse?.suggestions?.isNotEmpty() ?: false
         if (hasMedia && !hasSuggestions) {
             logger.warn("Response with media items must contain buttons. Use reactions.buttons() to generate any.")
         }
