@@ -49,9 +49,6 @@ interface ReactionRegistrar {
     fun CarouselReaction.Companion.create(text: String, elements: List<CarouselReaction.Element>) =
         CarouselReaction(text, elements, currentState).register()
 
-    fun DocumentReaction.Companion.create(url: String) =
-        DocumentReaction(url, currentState).register()
-
     fun NewSessionReaction.Companion.create() =
         NewSessionReaction(currentState).register()
 

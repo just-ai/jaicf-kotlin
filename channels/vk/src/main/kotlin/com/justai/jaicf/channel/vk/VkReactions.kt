@@ -4,9 +4,10 @@ import com.justai.jaicf.channel.vk.api.InMemoryVkContentStorage
 import com.justai.jaicf.channel.vk.api.VkReactionsContentStorage
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
-import com.justai.jaicf.logging.DocumentReaction
+import com.justai.jaicf.logging.FileReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.logging.VideoReaction
 import com.justai.jaicf.reactions.Reactions
 import com.vk.api.sdk.client.VkApiClient
 import com.vk.api.sdk.client.actors.GroupActor
@@ -104,33 +105,34 @@ class VkReactions(
         return AudioReaction.create(audioId)
     }
 
-    fun video(ownerId: Int, mediaId: Int, accessKey: Int? = null) {
-        val audioId = when (accessKey) {
+    fun video(ownerId: Int, mediaId: Int, accessKey: Int? = null): VideoReaction {
+        val videoId = when (accessKey) {
             null -> "video${ownerId}_$mediaId"
             else -> "video${ownerId}_${mediaId}_$accessKey"
         }
-        messageTemplate.attachment(audioId).execute()
+        messageTemplate.attachment(videoId).execute()
+        return VideoReaction.create(videoId)
     }
 
-    fun document(file: File): DocumentReaction {
+    fun document(file: File): FileReaction {
         val uploaded = storage.getOrUploadFile(api, actor, peerId, file, GetMessagesUploadServerType.DOC) { "doc${doc.ownerId}_${doc.id}" }
         messageTemplate.attachment(uploaded).execute()
-        return DocumentReaction.create(file.absolutePath)
+        return FileReaction.create(file.absolutePath)
     }
 
-    fun document(url: String): DocumentReaction {
+    fun document(url: String): FileReaction {
         val uploaded = storage.getOrUploadUrl(api, actor, peerId, url, GetMessagesUploadServerType.DOC) { "doc${doc.ownerId}_${doc.id}" }
         messageTemplate.attachment(uploaded).execute()
-        return DocumentReaction.create(url)
+        return FileReaction.create(url)
     }
 
-    fun document(ownerId: Int, mediaId: Int, accessKey: Int? = null): DocumentReaction {
+    fun document(ownerId: Int, mediaId: Int, accessKey: Int? = null): FileReaction {
         val documentId = when (accessKey) {
             null -> "doc${ownerId}_$mediaId"
             else -> "doc${ownerId}_${mediaId}_$accessKey"
         }
         messageTemplate.attachment(documentId).execute()
-        return DocumentReaction.create(documentId)
+        return FileReaction.create(documentId)
     }
 
     private fun sendMessage(text: String, buttons: List<List<KeyboardButton>>) =

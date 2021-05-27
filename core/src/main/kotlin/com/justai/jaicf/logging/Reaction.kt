@@ -91,7 +91,7 @@ data class ChangeStateReaction internal constructor(
 }
 
 /**
- * Result of sending any documents from scenario to store in [ExecutionContext].
+ * Result of performing reactions.audio() to store in [ExecutionContext]. May not be supported in some channels.
  *
  * @see [ExecutionContext]
  * @see [com.justai.jaicf.logging.ConversationLogger]
@@ -167,22 +167,6 @@ data class VideoReaction internal constructor(
 ) : Reaction(fromState) {
 
     override fun toString(): String = "video $videoUrl from state $fromState"
-
-    companion object
-}
-
-/**
- * Result of performing reactions.audio() to store in [ExecutionContext]. May not be supported in some channels.
- *
- * @see [ExecutionContext]
- * @see [com.justai.jaicf.logging.ConversationLogger]
- * */
-data class DocumentReaction internal constructor(
-    val documentUrl: String,
-    override val fromState: String
-) : Reaction(fromState) {
-
-    override fun toString(): String = "document $documentUrl from state $fromState"
 
     companion object
 }
