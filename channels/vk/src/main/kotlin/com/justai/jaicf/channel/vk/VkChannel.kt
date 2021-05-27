@@ -3,7 +3,6 @@ package com.justai.jaicf.channel.vk
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
-import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
@@ -44,7 +43,7 @@ class VkChannel(
     private fun process(request: VkBotRequest): HttpBotResponse {
         val reactions = VkReactions(vk, group, request, storage)
         botApi.process(request, reactions, RequestContext.DEFAULT)
-        return "".asJsonHttpBotResponse()
+        return HttpBotResponse.accepted()
     }
 
     companion object : JaicpCompatibleAsyncChannelFactory {
@@ -60,7 +59,7 @@ class VkChannel(
             VkChannel(botApi, VkChannelConfiguration(TOKEN, GROUP_ID), "$apiUrl/")
     }
 
-    fun run() = object : CallbackApiLongPoll(vk, group) {
+    fun runBlocking() = object : CallbackApiLongPoll(vk, group) {
         private val executor = Executors.newWorkStealingPool()
 
         override fun messageNew(groupId: Int, message: Message) {

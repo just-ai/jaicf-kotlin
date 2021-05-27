@@ -43,9 +43,40 @@ class VkReactions(
         return SayReaction.create(text)
     }
 
+    fun say(text: String, vararg buttons: String) {
+        sendMessage(
+            text, buttons.map { buttonText ->
+                KeyboardButton().apply {
+                    action = KeyboardButtonAction().apply {
+                        type = TemplateActionTypeNames.CALLBACK
+                        label = buttonText
+                        payload = "{}"
+                    }
+                }
+            }.chunked(4) // we chunk because vk api allows max to 4 buttons in a single row
+        )
+
+        SayReaction.create(text)
+        ButtonsReaction.create(buttons.asList())
+    }
+
     override fun image(url: String): ImageReaction {
         messageTemplate.attachment(storage.getOrUploadImage(api, actor, peerId, url)).execute()
         return ImageReaction.create(url)
+    }
+
+    fun image(file: File): ImageReaction {
+        messageTemplate.attachment(storage.getOrUploadImage(api, actor, peerId, file))
+        return ImageReaction.create(file.absolutePath)
+    }
+
+    fun image(ownerId: Int, mediaId: Int, accessKey: Int? = null): ImageReaction {
+        val imageId = when (accessKey) {
+            null -> "photo${ownerId}_$mediaId"
+            else -> "photo${ownerId}_${mediaId}_$accessKey"
+        }
+        messageTemplate.attachment(imageId).execute()
+        return ImageReaction.create(imageId)
     }
 
     override fun audio(url: String): AudioReaction {
@@ -81,20 +112,6 @@ class VkReactions(
         messageTemplate.attachment(audioId).execute()
     }
 
-    fun image(file: File): ImageReaction {
-        messageTemplate.attachment(storage.getOrUploadImage(api, actor, peerId, file))
-        return ImageReaction.create(file.absolutePath)
-    }
-
-    fun image(ownerId: Int, mediaId: Int, accessKey: Int? = null): ImageReaction {
-        val imageId = when (accessKey) {
-            null -> "photo${ownerId}_$mediaId"
-            else -> "photo${ownerId}_${mediaId}_$accessKey"
-        }
-        messageTemplate.attachment(imageId).execute()
-        return ImageReaction.create(imageId)
-    }
-
     fun document(file: File): DocumentReaction {
         val uploaded = storage.getOrUploadFile(api, actor, peerId, file, GetMessagesUploadServerType.DOC) { "doc${doc.ownerId}_${doc.id}" }
         messageTemplate.attachment(uploaded).execute()
@@ -114,23 +131,6 @@ class VkReactions(
         }
         messageTemplate.attachment(documentId).execute()
         return DocumentReaction.create(documentId)
-    }
-
-    fun say(text: String, vararg buttons: String) {
-        sendMessage(
-            text, buttons.map { buttonText ->
-                KeyboardButton().apply {
-                    action = KeyboardButtonAction().apply {
-                        type = TemplateActionTypeNames.CALLBACK
-                        label = buttonText
-                        payload = "{}"
-                    }
-                }
-            }.chunked(4) // we chunk because vk api allows max to 4 buttons in a single row
-        )
-
-        SayReaction.create(text)
-        ButtonsReaction.create(buttons.asList())
     }
 
     private fun sendMessage(text: String, buttons: List<List<KeyboardButton>>) =
