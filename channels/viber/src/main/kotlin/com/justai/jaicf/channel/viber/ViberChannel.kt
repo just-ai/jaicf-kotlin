@@ -8,6 +8,7 @@ import com.justai.jaicf.channel.invocationapi.InvocationRequest
 import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.viber.api.ViberInvocationRequest
 import com.justai.jaicf.channel.viber.api.toBotRequest
 import com.justai.jaicf.channel.viber.sdk.Request
@@ -29,23 +30,24 @@ import com.justai.jaicf.context.RequestContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 
 class ViberChannel private constructor(
     override val botApi: BotApi,
     private val viberApi: ViberApi,
     private val botProfile: BotProfile,
     private val authToken: String,
-    private val channelConfig: ViberChannelConfig
+    private val channelConfig: ViberChannelConfig,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
     private val threadPool = Executors.newWorkStealingPool().asCoroutineDispatcher()
+    private var liveChatProvider: JaicpLiveChatProvider? = null
 
     constructor(
         botApi: BotApi,
         botConfig: ViberBotConfig,
         client: ViberHttpClient = ViberKtorClient(),
-        channelConfig: ViberChannelConfig = ViberChannelConfig()
+        channelConfig: ViberChannelConfig = ViberChannelConfig(),
     ) : this(botApi, ViberApi(client), BotProfile(botConfig.botName), botConfig.authToken, channelConfig)
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
@@ -76,7 +78,7 @@ class ViberChannel private constructor(
         CoroutineScope(threadPool).launch {
             viberRequest.event.toBotRequest().let { viberBotRequest ->
                 val sender = viberRequest.event.sender ?: UserProfile(viberRequest.event.senderId)
-                val reactions = ViberReactions(botProfile, sender, viberApi, authToken)
+                val reactions = ViberReactions(botProfile, sender, viberApi, authToken, liveChatProvider)
                 botApi.process(viberBotRequest, reactions, requestContext)
             }
         }
@@ -86,7 +88,7 @@ class ViberChannel private constructor(
         val generatedRequest = generateRequestFromTemplate(request)
         val viberEvent = generatedRequest.asViberRequest().event as IncomingMessageEvent
         val viberInvocationRequest = ViberInvocationRequest.create(request, viberEvent) ?: return
-        val reactions = ViberReactions(botProfile, viberEvent.sender, viberApi, authToken)
+        val reactions = ViberReactions(botProfile, viberEvent.sender, viberApi, authToken, liveChatProvider)
 
         botApi.process(viberInvocationRequest, reactions, requestContext)
     }
@@ -99,14 +101,23 @@ class ViberChannel private constructor(
         viberApi.setWebhook(url, authToken)
     }
 
-    class Factory(private val channelConfig: ViberChannelConfig = ViberChannelConfig()) : JaicpCompatibleAsyncChannelFactory {
+    class Factory(
+        private val channelConfig: ViberChannelConfig = ViberChannelConfig(),
+    ) : JaicpCompatibleAsyncChannelFactory {
+
         override val channelType = "viber"
 
-        override fun create(botApi: BotApi, apiUrl: String): ViberChannel {
+        override fun create(
+            botApi: BotApi,
+            apiUrl: String,
+            liveChatProvider: JaicpLiveChatProvider,
+        ): JaicpCompatibleAsyncBotChannel {
             val viberApi = ViberApi(ViberKtorClient(), apiUrl)
             val accountInfo = viberApi.accountInfo("")
             val botProfile = BotProfile(accountInfo.name)
-            return ViberChannel(botApi, viberApi, botProfile, "", channelConfig)
+            return ViberChannel(botApi, viberApi, botProfile, "", channelConfig).also {
+                it.liveChatProvider = liveChatProvider
+            }
         }
     }
 
@@ -117,5 +128,5 @@ class ViberChannel private constructor(
 
 data class ViberChannelConfig(
     var ignoreSeenEvents: Boolean = true,
-    var ignoreDeliveredEvents: Boolean = true
+    var ignoreDeliveredEvents: Boolean = true,
 )
