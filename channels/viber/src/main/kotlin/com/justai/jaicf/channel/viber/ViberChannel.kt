@@ -115,8 +115,8 @@ class ViberChannel private constructor(
             val viberApi = ViberApi(ViberKtorClient(), apiUrl)
             val accountInfo = viberApi.accountInfo("")
             val botProfile = BotProfile(accountInfo.name)
-            return ViberChannel(botApi, viberApi, botProfile, "", channelConfig).also {
-                it.liveChatProvider = liveChatProvider
+            return ViberChannel(botApi, viberApi, botProfile, "", channelConfig).apply {
+                this.liveChatProvider = liveChatProvider
             }
         }
     }
