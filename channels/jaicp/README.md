@@ -193,7 +193,7 @@ val HelloBargeIn = Scenario(telephony) {
         }
     }
 
-    state("WelcomePhrase") {
+    state("WelcomeContext") {
         state("Operator") {
             activators {
                 intent("Operator")
