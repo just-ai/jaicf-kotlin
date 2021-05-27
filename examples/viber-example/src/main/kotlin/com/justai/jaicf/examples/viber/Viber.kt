@@ -19,7 +19,7 @@ suspend fun main() {
     val viber = ViberChannel(
         viberTestBot,
         ViberBotConfig(
-            botName = "jaicf bot",
+            botName = "<your_bot_name>",
             authToken = authToken
         ),
         channelConfig = ViberChannelConfig(
@@ -37,6 +37,6 @@ suspend fun main() {
         server.start(wait = true)
     }
 
-    viber.initWebhook("https://e93110811e41.ngrok.io") // Enter your url
+    viber.initWebhook("<your_webhook_url>") // Enter your url
     server.await()
 }
