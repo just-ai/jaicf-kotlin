@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.viber
 
+import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.viber.api.Carousel
 import com.justai.jaicf.channel.viber.api.CarouselElement
 import com.justai.jaicf.channel.viber.api.toRichMediaObject
@@ -52,7 +53,8 @@ class ViberReactions internal constructor(
     val sender: BotProfile,
     val receiver: UserProfile,
     val viberApi: ViberApi,
-    val authToken: String
+    val authToken: String,
+    override val liveChatProvider: JaicpLiveChatProvider?
 ) : Reactions(), JaicpCompatibleAsyncReactions {
 
     override fun say(text: String): SayReaction {
