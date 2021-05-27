@@ -14,8 +14,7 @@ fun main() {
             accessToken = accessToken,
             channels = listOf(
                 ViberChannel.Factory()
-            ),
-            url = "http://jaicf-test.lo.test-ai.net/chatadapter"
+            )
         ).runBlocking()
     }
 }
