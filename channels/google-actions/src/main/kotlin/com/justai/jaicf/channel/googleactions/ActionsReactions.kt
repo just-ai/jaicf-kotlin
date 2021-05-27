@@ -60,7 +60,6 @@ class ActionsReactions(
 
     override fun image(url: String) = image(url, null)
 
-    @Suppress("MemberVisibilityCanBePrivate")
     fun image(url: String, accessibilityText: String?): ImageReaction {
         val image = Image().setUrl(url)
         accessibilityText?.let(image::setAccessibilityText)

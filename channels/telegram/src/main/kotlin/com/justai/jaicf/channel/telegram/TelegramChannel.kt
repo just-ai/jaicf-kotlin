@@ -138,9 +138,9 @@ class TelegramChannel(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider
-        ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").also {
-            it.liveChatProvider = liveChatProvider
-            it.botUpdater.startCheckingUpdates()
+        ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").apply {
+            this.liveChatProvider = liveChatProvider
+            this.botUpdater.startCheckingUpdates()
         }
 
         private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
