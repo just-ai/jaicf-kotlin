@@ -5,7 +5,11 @@ import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.asHttpBotRequest
-import com.justai.jaicf.channel.jaicp.*
+import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.JaicpBaseTest
+import com.justai.jaicf.channel.jaicp.JaicpTestChannel
+import com.justai.jaicf.channel.jaicp.ScenarioFactory
+import com.justai.jaicf.channel.jaicp.asJaicpBotRequest
 import com.justai.jaicf.channel.jaicp.channels.ChatApiChannel
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
@@ -17,7 +21,13 @@ import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import kotlin.properties.Delegates
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+private const val DEFAULT_VERIFY_TIMEOUT = 1000L
 
 internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     private var actLog: JaicpLogModel by Delegates.notNull()
@@ -37,7 +47,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     @Test
     fun `001 logging should set log model with session id for new user`() {
         JaicpTestChannel(echoBot, ChatApiChannel).process(requestFromResources.withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
 
         assertNotNull(actLog.sessionId)
         assertTrue(actLog.isNewSession)
@@ -46,7 +56,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     @Test
     fun `002 logging should create correct log model`() {
         JaicpTestChannel(echoBot, ChatApiChannel).process(requestFromResources.withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
 
         assertEquals(
             expLog.withInvalidatedTime().withInvalidatedSessionId().withUserId(testNumber),
@@ -57,12 +67,12 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     @Test
     fun `003 logging should maintain sessionId between calls from one client`() {
         JaicpTestChannel(echoBot, ChatApiChannel).process(requestFromResources.withQuery("Hello!").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionBefore = actLog.sessionId
         assertTrue(actLog.isNewSession)
 
         JaicpTestChannel(echoBot, ChatApiChannel).process(requestFromResources.withQuery("test session id").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionAfter = actLog.sessionId
 
         assertEquals(sessionBefore, sessionAfter)
@@ -85,19 +95,19 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
         val channel = JaicpTestChannel(bot, ChatApiChannel)
 
         channel.process(requestFromResources.withQuery("Hello!").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionBefore = actLog.sessionId
         assertTrue(actLog.isNewSession)
 
         channel.process(requestFromResources.withQuery("start session").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionAfter = actLog.sessionId
 
         assertNotEquals(sessionBefore, sessionAfter)
         assertTrue(actLog.isNewSession)
 
         channel.process(requestFromResources.withQuery("Hello again!").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
 
         assertNotEquals(sessionBefore, sessionAfter)
         assertFalse(actLog.isNewSession)
@@ -119,19 +129,19 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
         val channel = JaicpTestChannel(bot, ChatApiChannel)
 
         channel.process(requestFromResources.withQuery("Hello!").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionInitial = actLog.sessionId
         assertTrue(actLog.isNewSession)
 
         channel.process(requestFromResources.withQuery("end session").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionAfterEndReaction = actLog.sessionId
 
         assertFalse(actLog.isNewSession)
         assertEquals(sessionInitial, sessionAfterEndReaction)
 
         channel.process(requestFromResources.withQuery("Hello again!").withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
         val sessionAfterNewRequest = actLog.sessionId
 
         assertTrue(actLog.isNewSession)
@@ -141,7 +151,7 @@ internal class JaicpConversationLoggerTest : JaicpBaseTest() {
     @Test
     fun `006 logging should create log model with channel data for telephony channel`() {
         JaicpTestChannel(echoBot, TelephonyChannel).process(requestFromResources.withClientId(testNumber))
-        verify(timeout = 500) { spyLogger.createLog(any(), any(), any()) }
+        verify(timeout = DEFAULT_VERIFY_TIMEOUT) { spyLogger.createLog(any(), any(), any()) }
 
         assertEquals(
             expLog.withInvalidatedTime().withInvalidatedSessionId().withUserId(testNumber),
