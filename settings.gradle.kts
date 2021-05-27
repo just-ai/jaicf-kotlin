@@ -24,8 +24,6 @@ include("channels:slack")
 findProject(":channels:slack")?.name = "slack"
 include("channels:telegram")
 findProject(":channels:telegram")?.name = "telegram"
-include("channels:viber")
-findProject(":channels:viber")?.name = "viber"
 include("channels:google-actions")
 findProject(":channels:google-actions")?.name = "google-actions"
 include("channels:jaicp")
@@ -45,3 +43,5 @@ include("channels:yandex-alice")
 findProject(":channels:yandex-alice")?.name = "yandex-alice"
 include("channels:viber")
 findProject(":channels:viber")?.name = "viber"
+include("channels:vk")
+findProject(":channels:vk")?.name = "vk"
