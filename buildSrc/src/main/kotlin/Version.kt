@@ -5,7 +5,7 @@ object Version {
     const val reflect = "1.4.0"
 
     // Libraries
-    const val jackson = "2.10.0"
+    const val jackson = "2.12.3"
     const val slf4j = "1.7.30"
     const val jUnit = "5.6.0"
     const val jetty = "9.4.3.v20170317"

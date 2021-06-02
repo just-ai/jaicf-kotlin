@@ -12,5 +12,7 @@ plugins {
 
 dependencies {
     core()
-    api("com.github.messenger4j:messenger4j:1.1.0")
+    api("com.github.messenger4j:messenger4j:1.1.0") {
+        exclude("org.jetbrains.kotlin")
+    }
 }

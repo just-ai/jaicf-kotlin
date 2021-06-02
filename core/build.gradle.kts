@@ -11,7 +11,6 @@ plugins {
 }
 
 dependencies {
-
     api(slf4j("slf4j-api"))
 
     implementation(`tomcat-servlet`())

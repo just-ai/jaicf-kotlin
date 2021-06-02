@@ -11,14 +11,11 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":channels:jaicp"))
+    implementation(project(":channels:viber"))
+
     implementation("org.slf4j:slf4j-simple" version { slf4j })
     implementation("org.slf4j:slf4j-log4j12" version { slf4j })
     implementation("io.ktor:ktor-server-netty" version { ktor })
-
-    implementation(project(":channels:viber"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {
@@ -27,8 +24,5 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
-    }
-    test {
-        useJUnitPlatform()
     }
 }

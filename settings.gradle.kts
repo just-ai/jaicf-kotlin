@@ -26,6 +26,12 @@ include("channels:telegram")
 findProject(":channels:telegram")?.name = "telegram"
 include("channels:viber")
 findProject(":channels:viber")?.name = "viber"
+include("channels:aimybox")
+findProject(":channels:aimybox")?.name = "aimybox"
+include("channels:facebook")
+findProject(":channels:facebook")?.name = "facebook"
+include("channels:yandex-alice")
+findProject(":channels:yandex-alice")?.name = "yandex-alice"
 include("channels:google-actions")
 findProject(":channels:google-actions")?.name = "google-actions"
 include("channels:jaicp")
@@ -37,11 +43,3 @@ include("managers:mapdb")
 findProject(":managers:mapdb")?.name = "mapdb"
 include("activators:rasa")
 findProject(":activators:rasa")?.name = "rasa"
-include("channels:aimybox")
-findProject(":channels:aimybox")?.name = "aimybox"
-include("channels:facebook")
-findProject(":channels:facebook")?.name = "facebook"
-include("channels:yandex-alice")
-findProject(":channels:yandex-alice")?.name = "yandex-alice"
-include("channels:viber")
-findProject(":channels:viber")?.name = "viber"

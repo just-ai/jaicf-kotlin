@@ -13,7 +13,7 @@ dependencies {
     core()
     api(jackson())
     api("com.google.actions:actions-on-google:1.8.0") {
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+        exclude("org.jetbrains.kotlin")
     }
 
     implementation(kotlin("reflect", Version.reflect))
