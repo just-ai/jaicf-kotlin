@@ -21,6 +21,8 @@ JAICP is used to connect your bots to JAICP infrastructure. This infrastructure 
 JAICP supports multiple channels, including Facebook, WeChat, Google Assistant, ZenDesk, and many many others. Also,
 there are JAICP-native channels, such as ChatWidget, ChatApi and Telephony channels.
 
+> Learn more about using JAICP with channels [here](https://help.just-ai.com/#/docs/en/jaicf/jaicf).
+
 ## How to use
 
 #### 1. Include JAICP channel dependency to your _build.gradle_

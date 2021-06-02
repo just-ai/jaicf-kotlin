@@ -25,7 +25,7 @@ action {
     // Viber incoming event
     val incomingEvent = request.viber?.event
 
-    // Fetch sender
+    // Get sender
     val sender = incomingEvent?.sender
 
     // Use Viber-specified response builders
@@ -49,7 +49,7 @@ _Note that Viber bot works asynchronously. This means that every reaction method
 #### Native API
 
 You can use native Viber API directly via `reactions.viber?.viberApi`.
-This enables you to fetch some data from Viber REST API (like [getOnline](https://developers.viber.com/docs/api/rest-bot-api/#get-online) for example).
+This enables you to fetch some data from Viber REST API, for example [getOnlineStatus](https://developers.viber.com/docs/api/rest-bot-api/#get-online).
 
 ```kotlin
 action {
@@ -75,7 +75,7 @@ _For local development:_
 fun main() {
     JaicpPollingConnector(
         botApi = viberTestBot,
-        accessToken = accessToken,
+        accessToken = "your JAICF project token",
         channels = listOf(
             ViberChannel.Factory()
         )
@@ -83,7 +83,7 @@ fun main() {
 }
 ```
 
-_For cloud production:_
+_For [JAICP Cloud](https://github.com/just-ai/jaicf-kotlin/wiki/JAICP-Cloud) production:_
 ```kotlin
 fun main() {
     JaicpServer(
@@ -121,12 +121,12 @@ fun main() {
 }
 ```
 
-_Note that you need to init webhook after start your server. Obtain a public URL for your webhook (
-using [ngrok](https://ngrok.com) for example)._
+_Note that you need to init webhook after start your server. Obtain a public URL for your webhook 
+(using [ngrok](https://ngrok.com) for example)._
 
 ## Events
 
-Users can send not only text queries to your Viber bot. They can also send contacts, locations, etc.
+Your bot can also receive events from users, such as Contact, Location, etc. 
 These messages contain non-text queries and can be handled in your scenarios via `event` activators.
 
 ```kotlin
@@ -147,7 +147,7 @@ state("events") {
 
 ## Buttons
 
-Viber allows to send [keyboards](https://developers.viber.com/docs/tools/keyboards/).
+Viber allows sending [keyboards](https://developers.viber.com/docs/tools/keyboards/).
 You can use DSL for creating keyboards.
 
 ```kotlin
@@ -193,6 +193,6 @@ action {
 }
 ```
 
-You can also set a style for inline buttons locally using inlineButtonsDefaultStyle in ViberReactions.
+Inline buttons default style can be set using inlineButtonsDefaultStyle in ViberReactions.
 
-_For more example you can learn [the example scenario](https://github.com/just-ai/jaicf-kotlin/blob/master/examples/viber-example/src/main/kotlin/com/justai/jaicf/examples/viber/ViberTestScenario.kt)_
+_For more example you can learn [the example scenario](https://github.com/just-ai/jaicf-kotlin/blob/master/examples/viber-example/src/main/kotlin/com/justai/jaicf/examples/viber/ViberTestScenario.kt)._
