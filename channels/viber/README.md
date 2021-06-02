@@ -1,8 +1,8 @@
-<p style="text-align: center">
-    <img src="https://fes.by/image/catalog/design/icons/viber.jpg" width="128" height="128" alt="logo"/>
+<p align="center">
+    <img src="http://pngimg.com/uploads/viber/viber_PNG25.png" width="128" height="128" alt="logo"/>
 </p>
 
-<h1 style="text-align: center">Viber messenger channel</h1>
+<h1 align="center">Viber messenger channel</h1>
 
 Allows to create chatbots for [Viber](https://developers.viber.com/).
 
