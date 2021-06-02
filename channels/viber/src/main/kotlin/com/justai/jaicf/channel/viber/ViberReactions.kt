@@ -48,6 +48,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
+val Reactions.viber
+    get() = this as? ViberReactions
+
 @Suppress("MemberVisibilityCanBePrivate")
 class ViberReactions internal constructor(
     val sender: BotProfile,
