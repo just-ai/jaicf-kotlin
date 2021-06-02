@@ -18,7 +18,8 @@ data class CailaIntentData(
     val path: String,
     val answer: String?,
     val customData: String?,
-    val slots: List<CailaSlotData>?
+    val slots: List<CailaSlotData>?,
+    val priority: Int?
 )  : java.io.Serializable{
     val name = path.substring(path.lastIndexOf('/') + 1)
 }
