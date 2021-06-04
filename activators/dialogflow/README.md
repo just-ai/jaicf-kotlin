@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://assets.dialogflow.com/common/assets/img/unnamed.png" height="128" width="128" alt="Dialogflow ES logo"/>
+    <img src="https://assets.dialogflow.com/common/assets/img/unnamed.png" height="128" alt="Dialogflow ES logo"/>
 </p>
 
 <h1 align="center">Dialogflow ES NLU activator</h1>
