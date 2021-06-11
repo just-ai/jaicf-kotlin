@@ -6,9 +6,9 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
-import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.EndSessionReaction
+import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import kotlinx.serialization.json.JsonObject
@@ -82,8 +82,12 @@ open class JaicpReactions : Reactions() {
                 telephony?.bargeInInterrupt,
                 sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId
             )
-        ).jsonObject
+        ).jsonObject.withCustomData()
     }
 
-    internal open fun doBeforeCollect() {}
+    protected open fun doBeforeCollect() {}
+
+    private fun JsonObject.withCustomData() = provideCustomData(this)
+
+    protected open fun provideCustomData(responseObject: JsonObject): JsonObject = responseObject
 }
