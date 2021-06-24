@@ -3,6 +3,7 @@ package com.justai.jaicf.context.manager
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.BotContextKeys
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.context.RequestContext
 
@@ -25,6 +26,9 @@ object InMemoryBotContextManager : BotContextManager {
             result = bc.result
             client.putAll(bc.client)
             session.putAll(bc.session)
+            if (bc.temp[BotContextKeys.IS_NEW_USER_KEY] == true) {
+                temp[BotContextKeys.IS_NEW_USER_KEY] = true
+            }
         }
     }
 

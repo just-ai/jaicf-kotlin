@@ -41,8 +41,14 @@ package com.justai.jaicf.context
  */
 data class BotContext(
     val clientId: String,
-    val dialogContext: DialogContext = DialogContext()
+    val dialogContext: DialogContext
 ) {
+
+    // TODO: Change BotContextManager API in further major releases, get rid of this dirty fix.
+    constructor(clientId: String) : this(clientId, DialogContext()) {
+        temp[BotContextKeys.IS_NEW_USER_KEY] = true
+    }
+
     val client = mutableMapOf<String, Any?>().withDefault { null }
     val session = mutableMapOf<String, Any?>().withDefault { null }
     val temp = mutableMapOf<String, Any?>().withDefault { null }
@@ -64,4 +70,8 @@ data class BotContext(
     fun cleanTempData() {
         temp.clear()
     }
+}
+
+internal object BotContextKeys {
+    const val IS_NEW_USER_KEY = "com/justai/jaicf/core/context/isNewUser"
 }

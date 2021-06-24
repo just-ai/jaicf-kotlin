@@ -55,6 +55,7 @@
   "channelType": "resterisk",
   "sessionId": "006-d29b3a8b-9b09-4cea-8d3f-0d3b7b95a648",
   "isNewSession": true,
+  "isNewUser": true,
   "channelData": {
     "@type": "resterisk",
     "callRecording": "250311145/2021-02-16/11636330465/471177/10-24-33.198-nkOp2",
