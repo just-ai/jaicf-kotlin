@@ -20,5 +20,6 @@ data class ExecutionContext(
     val firstState: String = botContext.dialogContext.currentState,
     val reactions: MutableList<Reaction> = mutableListOf(),
     val input: String = request.input,
-    var scenarioException: BotException? = null
+    var scenarioException: BotException? = null,
+    val isNewUser: Boolean = (botContext.temp[BotContextKeys.IS_NEW_USER_KEY] as? Boolean) ?: false
 )

@@ -43,6 +43,7 @@ internal data class JaicpLogModel private constructor(
     val channelType: String,
     val sessionId: String,
     val isNewSession: Boolean,
+    val isNewUser: Boolean,
     val channelData: JsonObject?,
     val exception: String? = null
 ) {
@@ -175,6 +176,7 @@ internal data class JaicpLogModel private constructor(
                 user = user,
                 sessionId = session.sessionId,
                 isNewSession = session.isNewSession,
+                isNewUser = executionContext.isNewUser,
                 channelData = jaicpBotRequest.channelData,
                 exception = executionContext.scenarioException?.scenarioCause?.stackTraceToString()
             )
