@@ -75,7 +75,7 @@ data class FacebookMessageReadBotRequest(
 
 data class FacebookPostBackBotRequest(
     override val event: PostbackEvent
-): FacebookEventBotRequest(event, FacebookEvent.POST_BACK)
+): FacebookBotRequest, QueryBotRequest(clientId = event.senderId(), input = event.title())
 
 data class FacebookReferralBotRequest(
     override val event: ReferralEvent
