@@ -25,16 +25,12 @@ When you've created a Mongo DB, you can obtain its connection URL that should be
 #### 4. Configure Mongo DB manager
 
 ```kotlin
-val uri = MongoClientURI("Mongo DB URL with credentials")
-val client = MongoClient(uri)
-
-val manager = MongoBotContextManager(
-    client.getDatabase(uri.database!!).getCollection("contexts") // or any other collection
-)
+var client = MongoClients.create("Your Mongo Connection String")
+val manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
 
 val templateBot = BotEngine(
     scenario = MainScenario,
-    contextManager = manager,
+    defaultContextManager = manager,
     activators = arrayOf(
         ActionsDialogflowActivator,
         CatchAllActivator
