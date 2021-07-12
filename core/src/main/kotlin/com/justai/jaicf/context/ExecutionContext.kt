@@ -30,6 +30,6 @@ data class ExecutionContext(
     val reactions: MutableList<Reaction> = mutableListOf(),
     val input: String = request.input,
     var scenarioException: BotException? = null,
-    val isNewUser: Boolean = (botContext.temp[BotContextKeys.IS_NEW_USER_KEY] as? Boolean) ?: false
+    val isNewUser: Boolean = (botContext.temp[BotContextKeys.IS_NEW_USER_KEY] as? Boolean) ?: false,
     val channelContext: MutableMap<String, Any> = mutableMapOf()
 )
