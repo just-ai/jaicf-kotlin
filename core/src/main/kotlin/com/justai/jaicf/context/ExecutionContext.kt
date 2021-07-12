@@ -9,6 +9,14 @@ import com.justai.jaicf.logging.Reaction
 /**
  * This class will accumulate all execution information obtained during processing request.
  *
+ * @param requestContext current channel request's context
+ * @param activationContext selected activation context
+ * @param botContext current client's bot context
+ * @param request current client's request
+ * @param reactions current channel provided reactions
+ * @param input client's input
+ * @param scenarioException an exception thrown from scenario
+ *
  * @see ConversationLogger
  * @see Reaction
  * */
