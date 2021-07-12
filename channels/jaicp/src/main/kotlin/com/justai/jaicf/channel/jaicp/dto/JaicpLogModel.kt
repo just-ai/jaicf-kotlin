@@ -126,7 +126,7 @@ internal data class JaicpLogModel private constructor(
             fun create(executionContext: ExecutionContext, session: SessionData): ResponseData {
                 val nlpInfo = NlpInfo.create(executionContext)
                 val replies = buildReplies(executionContext.reactions)
-                val analytics = executionContext.analyticsApi
+                val analytics = executionContext.botContext.analyticsApi
 
                 executionContext.scenarioException?.toReply()?.let {
                     replies.add(JSON.encodeToJsonElement(ErrorReply.serializer(), it))

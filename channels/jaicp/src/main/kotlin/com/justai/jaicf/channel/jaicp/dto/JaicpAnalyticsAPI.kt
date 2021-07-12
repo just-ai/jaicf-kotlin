@@ -1,7 +1,7 @@
 package com.justai.jaicf.channel.jaicp.dto
 
+import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DefaultActionContext
-import com.justai.jaicf.context.ExecutionContext
 import kotlinx.serialization.Serializable
 
 /**
@@ -10,17 +10,17 @@ import kotlinx.serialization.Serializable
  * @see JaicpAnalyticsAPI
  * */
 val DefaultActionContext.jaicpAnalytics: JaicpAnalyticsAPI
-    get() = reactions.executionContext.analyticsApi
+    get() = reactions.botContext.analyticsApi
 
-internal val ExecutionContext.analyticsApi: JaicpAnalyticsAPI
-    get() = (channelContext[ANALYTICS_BOT_CONTEXT_KEY] as? JaicpAnalyticsAPI ?: JaicpAnalyticsAPI()).also {
-        channelContext[ANALYTICS_BOT_CONTEXT_KEY] = it
+internal val BotContext.analyticsApi: JaicpAnalyticsAPI
+    get() = (temp[ANALYTICS_BOT_CONTEXT_KEY] as? JaicpAnalyticsAPI ?: JaicpAnalyticsAPI()).also {
+        temp[ANALYTICS_BOT_CONTEXT_KEY] = it
     }
 
 private const val ANALYTICS_BOT_CONTEXT_KEY = "com/justai/jaicf/jaicp/jaicpAnalyticsApi"
 
 @Serializable
-class JaicpAnalyticsAPI {
+class JaicpAnalyticsAPI internal constructor() {
     private var sessionResult: String? = null
     private var comment: String? = null
     private val sessionData: MutableMap<String, String> = mutableMapOf();
