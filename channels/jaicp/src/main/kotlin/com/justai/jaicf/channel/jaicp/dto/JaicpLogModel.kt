@@ -119,12 +119,14 @@ internal data class JaicpLogModel private constructor(
         val confidence: Double?,
         val replies: List<JsonElement?>,
         val answer: String,
-        val sessionId: String?
+        val sessionId: String?,
+        val analytics: JaicpAnalyticsAPI
     ) {
         companion object Factory {
-            fun create(executionContext: ExecutionContext): ResponseData {
+            fun create(executionContext: ExecutionContext, session: SessionData): ResponseData {
                 val nlpInfo = NlpInfo.create(executionContext)
                 val replies = buildReplies(executionContext.reactions)
+                val analytics = executionContext.analyticsApi
 
                 executionContext.scenarioException?.toReply()?.let {
                     replies.add(JSON.encodeToJsonElement(ErrorReply.serializer(), it))
@@ -132,9 +134,10 @@ internal data class JaicpLogModel private constructor(
                 return ResponseData(
                     answer = buildAnswer(executionContext.reactions),
                     replies = replies,
-                    sessionId = null,
+                    sessionId = session.sessionId,
                     confidence = nlpInfo.confidence,
-                    nlpClass = nlpInfo.nlpClass
+                    nlpClass = nlpInfo.nlpClass,
+                    analytics = analytics
                 )
             }
 
@@ -157,7 +160,7 @@ internal data class JaicpLogModel private constructor(
             val request = Request.fromRequest(jaicpBotRequest, executionContext.input)
             val user = User.fromRequest(jaicpBotRequest)
             val nlp = NlpInfo.create(executionContext)
-            val response = ResponseData.create(executionContext)
+            val response = ResponseData.create(executionContext, session)
 
             return JaicpLogModel(
                 botId = jaicpBotRequest.botId,
@@ -175,7 +178,7 @@ internal data class JaicpLogModel private constructor(
                 response = Response(response),
                 user = user,
                 sessionId = session.sessionId,
-                isNewSession = session.isNewSession,
+                isNewSession = false,
                 isNewUser = executionContext.isNewUser,
                 channelData = jaicpBotRequest.channelData,
                 exception = executionContext.scenarioException?.scenarioCause?.stackTraceToString()

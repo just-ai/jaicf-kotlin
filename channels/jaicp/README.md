@@ -339,10 +339,65 @@ state("NewGame") {
     action {
         reactions.jaicp?.startNewSession()
         reactions.say("Hello there! Let's play a game of numbers!")
-        reacions.say("I've picked a number from 1 to 100 and it's time for you to guess it right")
+        reactions.say("I've picked a number from 1 to 100 and it's time for you to guess it right")
     }
 }
 ```
 
 In this case whenever a new game starts we create a new dialogue session. This will afterwards allow us, for example, to
 generate some statistics like how many steps it takes for a client to guess a number. 
+
+### JAICP Analytics API
+JAICP also provides a number of methods to mark client messages and conversations. For example, 
+you can define a result of conversation with `jaicpAnalytics.setSessionResult`. 
+This result will be shown in analytic charts in JAICP Application Console.
+
+#### Usage in scenario:
+```kotlin
+state("Are you happy with our bot?") {
+  activators {
+    intent("Yes")
+  }
+  action {
+    reactions.say("Nice!")
+    jaicpAnalytics.setSessionResult("")
+  }
+  
+  state("Are you happy with our bot?") {
+    activators {
+      intent("Yes")
+    }
+    action { 
+      reactions.say("Nice!")
+      jaicpAnalytics.setSessionResult("Client is happy. Developer should get a raise.")
+    }
+  }
+  
+  state("Are you happy with our bot?") {
+    activators {
+      intent("No")
+    }
+    action {
+      reactions.say("That's truly awful.")
+      jaicpAnalytics.setSessionResult("Client is sad. Developer should keep on improving.")
+    }
+  }
+}
+```
+
+> See more about analytics api [JAICP Help Portal](https://help.just-ai.com/#/docs/ru/JS_API/built_in_services/analytics/analytics) and [In source code](https://help.just-ai.com/#/docs/ru/JS_API/built_in_services/analytics/analytics)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
