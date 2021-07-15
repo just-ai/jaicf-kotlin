@@ -55,33 +55,26 @@ class StatePath {
 
     fun resolve(subpath: String): StatePath {
         val path = parse(subpath)
+
         return if (subpath.startsWith("/")) {
-            path
+            path.normalized()
         } else {
-            val s = ArrayList(this.path)
-            s.addAll(path.path)
-            normalize(s)
-            StatePath(s)
+            StatePath(this.path + path.path).normalized()
         }
     }
 
-    private fun normalize(items: ArrayList<String>) {
-        var i = 0
-        while (i < items.size) {
-            val item = items[i]
-            if (item == CUR) {
-                items.removeAt(i--)
-            } else if (i < 0) {
-                break
-            } else if (item == UP) {
-                items.removeAt(i--)
-                if (i < 0) {
-                    break
-                }
-                items.removeAt(i--)
+    private fun normalized(): StatePath {
+        val normalizedPath = mutableListOf<String>()
+
+        for (item in this.path.withIndex()) {
+            when {
+                item.value == "" && item.index != 0 -> continue
+                item.value == CUR -> continue
+                item.value == UP -> normalizedPath.removeLastOrNull() ?: normalizedPath.add(item.value)
+                else -> normalizedPath.add(item.value)
             }
-            i++
         }
+        return StatePath(normalizedPath)
     }
 
     companion object {
@@ -94,7 +87,7 @@ class StatePath {
             StatePath(ROOT)
 
         fun parse(path: String): StatePath {
-            if (path == "/") {
+            if (path.matches(Regex("/+"))) {
                 return root()
             }
             val s = path.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
