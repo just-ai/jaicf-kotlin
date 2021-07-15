@@ -313,7 +313,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
                 "Slashes are not allowed in name of inner states. State path $path"
             }
 
-        check(name.matches(Regex("/?"))) {
+        check(name.matches(Regex("/?[^/]+"))) {
             "State name must not be empty. State path $path"
         }
 

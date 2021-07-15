@@ -66,12 +66,12 @@ class StatePath {
     private fun normalized(): StatePath {
         val normalizedPath = mutableListOf<String>()
 
-        for (item in this.path.withIndex()) {
+        for ((index, item) in this.path.withIndex()) {
             when {
-                item.value == "" && item.index != 0 -> continue
-                item.value == CUR -> continue
-                item.value == UP -> normalizedPath.removeLastOrNull() ?: normalizedPath.add(item.value)
-                else -> normalizedPath.add(item.value)
+                item == "" && index != 0 -> continue
+                item == CUR -> continue
+                item == UP -> normalizedPath.removeLastOrNull()
+                else -> normalizedPath.add(item)
             }
         }
         return StatePath(normalizedPath)
