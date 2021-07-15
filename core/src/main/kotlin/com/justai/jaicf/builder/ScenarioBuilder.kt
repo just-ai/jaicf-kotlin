@@ -47,7 +47,6 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
         modal: Boolean = false,
         body: StateBuilder<B, R>.() -> Unit
     ) {
-        verifyStateName(name)
         val state = StateBuilder(scenarioModelBuilder, channelToken, path, name, noContext, modal)
             .apply(body).build()
         scenarioModelBuilder.states.add(state)
@@ -65,7 +64,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * }
      * ```
      *
-     * @param state an optional state name ("fallback" by default)
+     * @param name an optional state name ("fallback" by default)
      * @param body an action block that will be executed
      */
     @ScenarioDsl
@@ -86,8 +85,8 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * }
      * ```
      *
-     * @param state an optional state name ("fallback" by default)
      * @param channelToken a type token of the channel
+     * @param name an optional state name ("fallback" by default)
      * @param body an action block that will be executed only if request matches given [channelToken]
      */
     @ScenarioDsl
@@ -100,7 +99,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     /**
      * Appends top-level states of the given scenario to the current state.
      * Means that the top-level states of the [other] scenario will be
-     * direcrly accessible from the current state.
+     * directly accessible from the current state.
      *
      * Hooks defined in [other] will be exposed to the current scenario if the current state is root or ignored otherwise.
      * Hooks available in the current state will be available in all appended states.
@@ -146,17 +145,6 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
         scenarioModelBuilder.append(path, other, ignoreHooks, exposeHooks, propagateHooks)
 
     internal open fun build(): State = State(path, noContext, modal)
-
-    private fun verifyStateName(name: String) {
-        if (this is RootBuilder)
-            check(name.matches(Regex("/?[^/]+"))) {
-                "Only single leading slash is allowed in name of for top-level state. State path $path/$name"
-            }
-        else
-            check(name.matches(Regex("[^/]+"))) {
-                "Slashes are not allowed in name of inner states. State path $path/$name"
-            }
-    }
 }
 
 class RootBuilder<B : BotRequest, R : Reactions> internal constructor(
@@ -181,7 +169,7 @@ class RootBuilder<B : BotRequest, R : Reactions> internal constructor(
     /**
      * Appends top-level states of the given scenario to the current state.
      * Means that the top-level states of the [other] scenario will be
-     * direcrly accessible from the current state.
+     * directly accessible from the current state.
      *
      * Hooks defined in [other] will either be ignored if [exposeHooks] is set to false
      * or exposed to the current scenario otherwise.
@@ -273,7 +261,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @param body a code block of the action
      */
     fun action(body: @ScenarioDsl ActionContext<ActivatorContext, B, R>.() -> Unit) {
-        check(action == null) { "Multiple actions are not available in a single state: ${path}" }
+        check(action == null) { "Multiple actions are not available in a single state: $path" }
         action = { channelToken.invoke(body) }
     }
 
@@ -303,9 +291,9 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
 
     /**
      * An action that should be executed once this state was activated.
-     * The action will be executed only if [ActionContext] type matches the given [contextTypeToken]
+     * The action will be executed only if [ActionContext] type matches the given [contextToken]
      *
-     * @param contextTypeToken a full context type token
+     * @param contextToken a full context type token
      * @param body a code block of the action
      */
     fun <A1 : ActivatorContext, B1 : B, R1 : R> action(
@@ -313,5 +301,22 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
         body: @ScenarioDsl ActionContext<A1, B1, R1>.() -> Unit
     ) = action { contextToken.invoke(body) }
 
-    override internal fun build(): State = State(path, noContext, modal, action?.let(::ActionAdapter))
+    internal override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
+
+    private fun verify(): StateBuilder<B, R> {
+        if (this.parent.isRoot)
+            check(name.matches(Regex("/?[^/]+"))) {
+                "Only single leading slash is allowed in name of for top-level state. State path $path"
+            }
+        else
+            check(name.matches(Regex("[^/]+"))) {
+                "Slashes are not allowed in name of inner states. State path $path"
+            }
+
+        check(name.matches(Regex("/?"))) {
+            "State name must not be empty. State path $path"
+        }
+
+        return this
+    }
 }
