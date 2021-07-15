@@ -25,7 +25,7 @@ data class Action(
     val webviewShareButtonState: WebviewShareButtonState? = null
 )
 
-internal fun CarouselElement.toTemplateElement(): Element = Element.create(
+internal fun CarouselElement.toTemplateElement() = Element.create(
     title,
     Optional.ofNullable(subtitle),
     Optional.ofNullable(imageUrl),
