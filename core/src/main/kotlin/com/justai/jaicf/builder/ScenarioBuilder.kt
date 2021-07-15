@@ -47,6 +47,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
         modal: Boolean = false,
         body: StateBuilder<B, R>.() -> Unit
     ) {
+        verifyStateName(name)
         val state = StateBuilder(scenarioModelBuilder, channelToken, path, name, noContext, modal)
             .apply(body).build()
         scenarioModelBuilder.states.add(state)
@@ -145,6 +146,17 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
         scenarioModelBuilder.append(path, other, ignoreHooks, exposeHooks, propagateHooks)
 
     internal open fun build(): State = State(path, noContext, modal)
+
+    private fun verifyStateName(name: String) {
+        if (this is RootBuilder)
+            check(name.matches(Regex("/?[^/]+"))) {
+                "Only single leading slash is allowed in name of for top-level state. State path $path/$name"
+            }
+        else
+            check(name.matches(Regex("[^/]+"))) {
+                "Slashes are not allowed in name of inner states. State path $path/$name"
+            }
+    }
 }
 
 class RootBuilder<B : BotRequest, R : Reactions> internal constructor(
