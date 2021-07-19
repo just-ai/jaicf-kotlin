@@ -6,6 +6,7 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.generic.ActivatorTypeToken
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.generic.ContextTypeToken
+import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookListener
 import com.justai.jaicf.model.ActionAdapter
@@ -231,7 +232,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
     private val name: String,
     noContext: Boolean,
     modal: Boolean
-) : ScenarioGraphBuilder<B, R>(scenarioModelBuilder, channelToken, parent.resolve(name), noContext, modal) {
+) : WithLogger, ScenarioGraphBuilder<B, R>(scenarioModelBuilder, channelToken, parent.resolve(name), noContext, modal) {
     private var action: (ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit)? = null
 
     /**
@@ -304,18 +305,26 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
     internal override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
 
     private fun verify(): StateBuilder<B, R> {
-        if (this.parent.isRoot)
-            check(name.matches(Regex("/?[^/]+"))) {
-                "Only single leading slash is allowed in name of for top-level state. State path $path"
-            }
-        else
-            check(name.matches(Regex("[^/]+"))) {
-                "Slashes are not allowed in name of inner states. State path $path"
-            }
+        if (this.parent.isRoot && !name.matches(Regex("/?[^/]+")))
+            logger.warn(
+                """
+                    Slashes are not allowed in the name of top-level state. Your state path: "$path"
+                    Example solution: replace "state("state/child") with two separate states.
+                    This may cause incorrect JAICF Intellij IDEA Plugin behaviour.
+                    """.trimIndent()
+            )
 
-        check(name.matches(Regex("/?[^/]+"))) {
-            "State name must not be empty. State path $path"
-        }
+        if (!this.parent.isRoot && !name.matches(Regex("[^/]+")))
+            logger.warn(
+                """
+                    Slashes are not allowed in names of inner states. Your state path: "$path"
+                    Example solution: replace "state("state/child") with two separate states.
+                    This may cause incorrect JAICF Intellij IDEA Plugin behaviour.
+                    """.trimIndent()
+            )
+
+        if (name.matches(Regex("/*")))
+            logger.warn("State name must not be empty. Your state path: $path")
 
         return this
     }
