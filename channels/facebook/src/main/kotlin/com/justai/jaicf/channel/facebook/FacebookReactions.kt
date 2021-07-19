@@ -79,7 +79,7 @@ class FacebookReactions(
 
     fun buttons(title: String, buttons: List<String>): ButtonsReaction {
         val replies = buttons.map { TextQuickReply.create(it, it) }
-        sendResponse(TextMessage.create(title, Optional.of(replies), Optional.ofNullable(null)))
+        sendResponse(TextMessage.create(title, Optional.of(replies), Optional.empty()))
         return ButtonsReaction.create(buttons)
     }
 
