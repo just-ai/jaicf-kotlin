@@ -8,7 +8,6 @@ import com.github.messenger4j.send.message.Message
 import com.github.messenger4j.send.message.RichMediaMessage
 import com.github.messenger4j.send.message.TemplateMessage
 import com.github.messenger4j.send.message.TextMessage
-import com.github.messenger4j.send.message.quickreply.QuickReply
 import com.github.messenger4j.send.message.quickreply.TextQuickReply
 import com.github.messenger4j.send.message.richmedia.RichMediaAsset
 import com.github.messenger4j.send.message.richmedia.UrlRichMediaAsset
@@ -70,11 +69,11 @@ class FacebookReactions(
         sendResponse(
             TemplateMessage.create(
                 ButtonTemplate.create(text, inlineButtons.asList())
-            ).also {
-                SayReaction.create(text)
-                ButtonsReaction.create(inlineButtons.map { it.toReactionButton().text })
-            }
-        )
+            )
+        ).also {
+            SayReaction.create(text)
+            ButtonsReaction.create(inlineButtons.map { it.toReactionButton().text })
+        }
     }
 
     fun buttons(title: String, buttons: List<String>): ButtonsReaction {
