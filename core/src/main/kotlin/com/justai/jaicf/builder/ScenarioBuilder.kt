@@ -305,7 +305,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
     internal override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
 
     private fun verify(): StateBuilder<B, R> {
-        if (this.parent.isRoot && !name.matches(Regex("/?[^/]+")))
+        if (this.parent.isRoot && !name.matches(Regex("/?[^/]*")))
             logger.warn(
                 """
                     Slashes are not allowed in the name of top-level state. Your state path: "$path"
@@ -314,7 +314,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
                     """.trimIndent()
             )
 
-        if (!this.parent.isRoot && !name.matches(Regex("[^/]+")))
+        if (!this.parent.isRoot && !name.matches(Regex("[^/]*")))
             logger.warn(
                 """
                     Slashes are not allowed in names of inner states. Your state path: "$path"
@@ -323,7 +323,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
                     """.trimIndent()
             )
 
-        if (name.matches(Regex("/*")))
+        if (name.matches(Regex("/?")))
             logger.warn("State name must not be empty. Your state path: $path")
 
         return this
