@@ -15,5 +15,9 @@ dependencies {
 
     implementation(`tomcat-servlet`())
     implementation(ktor("ktor-server-core"))
-    implementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
+    implementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+
+    testImplementation(kotlin("test-junit"))
+    testImplementation(kotlin("test"))
+    testImplementation("ch.qos.logback:logback-classic:1.2.3")
 }

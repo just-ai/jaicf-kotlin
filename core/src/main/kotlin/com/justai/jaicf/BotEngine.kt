@@ -10,6 +10,8 @@ import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.routing.NewRouteException
+import com.justai.jaicf.api.routing.activators.TargetStateActivator
 import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
@@ -54,13 +56,13 @@ import com.justai.jaicf.slotfilling.*
  * @see SlotReactor
  * @see ConversationLogger
  */
-class BotEngine(
+open class BotEngine(
     scenario: Scenario,
     val defaultContextManager: BotContextManager = InMemoryBotContextManager,
     activators: Array<ActivatorFactory> = emptyArray(),
     private val activationSelector: ActivationSelector = ActivationSelector.default,
     private val slotReactor: SlotReactor? = null,
-    private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
+    private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger()),
 ) : BotApi, WithLogger {
 
     val model = scenario.model.verify()
@@ -73,7 +75,7 @@ class BotEngine(
 
         val builtinActivators =
             listOf(BaseEventActivator, BaseIntentActivator, CatchAllActivator).map { it.create(model) }
-        val strictActivators = mutableListOf(ButtonActivator).map { it.create(model) }
+        val strictActivators = mutableListOf(ButtonActivator, TargetStateActivator).map { it.create(model) }
 
         return strictActivators + toMutableList().apply {
             builtinActivators.forEach {
@@ -97,34 +99,47 @@ class BotEngine(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
-        contextManager: BotContextManager?
+        contextManager: BotContextManager?,
     ) {
         try {
             val manager = contextManager ?: defaultContextManager
             val botContext = manager.loadContext(request, requestContext)
-            val executionContext = ExecutionContext(requestContext, null, botContext, request)
-            reactions.executionContext = executionContext
-            reactions.botContext = botContext
-
-            processContext(botContext, requestContext)
-            try {
-                withHook(BotRequestHook(botContext, request, reactions)) {
-                    processRequest(botContext, request, requestContext, reactions, executionContext)
-                }
-            } catch (e: BotException) {
-                tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext, false)
-            } catch (e: Exception) {
-                val exception = BotExecutionException(e, botContext.currentState)
-                tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext, false)
-            }
-
-            conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
-            botContext.cleanTempData()
+            process(request, reactions, requestContext, botContext)
             saveContext(manager, botContext, request, reactions, requestContext)
+        } catch (e: NewRouteException) {
+            throw e
         } catch (e: Exception) {
             logger.error("", e)
             throw e
         }
+    }
+
+    internal fun process(
+        request: BotRequest,
+        reactions: Reactions,
+        requestContext: RequestContext,
+        botContext: BotContext,
+    ) {
+        val executionContext = ExecutionContext(requestContext, null, botContext, request)
+        reactions.executionContext = executionContext
+        reactions.botContext = botContext
+
+        processContext(botContext, requestContext)
+        try {
+            withHook(BotRequestHook(botContext, request, reactions)) {
+                processRequest(botContext, request, requestContext, reactions, executionContext)
+            }
+        } catch (e: NewRouteException) {
+            throw e
+        } catch (e: BotException) {
+            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext, false)
+        } catch (e: Exception) {
+            val exception = BotExecutionException(e, botContext.currentState)
+            tryHandleWithHook(AnyErrorHook(botContext, request, reactions, exception), executionContext, false)
+        }
+
+        conversationLoggers.forEach { it.obfuscateAndLog(executionContext) }
+        botContext.cleanTempData()
     }
 
     private fun processRequest(
@@ -132,7 +147,7 @@ class BotEngine(
         request: BotRequest,
         requestContext: RequestContext,
         reactions: Reactions,
-        executionContext: ExecutionContext
+        executionContext: ExecutionContext,
     ) {
         val slotFillingContext = if (isActiveSlotFilling(botContext)) {
             getSlotFillingContext(botContext)!!
@@ -189,7 +204,7 @@ class BotEngine(
     private inline fun <reified T : BotExceptionHandlingHook> tryHandleWithHook(
         hook: T,
         executionContext: ExecutionContext,
-        rethrow: Boolean
+        rethrow: Boolean,
     ) = when (hooks.hasHook<T>()) {
         true -> withHook(hook)
         false -> {
@@ -246,7 +261,7 @@ class BotEngine(
     private fun ProcessContext.executeAction(
         state: State,
         dc: DialogContext,
-        activator: ActivatorContext
+        activator: ActivatorContext,
     ) {
         if (state.action == null) {
             logger.warn("No action on state ${dc.currentState}")
@@ -256,6 +271,9 @@ class BotEngine(
             logger.trace("Executing state: $state")
             state.action.execute(this)
             withHook(AfterActionHook(botContext, request, reactions, activator, state))
+        } catch (e: NewRouteException) {
+            logger.trace("Changing executable bot engine to: ${e.targetEngineName}")
+            throw e
         } catch (e: Exception) {
             val exception = ActionException(e, state.toString())
             val hook = ActionErrorHook(botContext, request, reactions, activator, state, exception)
@@ -273,7 +291,7 @@ class BotEngine(
         botContext: BotContext,
         request: BotRequest,
         reactions: Reactions,
-        requestContext: RequestContext
+        requestContext: RequestContext,
     ) = cm.saveContext(botContext, request, (reactions as? ResponseReactions<*>)?.response, requestContext)
 }
 

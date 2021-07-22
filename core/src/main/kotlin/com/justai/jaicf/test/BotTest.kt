@@ -41,8 +41,8 @@ import java.util.*
  */
 open class BotTest(private val bot: BotEngine) {
 
-    private lateinit var botContext: BotContext
-    private lateinit var reactions: Reactions
+    internal lateinit var botContext: BotContext
+    internal lateinit var reactions: Reactions
     lateinit var clientId: String
 
     private var requestContext: TestRequestContext = TestRequestContext(false)

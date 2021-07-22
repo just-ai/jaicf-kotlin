@@ -10,6 +10,8 @@ include("examples:game-clock")
 findProject(":examples:game-clock")?.name = "game-clock"
 include("examples:viber-example")
 findProject(":examples:viber-example")?.name = "viber-example"
+include("examples:multilingual-bot")
+findProject(":examples:multilingual-bot")?.name = "multilingual-bot"
 
 include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"
