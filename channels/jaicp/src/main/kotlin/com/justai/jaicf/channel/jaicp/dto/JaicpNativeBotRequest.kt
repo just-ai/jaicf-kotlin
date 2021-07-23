@@ -6,8 +6,6 @@ import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
-import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
-import com.justai.jaicf.context.ActionContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -36,13 +34,9 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
     val callRecordingPath: String?
         get() = jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordingFile")?.jsonPrimitive?.content
 
-    fun getCallRecordingFullUrl(context: ActionContext<*, *, *>): String? =
+    fun getCallRecordingFullUrl(sessionId: String): String? =
         jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordsDownloadData")
-            ?.jsonObject?.get("downloadUrl")?.jsonPrimitive?.content?.let {
-                SessionManager.get(context.reactions.executionContext).getOrCreateSessionId().let { sessionData ->
-                    it.replace("{sessionId}", sessionData.sessionId)
-                }
-            }
+                ?.jsonObject?.get("downloadUrl")?.jsonPrimitive?.content?.replace("{sessionId}", sessionId)
 
     companion object {
         fun create(jaicp: JaicpBotRequest): TelephonyBotRequest = when (jaicp.type) {
