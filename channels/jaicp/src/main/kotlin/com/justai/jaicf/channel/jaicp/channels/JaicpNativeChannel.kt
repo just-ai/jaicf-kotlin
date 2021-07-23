@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.channels
 
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotRequestType
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.http.asJsonHttpBotResponse
@@ -15,9 +16,9 @@ import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import kotlin.system.measureTimeMillis
 
-
 abstract class JaicpNativeChannel(
-    override val botApi: BotApi
+    override val botApi: BotApi,
+    private val mutedEvents: List<String> = emptyList()
 ) : JaicpNativeBotChannel, WithLogger {
 
     abstract fun createRequest(request: JaicpBotRequest): BotRequest
@@ -33,6 +34,9 @@ abstract class JaicpNativeChannel(
         val reactions = createReactions()
         val executionTime = measureTimeMillis {
             val channelRequest = createRequest(request)
+            if (isMuted(channelRequest))
+                return@measureTimeMillis
+
             logger.debug("Processing query: ${request.query} or event: ${request.event}")
             botApi.process(channelRequest, reactions, RequestContext.DEFAULT)
         }
@@ -50,5 +54,8 @@ abstract class JaicpNativeChannel(
         processingTime = processingTime,
         currentState = currentState
     )
+
+    private fun isMuted(botRequest: BotRequest) =
+        botRequest.type == BotRequestType.EVENT && botRequest.input in mutedEvents
 }
 

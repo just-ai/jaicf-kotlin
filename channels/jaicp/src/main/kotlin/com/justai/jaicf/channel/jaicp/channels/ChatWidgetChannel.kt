@@ -21,8 +21,9 @@ import com.justai.jaicf.channel.jaicp.reactions.ChatWidgetReactions
  * */
 class ChatWidgetChannel(
     override val botApi: BotApi,
-    private val liveChatProvider: JaicpLiveChatProvider
-) : JaicpNativeChannel(botApi) {
+    private val liveChatProvider: JaicpLiveChatProvider,
+    mutedEvents: List<String> = emptyList()
+) : JaicpNativeChannel(botApi, mutedEvents) {
 
     override fun createRequest(request: JaicpBotRequest) = ChatWidgetBotRequest.create(request)
     override fun createReactions() = ChatWidgetReactions(liveChatProvider)
@@ -31,5 +32,13 @@ class ChatWidgetChannel(
         override val channelType = "chatwidget"
         override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider) =
             ChatWidgetChannel(botApi, liveChatProvider)
+    }
+
+    class Factory(
+        private val mutedEvents: List<String> = emptyList()
+    ) : JaicpNativeChannelFactory {
+        override val channelType = "chatwidget"
+        override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider): JaicpNativeBotChannel =
+            ChatWidgetChannel(botApi, liveChatProvider, mutedEvents)
     }
 }

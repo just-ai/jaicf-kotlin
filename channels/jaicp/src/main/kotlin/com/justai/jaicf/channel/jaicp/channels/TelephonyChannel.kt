@@ -29,8 +29,9 @@ import com.justai.jaicf.channel.jaicp.reactions.TelephonyReactions
 class TelephonyChannel(
     override val botApi: BotApi,
     private val bargeInProcessor: BargeInProcessor = BargeInProcessor.NON_FALLBACK,
-    private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT
-) : JaicpNativeChannel(botApi) {
+    private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT,
+    mutedEvents: List<String> = emptyList()
+) : JaicpNativeChannel(botApi, mutedEvents) {
 
     init {
         (botApi as? BotEngine)?.hooks?.apply {
@@ -52,10 +53,11 @@ class TelephonyChannel(
 
     class Factory(
         private val bargeInProcessor: BargeInProcessor = BargeInProcessor.NON_FALLBACK,
-        private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT
+        private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT,
+        private val mutedEvents: List<String> = emptyList()
     ) : JaicpNativeChannelFactory {
         override val channelType = "resterisk"
         override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider): JaicpNativeBotChannel =
-            TelephonyChannel(botApi, bargeInProcessor, defaultBargeInProperties)
+            TelephonyChannel(botApi, bargeInProcessor, defaultBargeInProperties, mutedEvents)
     }
 }
