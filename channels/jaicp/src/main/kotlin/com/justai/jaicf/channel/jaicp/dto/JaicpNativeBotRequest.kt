@@ -33,10 +33,14 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
             ?.jsonObject?.get("audioToken")?.jsonObject?.get("token")?.jsonPrimitive?.content
     val callRecordingPath: String?
         get() = jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordingFile")?.jsonPrimitive?.content
+    val callNotConnectedReason: String?
+        get() = jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callNotConnectedData")?.jsonObject
+            ?.get("reason")?.jsonPrimitive?.content
 
     fun getCallRecordingFullUrl(sessionId: String): String? =
         jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordsDownloadData")
                 ?.jsonObject?.get("downloadUrl")?.jsonPrimitive?.content?.replace("{sessionId}", sessionId)
+
 
     companion object {
         fun create(jaicp: JaicpBotRequest): TelephonyBotRequest = when (jaicp.type) {
