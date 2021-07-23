@@ -39,6 +39,6 @@ class ChatApiChannel(
     ) : JaicpNativeChannelFactory {
         override val channelType = "chatapi"
         override fun create(botApi: BotApi, liveChatProvider: JaicpLiveChatProvider): JaicpNativeBotChannel =
-            ChatWidgetChannel(botApi, liveChatProvider, mutedEvents)
+            ChatApiChannel(botApi, liveChatProvider, mutedEvents)
     }
 }
