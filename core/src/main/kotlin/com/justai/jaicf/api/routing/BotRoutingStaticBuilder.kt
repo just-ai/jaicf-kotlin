@@ -2,17 +2,22 @@ package com.justai.jaicf.api.routing
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.context.manager.BotContextManager
-import com.justai.jaicf.reactions.Reactions
 
 /**
- * JAVADOC ME
+ * A context used for defining static route conditions.
+ *
+ * @param request current user's request
+ * @param requestContext current channel request's context
+ * @param context current client's bot context
+ * @param routables map of [BotEngine] with string name identifiers
+ *
+ * @see BotRoutingEngine
  * */
 data class BotRoutingStaticBuilder(
     val request: BotRequest,
-    val reactions: Reactions,
     val requestContext: RequestContext,
-    val contextManager: BotContextManager?,
-    val routables: Map<String, BotEngine>
+    val context: BotContext,
+    val routables: Map<String, BotEngine>,
 )

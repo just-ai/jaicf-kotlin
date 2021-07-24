@@ -5,6 +5,7 @@ import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.routing.routing
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.helpers.logging.logger
 import com.justai.jaicf.reactions.buttons
 
 val MainScenario = Scenario {
