@@ -10,7 +10,7 @@ import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.api.routing.NewRouteException
+import com.justai.jaicf.api.routing.BotRequestRerouteException
 import com.justai.jaicf.api.routing.activators.TargetStateActivator
 import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
@@ -104,9 +104,10 @@ open class BotEngine(
         try {
             val manager = contextManager ?: defaultContextManager
             val botContext = manager.loadContext(request, requestContext)
-            process(request, reactions, requestContext, botContext)
+            val executionContext = ExecutionContext(requestContext, null, botContext, request)
+            process(request, reactions, requestContext, botContext, executionContext)
             saveContext(manager, botContext, request, reactions, requestContext)
-        } catch (e: NewRouteException) {
+        } catch (e: BotRequestRerouteException) {
             throw e
         } catch (e: Exception) {
             logger.error("", e)
@@ -119,8 +120,8 @@ open class BotEngine(
         reactions: Reactions,
         requestContext: RequestContext,
         botContext: BotContext,
+        executionContext: ExecutionContext
     ) {
-        val executionContext = ExecutionContext(requestContext, null, botContext, request)
         reactions.executionContext = executionContext
         reactions.botContext = botContext
 
@@ -129,7 +130,7 @@ open class BotEngine(
             withHook(BotRequestHook(botContext, request, reactions)) {
                 processRequest(botContext, request, requestContext, reactions, executionContext)
             }
-        } catch (e: NewRouteException) {
+        } catch (e: BotRequestRerouteException) {
             throw e
         } catch (e: BotException) {
             tryHandleWithHook(AnyErrorHook(botContext, request, reactions, e), executionContext, false)
@@ -271,7 +272,7 @@ open class BotEngine(
             logger.trace("Executing state: $state")
             state.action.execute(this)
             withHook(AfterActionHook(botContext, request, reactions, activator, state))
-        } catch (e: NewRouteException) {
+        } catch (e: BotRequestRerouteException) {
             logger.trace("Changing executable bot engine to: ${e.targetEngineName}")
             throw e
         } catch (e: Exception) {

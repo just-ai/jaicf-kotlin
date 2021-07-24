@@ -56,7 +56,6 @@ private val sc1 = Scenario {
 
 
 private val sc2 = Scenario {
-
     fallback {
         reactions.say("SC2: Fallback")
         routing.changeBotBack()

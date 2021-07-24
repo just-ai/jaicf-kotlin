@@ -5,6 +5,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.context.ExecutionContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -12,7 +13,44 @@ import com.justai.jaicf.reactions.Reactions
 import java.util.*
 
 /**
- * JAVADOC ME
+ * This class provides a [BotEngine] implementation with BotRouting feature.
+ * BotRouting provides runtime functionality to change a [BotEngine] used to process client requests.
+ *
+ *
+ * Scenario usage example:
+ * ```
+ * private val main = Scenario {
+ *  fallback {
+ *      if (request.input == "sc1") routing.route("sc1")
+ *      else if (request.input == "sc2") routing.route("sc2")
+ *      else reactions.say("Hello from MAIN bot!")
+ *  }
+ * }
+ *
+ * private val sc1 = Scenario {
+ *  fallback {
+ *      reactions.say("Hello from SC1")
+ *  }
+ * }
+ *
+ * private val sc2 = Scenario {
+ *  fallback {
+ *      reactions.say("Hello from SC1")
+ *  }
+ * }
+ * private val router = BotRoutingEngine(
+ *  main = BotEngine(main),
+ *  routables = mapOf("sc1" to BotEngine(sc1), "sc2" to BotEngine(sc2))
+ *  )
+ * ```
+ *
+ * See more usage examples at examples/multilingual-bot.
+ *
+ * @param main main engine to process requests.
+ * @param routables a map of engines with names to perform route from and to.
+ * @param staticRouteSelector a function to define static routes.
+ *
+ * @see BotRoutingApi scenario runtime api for routing.
  * */
 class BotRoutingEngine(
     private val main: BotEngine,
@@ -33,37 +71,33 @@ class BotRoutingEngine(
         this.routables[DEFAULT_ROUTE_NAME] = main
     }
 
-    private fun selectStatically(
+    private fun selectStaticRoute(
         request: BotRequest,
-        reactions: Reactions,
         requestContext: RequestContext,
-        contextManager: BotContextManager?,
         ctx: BotContext,
-    ) = BotRoutingStaticBuilder(request, reactions, requestContext, contextManager, routables)
+    ) = BotRoutingStaticBuilder(request, requestContext, ctx, routables)
         .staticRouteSelector()?.also {
             ctx.routingContext.staticallySelectedEngine = it
         }
 
-    private fun getDynamicRouting(ctx: BotContext): String? = try {
+    private fun getCurrentDynamicRouting(ctx: BotContext): String? = try {
         ctx.routingContext.routingEngineStack.peek()
     } catch (e: EmptyStackException) {
         null
     }
 
-    private fun getStaticRouting(ctx: BotContext): String? = ctx.routingContext.staticallySelectedEngine
+    private fun getCurrentStaticRouting(ctx: BotContext): String? = ctx.routingContext.staticallySelectedEngine
 
     private fun selectRoute(
         request: BotRequest,
-        reactions: Reactions,
         requestContext: RequestContext,
-        contextManager: BotContextManager?,
         ctx: BotContext,
     ): RoutingResult {
-        getDynamicRouting(ctx)?.let { return RoutingResult(it, false) }
-        selectStatically(request, reactions, requestContext, contextManager, ctx)?.let {
-            return RoutingResult(it, true)
-        }
-        getStaticRouting(ctx)?.let { return RoutingResult(it, true) }
+        val dynamic = getCurrentDynamicRouting(ctx)
+        if (dynamic != null) return RoutingResult(dynamic, false)
+
+        val static = selectStaticRoute(request, requestContext, ctx) ?: getCurrentStaticRouting(ctx)
+        if (static != null) return RoutingResult(static, true)
 
         return RoutingResult(DEFAULT_ROUTE_NAME, false)
     }
@@ -79,6 +113,7 @@ class BotRoutingEngine(
         var botContext = ctx
         val engineName = routingResult.route
         val isStatic = routingResult.isStatic
+        val executionContext = ExecutionContext(requestContext, null, botContext, request)
 
         try {
             val curr = botContext.routingContext.routingEngineStack.peek()
@@ -91,7 +126,6 @@ class BotRoutingEngine(
             }
         }
 
-        val manager = (contextManager ?: main.defaultContextManager)
         if (botContext.routingContext.currentEngine != engineName) {
             botContext = applyNewDialogContext(botContext, engineName)
             botContext.routingContext.currentEngine = engineName
@@ -106,8 +140,8 @@ class BotRoutingEngine(
             logger.info("DialogContext: ${botContext.dialogContext}")
             logger.info("RoutingContext: ${botContext.routingContext}")
             val engine = routables[engineName] ?: error("No engine with name: $engineName")
-            engine.process(request, reactions, requestContext, botContext)
-        } catch (e: NewRouteException) {
+            engine.process(request, reactions, requestContext, botContext, executionContext)
+        } catch (e: BotRequestRerouteException) {
             processWithRouting(
                 request = request,
                 reactions = reactions,
@@ -117,7 +151,10 @@ class BotRoutingEngine(
                 routingResult = RoutingResult(e.targetEngineName, false)
             )
         } finally {
-            manager.saveContext(botContext, request, response = null, requestContext)
+            (contextManager ?: main.defaultContextManager).saveContext(botContext,
+                request,
+                response = null,
+                requestContext)
         }
     }
 
@@ -136,7 +173,7 @@ class BotRoutingEngine(
         contextManager: BotContextManager?,
     ) {
         val ctx = (contextManager ?: main.defaultContextManager).loadContext(request, requestContext)
-        val route = selectRoute(request, reactions, requestContext, contextManager, ctx)
+        val route = selectRoute(request, requestContext, ctx)
         processWithRouting(request, reactions, requestContext, contextManager, ctx, route)
     }
 
@@ -152,3 +189,4 @@ class BotRoutingEngine(
 }
 
 
+// TODO: push static engine to stack if we route from statically selected engine -> for routeBack
