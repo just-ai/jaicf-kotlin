@@ -1,7 +1,12 @@
 package com.justai.jaicf.test.model
 
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.logging.*
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.GoReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.Reaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -92,7 +97,7 @@ data class ProcessResult(
      * @return this [ProcessResult] for chaining
      */
     infix fun hasAnswer(text: String) = apply {
-        assertTrue(getAllForType<SayReaction>().any { it.text == text }, "say $text not found")
+        assertTrue(getAllForType<SayReaction>().any { it.text == text }, "answer \"$text\" not found.")
     }
 
     /**

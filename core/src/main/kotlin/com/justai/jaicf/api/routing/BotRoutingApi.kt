@@ -81,8 +81,8 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
     fun routeBack(): Nothing {
         try {
             val routingContext = botContext.routingContext
-            val target = routingContext.routingEngineStack.pop()
             val curr = routingContext.routingEngineStack.pop()
+            val target = routingContext.routingEngineStack.pop()
             logger.info("Routing request back from engine: $curr to engine: $target")
             routingContext.dialogContextMap[routingContext.currentEngine] = botContext.dialogContext
             throw BotRequestRerouteException(target)
