@@ -84,7 +84,6 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
             val curr = routingContext.routingEngineStack.pop()
             val target = routingContext.routingEngineStack.pop()
             logger.info("Routing request back from engine: $curr to engine: $target")
-            routingContext.dialogContextMap[routingContext.currentEngine] = botContext.dialogContext
             throw BotRequestRerouteException(target)
         } catch (e: EmptyStackException) {
             logger.warn("Failed to change route back as there is no engines left in stack")
@@ -109,7 +108,6 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
         }
 
         botContext.routingContext.routingEngineStack.push(engineName)
-        botContext.routingContext.dialogContextMap[botContext.routingContext.currentEngine] = botContext.dialogContext
     }
 
     /**
@@ -122,7 +120,6 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
             val routingContext = botContext.routingContext
             val curr = routingContext.routingEngineStack.pop()
             val target = routingContext.routingEngineStack.pop()
-            routingContext.dialogContextMap[routingContext.currentEngine] = botContext.dialogContext
             logger.info("Changing execution back from engine: $curr to engine: $target")
         } catch (e: EmptyStackException) {
             logger.warn("Failed to change bot engine back as there is no engines left in stack")

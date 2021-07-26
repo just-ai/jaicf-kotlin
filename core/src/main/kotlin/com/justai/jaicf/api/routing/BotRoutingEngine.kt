@@ -127,10 +127,8 @@ class BotRoutingEngine(
             }
         }
 
-        if (botContext.routingContext.currentEngine != engineName) {
-            botContext = applyNewDialogContext(botContext, engineName)
-            botContext.routingContext.currentEngine = engineName
-        }
+        botContext = applyNewDialogContext(botContext, engineName)
+        botContext.routingContext.currentEngine = engineName
 
         if (!isStatic) {
             botContext.routingContext.staticallySelectedEngine = null
@@ -143,6 +141,7 @@ class BotRoutingEngine(
             val engine = routables[engineName] ?: error("No engine with name: $engineName")
             engine.process(request, reactions, requestContext, botContext, executionContext)
         } catch (e: BotRequestRerouteException) {
+            botContext.routingContext.dialogContextMap[engineName] = botContext.dialogContext
             processWithRouting(
                 request = request,
                 reactions = reactions,
@@ -153,6 +152,7 @@ class BotRoutingEngine(
                 executionContext
             )
         } finally {
+            botContext.routingContext.dialogContextMap[engineName] = botContext.dialogContext
             (contextManager ?: main.defaultContextManager).saveContext(botContext,
                 request,
                 response = null,
