@@ -109,11 +109,12 @@ class BotRoutingEngine(
         contextManager: BotContextManager?,
         ctx: BotContext,
         routingResult: RoutingResult,
+        executionContext0: ExecutionContext? = null,
     ) {
         var botContext = ctx
         val engineName = routingResult.route
         val isStatic = routingResult.isStatic
-        val executionContext = ExecutionContext(requestContext, null, botContext, request)
+        val executionContext = executionContext0 ?: ExecutionContext(requestContext, null, botContext, request)
 
         try {
             val curr = botContext.routingContext.routingEngineStack.peek()
@@ -148,7 +149,8 @@ class BotRoutingEngine(
                 requestContext = requestContext,
                 contextManager = contextManager,
                 ctx = botContext,
-                routingResult = RoutingResult(e.targetEngineName, false)
+                routingResult = RoutingResult(e.targetEngineName, false),
+                executionContext
             )
         } finally {
             (contextManager ?: main.defaultContextManager).saveContext(botContext,
