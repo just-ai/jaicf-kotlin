@@ -44,7 +44,7 @@ private val main = Scenario {
         action {
             val target = request.input.replace("changeBot ", "")
             reactions.say("Changing bot to $target")
-            routing.changeBot(target)
+            routing.changeEngine(target)
         }
     }
 
@@ -71,7 +71,7 @@ private val sc1 = Scenario {
 
         action {
             reactions.say("changing bot back")
-            routing.changeBotBack()
+            routing.changeEngineBack()
         }
     }
 
@@ -83,7 +83,7 @@ private val sc1 = Scenario {
 private val sc2 = Scenario {
     fallback {
         reactions.say("SC2: Fallback")
-        routing.changeBotBack()
+        routing.changeEngineBack()
     }
 }
 
