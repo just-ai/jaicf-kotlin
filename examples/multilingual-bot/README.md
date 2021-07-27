@@ -60,7 +60,7 @@ with just `context` property inside `action` context.
 
 The example below demonstrates simplified usage of shared context between bots.
 
-```
+```kotlin
 private val main = Scenario {
     fallback {
         if (request.input == "sc1") {
