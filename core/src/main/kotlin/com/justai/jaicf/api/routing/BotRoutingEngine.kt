@@ -48,14 +48,12 @@ import java.util.*
  *
  * @param main main engine to process requests.
  * @param routables a map of engines with names to perform route from and to.
- * @param staticRouteSelector a function to define static routes.
  *
  * @see BotRoutingApi scenario runtime api for routing.
  * */
 class BotRoutingEngine(
     private val main: BotEngine,
     routables: Map<String, BotEngine>,
-    private val staticRouteSelector: BotRoutingStaticBuilder.() -> String? = { null },
 ) : BotEngine(MOCK_SCENARIO), WithLogger {
 
     private val routables: MutableMap<String, BotEngine> = routables.toMutableMap()
@@ -71,73 +69,22 @@ class BotRoutingEngine(
         this.routables[DEFAULT_ROUTE_NAME] = main
     }
 
-    private fun selectStaticRoute(
-        request: BotRequest,
-        requestContext: RequestContext,
-        ctx: BotContext,
-    ) = BotRoutingStaticBuilder(request, requestContext, ctx, routables)
-        .staticRouteSelector()?.also {
-            ctx.routingContext.staticallySelectedEngine = it
-        }
-
-    private fun getCurrentDynamicRouting(ctx: BotContext): String? = try {
-        ctx.routingContext.routingEngineStack.peek()
-    } catch (e: EmptyStackException) {
-        null
-    }
-
-    private fun getCurrentStaticRouting(ctx: BotContext): String? = ctx.routingContext.staticallySelectedEngine
-
-    private fun selectRoute(
-        request: BotRequest,
-        requestContext: RequestContext,
-        ctx: BotContext,
-    ): RoutingResult {
-        val dynamic = getCurrentDynamicRouting(ctx)
-        if (dynamic != null) return RoutingResult(dynamic, false)
-
-        val static = selectStaticRoute(request, requestContext, ctx) ?: getCurrentStaticRouting(ctx)
-        if (static != null) return RoutingResult(static, true)
-
-        return RoutingResult(DEFAULT_ROUTE_NAME, false)
-    }
-
     private fun processWithRouting(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
         contextManager: BotContextManager?,
-        ctx: BotContext,
-        routingResult: RoutingResult,
+        botContext0: BotContext,
+        engineName: String,
         executionContext0: ExecutionContext? = null,
     ) {
-        var botContext = ctx
-        val engineName = routingResult.route
-        val isStatic = routingResult.isStatic
+        var botContext = botContext0
         val executionContext = executionContext0 ?: ExecutionContext(requestContext, null, botContext, request)
-
-        try {
-            val curr = botContext.routingContext.routingEngineStack.peek()
-            if (curr != engineName) {
-                botContext.routingContext.routingEngineStack.push(engineName)
-            }
-        } catch (e: EmptyStackException) {
-            if (!isStatic) {
-                botContext.routingContext.routingEngineStack.push(engineName)
-            }
-        }
-
+        setCurrentRoutingEngine(botContext, engineName)
         botContext = applyNewDialogContext(botContext, engineName)
-        botContext.routingContext.currentEngine = engineName
-
-        if (!isStatic) {
-            botContext.routingContext.staticallySelectedEngine = null
-        }
 
         try {
-            logger.info("Process route request: $request with routing for engine: $engineName")
-            logger.info("DialogContext: ${botContext.dialogContext}")
-            logger.info("RoutingContext: ${botContext.routingContext}")
+            logger.info("Process route request: ${request.input} with routing for engine: $engineName")
             val engine = routables[engineName] ?: error("No engine with name: $engineName")
             engine.process(request, reactions, requestContext, botContext, executionContext)
         } catch (e: BotRequestRerouteException) {
@@ -147,9 +94,9 @@ class BotRoutingEngine(
                 reactions = reactions,
                 requestContext = requestContext,
                 contextManager = contextManager,
-                ctx = botContext,
-                routingResult = RoutingResult(e.targetEngineName, false),
-                executionContext
+                botContext0 = botContext,
+                engineName = e.targetEngineName,
+                executionContext0 = executionContext
             )
         } finally {
             botContext.routingContext.dialogContextMap[engineName] = botContext.dialogContext
@@ -157,6 +104,18 @@ class BotRoutingEngine(
                 request,
                 response = null,
                 requestContext)
+        }
+    }
+
+    private fun setCurrentRoutingEngine(botContext: BotContext, engineName: String) {
+        botContext.routingContext.currentEngine = engineName
+        try {
+            val curr = botContext.routingContext.routingEngineStack.peek()
+            if (curr != engineName) {
+                botContext.routingContext.routingEngineStack.push(engineName)
+            }
+        } catch (e: EmptyStackException) {
+            botContext.routingContext.routingEngineStack.push(engineName)
         }
     }
 
@@ -174,21 +133,19 @@ class BotRoutingEngine(
         requestContext: RequestContext,
         contextManager: BotContextManager?,
     ) {
-        val ctx = (contextManager ?: main.defaultContextManager).loadContext(request, requestContext)
-        val route = selectRoute(request, requestContext, ctx)
-        processWithRouting(request, reactions, requestContext, contextManager, ctx, route)
+        val botContext = (contextManager ?: main.defaultContextManager).loadContext(request, requestContext)
+        val route = getCurrentRouting(botContext) ?: DEFAULT_ROUTE_NAME
+        processWithRouting(request, reactions, requestContext, contextManager, botContext, route)
     }
 
-    private data class RoutingResult(
-        val route: String,
-        val isStatic: Boolean,
-    )
+    private fun getCurrentRouting(ctx: BotContext): String? = try {
+        ctx.routingContext.routingEngineStack.peek()
+    } catch (e: EmptyStackException) {
+        null
+    }
 
     companion object {
         internal const val DEFAULT_ROUTE_NAME = "main"
         private val MOCK_SCENARIO = Scenario { }
     }
 }
-
-
-// TODO: push static engine to stack if we route from statically selected engine -> for routeBack

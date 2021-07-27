@@ -139,7 +139,6 @@ internal data class BotRoutingContext(
     val routingEngineStack: Stack<String> = Stack(),
     var targetState: String? = null,
     var currentEngine: String = BotRoutingEngine.DEFAULT_ROUTE_NAME,
-    var staticallySelectedEngine: String? = null,
 )
 
 /**
