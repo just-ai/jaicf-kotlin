@@ -6,9 +6,9 @@ dependencies {
     implementation(kotlin("stdlib", Version.stdLib))
     implementation(project(":core"))
     implementation(project(":channels:jaicp"))
+    implementation(project(":channels:telegram"))
     implementation(project(":activators:caila"))
     implementation(ktor("ktor-client-jackson"))
-
     implementation("ch.qos.logback:logback-classic:1.2.3")
 
     testImplementation(kotlin("test-junit"))
