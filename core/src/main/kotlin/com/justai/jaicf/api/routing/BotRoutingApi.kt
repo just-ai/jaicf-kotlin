@@ -66,7 +66,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * @see BotRoutingEngine
      * */
     fun route(engineName: String, targetState: String? = null): Nothing {
-        changeBot(engineName, targetState)
+        changeEngine(engineName, targetState)
         throw BotRequestRerouteException(engineName)
     }
 
@@ -99,7 +99,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      *
      * @see BotRoutingEngine
      * */
-    fun changeBot(engineName: String, targetState: String? = null) {
+    fun changeEngine(engineName: String, targetState: String? = null) {
         targetState?.let {
             val dialogContext = botContext.routingContext.dialogContextMap.getOrDefault(engineName, DialogContext())
             val currentState = StatePath.parse(dialogContext.currentState)
@@ -115,7 +115,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      *
      * @see BotRoutingEngine
      * */
-    fun changeBotBack() {
+    fun changeEngineBack() {
         try {
             val routingContext = botContext.routingContext
             val curr = routingContext.routingEngineStack.pop()
