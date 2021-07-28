@@ -9,7 +9,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 
 object LanguageDetectService {
-    private const val endpoint = "https://app.jaicp.com/cailapub/api/caila/p/${MainBot.accessToken}/nlu/detectlanguage"
+    private val endpoint = "https://app.jaicp.com/cailapub/api/caila/p/${MainBot.accessToken}/nlu/detectlanguage"
 
     fun detectLanguage(input: String): SupportedLanguage? = runBlocking {
         try {
