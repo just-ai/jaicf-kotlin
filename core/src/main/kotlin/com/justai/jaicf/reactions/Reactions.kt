@@ -2,7 +2,15 @@ package com.justai.jaicf.reactions
 
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.ExecutionContext
-import com.justai.jaicf.logging.*
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ChangeStateReaction
+import com.justai.jaicf.logging.GoReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.Reaction
+import com.justai.jaicf.logging.ReactionRegistrar
+import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.model.state.StatePath
 
 /**
@@ -133,11 +141,24 @@ abstract class Reactions : ReactionRegistrar {
     open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
 }
 
-data class ButtonToState(val first: String, @PathValue val second: String) {
-    override fun toString(): String = "($first, $second)"
+/**
+ * Appends buttons with transitions to response.
+ * When button is clicked, a corresponding state will be activated
+ *
+ * @param buttons a collection with button texts to states
+ * */
+@UsesReaction("buttons")
+@Deprecated(
+    """This reaction is deprecated due to usability issues. Connect button to state with method `toState` instead. 
+    Example usage: reactions.buttons("button" toState "/myState")"""
+)
+fun Reactions.buttons(vararg buttons: Pair<String, String>): ButtonsReaction {
+    buttons.forEach { (text, transition) ->
+        botContext.dialogContext.transitions[text.toLowerCase()] =
+            StatePath.parse(botContext.dialogContext.currentState).resolve(transition).toString()
+    }
+    return buttons(*buttons.map { it.first }.toTypedArray())
 }
-
-infix fun @PathValue String.to(@PathValue that: String) = ButtonToState(this, that)
 
 /**
  * Appends buttons with transitions to response.
@@ -151,5 +172,11 @@ fun Reactions.buttons(vararg buttons: ButtonToState): ButtonsReaction {
         botContext.dialogContext.transitions[text.toLowerCase()] =
             StatePath.parse(botContext.dialogContext.currentState).resolve(transition).toString()
     }
-    return buttons(*buttons.map { it.first }.toTypedArray())
+    return buttons(*buttons.map { it.title }.toTypedArray())
 }
+
+data class ButtonToState(val title: String, @PathValue val path: String) {
+    override fun toString(): String = "($title, $path)"
+}
+
+infix fun String.toState(@PathValue path: String) = ButtonToState(this, path)
