@@ -13,6 +13,7 @@ import com.justai.jaicf.channel.facebook.facebook
 import com.justai.jaicf.channel.googleactions.dialogflow.DialogflowIntent
 import com.justai.jaicf.channel.telegram.telegram
 import com.justai.jaicf.reactions.buttons
+import com.justai.jaicf.reactions.toState
 
 val HelloWorldScenario = Scenario {
 
@@ -45,7 +46,7 @@ val HelloWorldScenario = Scenario {
                 reactions.run {
                     image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
                     sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
-                    buttons("Mew" to "/mew", "Wake up" to "wakeup")
+                    buttons("Mew" toState "/mew", "Wake up" toState "wakeup")
                     aimybox?.endConversation()
                 }
             }

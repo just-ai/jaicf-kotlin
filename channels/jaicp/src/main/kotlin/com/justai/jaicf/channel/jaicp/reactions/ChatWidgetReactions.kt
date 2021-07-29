@@ -12,7 +12,7 @@ import com.justai.jaicf.reactions.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
-import com.justai.jaicf.reactions.to
+import com.justai.jaicf.reactions.toState
 
 val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
@@ -31,7 +31,7 @@ class ChatWidgetReactions(
     }
 
     fun button(text: String, @PathValue transition: String? = null): ButtonsReaction =
-        transition?.let { buttons(text to transition) } ?: buttons(text)
+        transition?.let { buttons(text toState transition) } ?: buttons(text)
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
         return buttons(buttons.asList())
