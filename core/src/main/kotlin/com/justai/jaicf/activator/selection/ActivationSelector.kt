@@ -33,6 +33,6 @@ interface ActivationSelector {
     }
 }
 
-val Transition.isFromRoot get() = fromState == "/"
+val Transition.isFromRoot get() = isFrom("/")
 fun Transition.isFrom(from: String) = fromState == from
 fun Transition.isTo(to: String) = toState == to

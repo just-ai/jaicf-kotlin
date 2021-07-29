@@ -40,7 +40,7 @@ abstract class Reactions : ReactionRegistrar {
      * @param path the path of the state to jump to. May be absolute or relative.
      * @param callbackState an optional callback state path. Bot engine activates this state once the sub-scenario returned some result through goBack or changeStateBack methods.
      */
-    fun go(path: String, callbackState: String? = null): GoReaction {
+    fun go(@PathValue path: String, @PathValue callbackState: String? = null): GoReaction {
         val dialogContext = botContext.dialogContext
         val currentState = StatePath.parse(dialogContext.currentState)
         val resolved = currentState.resolve(path).toString()
@@ -58,7 +58,7 @@ abstract class Reactions : ReactionRegistrar {
      * @param path the path of the state to jump to. May be absolute or relative.
      * @param callbackState an optional callback state path. Bot engine activates this state once the sub-scenario returned some result through goBack or changeStateBack methods.
      */
-    fun changeState(path: String, callbackState: String? = null): ChangeStateReaction {
+    fun changeState(@PathValue path: String, @PathValue callbackState: String? = null): ChangeStateReaction {
         val dialogContext = botContext.dialogContext
         val currentState = StatePath.parse(dialogContext.currentState)
         val resolved = currentState.resolve(path).toString()
@@ -114,9 +114,7 @@ abstract class Reactions : ReactionRegistrar {
      *
      * @param url a full URL of the image file
      */
-    open fun image(url: String): ImageReaction = ImageReaction(url, currentState).also {
-
-    }
+    open fun image(url: String): ImageReaction = ImageReaction(url, currentState)
 
     /**
      * Appends buttons to the response.
@@ -135,7 +133,11 @@ abstract class Reactions : ReactionRegistrar {
     open fun audio(url: String): AudioReaction = AudioReaction(url, currentState)
 }
 
-typealias ButtonToState = Pair<String, String>
+data class ButtonToState(val first: String, @PathValue val second: String) {
+    override fun toString(): String = "($first, $second)"
+}
+
+infix fun @PathValue String.to(@PathValue that: String) = ButtonToState(this, that)
 
 /**
  * Appends buttons with transitions to response.
@@ -143,6 +145,7 @@ typealias ButtonToState = Pair<String, String>
  *
  * @param buttons a collection with button texts to states
  * */
+@UsesReaction("buttons")
 fun Reactions.buttons(vararg buttons: ButtonToState): ButtonsReaction {
     buttons.forEach { (text, transition) ->
         botContext.dialogContext.transitions[text.toLowerCase()] =
