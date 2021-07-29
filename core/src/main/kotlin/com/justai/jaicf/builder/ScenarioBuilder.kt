@@ -42,8 +42,9 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * @param body a code block of the state that contains activators, action and inner states definitions
      */
     @ScenarioDsl
+    @StateDeclaration
     fun state(
-        name: String,
+        @StateParameter name: String,
         noContext: Boolean = false,
         modal: Boolean = false,
         body: StateBuilder<B, R>.() -> Unit
@@ -69,8 +70,9 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * @param body an action block that will be executed
      */
     @ScenarioDsl
+    @StateDeclaration
     fun fallback(
-        name: String = "fallback",
+        @StateParameter name: String = "fallback",
         body: ActionContext<ActivatorContext, B, R>.() -> Unit
     ) = state(name, noContext = true) {
         activators { catchAll() }
@@ -91,9 +93,10 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * @param body an action block that will be executed only if request matches given [channelToken]
      */
     @ScenarioDsl
+    @StateDeclaration
     fun <B1 : B, R1 : R> fallback(
         channelToken: ChannelTypeToken<B1, R1>,
-        name: String = "fallback",
+        @StateParameter name: String = "fallback",
         body: ActionContext<ActivatorContext, B1, R1>.() -> Unit
     ) = fallback(name) { channelToken.invoke(body) }
 
