@@ -8,9 +8,11 @@ import com.justai.jaicf.channel.jaicp.dto.ImageReply
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.CarouselReaction
 import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.reactions.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
+import com.justai.jaicf.reactions.to
 
 val Reactions.chatwidget
     get() = this as? ChatWidgetReactions
@@ -28,7 +30,7 @@ class ChatWidgetReactions(
         return ImageReaction.create(imageUrl)
     }
 
-    fun button(text: String, transition: String? = null): ButtonsReaction =
+    fun button(text: String, @PathValue transition: String? = null): ButtonsReaction =
         transition?.let { buttons(text to transition) } ?: buttons(text)
 
     override fun buttons(vararg buttons: String): ButtonsReaction {

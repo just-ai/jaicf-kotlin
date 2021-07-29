@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.reactions.PathValue
 import com.justai.jaicf.reactions.Reactions
 import java.time.DayOfWeek
 import java.time.Duration
@@ -29,25 +30,25 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * Sends text to synthesis in telephony channel.
      * Allows to interrupt synthesis only by phrases which we can handle in scenario.
      *
-     * @param text to synthesis speech from speech from
-     * @param bargeInContext scenario context with states which should handle possible interruptions.
-     * */
-    fun say(text: String, bargeInContext: String): SayReaction {
-        ensureBargeInProps()
-        replies.add(TextReply(text, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
-        return SayReaction.create(text)
-    }
-
-    /**
-     * Sends text to synthesis in telephony channel.
-     * Allows to interrupt synthesis only by phrases which we can handle in scenario.
-     *
      * @param text to synthesis speech from
      * @param bargeIn true to allow interruption and handle in in current dialog context
      * */
     fun say(text: String, bargeIn: Boolean) = when (bargeIn) {
         true -> say(text, CURRENT_CONTEXT_PATH)
         false -> say(text)
+    }
+
+    /**
+     * Sends text to synthesis in telephony channel.
+     * Allows to interrupt synthesis only by phrases which we can handle in scenario.
+     *
+     * @param text to synthesis speech from speech from
+     * @param bargeInContext scenario context with states which should handle possible interruptions.
+     * */
+    fun say(text: String, @PathValue bargeInContext: String): SayReaction {
+        ensureBargeInProps()
+        replies.add(TextReply(text, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
+        return SayReaction.create(text)
     }
 
     /**
@@ -79,7 +80,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param url to play during call
      * @param bargeInContext scenario context with states which should handle possible interruptions.
      * */
-    fun audio(url: String, bargeInContext: String): AudioReaction {
+    fun audio(url: String, @PathValue bargeInContext: String): AudioReaction {
         ensureBargeInProps()
         replies.add(AudioReply(url.toUrl(), bargeInReply = BargeInReplyData(bargeInContext, type = BargeInType.INTENT)))
         return AudioReaction.create(url)
