@@ -52,12 +52,9 @@ val EnScenario = Scenario {
     }
 }
 
-object EnBot {
-    const val EngineName = "en"
-    const val accessToken = "8a4dc3a1-a19c-47db-997e-01a9c14d1811"
-    val Engine = BotEngine(
-        scenario = EnScenario,
-        defaultContextManager = InMemoryBotContextManager,
-        activators = arrayOf(RegexActivator, CailaIntentActivator.Factory(CailaNLUSettings(accessToken)))
-    )
-}
+val EnEngine = BotEngine(
+    scenario = EnScenario,
+    defaultContextManager = InMemoryBotContextManager,
+    activators = arrayOf(RegexActivator,
+        CailaIntentActivator.Factory(CailaNLUSettings("8a4dc3a1-a19c-47db-997e-01a9c14d1811")))
+)

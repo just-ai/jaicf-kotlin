@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.multilingual.service
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import com.justai.jaicf.examples.multilingual.MainBot
+import com.justai.jaicf.examples.multilingual.mainAccessToken
 import com.justai.jaicf.examples.multilingual.util.HttpClient
 import com.justai.jaicf.examples.multilingual.util.Jackson
 import io.ktor.client.request.*
@@ -9,7 +9,7 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 
 object LanguageDetectService {
-    private val endpoint = "https://app.jaicp.com/cailapub/api/caila/p/${MainBot.accessToken}/nlu/detectlanguage"
+    private val endpoint = "https://app.jaicp.com/cailapub/api/caila/p/$mainAccessToken/nlu/detectlanguage"
 
     fun detectLanguage(input: String): SupportedLanguage? = runBlocking {
         try {
