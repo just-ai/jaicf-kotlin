@@ -1,4 +1,4 @@
-package com.justai.jaicf.reactions
+package com.justai.jaicf.plugin
 
 /**
  * This annotation indicates to the plugin that a StatePath will be passed to the annotated parameter or receiver.

@@ -12,6 +12,8 @@ import com.justai.jaicf.logging.ReactionRegistrar
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.model.state.StatePath
+import com.justai.jaicf.plugin.PathValue
+import com.justai.jaicf.plugin.UsesReaction
 
 /**
  * A base abstraction for channel-related reactions.

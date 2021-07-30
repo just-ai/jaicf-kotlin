@@ -1,4 +1,4 @@
-package com.justai.jaicf.builder
+package com.justai.jaicf.plugin
 
 /**
  * This annotation marks functions and extension functions of a ScenarioGraphBuilder that declare a state.
