@@ -5,7 +5,8 @@ import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.state.StatePath
-import java.util.*
+import java.util.EmptyStackException
+import java.util.Stack
 
 /**
  * An exception thrown to re-route current BotRequest to specified [targetEngineName]
@@ -119,12 +120,11 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
         try {
             val routingContext = botContext.routingContext
             val curr = routingContext.routingEngineStack.pop()
-            val target = routingContext.routingEngineStack.pop()
+            val target = routingContext.routingEngineStack.peek()
             logger.info("Changing execution back from engine: $curr to engine: $target")
         } catch (e: EmptyStackException) {
             logger.warn("Failed to change bot engine back as there is no engines left in stack")
         }
-
     }
 }
 
