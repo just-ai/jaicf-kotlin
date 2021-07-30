@@ -9,7 +9,6 @@ import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.examples.multilingual.service.BitcoinExchangeService
 import com.justai.jaicf.hook.AnyErrorHook
-import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.test.context.isTestMode
 
 val RuScenario = Scenario {
@@ -53,14 +52,11 @@ val RuScenario = Scenario {
     }
 }
 
-object RuBot {
-    const val EngineName = "ru"
-    const val accessToken = "b7cd6f32-ed6d-4eed-ac0c-95711dadb4bd"
-    val Engine = BotEngine(
-        scenario = RuScenario,
-        defaultContextManager = InMemoryBotContextManager,
-        activators = arrayOf(RegexActivator, CailaIntentActivator.Factory(CailaNLUSettings(accessToken)))
-    )
-}
+val RuEngine = BotEngine(
+    scenario = RuScenario,
+    defaultContextManager = InMemoryBotContextManager,
+    activators = arrayOf(RegexActivator,
+        CailaIntentActivator.Factory(CailaNLUSettings("b7cd6f32-ed6d-4eed-ac0c-95711dadb4bd")))
+)
 
 

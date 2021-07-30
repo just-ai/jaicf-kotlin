@@ -6,15 +6,12 @@ import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.routing.routing
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.examples.multilingual.bots.EnBot
-import com.justai.jaicf.examples.multilingual.bots.RuBot
 import com.justai.jaicf.examples.multilingual.service.LanguageDetectService
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.reactions.buttons
 import java.util.*
 
 val MainScenario = Scenario {
-    val defaultTargetState = "/Welcome"
 
     handle<AnyErrorHook> {
         logger.error("", exception)
@@ -33,13 +30,13 @@ val MainScenario = Scenario {
 
     state("Ru") {
         action {
-            routing.route(RuBot.EngineName, targetState = defaultTargetState)
+            routing.route("ru", targetState = "/Welcome")
         }
     }
 
     state("En") {
         action {
-            routing.route(EnBot.EngineName, targetState = defaultTargetState)
+            routing.route("en", targetState = "/Welcome")
         }
     }
 
@@ -49,15 +46,13 @@ val MainScenario = Scenario {
                 reactions.say("Sorry, I can't get it! Please, select your language")
                 reactions.buttons("Русский" to "/Ru", "English" to "/En")
             }
-            else -> routing.route(lang.name, defaultTargetState)
+            else -> routing.route(lang.name, "/Welcome")
         }
     }
 }
 
-object MainBot {
-    val accessToken = System.getenv("JAICP_API_TOKEN") ?: Properties().run {
-        load(CailaNLUSettings::class.java.getResourceAsStream("/jaicp.properties"))
-        getProperty("apiToken")
-    }
-    val engine = BotEngine(MainScenario, InMemoryBotContextManager, activators = arrayOf(RegexActivator))
+val mainAccessToken: String = System.getenv("JAICP_API_TOKEN") ?: Properties().run {
+    load(CailaNLUSettings::class.java.getResourceAsStream("/jaicp.properties"))
+    getProperty("apiToken")
 }
+val MainBotEngine = BotEngine(MainScenario, InMemoryBotContextManager, activators = arrayOf(RegexActivator))
