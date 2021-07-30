@@ -6,7 +6,7 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
-import com.justai.jaicf.reactions.PathValue
+import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import java.time.DayOfWeek
 import java.time.Duration
@@ -197,7 +197,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param callResultPayload optional payload for call which will be stored in .xsls report.
      * */
     fun setResult(callResult: String?, callResultPayload: String? = null) =
-        dialer.result(callResult, callResultPayload);
+        dialer.result(callResult, callResultPayload)
 
     /**
      * Reports custom property to be stored in .xsls report.

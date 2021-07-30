@@ -16,6 +16,8 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
+import com.justai.jaicf.plugin.StateDeclaration
+import com.justai.jaicf.plugin.StateParameter
 import com.justai.jaicf.reactions.Reactions
 import kotlin.reflect.KClass
 
@@ -305,7 +307,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
         body: @ScenarioDsl ActionContext<A1, B1, R1>.() -> Unit
     ) = action { contextToken.invoke(body) }
 
-    internal override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
+    override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
 
     private fun verify(): StateBuilder<B, R> {
         if (this.parent.isRoot && !name.matches(Regex("/?[^/]*")))

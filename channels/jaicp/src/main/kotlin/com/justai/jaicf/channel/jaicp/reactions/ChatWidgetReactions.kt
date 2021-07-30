@@ -8,7 +8,7 @@ import com.justai.jaicf.channel.jaicp.dto.ImageReply
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.CarouselReaction
 import com.justai.jaicf.logging.ImageReaction
-import com.justai.jaicf.reactions.PathValue
+import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
