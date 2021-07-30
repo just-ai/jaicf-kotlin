@@ -9,7 +9,6 @@ import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.examples.multilingual.bots.EnBot
 import com.justai.jaicf.examples.multilingual.bots.RuBot
 import com.justai.jaicf.examples.multilingual.service.LanguageDetectService
-import com.justai.jaicf.examples.multilingual.service.SupportedLanguage
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.reactions.buttons
 import java.util.*
@@ -24,7 +23,7 @@ val MainScenario = Scenario {
 
     state("Main") {
         activators {
-            regex(".start")
+            regex("/start")
         }
         action {
             reactions.say("Hello! Please, select your language")
