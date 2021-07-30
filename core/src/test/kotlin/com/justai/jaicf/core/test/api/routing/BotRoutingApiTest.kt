@@ -75,15 +75,36 @@ private val sc1 = Scenario {
         }
     }
 
+    state("changeBot") {
+        activators {
+            regex("changeBot .*")
+        }
+        action {
+            val target = request.input.replace("changeBot ", "")
+            reactions.say("Changing bot to $target")
+            routing.changeEngine(target)
+        }
+    }
+
     fallback {
         reactions.say("SC1: Fallback")
     }
 }
 
 private val sc2 = Scenario {
+    state("changeBotBack") {
+        activators {
+            regex("changeBotBack")
+        }
+
+        action {
+            reactions.say("changing bot back")
+            routing.changeEngineBack()
+        }
+    }
+
     fallback {
         reactions.say("SC2: Fallback")
-        routing.changeEngineBack()
     }
 }
 
@@ -135,5 +156,14 @@ class BotRoutingApiTest : BotTest(router) {
         query("test") responds "SC1: Fallback"
         query("changeBotBack") responds "changing bot back"
         query("test") responds "MAIN: Fallback"
+    }
+
+    @Test
+    fun `08 should changeBot several times and changeBotBack back to sc1`() {
+        query("changeBot sc1") responds "Changing bot to sc1"
+        query("changeBot sc2") responds "Changing bot to sc2"
+        query("test") responds "SC2: Fallback"
+        query("changeBotBack") responds "changing bot back"
+        query("test") responds "SC1: Fallback"
     }
 }
