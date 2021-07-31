@@ -6,9 +6,9 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
-import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.EndSessionReaction
+import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
 import kotlinx.serialization.json.JsonObject
@@ -21,6 +21,8 @@ open class JaicpReactions : Reactions() {
     protected val replies: MutableList<Reply> = mutableListOf()
 
     internal val dialer by lazy { JaicpDialerAPI() }
+
+    protected val responseData: MutableMap<String, JsonObject> = mutableMapOf()
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
@@ -76,11 +78,12 @@ open class JaicpReactions : Reactions() {
         return JSON.encodeToJsonElement(
             serializer = JaicpResponseData.serializer(),
             value = JaicpResponseData(
-                replies,
-                telephony?.dialer,
-                telephony?.bargeIn,
-                telephony?.bargeInInterrupt,
-                sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId
+                replies = replies,
+                dialer = telephony?.dialer,
+                bargeInData = telephony?.bargeIn,
+                bargeInInterrupt = telephony?.bargeInInterrupt,
+                sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId,
+                responseData = responseData
             )
         ).jsonObject
     }
