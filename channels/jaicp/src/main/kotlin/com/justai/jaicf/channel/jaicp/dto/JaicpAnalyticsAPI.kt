@@ -83,6 +83,29 @@ class JaicpAnalyticsAPI internal constructor() {
         this.sessionResult = result
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as JaicpAnalyticsAPI
+
+        if (sessionResult != other.sessionResult) return false
+        if (comment != other.comment) return false
+        if (sessionData != other.sessionData) return false
+        if (sessionLabel != other.sessionLabel) return false
+        if (messageLabel != other.messageLabel) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = sessionResult?.hashCode() ?: 0
+        result = 31 * result + (comment?.hashCode() ?: 0)
+        result = 31 * result + sessionData.hashCode()
+        result = 31 * result + sessionLabel.hashCode()
+        result = 31 * result + messageLabel.hashCode()
+        return result
+    }
+
     @Serializable
     data class MessageLabel(
         val labelName: String,

@@ -38,7 +38,7 @@ open class JaicpConversationLogger(
     logObfuscators: List<ConversationLogObfuscator> = emptyList(),
     url: String = DEFAULT_PROXY_URL,
     logLevel: LogLevel = LogLevel.INFO,
-    httpClient: HttpClient? = null
+    httpClient: HttpClient? = null,
 ) : ConversationLogger(logObfuscators),
     WithLogger,
     CoroutineScope by CoroutineScope(Dispatchers.IO + MDCContext()) {
@@ -50,14 +50,14 @@ open class JaicpConversationLogger(
         try {
             val req = executionContext.jaicpRequest ?: return
             val session = SessionManager.get(executionContext).getOrCreateSessionId()
-            launch { doLogAsync(req, executionContext, session) }
+            val logModel = createLog(req, executionContext, session)
+            launch { doLogAsync(logModel) }
         } catch (e: Exception) {
             logger.debug("Failed to produce JAICP LogRequest: ", e)
         }
     }
 
-    private suspend fun doLogAsync(req: JaicpBotRequest, ctx: ExecutionContext, session: SessionData) =
-        connector.processLogAsync(createLog(req, ctx, session))
+    private suspend fun doLogAsync(logModel: JaicpLogModel) = connector.sendLogAsync(logModel)
 
     internal open fun createLog(req: JaicpBotRequest, ctx: ExecutionContext, session: SessionData) =
         JaicpLogModel.fromRequest(req, ctx, session).also {

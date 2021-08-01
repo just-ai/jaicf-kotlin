@@ -178,7 +178,7 @@ internal data class JaicpLogModel private constructor(
                 response = Response(response),
                 user = user,
                 sessionId = session.sessionId,
-                isNewSession = false,
+                isNewSession = session.isNewSession,
                 isNewUser = executionContext.isNewUser,
                 channelData = jaicpBotRequest.channelData,
                 exception = executionContext.scenarioException?.scenarioCause?.stackTraceToString()
