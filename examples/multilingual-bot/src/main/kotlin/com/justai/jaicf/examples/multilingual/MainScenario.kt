@@ -1,15 +1,10 @@
 package com.justai.jaicf.examples.multilingual
 
-import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.caila.CailaNLUSettings
-import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.routing.routing
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.examples.multilingual.service.LanguageDetectService
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.reactions.buttons
-import java.util.*
 
 val MainScenario = Scenario {
 
@@ -50,9 +45,3 @@ val MainScenario = Scenario {
         }
     }
 }
-
-val mainAccessToken: String = System.getenv("JAICP_API_TOKEN") ?: Properties().run {
-    load(CailaNLUSettings::class.java.getResourceAsStream("/jaicp.properties"))
-    getProperty("apiToken")
-}
-val MainBotEngine = BotEngine(MainScenario, InMemoryBotContextManager, activators = arrayOf(RegexActivator))
