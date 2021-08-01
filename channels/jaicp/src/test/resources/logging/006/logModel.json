@@ -43,6 +43,7 @@
           "state": "/fallback"
         }
       ],
+      "analytics": {},
       "answer": "reply \"You said: сел\" from state /fallback",
       "sessionId": null
     }

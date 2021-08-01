@@ -30,7 +30,7 @@ internal class ChatAdapterConnector(
         }
     }
 
-    suspend fun processLogAsync(logModel: JaicpLogModel) {
+    suspend fun sendLogAsync(logModel: JaicpLogModel) {
         try {
             httpClient.post<String>("$baseUrl/processLogs") {
                 contentType(ContentType.Application.Json)

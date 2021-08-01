@@ -39,6 +39,7 @@
           "state": "/fallback"
         }
       ],
+      "analytics": {},
       "answer": "reply \"You said: /start\" from state /fallback",
       "sessionId": null
     }
