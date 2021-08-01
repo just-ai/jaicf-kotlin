@@ -17,7 +17,7 @@ internal class JaicpResponseData private constructor(
     val bargeIn: BargeInProperties? = null,
     val bargeInInterrupt: BargeInResponse? = null,
     val sessionId: String,
-    val responseData: Map<String, JsonObject> = mapOf()
+    val responseData: Map<String, JsonObject> = mapOf(),
 ) {
     internal constructor(
         replies: List<Reply>,
@@ -32,7 +32,8 @@ internal class JaicpResponseData private constructor(
         dialer = dialer,
         bargeIn = bargeInData,
         bargeInInterrupt = bargeInInterrupt,
-        sessionId = sessionId
+        sessionId = sessionId,
+        responseData = responseData
     )
 }
 
