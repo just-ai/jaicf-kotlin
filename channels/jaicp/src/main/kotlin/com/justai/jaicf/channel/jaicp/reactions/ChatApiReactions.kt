@@ -14,6 +14,7 @@ import kotlinx.serialization.json.JsonObject
 val Reactions.chatapi
     get() = this as? ChatApiReactions
 
+@Suppress("MemberVisibilityCanBePrivate")
 class ChatApiReactions(
     override val liveChatProvider: JaicpLiveChatProvider,
 ) : JaicpReactions(), JaicpCompatibleAsyncReactions {
@@ -39,11 +40,9 @@ class ChatApiReactions(
         return ButtonsReaction.create(buttons)
     }
 
-    fun addResponseData(data: Map<String, JsonObject>) {
-        responseData.putAll(data)
-    }
+    fun addResponseData(data: Map<String, JsonObject>) = responseData.putAll(data)
 
-    fun addResponseData(key: String, value: JsonObject) {
-        addResponseData(mapOf(key to value))
-    }
+    fun addResponseData(key: String, value: JsonObject) = addResponseData(mapOf(key to value))
+
+    fun addResponseData(element: Pair<String, JsonObject>) = addResponseData(mapOf(element.first to element.second))
 }
