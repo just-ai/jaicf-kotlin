@@ -1,9 +1,12 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
+import com.justai.jaicf.channel.jaicp.dto.AudioReply
 import com.justai.jaicf.channel.jaicp.dto.Button
 import com.justai.jaicf.channel.jaicp.dto.ButtonsReply
 import com.justai.jaicf.channel.jaicp.dto.ImageReply
+import com.justai.jaicf.helpers.http.toUrl
+import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
@@ -38,6 +41,11 @@ class ChatApiReactions(
     fun buttons(buttons: List<String>): ButtonsReaction {
         replies.add(ButtonsReply(buttons.map { Button(it) }))
         return ButtonsReaction.create(buttons)
+    }
+
+    override fun audio(url: String): AudioReaction {
+        replies.add(AudioReply(url.toUrl()))
+        return AudioReaction.create(url)
     }
 
     fun addResponseData(data: Map<String, JsonObject>) = responseData.putAll(data)
