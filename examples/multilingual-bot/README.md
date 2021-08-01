@@ -6,41 +6,52 @@ one channel**.
 ## About BotRouting
 
 This multilingual bot is built in top of `BotRouting` feature. This feature allows using multiple configured `BotEngine`
-inside one channel.
-
-Let's look at the example below:
+inside one channel:
 
 ```kotlin
-val MultilingualBotEngine = BotRoutingEngine(
-    main = MainBot.engine,
-    routables = mapOf(RuBot.EngineName to RuBot.Engine, EnBot.EngineName to EnBot.Engine)
+val RuEngine = BotEngine(
+    scenario = RuScenario,
+    activators = arrayOf(RegexActivator, CailaIntentActivator.Factory(CailaNLUSettings("caila-token")))
 )
+
+val EnEngine = BotEngine(
+    scenario = EnScenario,
+    activators = arrayOf(RegexActivator, CailaIntentActivator.Factory(CailaNLUSettings("caila-token")))
+)
+
+val MainBotEngine = BotEngine(MainScenario, activators = arrayOf(RegexActivator))
+
+val MultilingualBotEngine = BotRoutingEngine(
+    main = MainBotEngine,
+    routables = mapOf("en" to EnEngine, "ru" to RuEngine)
+)
+
 ```
 
-Here we declare a `BotRoutingEngine` - an `BotEngine` implementation which allows routing requests from one `BotEngine`
-to another. We define a `main` engine, which will process requests if they are not routed to another specified engine
-and `routables`map with engines we can route to.
+`BotRoutingEngine` - is another implementation of `BotEngine` allowing to route requests from one `BotEngine`
+to another. The `main` engine will process requests by default. Developer can use `routing` methods to route current
+request (or next ones) to another `BotEngine`.
 
 #### Language detection
 
-We can use automated `Language Detector` (built on top of CAILA NLU) to get client language from request, so we create a
-fallback state inside `MainScenario`, which routes request to target Scenarios based on which language client uses.
+This example uses `CAILA` detect-language REST-API method to extract language from requests and further send it to
+target bot.
 
 ```kotlin
 fallback {
     when (val lang = LanguageDetectService.detectLanguage(request.input)) {
         null -> {
             reactions.say("Sorry, I can't get it! Please, select your language")
-            reactions.buttons("Русский" to "/Ru", "English" to "/En")
+            reactions.buttons("English" to "/En", "Русский" to "/Ru")
         }
-        else -> routing.route(lang.name, defaultTargetState)
+        else -> routing.route(lang.name, "/Welcome")
     }
 }
 ```
 
 #### BotRoutingAPI
 
-We can use `BotRoutingAPI` methods inside from `action` blocks in states via `routing` extension.
+`BotRoutingAPI` methods are available from `action` blocks in states via `routing` extension.
 
 ```kotlin
 state("selectLang") {
@@ -48,6 +59,7 @@ state("selectLang") {
         regex("Select language")
     }
     action {
+        // Route to main engine and process request in state "/Main".        
         routing.route("main", "/Main")
     }
 }
@@ -55,8 +67,8 @@ state("selectLang") {
 
 #### Shared BotContext
 
-BotContext inside `main` engine and `routables` is shared, so we can easily transfer data from one engine to another
-with just `context` property inside `action` context.
+BotContext inside `main` engine and `routables` is shared, data can be transferred from one engine to another
+with `context` property inside `action` context.
 
 The example below demonstrates simplified usage of shared context between bots.
 
@@ -75,6 +87,11 @@ private val sc1 = Scenario {
         reactions.say("Hello from SC1. Your temp data: $tempData")
     }
 }
+
+val SampleRoutingEngine = BotRoutingEngine(
+    main = BotEngine(main),
+    routables = mapOf("sc1" to BotEngine(sc1))
+)
 ```
 
 ## How to use

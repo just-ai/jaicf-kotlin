@@ -1,12 +1,7 @@
-package com.justai.jaicf.examples.multilingual.bots
+package com.justai.jaicf.examples.multilingual.scenarios
 
-import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.caila.CailaIntentActivator
-import com.justai.jaicf.activator.caila.CailaNLUSettings
-import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.routing.routing
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.examples.multilingual.service.BitcoinExchangeService
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.test.context.isTestMode
@@ -52,9 +47,3 @@ val EnScenario = Scenario {
     }
 }
 
-val EnEngine = BotEngine(
-    scenario = EnScenario,
-    defaultContextManager = InMemoryBotContextManager,
-    activators = arrayOf(RegexActivator,
-        CailaIntentActivator.Factory(CailaNLUSettings("8a4dc3a1-a19c-47db-997e-01a9c14d1811")))
-)
