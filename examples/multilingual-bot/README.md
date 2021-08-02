@@ -9,13 +9,13 @@ This multilingual bot is built in top of `BotRouting` feature. This feature allo
 inside one channel:
 
 ```kotlin
-val RuEngine = BotEngine(
-    scenario = RuScenario,
+val EnEngine = BotEngine(
+    scenario = EnScenario,
     activators = arrayOf(RegexActivator, CailaIntentActivator.Factory(CailaNLUSettings("caila-token")))
 )
 
-val EnEngine = BotEngine(
-    scenario = EnScenario,
+val RuEngine = BotEngine(
+    scenario = RuScenario,
     activators = arrayOf(RegexActivator, CailaIntentActivator.Factory(CailaNLUSettings("caila-token")))
 )
 
