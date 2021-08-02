@@ -154,13 +154,8 @@ abstract class Reactions : ReactionRegistrar {
     """This reaction is deprecated due to usability issues. Connect button to state with method `toState` instead. 
     Example usage: reactions.buttons("button" toState "/myState")"""
 )
-fun Reactions.buttons(vararg buttons: Pair<String, String>): ButtonsReaction {
-    buttons.forEach { (text, transition) ->
-        botContext.dialogContext.transitions[text.toLowerCase()] =
-            StatePath.parse(botContext.dialogContext.currentState).resolve(transition).toString()
-    }
-    return buttons(*buttons.map { it.first }.toTypedArray())
-}
+fun Reactions.buttons(vararg buttons: Pair<String, String>) =
+    buttons(*buttons.map { ButtonToState(it.first, it.second) }.toTypedArray())
 
 /**
  * Appends buttons with transitions to response.

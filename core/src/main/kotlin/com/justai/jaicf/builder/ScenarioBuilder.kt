@@ -16,8 +16,9 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
+import com.justai.jaicf.plugin.StateBody
 import com.justai.jaicf.plugin.StateDeclaration
-import com.justai.jaicf.plugin.StateParameter
+import com.justai.jaicf.plugin.StateName
 import com.justai.jaicf.reactions.Reactions
 import kotlin.reflect.KClass
 
@@ -46,10 +47,10 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     @ScenarioDsl
     @StateDeclaration
     fun state(
-        @StateParameter name: String,
+        @StateName name: String,
         noContext: Boolean = false,
         modal: Boolean = false,
-        body: StateBuilder<B, R>.() -> Unit
+        @StateBody body: StateBuilder<B, R>.() -> Unit,
     ) {
         val state = StateBuilder(scenarioModelBuilder, channelToken, path, name, noContext, modal)
             .apply(body).build()
@@ -74,8 +75,8 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     @ScenarioDsl
     @StateDeclaration
     fun fallback(
-        @StateParameter name: String = "fallback",
-        body: ActionContext<ActivatorContext, B, R>.() -> Unit
+        @StateName name: String = "fallback",
+        @StateBody body: ActionContext<ActivatorContext, B, R>.() -> Unit,
     ) = state(name, noContext = true) {
         activators { catchAll() }
         action(body)
@@ -98,8 +99,8 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     @StateDeclaration
     fun <B1 : B, R1 : R> fallback(
         channelToken: ChannelTypeToken<B1, R1>,
-        @StateParameter name: String = "fallback",
-        body: ActionContext<ActivatorContext, B1, R1>.() -> Unit
+        @StateName name: String = "fallback",
+        @StateBody body: ActionContext<ActivatorContext, B1, R1>.() -> Unit,
     ) = fallback(name) { channelToken.invoke(body) }
 
     /**
@@ -140,15 +141,25 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
      * @param propagateHooks whether the scenario should inherit hooks from the current scenario
      */
     @ScenarioDsl
-    fun append(context: String, other: Scenario, modal: Boolean = false, propagateHooks: Boolean = true) {
+    @StateDeclaration
+    fun append(
+        @StateName context: String,
+        other: Scenario,
+        modal: Boolean = false,
+        propagateHooks: Boolean = true
+    ) {
         val isRoot = this is RootBuilder
-        state(context, noContext = false, modal = modal) {
+        state(context, noContext = false, modal = modal) @StateBody {
             doAppend(other, ignoreHooks = false, exposeHooks = isRoot, propagateHooks = propagateHooks)
         }
     }
 
-    internal fun doAppend(other: Scenario, ignoreHooks: Boolean, exposeHooks: Boolean, propagateHooks: Boolean) =
-        scenarioModelBuilder.append(path, other, ignoreHooks, exposeHooks, propagateHooks)
+    internal fun doAppend(
+        other: Scenario,
+        ignoreHooks: Boolean,
+        exposeHooks: Boolean,
+        propagateHooks: Boolean
+    ) = scenarioModelBuilder.append(path, other, ignoreHooks, exposeHooks, propagateHooks)
 
     internal open fun build(): State = State(path, noContext, modal)
 }
@@ -212,14 +223,15 @@ class RootBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @param propagateHooks whether the scenario should inherit hooks from the current scenario
      */
     @ScenarioDsl
+    @StateDeclaration
     fun append(
-        context: String,
+        @StateName context: String,
         other: Scenario,
         modal: Boolean = false,
         exposeHooks: Boolean = true,
         propagateHooks: Boolean = true
     ) {
-        state(context, noContext = false, modal = modal) {
+        state(context, noContext = false, modal = modal) @StateBody {
             doAppend(other, ignoreHooks = false, exposeHooks = exposeHooks, propagateHooks = propagateHooks)
         }
     }
@@ -307,7 +319,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
         body: @ScenarioDsl ActionContext<A1, B1, R1>.() -> Unit
     ) = action { contextToken.invoke(body) }
 
-    override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
+    internal override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
 
     private fun verify(): StateBuilder<B, R> {
         if (this.parent.isRoot && !name.matches(Regex("/?[^/]*")))
