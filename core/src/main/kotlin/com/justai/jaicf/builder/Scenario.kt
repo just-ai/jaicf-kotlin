@@ -7,31 +7,37 @@ import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
+import com.justai.jaicf.plugin.StateBody
+import com.justai.jaicf.plugin.StateDeclaration
 import com.justai.jaicf.reactions.Reactions
 
 
 @ScenarioDsl
+@StateDeclaration("")
 fun Scenario(
-    body: RootBuilder<BotRequest, Reactions>.() -> Unit
+    @StateBody body: RootBuilder<BotRequest, Reactions>.() -> Unit
 ): Scenario = Scenario(ChannelTypeToken.Default, body)
 
 @ScenarioDsl
+@StateDeclaration("")
 fun <B : BotRequest, R : Reactions> Scenario(
     channelToken: ChannelTypeToken<B, R>,
-    body: RootBuilder<B, R>.() -> Unit
+    @StateBody body: RootBuilder<B, R>.() -> Unit,
 ): Scenario = object : Scenario {
     override val model by lazy { createModel(channelToken, body) }
 }
 
 @ScenarioDsl
+@StateDeclaration("")
 fun createModel(
-    body: RootBuilder<BotRequest, Reactions>.() -> Unit
+    @StateBody body: RootBuilder<BotRequest, Reactions>.() -> Unit
 ): ScenarioModel = createModel(ChannelTypeToken.Default, body)
 
 @ScenarioDsl
+@StateDeclaration("")
 fun <B : BotRequest, R : Reactions> createModel(
     channelToken: ChannelTypeToken<B, R>,
-    body: RootBuilder<B, R>.() -> Unit
+    @StateBody body: RootBuilder<B, R>.() -> Unit,
 ): ScenarioModel = RootBuilder(ScenarioModelBuilder(), channelToken).apply(body).buildScenario()
 
 infix fun Scenario.append(other: Scenario): Scenario = object : Scenario {
