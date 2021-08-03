@@ -34,10 +34,11 @@ class TelephonyChannel(
 ) : JaicpNativeChannel(botApi, mutedEvents) {
 
     init {
-        (botApi as? BotEngine)?.hooks?.apply {
-            addHookAction(bargeInProcessor::handleBeforeProcess)
-            addHookAction(bargeInProcessor::handleBeforeActivation)
-            addHookAction(bargeInProcessor::handleActivationError)
+        (botApi as? BotEngine)?.run {
+            hooks.addHookAction(bargeInProcessor::handleBeforeProcess)
+            hooks.addHookAction(bargeInProcessor::handleBeforeActivation)
+            hooks.addHookAction(bargeInProcessor::handleActivationError)
+            hooks.addHookAction(bargeInProcessor::handleAfterProcess)
         }
     }
 

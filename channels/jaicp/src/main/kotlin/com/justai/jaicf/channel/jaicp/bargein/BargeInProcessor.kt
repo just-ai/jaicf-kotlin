@@ -8,6 +8,7 @@ import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.exceptions.scenarioCause
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
+import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 
 
@@ -26,6 +27,8 @@ open class BargeInProcessor : WithLogger {
 
     companion object {
         protected const val TEMP_ACTIVATION_KEY = "isBargeInActivation"
+        protected const val IS_SUCCESSFULLY_INTERRUPTED =
+            "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/successfullyInterrupted"
         protected const val ORIGINAL_CONTEXT_KEY =
             "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/originalContext"
         protected const val BARGEIN_CONTEXT_KEY =
@@ -47,6 +50,8 @@ open class BargeInProcessor : WithLogger {
      * */
     open fun handleBeforeActivation(hook: BeforeActivationHook) {
         hook.request.bargeIn?.run {
+            hook.context.session[IS_SUCCESSFULLY_INTERRUPTED] = false
+
             if (hook.context.session[IS_INVALID_CONTEXT_KEY] == true) {
                 throw BotHookException("Invalid transition context detected. Request execution will be aborted")
             }
@@ -66,19 +71,23 @@ open class BargeInProcessor : WithLogger {
         } ?: run {
             // this is invoked on every non-bargein request.
             // we use some labels that we put ourselves in bargeIn processing to set proper dialogContext
+            val isAfterInterruption = hook.context.session[IS_SUCCESSFULLY_INTERRUPTED] as? Boolean ?: false
             val bargedInContext = hook.context.session[BARGEIN_CONTEXT_KEY] as? String
             val originalContext = hook.context.session[ORIGINAL_CONTEXT_KEY] as? String
-            val invalidContext = hook.context.session[IS_INVALID_CONTEXT_KEY] as? Boolean
+            val invalidContext = hook.context.session[IS_INVALID_CONTEXT_KEY] as? Boolean ?: false
 
-            hook.context.dialogContext.currentContext = when {
-                invalidContext == true -> requireNotNull(originalContext)
-                bargedInContext != null -> bargedInContext
-                originalContext != null -> originalContext
-                else -> hook.context.dialogContext.currentContext
+            if (invalidContext) {
+                hook.context.dialogContext.currentContext = checkNotNull(originalContext)
+            } else if (bargedInContext != null && isAfterInterruption) {
+                hook.context.dialogContext.currentContext = bargedInContext
+            } else if (originalContext != null) {
+                hook.context.dialogContext.currentContext = originalContext
             }
+
             hook.context.session.remove(ORIGINAL_CONTEXT_KEY)
             hook.context.session.remove(BARGEIN_CONTEXT_KEY)
             hook.context.session.remove(IS_INVALID_CONTEXT_KEY)
+            hook.context.session.remove(IS_SUCCESSFULLY_INTERRUPTED)
         }
     }
 
@@ -95,11 +104,21 @@ open class BargeInProcessor : WithLogger {
             if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
                 if (isAllowInterruption(hook)) {
                     hook.reactions.telephony?.allowBargeIn()
+                } else {
+                    hook.context.temp[TEMP_ACTIVATION_KEY] = false
                 }
                 logger.debug("Skip processing states by bargeIn activation")
                 hook.context.dialogContext.nextState = null
                 hook.context.dialogContext.nextContext = null
                 hook.context.dialogContext.nextContext = null
+            }
+        }
+    }
+
+    open fun handleAfterProcess(hook: AfterProcessHook) {
+        hook.request.bargeIn?.let {
+            if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
+                hook.context.session[IS_SUCCESSFULLY_INTERRUPTED] = true
             }
         }
     }
@@ -115,6 +134,7 @@ open class BargeInProcessor : WithLogger {
         if (hook.context.temp[TEMP_ACTIVATION_KEY] == true) {
             logger.debug("Handling barge-in hook error: ", hook.exception.scenarioCause)
             hook.context.session[IS_INVALID_CONTEXT_KEY] = true
+            hook.context.session[IS_SUCCESSFULLY_INTERRUPTED] = false
             hook.restoreContextAndExit()
         } else {
             throw hook.exception.scenarioCause
