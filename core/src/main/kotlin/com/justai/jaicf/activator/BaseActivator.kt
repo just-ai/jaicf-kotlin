@@ -87,7 +87,7 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         for (state in allStatesBack) {
             availableStates += state
 
-            val isModal = model.states[state]?.modal ?: error("State $state is not registered in model")
+            val isModal = model.states[state]?.modal ?: false
             if (isModal) {
                 break
             }
