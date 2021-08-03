@@ -66,6 +66,48 @@ private val scenario = Scenario {
         }
     }
 
+    state("startContext") {
+        activators {
+            regex("startContext")
+        }
+
+        action(telephony) {
+            reactions.say("ok", bargeInContext = "/bargeInContext")
+        }
+
+        state("startNested") {
+            activators {
+                regex("startNested")
+            }
+
+            action {
+                reactions.say("startNested")
+            }
+        }
+    }
+
+    state("bargeInContext", modal = true) {
+        state("nestedNoContext", noContext = true, modal = true) {
+            activators {
+                regex("nestedNoContext")
+            }
+
+            action {
+                reactions.say("nestedNoContext")
+            }
+        }
+
+        state("nested", modal = true) {
+            activators {
+                regex("nested")
+            }
+
+            action {
+                reactions.say("nested")
+            }
+        }
+    }
+
     fallback {
         reactions.say("fallback")
     }
@@ -86,58 +128,63 @@ class BargeInFunctionalTest : JaicpBaseTest(useCommonResources = true, ignoreSes
     }
 
     @Test
-    fun `should interrupt query with nested state`() {
-        val data = BargeInRequest(
-            BargeInRequest.BargeInTransition("."),
-            BargeInRequest.RecognitionResult("nested", "FINAL")
-        ).toJson()
-
-        query("start").answers("ok")
-        event("bargeInIntent", "bargeInIntentStatus" to data).doesInterrupt()
+    fun `should stay in original context if fails to interrupt`() = testBargeInContext("/bargeInContext") {
+        start("startContext")
+        bargeIn("random query").failsInterrupt()
+        bargeIn("another random query").failsInterrupt()
+        query("startNested").answers("startNested")
     }
 
     @Test
-    fun `should fail to interrupt with no state possible`() {
-        val data = BargeInRequest(
-            BargeInRequest.BargeInTransition("."),
-            BargeInRequest.RecognitionResult("some-unknown-state", "FINAL")
-        ).toJson()
-
-        query("start").answers("ok")
-        event("bargeInIntent", "bargeInIntentStatus" to data).failsInterrupt()
+    fun `should stay in original context if there were no interruption`() = testBargeInContext("/bargeInContext") {
+        start("startContext")
+        query("startNested").answers("startNested")
     }
 
     @Test
-    fun `should fail to interrupt with another context`() {
-        val data = BargeInRequest(
-            BargeInRequest.BargeInTransition("/ModalContext"),
-            BargeInRequest.RecognitionResult("nested", "FINAL")
-        ).toJson()
-
-        query("start").answers("ok")
-        event("bargeInIntent", "bargeInIntentStatus" to data).failsInterrupt()
+    fun `should stay in nested state if does interrupt`() = testBargeInContext("/bargeInContext") {
+        start("startContext")
+        bargeIn("nested").doesInterrupt()
+        query("nested").answers("nested")
+        query("nestedNoContext").answers("")
     }
 
     @Test
-    fun `should fail to interrupt into fallback`() {
-        val data = BargeInRequest(
-            BargeInRequest.BargeInTransition("/OpenContext"),
-            BargeInRequest.RecognitionResult("nested", "FINAL")
-        ).toJson()
-
-        query("start").answers("ok")
-        event("bargeInIntent", "bargeInIntentStatus" to data).failsInterrupt()
+    fun `should stay in barge-in context if state is no-context and does interrupt`() = testBargeInContext("/bargeInContext") {
+        start("startContext")
+        bargeIn("nestedNoContext").doesInterrupt()
+        query("nestedNoContext").answers("nestedNoContext")
+        query("nested").answers("nested")
     }
 
     @Test
-    fun `should restore after invalid context path transition`() {
-        val data = BargeInRequest(
-            BargeInRequest.BargeInTransition("/InvalidContextPath"),
-            BargeInRequest.RecognitionResult("nested", "FINAL")
-        ).toJson()
+    fun `should interrupt query with nested state`() = testBargeInContext(".") {
+        start("start")
+        bargeIn("nested").doesInterrupt()
+    }
 
+    @Test
+    fun `should fail to interrupt with no state possible`() = testBargeInContext(".") {
+        start("start")
+        bargeIn("some-unknown-state").failsInterrupt()
+    }
+
+    @Test
+    fun `should fail to interrupt with another context`() = testBargeInContext("/ModalContext") {
+        start("start")
+        bargeIn("nested").failsInterrupt()
+    }
+
+    @Test
+    fun `should fail to interrupt into fallback`() = testBargeInContext("/OpenContext") {
+        start("start")
+        bargeIn("nested").failsInterrupt()
+    }
+
+    @Test
+    fun `should restore after invalid context path transition`() = testBargeInContext("/InvalidContextPath") {
         query("InvalidContext").answers("i'm in InvalidContext")
-        event("bargeInIntent", "bargeInIntentStatus" to data).failsInterrupt()
+        bargeIn("nested").failsInterrupt()
         query("start").answers("ok")
     }
 
@@ -147,6 +194,20 @@ class BargeInFunctionalTest : JaicpBaseTest(useCommonResources = true, ignoreSes
 
     private fun event(event: String, additionalData: Pair<String, JsonElement>) =
         channel.process(commonRequestFactory.event(event, additionalData))
+
+    private fun bargeInEvent(text: String, transition: String) = event(
+        "bargeInEvent", "bargeInIntentStatus" to BargeInRequest(
+            BargeInRequest.BargeInTransition(transition),
+            BargeInRequest.RecognitionResult(text, "FINAL")
+        ).toJson()
+    )
+
+    private fun testBargeInContext(bargeInContext: String = ".", body: BargeInTest.() -> Unit) = BargeInTest(bargeInContext).run(body)
+
+    inner class BargeInTest(val bargeInContext: String) {
+        fun start(query: String) = query(query).answers("ok")
+        fun bargeIn(text: String, transition: String = bargeInContext) = bargeInEvent(text, transition)
+    }
 }
 
 private fun BargeInRequest.toJson() = JSON.encodeToJsonElement(serializer(), this)
