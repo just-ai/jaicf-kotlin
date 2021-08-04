@@ -34,5 +34,7 @@ internal data class CailaSlotFillingContext(
                 maxRetries = maxRetries
             )
         }
+
+        private const val serialVersionUID = 6691290642221965774L
     }
 }

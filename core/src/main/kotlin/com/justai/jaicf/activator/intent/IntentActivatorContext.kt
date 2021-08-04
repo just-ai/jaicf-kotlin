@@ -13,7 +13,11 @@ import java.io.Serializable
 open class IntentActivatorContext(
     override val confidence: Float,
     open val intent: String
-): ActivatorContext, Serializable
+): ActivatorContext, Serializable {
+    companion object {
+        private const val serialVersionUID = 5641269141466602296L
+    }
+}
 
 val ActivatorContext.intent
     get() = this as? IntentActivatorContext

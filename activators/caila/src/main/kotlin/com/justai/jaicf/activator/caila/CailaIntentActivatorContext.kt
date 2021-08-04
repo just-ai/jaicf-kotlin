@@ -18,6 +18,10 @@ data class CailaIntentActivatorContext(
     var slots = intentData.slots?.map { it.name to it.value }?.toMap() ?: emptyMap()
 
     val entities = result.entitiesLookup.entities
+
+    companion object {
+        private const val serialVersionUID = 4934755046273038374L
+    }
 }
 
 val ActivatorContext.caila

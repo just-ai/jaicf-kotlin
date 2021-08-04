@@ -10,7 +10,11 @@ data class CailaInferenceResultData(
     val confidence: Double,
     val slots: List<CailaKnownSlotData>?,
     val debug: JsonObject?
-) : java.io.Serializable
+) : java.io.Serializable {
+    companion object {
+        private const val serialVersionUID = 1698636910227622116L
+    }
+}
 
 @Serializable
 data class CailaIntentData(
@@ -21,6 +25,10 @@ data class CailaIntentData(
     val slots: List<CailaSlotData>?
 )  : java.io.Serializable{
     val name = path.substring(path.lastIndexOf('/') + 1)
+
+    companion object {
+        private const val serialVersionUID = -8682982605253378239L
+    }
 }
 
 @Serializable
@@ -30,11 +38,19 @@ data class CailaSlotData(
     val required: Boolean,
     val prompts: List<String>?,
     val array: Boolean?
-) : java.io.Serializable
+) : java.io.Serializable {
+    companion object {
+        private const val serialVersionUID = 8993441993535699579L
+    }
+}
 
 @Serializable
 data class CailaKnownSlotData(
     val name: String,
     val value: String,
     val array: Boolean?
-) : java.io.Serializable
+) : java.io.Serializable {
+    companion object {
+        private const val serialVersionUID = 1467148388316177817L
+    }
+}

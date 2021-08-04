@@ -6,7 +6,11 @@ import kotlinx.serialization.Serializable
 data class CailaEntitiesLookupResults(
     val text: String,
     val entities: List<CailaEntityMarkupData>
-): java.io.Serializable
+): java.io.Serializable {
+    companion object {
+        private const val serialVersionUID = -4754223571735534961L
+    }
+}
 
 @Serializable
 data class CailaEntityMarkupData(
@@ -19,4 +23,8 @@ data class CailaEntityMarkupData(
     val default: Boolean?,
     val system: Boolean?,
     val entityId: Long?
-): java.io.Serializable
+): java.io.Serializable {
+    companion object {
+        private const val serialVersionUID = -6523969273872886292L
+    }
+}
