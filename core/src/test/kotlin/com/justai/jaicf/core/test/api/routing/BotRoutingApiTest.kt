@@ -8,10 +8,10 @@ import com.justai.jaicf.api.routing.routingContext
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.BotTest
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import kotlin.test.assertEquals
 
 
 private fun createEngine(scenario: Scenario) = BotEngine(scenario, activators = arrayOf(RegexActivator))
@@ -124,13 +124,13 @@ class BotRoutingApiTest : BotTest(router) {
     @Test
     fun `02 should have main engine in stack`() {
         query("Test")
-        assertEquals(botContext.routingContext.routingEngineStack[0], BotRoutingEngine.DEFAULT_ROUTE_NAME)
+        assertEquals(botContext.routingContext.routingEngineStack.pop(), BotRoutingEngine.MAIN_ENGINE_NAME)
     }
 
     @Test
     fun `03 should route`() {
         query("route sc1") hasAnswer "Routing current request to sc1" hasAnswer "SC1: Fallback"
-        assertEquals(botContext.routingContext.routingEngineStack[1], "sc1")
+        assertEquals(botContext.routingContext.routingEngineStack.pop(), "sc1")
     }
 
     @Test

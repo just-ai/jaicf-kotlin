@@ -5,20 +5,19 @@ import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.state.StatePath
-import java.util.EmptyStackException
-import java.util.Stack
+import java.util.*
 
 /**
  * An exception thrown to re-route current BotRequest to specified [targetEngineName]
  *
  * @param [targetEngineName] an engine with specified name provided in [BotRoutingEngine] routables map.
  * */
-internal data class BotRequestRerouteException(val targetEngineName: String) : RuntimeException()
+data class BotRequestRerouteException(val targetEngineName: String) : RuntimeException()
 
 /**
  * An exception thrown when there is no previous engine to route back.
  * */
-internal object NoRouteBackException : RuntimeException()
+class NoRouteBackException : RuntimeException()
 
 /**
  * This class provides BotRouting API for changing execution engine for client requests in channel.
@@ -58,7 +57,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
     /**
      * Route current bot request to specified [engineName]. Next requests will be also send to [engineName].
      *
-     * @param engineName target engine name specified in routables map in [BotRoutingEngine]
+     * @param engineName target engine name specified in routables map in [BotRoutingEngine.routables]
      * @param targetState target state for scenario in [engineName].
      *
      * @throws BotRequestRerouteException to reroute request using [BotRoutingEngine]
@@ -80,17 +79,31 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * @see BotRoutingEngine
      * */
     fun routeBack(): Nothing {
+        val routingContext = botContext.routingContext
         try {
-            val routingContext = botContext.routingContext
             val curr = routingContext.routingEngineStack.pop()
             val target = routingContext.routingEngineStack.pop()
             logger.info("Routing request back from engine: $curr to engine: $target")
             throw BotRequestRerouteException(target)
-        } catch (e: EmptyStackException) {
+        } catch (e: NoSuchElementException) {
             logger.warn("Failed to change route back as there is no engines left in stack")
-            throw NoRouteBackException
+            routingContext.routingEngineStack.push(routingContext.currentEngine)
+            throw NoRouteBackException()
         }
     }
+
+    /**
+     * Route current bot request to [BotRoutingEngine.main] engine. Next requests will be also send to [BotRoutingEngine.main].
+     *
+     * @param targetState target state for scenario in [BotRoutingEngine.main].
+     *
+     * @throws BotRequestRerouteException to reroute request using [BotRoutingEngine]
+     * @return [Nothing] as no request execution possible after invoking this method
+     *
+     * @see BotRoutingEngine
+     * @see BotRoutingEngine.main - main engine which processes requests by default.
+     * */
+    fun routeToMain(targetState: String? = null): Nothing = route(BotRoutingEngine.MAIN_ENGINE_NAME, targetState)
 
     /**
      * Route client all next requests to specified [engineName].
@@ -117,14 +130,39 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * @see BotRoutingEngine
      * */
     fun changeEngineBack() {
-        try {
-            val routingContext = botContext.routingContext
-            val curr = routingContext.routingEngineStack.pop()
-            val target = routingContext.routingEngineStack.peek()
-            logger.info("Changing execution back from engine: $curr to engine: $target")
-        } catch (e: EmptyStackException) {
+        val routingContext = botContext.routingContext
+        val curr = routingContext.routingEngineStack.pop()
+        val target = routingContext.routingEngineStack.peek()
+        if (target == null) {
+            routingContext.routingEngineStack.push(curr)
             logger.warn("Failed to change bot engine back as there is no engines left in stack")
+            throw NoRouteBackException()
+        } else {
+            logger.info("Changing execution back from engine: $curr to engine: $target")
         }
+    }
+
+    /**
+     * Route client all next requests to [BotRoutingEngine.main] engine.
+     *
+     * @param targetState target state for scenario in [BotRoutingEngine.main].
+     *
+     * @see BotRoutingEngine
+     * @see BotRoutingEngine.main - main engine which processes requests by default.
+     * */
+    fun changeEngineToMain(targetState: String?) = changeEngine(BotRoutingEngine.MAIN_ENGINE_NAME, targetState)
+
+    /**
+     * Checks if there is an engine in stack we can route to
+     * */
+    fun hasPreviousEngineInStack(): Boolean = botContext.routingContext.routingEngineStack.size > 1
+
+    /**
+     * Cleans routing context. Deletes dialog contexts for other bots visited by client and removes engines from stack.
+     * */
+    fun cleanRoutingContext() {
+        botContext.routingContext.routingEngineStack.clear()
+        botContext.routingContext.dialogContextMap.clear()
     }
 }
 
@@ -134,11 +172,11 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
  * @see BotRoutingApi
  * @see BotRoutingEngine
  * */
-internal data class BotRoutingContext(
+data class BotRoutingContext(
     val dialogContextMap: MutableMap<String, DialogContext> = mutableMapOf(),
-    val routingEngineStack: Stack<String> = Stack(),
+    val routingEngineStack: ArrayDeque<String> = ArrayDeque(),
     var targetState: String? = null,
-    var currentEngine: String = BotRoutingEngine.DEFAULT_ROUTE_NAME,
+    var currentEngine: String = BotRoutingEngine.MAIN_ENGINE_NAME,
 )
 
 /**
@@ -148,7 +186,7 @@ internal data class BotRoutingContext(
  * @see BotRoutingApi
  * @see BotRoutingEngine
  * */
-internal val BotContext.routingContext: BotRoutingContext
+val BotContext.routingContext: BotRoutingContext
     get() = (client[BOT_ROUTING_CONTEXT_KEY] as? BotRoutingContext)
         ?: BotRoutingContext().also { client[BOT_ROUTING_CONTEXT_KEY] = it }
 

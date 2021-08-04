@@ -66,7 +66,7 @@ class BotRoutingEngine(
             error("Collections of routable botEngines must have single shared context manager instance")
         }
 
-        this.routables[DEFAULT_ROUTE_NAME] = main
+        this.routables[MAIN_ENGINE_NAME] = main
     }
 
     private fun processWithRouting(
@@ -134,18 +134,14 @@ class BotRoutingEngine(
         contextManager: BotContextManager?,
     ) {
         val botContext = (contextManager ?: main.defaultContextManager).loadContext(request, requestContext)
-        val route = getCurrentRouting(botContext) ?: DEFAULT_ROUTE_NAME
+        val route = getCurrentRouting(botContext) ?: MAIN_ENGINE_NAME
         processWithRouting(request, reactions, requestContext, contextManager, botContext, route)
     }
 
-    private fun getCurrentRouting(ctx: BotContext): String? = try {
-        ctx.routingContext.routingEngineStack.peek()
-    } catch (e: EmptyStackException) {
-        null
-    }
+    private fun getCurrentRouting(ctx: BotContext): String? = ctx.routingContext.routingEngineStack.peek()
 
     companion object {
-        internal const val DEFAULT_ROUTE_NAME = "main"
+        internal const val MAIN_ENGINE_NAME = "main"
         private val MOCK_SCENARIO = Scenario { }
     }
 }
