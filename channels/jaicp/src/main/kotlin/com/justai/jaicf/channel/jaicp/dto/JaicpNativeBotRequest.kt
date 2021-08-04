@@ -16,27 +16,72 @@ interface JaicpNativeBotRequest : BotRequest {
 }
 
 interface TelephonyBotRequest : JaicpNativeBotRequest {
+    /**
+     * Caller returns caller’s phone number.
+     */
     val caller: String?
         get() = jaicp.rawRequest["caller"]?.jsonPrimitive?.content
+
+    /**
+     * Returns a SIP trunk. SIP trunk is the virtual version of an analog phone line.
+     */
     val trunk: String?
         get() = jaicp.rawRequest["extension"]?.jsonPrimitive?.content
+
+    /**
+     * Returns an object with data linked with the current client’s phone number.
+     * This data can be provided for each number when adding a phone number to a call campaign.
+     */
     val calleePayload: JsonObject?
         get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("payload")?.jsonObject
+
+    /**
+     * Returns the call campaign schedule that was set during the campaign creation.
+     * Returned object has two properties, allowedDays and allowedTime
+     */
     val campaignSchedule: JsonObject?
         get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("callScenarioData")
             ?.jsonObject?.get("schedule")?.jsonObject?.get("campaignSchedule")?.jsonObject
+
+    /**
+     * Returns the current phone number dial schedule. Returned object has two properties, allowedDays and allowedTime.
+     * Works only when the call was created using the Calls API with a custom schedule of allowed call time intervals.
+     */
     val dialSchedule: JsonObject?
         get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("callScenarioData")
             ?.jsonObject?.get("schedule")?.jsonObject?.get("dialSchedule")?.jsonObject
+
+    /**
+     * Returns a token for downloading call recordings made in the current project.
+     * The Record calls toggle in the phone channel settings must be set to active so that call recordings become available for download.
+     */
     val audioToken: String?
         get() = jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordsDownloadData")
             ?.jsonObject?.get("audioToken")?.jsonObject?.get("token")?.jsonPrimitive?.content
+
+    /**
+     *  Returns the path to the current call recording. Returned string containing the relative path to the file on
+     *  the server where the project is hosted: The Record calls toggle in the phone channel settings must be set to
+     *  active so that call recordings become available for download.
+     *  The absolute call recording file URL conforms to the following template: https://{host}/restapi/download/{projectId}/recordings/call/{callRecordingPath}
+     */
     val callRecordingPath: String?
         get() = jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordingFile")?.jsonPrimitive?.content
+
+    /**
+     * When the `onCallNotConnected` event is triggered, it returns the reason the call failed.
+     * It allows to determine the reason the bot could not reach the client. It returns a string: `BUSY` or `NO_ANSWER`.
+     */
     val callNotConnectedReason: String?
         get() = jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callNotConnectedData")?.jsonObject
             ?.get("reason")?.jsonPrimitive?.content
 
+    /**
+     * Returns an URL for downloading the current call recording. Returned string with the call recording download URL.
+     * The Record calls toggle in the phone channel settings must be set to active so that call recordings become available for download.
+     *
+     * @param sessionId id of current session. You can receive sessionId as property of ActionContext.
+     */
     fun getCallRecordingFullUrl(sessionId: String): String? =
         jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordsDownloadData")
                 ?.jsonObject?.get("downloadUrl")?.jsonPrimitive?.content?.replace("{sessionId}", sessionId)
