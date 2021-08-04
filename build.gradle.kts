@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "com.just-ai.jaicf"
-    version = "1.1.1"
+    version = "1.1.2"
 
     repositories {
         google()
