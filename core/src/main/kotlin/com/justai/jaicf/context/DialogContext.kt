@@ -37,4 +37,8 @@ class DialogContext: Serializable {
 
         return currentContext
     }
+
+    companion object {
+        private const val serialVersionUID = -9180292787182200322L
+    }
 }
