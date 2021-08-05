@@ -18,7 +18,7 @@ class DialogContext: Serializable {
     val transitions: MutableMap<String, String> = mutableMapOf()
     val backStateStack = ArrayDeque<String>()
     var transitionHistory = createTransitionHistory()
-        // don't remove, may be null
+        // don't remove, may be null due to java serialization
         get() = field ?: createTransitionHistory().also { field = it }
         private set
 
