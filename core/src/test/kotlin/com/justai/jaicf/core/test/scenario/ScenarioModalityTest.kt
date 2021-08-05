@@ -27,7 +27,7 @@ val modalTestScenario = Scenario {
     }
 }
 
-class ScdnarioModalityTest : ScenarioTest(modalTestScenario) {
+class ScenarioModalityTest : ScenarioTest(modalTestScenario) {
     @Test
     fun `should activate inner from modal`() {
         query("start") endsWithState "/start" hasAnswer "start"
