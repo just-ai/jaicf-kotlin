@@ -23,9 +23,13 @@ class DialogContext: Serializable {
         private set
 
     fun nextState(): String? {
-        currentState = nextState ?: return null
-        nextState = null
-        return currentState.also(::saveToTransitionHistory)
+        nextState?.let {
+            saveToTransitionHistory(it)
+            currentState = it
+            nextState = null
+            return currentState
+        }
+        return null
     }
 
     fun nextContext(model: ScenarioModel): String {
