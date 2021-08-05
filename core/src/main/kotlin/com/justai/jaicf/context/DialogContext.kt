@@ -1,13 +1,8 @@
 package com.justai.jaicf.context
 
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.sun.xml.internal.bind.v2.TODO
-import java.io.Externalizable
-import java.io.ObjectInput
-import java.io.ObjectOutput
 import java.io.Serializable
 import java.util.ArrayDeque
-import java.util.Collections.addAll
 
 /**
  * Contains all data regarding the current state of the dialogue.
@@ -23,6 +18,8 @@ class DialogContext: Serializable {
     val transitions: MutableMap<String, String> = mutableMapOf()
     val backStateStack = ArrayDeque<String>()
     var transitionHistory = ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT).apply { add(currentState) }
+        // don't remove, may be null
+        get() = field ?: createTransitionHistory().also { field = it }
         private set
 
     fun nextState(): String? {
@@ -46,20 +43,13 @@ class DialogContext: Serializable {
     }
 
     fun saveToTransitionHistory(state: String) {
-        ensureDeserialized()
         while (transitionHistory.size >= TRANSITION_HISTORY_SIZE_LIMIT) {
             transitionHistory.removeFirst()
         }
         transitionHistory.add(state)
     }
 
-    private fun ensureDeserialized() {
-        // may be null after java deserialization
-        @Suppress("SENSELESS_COMPARISON")
-        if (transitionHistory == null) {
-            transitionHistory = ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT).apply { add(currentState) }
-        }
-    }
+    private fun createTransitionHistory() = ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT).apply { add(currentState) }
 
     companion object {
         private const val serialVersionUID = -9180292787182200322L
