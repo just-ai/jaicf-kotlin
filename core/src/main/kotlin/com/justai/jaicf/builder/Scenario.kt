@@ -13,13 +13,13 @@ import com.justai.jaicf.reactions.Reactions
 
 
 @ScenarioDsl
-@StateDeclaration("")
+@StateDeclaration("/")
 fun Scenario(
     @StateBody body: RootBuilder<BotRequest, Reactions>.() -> Unit
 ): Scenario = Scenario(ChannelTypeToken.Default, body)
 
 @ScenarioDsl
-@StateDeclaration("")
+@StateDeclaration("/")
 fun <B : BotRequest, R : Reactions> Scenario(
     channelToken: ChannelTypeToken<B, R>,
     @StateBody body: RootBuilder<B, R>.() -> Unit,
@@ -28,13 +28,13 @@ fun <B : BotRequest, R : Reactions> Scenario(
 }
 
 @ScenarioDsl
-@StateDeclaration("")
+@StateDeclaration("/")
 fun createModel(
     @StateBody body: RootBuilder<BotRequest, Reactions>.() -> Unit
 ): ScenarioModel = createModel(ChannelTypeToken.Default, body)
 
 @ScenarioDsl
-@StateDeclaration("")
+@StateDeclaration("/")
 fun <B : BotRequest, R : Reactions> createModel(
     channelToken: ChannelTypeToken<B, R>,
     @StateBody body: RootBuilder<B, R>.() -> Unit,
