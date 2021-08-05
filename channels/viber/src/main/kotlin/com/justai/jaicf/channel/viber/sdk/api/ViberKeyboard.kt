@@ -15,16 +15,18 @@ class ViberKeyboard {
     val rowsCount: Int
         get() = rows.size
 
-    fun addRow(vararg rowButtons: FunctionalButton) {
-        addRow(rowButtons.asList())
+    fun addRow(vararg row: FunctionalButton) {
+        addRow(row.asList())
     }
 
-    fun addRow(rowButtons: List<FunctionalButton>) {
-        require(rowButtons.size <= Keyboard.DEFAULT_COLUMNS_COUNT)
-        require(rowButtons.isNotEmpty())
+    fun addRow(row: List<FunctionalButton>) {
+        require(row.size <= Keyboard.DEFAULT_COLUMNS_COUNT) {
+            "Maximum buttons row size of ${Keyboard.DEFAULT_COLUMNS_COUNT} exceeded. Received buttons size: ${row.size}"
+        }
+        require(row.isNotEmpty()) { "Empty row of buttons are not allowed" }
 
-        val buttonWidth = maxOf(Keyboard.DEFAULT_COLUMNS_COUNT / rowButtons.size, 1)
-        rowButtons
+        val buttonWidth = maxOf(Keyboard.DEFAULT_COLUMNS_COUNT / row.size, 1)
+        row
             .map { it.toButton() }
             .map { it.copy(rows = 1, columns = buttonWidth) }
             .also { rows.add(it) }
