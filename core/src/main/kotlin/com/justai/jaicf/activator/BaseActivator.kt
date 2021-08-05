@@ -1,6 +1,7 @@
 package com.justai.jaicf.activator
 
 import com.justai.jaicf.activator.selection.ActivationSelector
+import com.justai.jaicf.activator.selection.isTo
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
@@ -94,6 +95,12 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         }
 
         val transitionsMap = model.transitions.groupBy { it.fromState }
-        return availableStates.flatMap { transitionsMap[it] ?: emptyList() }
+
+        val lastState = StatePath.parse(availableStates.last())
+        val transitionsToLastState = lastState.takeUnless { it.isRoot }?.let {
+            transitionsMap[it.parent]?.filter { it.isTo(lastState.toString()) }
+        } ?: emptyList()
+
+        return availableStates.flatMap { transitionsMap[it] ?: emptyList() } + transitionsToLastState
     }
 }
