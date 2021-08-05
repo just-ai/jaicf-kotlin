@@ -17,7 +17,7 @@ class DialogContext: Serializable {
 
     val transitions: MutableMap<String, String> = mutableMapOf()
     val backStateStack = ArrayDeque<String>()
-    var transitionHistory = ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT).apply { add(currentState) }
+    var transitionHistory = createTransitionHistory()
         // don't remove, may be null
         get() = field ?: createTransitionHistory().also { field = it }
         private set
