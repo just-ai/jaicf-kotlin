@@ -79,28 +79,23 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         }
 
     private fun generateTransitions(botContext: BotContext): List<Transition> {
-        val currentState = botContext.dialogContext.currentContext
-        val currentPath = StatePath.parse(currentState)
+        val currentPath = StatePath.parse(botContext.dialogContext.currentContext)
 
         val allStatesBack = listOf(currentPath.toString()) + currentPath.parents.reversedArray()
 
-        val availableStates = mutableListOf<String>()
-        for (state in allStatesBack) {
-            availableStates += state
+        val transitionsFrom = model.transitions.groupBy { it.fromState }
+        val availableTransitions = mutableListOf<Transition>()
 
-            val isModal = model.states[state]?.modal ?: false
-            if (isModal) {
+        for (state in allStatesBack) {
+            availableTransitions += transitionsFrom[state] ?: emptyList()
+
+            if (model.states[state]?.modal == true) {
+                val parent = StatePath.parse(state).parent
+                availableTransitions += transitionsFrom[parent]?.filter { it.isTo(state) } ?: emptyList()
                 break
             }
         }
 
-        val transitionsMap = model.transitions.groupBy { it.fromState }
-
-        val lastState = StatePath.parse(availableStates.last())
-        val transitionsToLastState = lastState.takeUnless { it.isRoot }?.let {
-            transitionsMap[it.parent]?.filter { it.isTo(lastState.toString()) }
-        } ?: emptyList()
-
-        return availableStates.flatMap { transitionsMap[it] ?: emptyList() } + transitionsToLastState
+        return availableTransitions
     }
 }
