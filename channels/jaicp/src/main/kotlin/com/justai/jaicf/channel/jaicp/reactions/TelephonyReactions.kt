@@ -133,7 +133,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param maxAttempts max number of attempts to call client
      * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      * */
-    @Deprecated("Parameters localTimeFrom and localTimeTo are deprecated, use redial method that accepts allowedTime")
+    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime")
     fun redial(
         startDateTime: Instant? = null,
         finishDateTime: Instant? = null,
@@ -211,7 +211,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param maxAttempts max number of attempts to call client
      * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      */
-    @Deprecated("Parameters localTimeFrom and localTimeTo are deprecated, use redial method that accepts allowedTime")
+    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime")
     fun redial(
         startRedialAfter: Duration,
         finishRedialAfter: Duration,
