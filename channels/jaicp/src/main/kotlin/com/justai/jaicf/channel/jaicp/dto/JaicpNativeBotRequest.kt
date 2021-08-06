@@ -6,6 +6,7 @@ import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonObject
@@ -39,17 +40,19 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
      * Returns the call campaign schedule that was set during the campaign creation.
      * Returned object has two properties, allowedDays and allowedTime
      */
-    val campaignSchedule: JsonObject?
+    val campaignSchedule: Schedule?
         get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("callScenarioData")
             ?.jsonObject?.get("schedule")?.jsonObject?.get("campaignSchedule")?.jsonObject
+            ?.let(JSON::decodeFromJsonElement)
 
     /**
-     * Returns the current phone number dial schedule. Returned object has two properties, allowedDays and allowedTime.
+     * Returns the dial schedule of current phone number. Returned object has two properties, allowedDays and allowedTime.
      * Works only when the call was created using the Calls API with a custom schedule of allowed call time intervals.
      */
-    val dialSchedule: JsonObject?
+    val dialSchedule: Schedule?
         get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("callScenarioData")
             ?.jsonObject?.get("schedule")?.jsonObject?.get("dialSchedule")?.jsonObject
+            ?.let(JSON::decodeFromJsonElement)
 
     /**
      * Returns a token for downloading call recordings made in the current project.
@@ -84,7 +87,7 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
      */
     fun getCallRecordingFullUrl(sessionId: String): String? =
         jaicp.data?.jsonObject?.get("resterisk")?.jsonObject?.get("callRecordsDownloadData")
-                ?.jsonObject?.get("downloadUrl")?.jsonPrimitive?.content?.replace("{sessionId}", sessionId)
+            ?.jsonObject?.get("downloadUrl")?.jsonPrimitive?.content?.replace("{sessionId}", sessionId)
 
 
     companion object {
@@ -97,6 +100,12 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
         }
     }
 }
+
+@Serializable
+data class Schedule(
+    val allowedDays: List<String>? = null,
+    val allowedTime: AllowedTime? = null,
+)
 
 data class TelephonyQueryRequest(
     override val jaicp: JaicpBotRequest,

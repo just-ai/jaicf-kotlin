@@ -43,16 +43,16 @@ class JaicpDialerAPI {
         val startDateTime: Long? = null,
         val finishDateTime: Long? = null,
         val allowedDays: List<String> = emptyList(),
-        @Deprecated("Field localTimeFrom are deprecated, use allowedTime instead")
+        @Deprecated("Field 'localTimeFrom' are deprecated, use 'allowedTime' instead")
         val localTimeFrom: String? = null,
-        @Deprecated("Field localTimeTo are deprecated, use allowedTime instead")
+        @Deprecated("Field 'localTimeTo' are deprecated, use 'allowedTime' instead")
         val localTimeTo: String? = null,
         val maxAttempts: Int? = null,
         val retryIntervalInMinutes: Int? = null,
         val allowedTime: AllowedTime? = null,
     ) {
         companion object {
-            @Deprecated("Parameters localTimeFrom and localTimeTo are deprecated, use create method that accepts allowedTime")
+            @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'create' method that accepts allowedTime")
             fun create(
                 startDateTime: Instant?,
                 finishDateTime: Instant?,
@@ -89,7 +89,7 @@ class JaicpDialerAPI {
         }
     }
 
-    @Deprecated("Parameters localTimeFrom and localTimeTo are deprecated, use redial method that accepts allowedTime")
+    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime")
     internal fun redial(
         startDateTime: Instant?,
         finishDateTime: Instant?,
@@ -145,6 +145,45 @@ class JaicpDialerAPI {
         callResultPayload = resultPayload
     }
 }
+
+/**
+ * Contains local time intervals by day of a week.
+ *
+ * @param mon list of time intervals on Monday
+ * @param tue list of time intervals on Tuesday
+ * @param wed list of time intervals on Wednesday
+ * @param thu list of time intervals on Thursday
+ * @param fri list of time intervals on Friday
+ * @param sat list of time intervals on Saturday
+ * @param sun list of time intervals on Sunday
+ * @param default will be used if no interval is specified for the current day of the week
+ */
+@Serializable
+data class AllowedTime(
+    val mon: List<LocalTimeInterval>? = null,
+    val tue: List<LocalTimeInterval>? = null,
+    val wed: List<LocalTimeInterval>? = null,
+    val thu: List<LocalTimeInterval>? = null,
+    val fri: List<LocalTimeInterval>? = null,
+    val sat: List<LocalTimeInterval>? = null,
+    val sun: List<LocalTimeInterval>? = null,
+    val default: List<LocalTimeInterval>? = null
+) {
+    internal val intervals = listOf(mon, tue, wed, thu, fri, sat, sun, default)
+}
+
+
+/**
+ * Local time interval attempting to redial
+ *
+ * @param localTimeFrom local time interval start attempting to redial. E.g. 16:20
+ * @param localTimeTo local time interval end attempting to redial. E.g. 23:59
+ * */
+@Serializable
+data class LocalTimeInterval(
+    val localTimeFrom: String,
+    val localTimeTo: String
+)
 
 private fun List<DayOfWeek>.mapToDialerDays(): List<String> = map {
     when (it) {
@@ -206,42 +245,3 @@ private fun checkRetryAndInterval(data: JaicpDialerAPI.RedialData) {
         }
     }
 }
-
-/**
- * Contains local time intervals by day of a week.
- *
- * @param mon list of time intervals on Monday
- * @param tue list of time intervals on Tuesday
- * @param wed list of time intervals on Wednesday
- * @param thu list of time intervals on Thursday
- * @param fri list of time intervals on Friday
- * @param sat list of time intervals on Saturday
- * @param sun list of time intervals on Sunday
- * @param default will be used if no interval is specified for the current day of the week
- */
-@Serializable
-data class AllowedTime(
-    val mon: List<LocalTimeInterval>? = null,
-    val tue: List<LocalTimeInterval>? = null,
-    val wed: List<LocalTimeInterval>? = null,
-    val thu: List<LocalTimeInterval>? = null,
-    val fri: List<LocalTimeInterval>? = null,
-    val sat: List<LocalTimeInterval>? = null,
-    val sun: List<LocalTimeInterval>? = null,
-    val default: List<LocalTimeInterval>? = null
-) {
-    internal val intervals = listOf(mon, tue, wed, thu, fri, sat, sun, default)
-}
-
-
-/**
- * Local time interval attempting to redial
- *
- * @param localTimeFrom local time interval start attempting to redial. E.g. 16:20
- * @param localTimeTo local time interval end attempting to redial. E.g. 23:59
- * */
-@Serializable
-data class LocalTimeInterval(
-    val localTimeFrom: String,
-    val localTimeTo: String
-)
