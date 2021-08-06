@@ -131,7 +131,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param localTimeFrom local time interval start attempting to redial. E.g. 16:20
      * @param localTimeTo local time interval end attempting to redial. E.g. 23:59
      * @param maxAttempts max number of attempts to call client
-     * @param retryIntervalInMinutes interval between redial attempts
+     * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      * */
     fun redial(
         startDateTime: Instant? = null,
@@ -140,15 +140,15 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
         localTimeFrom: String? = null,
         localTimeTo: String? = null,
         maxAttempts: Int? = null,
-        retryIntervalInMinutes: Int? = null
+        retryIntervalInMinutes: Int? = null,
     ) = dialer.redial(
-        startDateTime,
-        finishDateTime,
-        allowedDays,
-        localTimeFrom,
-        localTimeTo,
-        maxAttempts,
-        retryIntervalInMinutes
+        startDateTime = startDateTime,
+        finishDateTime = finishDateTime,
+        allowedDays = allowedDays,
+        localTimeFrom = localTimeFrom,
+        localTimeTo = localTimeTo,
+        retryIntervalInMinutes = retryIntervalInMinutes,
+        maxAttempts = maxAttempts
     )
 
     /**
@@ -167,7 +167,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param localTimeFrom local time interval start attempting to redial. E.g. 16:20
      * @param localTimeTo local time interval end attempting to redial. E.g. 23:59
      * @param maxAttempts max number of attempts to call client
-     * @param retryIntervalInMinutes interval between redial attempts
+     * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      */
     fun redial(
         startRedialAfter: Duration,
@@ -176,17 +176,17 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
         localTimeFrom: String? = null,
         localTimeTo: String? = null,
         maxAttempts: Int? = null,
-        retryIntervalInMinutes: Int? = null
+        retryIntervalInMinutes: Int? = null,
     ) {
         val currentTime = Instant.now()
         redial(
-            currentTime.plus(startRedialAfter),
-            currentTime.plus(finishRedialAfter),
-            allowedDays,
-            localTimeFrom,
-            localTimeTo,
-            maxAttempts,
-            retryIntervalInMinutes
+            startDateTime = currentTime.plus(startRedialAfter),
+            finishDateTime = currentTime.plus(finishRedialAfter),
+            allowedDays = allowedDays,
+            localTimeFrom = localTimeFrom,
+            localTimeTo = localTimeTo,
+            maxAttempts = maxAttempts,
+            retryIntervalInMinutes = retryIntervalInMinutes
         )
     }
 
