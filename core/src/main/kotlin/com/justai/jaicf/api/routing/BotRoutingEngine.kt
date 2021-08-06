@@ -141,7 +141,7 @@ class BotRoutingEngine(
     private fun getCurrentRouting(ctx: BotContext): String? = ctx.routingContext.routingEngineStack.peek()
 
     companion object {
-        internal const val MAIN_ENGINE_NAME = "main"
+        const val MAIN_ENGINE_NAME = "com/justai/jaicf/api/routing/mainRoutingEngine"
         private val MOCK_SCENARIO = Scenario { }
     }
 }
