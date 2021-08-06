@@ -133,6 +133,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param maxAttempts max number of attempts to call client
      * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      * */
+    @Deprecated("Parameters localTimeFrom and localTimeTo are deprecated, use redial method that accepts allowedTime")
     fun redial(
         startDateTime: Instant? = null,
         finishDateTime: Instant? = null,
@@ -149,6 +150,47 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
         localTimeTo = localTimeTo,
         retryIntervalInMinutes = retryIntervalInMinutes,
         maxAttempts = maxAttempts
+    )
+
+    /**
+     * Schedules a redial in outbound call campaign.
+     *
+     * example usage:
+     * ```
+     * state("redial") {
+     *    activators {
+     *        regex("call me back")
+     *    }
+     *    action {
+     *        reactions.say("Ok, I will call you in an hour.")
+     *        reactions.telephony?.redial(
+     *            startDateTime = Instant.now().plusSeconds(3600),
+     *            maxAttempts = 2
+     *        )
+     *    }
+     * }
+     * ```
+     * @param startDateTime unix timestamp (UTC-0 epoch milliseconds) to start attempting to redial a client
+     * @param finishDateTime unix timestamp (UTC-0 epoch milliseconds) to end attempting to redial a client
+     * @param allowedDays list of [DayOfWeek] allowed days to call a client
+     * @param allowedTime local time intervals by day of a week
+     * @param maxAttempts max number of attempts to call client
+     * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
+     * */
+    fun redial(
+        startDateTime: Instant? = null,
+        finishDateTime: Instant? = null,
+        allowedDays: List<DayOfWeek> = emptyList(),
+        allowedTime: AllowedTime? = null,
+        maxAttempts: Int? = null,
+        retryIntervalInMinutes: Int? = null
+    ) = dialer.redial(
+        startDateTime,
+        finishDateTime,
+        allowedDays,
+        allowedTime,
+        maxAttempts,
+        retryIntervalInMinutes
     )
 
     /**
@@ -169,6 +211,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param maxAttempts max number of attempts to call client
      * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      */
+    @Deprecated("Parameters localTimeFrom and localTimeTo are deprecated, use redial method that accepts allowedTime")
     fun redial(
         startRedialAfter: Duration,
         finishRedialAfter: Duration,
@@ -187,6 +230,35 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
             localTimeTo = localTimeTo,
             maxAttempts = maxAttempts,
             retryIntervalInMinutes = retryIntervalInMinutes
+        )
+    }
+
+    /**
+     * Schedules a redial in outbound call campaign
+     *
+     * @param startRedialAfter a [Duration] amount after which redial will start
+     * @param finishRedialAfter a [Duration] after which redial will finish
+     * @param allowedDays list of [DayOfWeek] allowed days to call a client
+     * @param allowedTime local time intervals by day of a week
+     * @param maxAttempts max number of attempts to call client
+     * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
+     */
+    fun redial(
+        startRedialAfter: Duration,
+        finishRedialAfter: Duration,
+        allowedDays: List<DayOfWeek> = emptyList(),
+        allowedTime: AllowedTime? = null,
+        maxAttempts: Int? = null,
+        retryIntervalInMinutes: Int? = null
+    ) {
+        val currentTime = Instant.now()
+        redial(
+            currentTime.plus(startRedialAfter),
+            currentTime.plus(finishRedialAfter),
+            allowedDays,
+            allowedTime,
+            maxAttempts,
+            retryIntervalInMinutes
         )
     }
 
