@@ -34,8 +34,8 @@ class JaicpDialerAPI {
      * @property allowedDays list of [DayOfWeek] allowed days
      * @property localTimeFrom local time interval start attempting to redial. E.g. 16:20
      * @property localTimeTo local time interval end attempting to redial. E.g. 23:59
-     * @property retryIntervalInMinutes interval between redial attempts
      * @property maxAttempts max number of attempts to call client
+     * @property retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      * */
     @Serializable
     data class RedialData internal constructor(
@@ -45,7 +45,7 @@ class JaicpDialerAPI {
         val localTimeFrom: String? = null,
         val localTimeTo: String? = null,
         val maxAttempts: Int? = null,
-        val retryIntervalInMinutes: Int? = null
+        val retryIntervalInMinutes: Int? = null,
     ) {
         companion object {
             fun create(
@@ -55,7 +55,7 @@ class JaicpDialerAPI {
                 localTimeFrom: String? = null,
                 localTimeTo: String? = null,
                 maxAttempts: Int? = null,
-                retryIntervalInMinutes: Int? = null
+                retryIntervalInMinutes: Int? = null,
             ) = RedialData(
                 startDateTime = startDateTime?.toEpochMilli(),
                 finishDateTime = finishDateTime?.toEpochMilli(),
@@ -75,7 +75,7 @@ class JaicpDialerAPI {
         localTimeFrom: String? = null,
         localTimeTo: String? = null,
         maxAttempts: Int? = null,
-        retryIntervalInMinutes: Int? = null
+        retryIntervalInMinutes: Int? = null,
     ) = redial(
         RedialData(
             startDateTime = startDateTime?.toEpochMilli(),
