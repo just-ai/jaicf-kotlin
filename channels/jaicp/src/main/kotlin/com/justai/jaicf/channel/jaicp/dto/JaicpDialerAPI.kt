@@ -160,6 +160,7 @@ class JaicpDialerAPI {
  */
 @Serializable
 data class AllowedTime(
+    val default: List<LocalTimeInterval>? = null,
     val mon: List<LocalTimeInterval>? = null,
     val tue: List<LocalTimeInterval>? = null,
     val wed: List<LocalTimeInterval>? = null,
@@ -167,7 +168,6 @@ data class AllowedTime(
     val fri: List<LocalTimeInterval>? = null,
     val sat: List<LocalTimeInterval>? = null,
     val sun: List<LocalTimeInterval>? = null,
-    val default: List<LocalTimeInterval>? = null
 ) {
     internal val intervals = listOf(mon, tue, wed, thu, fri, sat, sun, default)
 }

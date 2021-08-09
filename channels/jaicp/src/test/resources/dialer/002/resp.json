@@ -1,10 +1,21 @@
 {
   "data": {
     "dialer": {
-      "reportData": {
-        "propname": {
-          "value": "propvalue",
-          "order": null
+      "redial": {
+        "startDateTime": 1605189536000,
+        "finishDateTime": 1605189596000,
+        "allowedDays": ["mon", "thu", "wed"],
+        "maxAttempts": 5,
+        "retryIntervalInMinutes": 5,
+        "allowedTime": {
+          "default": [{
+            "localTimeFrom": "12:00",
+            "localTimeTo": "12:30"
+          }],
+          "wed": [{
+            "localTimeFrom": "14:00",
+            "localTimeTo": "15:30"
+          }]
         }
       }
     },
