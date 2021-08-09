@@ -179,10 +179,11 @@ data class AllowedTime(
     val thu: List<LocalTimeInterval>? = null,
     val fri: List<LocalTimeInterval>? = null,
     val sat: List<LocalTimeInterval>? = null,
-    val sun: List<LocalTimeInterval>? = null,
-) {
-    internal val intervals = listOf(mon, tue, wed, thu, fri, sat, sun, default)
-}
+    val sun: List<LocalTimeInterval>? = null
+)
+
+internal val AllowedTime.intervals
+    get() = listOf(default, mon, tue, wed, thu, fri, sat, sun)
 
 
 /**
@@ -225,7 +226,7 @@ private fun checkLocalTime(data: JaicpDialerAPI.RedialData) {
     val end = data.localTimeTo?.let { LocalTime.parse(it, formatter) }
     if (start != null && end != null) {
         require(start.isBefore(end)) {
-            "localTimeFrom cannot be higher then localTimeTo"
+            "localTimeFrom must be before localTimeTo"
         }
     }
 }
@@ -240,7 +241,7 @@ private fun checkAllowedTime(data: JaicpDialerAPI.RedialData) {
             val end = interval.localTimeTo.let { LocalTime.parse(it, formatter) }
 
             require(start.isBefore(end)) {
-                "localTimeFrom cannot be higher then localTimeTo of allowedTime"
+                "localTimeFrom must be before localTimeTo"
             }
         }
 }
