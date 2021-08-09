@@ -22,7 +22,7 @@ val RuEngine = BotEngine(
 val MainBotEngine = BotEngine(MainScenario, activators = arrayOf(RegexActivator))
 
 val MultilingualBotEngine = BotRoutingEngine(
-    main = MainBotEngine,
+    main = "main" to MainBotEngine,
     routables = mapOf("en" to EnEngine, "ru" to RuEngine)
 )
 
@@ -89,7 +89,7 @@ private val sc1 = Scenario {
 }
 
 val SampleRoutingEngine = BotRoutingEngine(
-    main = BotEngine(main),
+    main = "main" to BotEngine(main),
     routables = mapOf("sc1" to BotEngine(sc1))
 )
 ```

@@ -45,7 +45,7 @@ class NoRouteBackException : RuntimeException()
  *  }
  * }
  * private val router = BotRoutingEngine(
- *  main = BotEngine(main),
+ *  main = "default-router" to BotEngine(main),
  *  routables = mapOf("sc1" to BotEngine(sc1), "sc2" to BotEngine(sc2))
  *  )
  * ```
@@ -93,19 +93,6 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
     }
 
     /**
-     * Route current bot request to [BotRoutingEngine.main] engine. Next requests will be also send to [BotRoutingEngine.main].
-     *
-     * @param targetState target state for scenario in [BotRoutingEngine.main].
-     *
-     * @throws BotRequestRerouteException to reroute request using [BotRoutingEngine]
-     * @return [Nothing] as no request execution possible after invoking this method
-     *
-     * @see BotRoutingEngine
-     * @see BotRoutingEngine.main - main engine which processes requests by default.
-     * */
-    fun routeToMain(targetState: String? = null): Nothing = route(BotRoutingEngine.MAIN_ENGINE_NAME, targetState)
-
-    /**
      * Route client all next requests to specified [engineName].
      *
      * @param engineName target engine name specified in routables map in [BotRoutingEngine]
@@ -143,16 +130,6 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
     }
 
     /**
-     * Route client all next requests to [BotRoutingEngine.main] engine.
-     *
-     * @param targetState target state for scenario in [BotRoutingEngine.main].
-     *
-     * @see BotRoutingEngine
-     * @see BotRoutingEngine.main - main engine which processes requests by default.
-     * */
-    fun changeEngineToMain(targetState: String?) = changeEngine(BotRoutingEngine.MAIN_ENGINE_NAME, targetState)
-
-    /**
      * Checks if there is an engine in stack we can route to
      * */
     fun hasPreviousEngineInStack(): Boolean = botContext.routingContext.routingEngineStack.size > 1
@@ -176,7 +153,8 @@ data class BotRoutingContext(
     val dialogContextMap: MutableMap<String, DialogContext> = mutableMapOf(),
     val routingEngineStack: ArrayDeque<String> = ArrayDeque(),
     var targetState: String? = null,
-    var currentEngine: String = BotRoutingEngine.MAIN_ENGINE_NAME,
+    var currentEngine: String = "default-router",
+    var currentRoutingNode: String = "default-node"
 )
 
 /**

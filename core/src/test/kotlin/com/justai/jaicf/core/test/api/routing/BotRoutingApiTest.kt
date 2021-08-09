@@ -109,7 +109,7 @@ private val sc2 = Scenario {
 }
 
 private val router = BotRoutingEngine(
-    createEngine(main),
+    "main" to createEngine(main),
     mapOf("sc1" to createEngine(sc1), "sc2" to createEngine(sc2))
 )
 
@@ -124,7 +124,7 @@ class BotRoutingApiTest : BotTest(router) {
     @Test
     fun `02 should have main engine in stack`() {
         query("Test")
-        assertEquals(botContext.routingContext.routingEngineStack.pop(), BotRoutingEngine.MAIN_ENGINE_NAME)
+        assertEquals(botContext.routingContext.routingEngineStack.pop(), "main")
     }
 
     @Test

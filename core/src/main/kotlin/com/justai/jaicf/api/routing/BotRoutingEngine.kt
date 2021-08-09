@@ -39,7 +39,7 @@ import java.util.*
  *  }
  * }
  * private val router = BotRoutingEngine(
- *  main = BotEngine(main),
+ *  main = "default-router" to BotEngine(main),
  *  routables = mapOf("sc1" to BotEngine(sc1), "sc2" to BotEngine(sc2))
  *  )
  * ```
@@ -52,11 +52,13 @@ import java.util.*
  * @see BotRoutingApi scenario runtime api for routing.
  * */
 class BotRoutingEngine(
-    private val main: BotEngine,
+    main: Pair<String, BotEngine>,
     routables: Map<String, BotEngine>,
 ) : BotEngine(MOCK_SCENARIO), WithLogger {
 
-    private val routables: MutableMap<String, BotEngine> = routables.toMutableMap()
+    private var mainEngineName = main.first
+    private val mainEngine = main.second
+    val routingNodeDescriptor = RoutingNode(mainEngineName, mainEngine, routables)
 
     init {
         if (routables.isEmpty()) {
@@ -66,7 +68,11 @@ class BotRoutingEngine(
             error("Collections of routable botEngines must have single shared context manager instance")
         }
 
-        this.routables[MAIN_ENGINE_NAME] = main
+        routables.values.forEach { engine ->
+            if (engine is BotRoutingEngine) {
+                routingNodeDescriptor.children.add(engine.routingNodeDescriptor)
+            }
+        }
     }
 
     private fun processWithRouting(
@@ -81,11 +87,12 @@ class BotRoutingEngine(
         var botContext = botContext0
         val executionContext = executionContext0 ?: ExecutionContext(requestContext, null, botContext, request)
         setCurrentRoutingEngine(botContext, engineName)
-        botContext = applyNewDialogContext(botContext, engineName)
+        val dialogContext = botContext.routingContext.dialogContextMap.getOrDefault(engineName, DialogContext())
+        botContext = applyNewDialogContext(botContext, dialogContext)
 
         try {
             logger.info("Process route request: ${request.input} with routing for engine: $engineName")
-            val engine = routables[engineName] ?: error("No engine with name: $engineName")
+            val engine = routingNodeDescriptor.getEngine(engineName) ?: error("No engine with name: $engineName")
             engine.process(request, reactions, requestContext, botContext, executionContext)
         } catch (e: BotRequestRerouteException) {
             botContext.routingContext.dialogContextMap[engineName] = botContext.dialogContext
@@ -100,7 +107,7 @@ class BotRoutingEngine(
             )
         } finally {
             botContext.routingContext.dialogContextMap[engineName] = botContext.dialogContext
-            (contextManager ?: main.defaultContextManager).saveContext(botContext,
+            (contextManager ?: mainEngine.defaultContextManager).saveContext(botContext,
                 request,
                 response = null,
                 requestContext)
@@ -119,8 +126,8 @@ class BotRoutingEngine(
         }
     }
 
-    private fun applyNewDialogContext(ctx: BotContext, engineName: String): BotContext =
-        ctx.copy(dialogContext = ctx.routingContext.dialogContextMap.getOrDefault(engineName, DialogContext())).apply {
+    private fun applyNewDialogContext(ctx: BotContext, dialogContext: DialogContext): BotContext =
+        ctx.copy(dialogContext = dialogContext).apply {
             result = ctx.result
             client.putAll(ctx.client)
             session.putAll(ctx.session)
@@ -133,15 +140,33 @@ class BotRoutingEngine(
         requestContext: RequestContext,
         contextManager: BotContextManager?,
     ) {
-        val botContext = (contextManager ?: main.defaultContextManager).loadContext(request, requestContext)
-        val route = getCurrentRouting(botContext) ?: MAIN_ENGINE_NAME
+        val botContext = (contextManager ?: mainEngine.defaultContextManager).loadContext(request, requestContext)
+        val route = getCurrentRouting(botContext) ?: mainEngineName
         processWithRouting(request, reactions, requestContext, contextManager, botContext, route)
     }
 
     private fun getCurrentRouting(ctx: BotContext): String? = ctx.routingContext.routingEngineStack.peek()
 
     companion object {
-        const val MAIN_ENGINE_NAME = "com/justai/jaicf/api/routing/mainRoutingEngine"
         private val MOCK_SCENARIO = Scenario { }
     }
+
+    data class RoutingNode(
+        val mainEngineName: String,
+        val mainEngine: BotEngine,
+        val routables: Map<String, BotEngine> = mapOf(),
+        val children: MutableList<RoutingNode> = mutableListOf(),
+    ) {
+        fun getEngine(engineName: String): BotEngine? {
+            if (engineName == mainEngineName) return mainEngine
+            routables[engineName]?.let { return it }
+            children.forEach { child ->
+                if (child.mainEngineName == engineName) {
+                    return child.mainEngine
+                }
+            }
+            return null
+        }
+    }
 }
+
