@@ -52,7 +52,13 @@ class JaicpDialerAPI {
         val allowedTime: AllowedTime? = null,
     ) {
         companion object {
-            @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'create' method that accepts allowedTime")
+            @Deprecated(
+                "Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'create' method that accepts allowedTime",
+                ReplaceWith(
+                    "create(startDateTime, finishDateTime, allowedDays, AllowedTime(listOf(LocalTimeInterval(localTimeFrom, localTimeTo))), maxAttempts, retryIntervalInMinutes)",
+                    "com.justai.jaicf.channel.jaicp.dto.*"
+                )
+            )
             fun create(
                 startDateTime: Instant?,
                 finishDateTime: Instant?,
@@ -89,7 +95,13 @@ class JaicpDialerAPI {
         }
     }
 
-    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime")
+    @Deprecated(
+        "Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime",
+        ReplaceWith(
+            "redial(startDateTime, finishDateTime, allowedDays, AllowedTime(listOf(LocalTimeInterval(localTimeFrom, localTimeTo))), maxAttempts, retryIntervalInMinutes)",
+            "com.justai.jaicf.channel.jaicp.dto.*"
+        )
+    )
     internal fun redial(
         startDateTime: Instant?,
         finishDateTime: Instant?,

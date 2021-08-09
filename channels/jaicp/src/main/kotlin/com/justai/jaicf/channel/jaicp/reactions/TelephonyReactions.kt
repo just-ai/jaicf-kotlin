@@ -133,7 +133,12 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param maxAttempts max number of attempts to call client
      * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      * */
-    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime")
+    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime",
+        ReplaceWith(
+            "redial(startDateTime, finishDateTime, allowedDays, AllowedTime(listOf(LocalTimeInterval(localTimeFrom, localTimeTo))), maxAttempts, retryIntervalInMinutes)",
+            "com.justai.jaicf.channel.jaicp.dto.*"
+        )
+    )
     fun redial(
         startDateTime: Instant? = null,
         finishDateTime: Instant? = null,
@@ -211,7 +216,12 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param maxAttempts max number of attempts to call client
      * @param retryIntervalInMinutes interval between redial attempts. Must not be less than 1
      */
-    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime")
+    @Deprecated("Parameters 'localTimeFrom' and 'localTimeTo' are deprecated, use 'redial' method that accepts allowedTime",
+        ReplaceWith(
+            "redial(startRedialAfter, finishRedialAfter, allowedDays, AllowedTime(listOf(LocalTimeInterval(localTimeFrom, localTimeTo))), maxAttempts, retryIntervalInMinutes)",
+            "com.justai.jaicf.channel.jaicp.dto.*"
+        )
+    )
     fun redial(
         startRedialAfter: Duration,
         finishRedialAfter: Duration,
