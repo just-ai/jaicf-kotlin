@@ -2,7 +2,17 @@
   "data": {
     "dialer": {
       "callResult": "call ended",
-      "callResultPayload": "{\"result\":\"Ok\"}"
+      "callResultPayload": "{\"result\":\"Ok\"}",
+      "reportData": {
+        "smoking": {
+          "value": "i love it",
+          "order": null
+        }
+      },
+      "redial": {
+        "startDateTime": 1605189536000,
+        "maxAttempts": 5
+      }
     },
     "replies": [
       {

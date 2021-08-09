@@ -1,8 +1,12 @@
 {
   "data": {
     "dialer": {
-      "callResult": "call ended",
-      "callResultPayload": "{\"result\":\"Ok\"}"
+      "reportData": {
+        "propname": {
+          "value": "propvalue",
+          "order": null
+        }
+      }
     },
     "replies": [
       {
