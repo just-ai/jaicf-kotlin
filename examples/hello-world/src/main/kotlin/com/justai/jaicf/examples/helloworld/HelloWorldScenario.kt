@@ -46,7 +46,7 @@ val HelloWorldScenario = Scenario {
                 reactions.run {
                     image("https://www.bluecross.org.uk/sites/default/files/d8/assets/images/118809lprLR.jpg")
                     sayRandom("Hello $name!", "Hi $name!", "Glad to hear you $name!")
-                    buttons("Mew" toState "/mew", "Wake up" toState "wakeup")
+                    buttons("Mew" toState "/mew", "Wake up" toState "/wakeup")
                     aimybox?.endConversation()
                 }
             }
