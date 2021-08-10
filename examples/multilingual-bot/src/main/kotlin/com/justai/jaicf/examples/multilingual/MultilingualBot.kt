@@ -29,6 +29,6 @@ val mainAccessToken: String = System.getenv("JAICP_API_TOKEN") ?: Properties().r
 val MainBotEngine = BotEngine(MainScenario, activators = arrayOf(RegexActivator))
 
 val MultilingualBotEngine = BotRoutingEngine(
-    main = MainBotEngine,
+    main = "main" to MainBotEngine,
     routables = mapOf("en" to EnEngine, "ru" to RuEngine)
 )

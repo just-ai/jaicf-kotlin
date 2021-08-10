@@ -1,5 +1,6 @@
 package com.justai.jaicf.api.routing
 
+import com.justai.jaicf.api.routing.BotRoutingContext.*
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.DialogContext
@@ -8,11 +9,11 @@ import com.justai.jaicf.model.state.StatePath
 import java.util.*
 
 /**
- * An exception thrown to re-route current BotRequest to specified [targetEngineName]
+ * An exception thrown to re-route current BotRequest to specified engine via [rerouteRequest]
  *
- * @param [targetEngineName] an engine with specified name provided in [BotRoutingEngine] routables map.
+ * @param [rerouteRequest] a request with specified engine in [BotRoutingEngine] routables map.
  * */
-data class BotRequestRerouteException(val targetEngineName: String) : RuntimeException()
+data class BotRequestRerouteException(val rerouteRequest: RoutingRequest) : RuntimeException()
 
 /**
  * An exception thrown when there is no previous engine to route back.
@@ -67,7 +68,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * */
     fun route(engineName: String, targetState: String? = null): Nothing {
         changeEngine(engineName, targetState)
-        throw BotRequestRerouteException(engineName)
+        throw BotRequestRerouteException(RoutingRequest(engineName))
     }
 
     /**
@@ -81,13 +82,13 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
     fun routeBack(): Nothing {
         val routingContext = botContext.routingContext
         try {
-            val curr = routingContext.routingEngineStack.pop()
-            val target = routingContext.routingEngineStack.pop()
+            val curr = routingContext.routingStack.pop()
+            val target = routingContext.routingStack.pop()
             logger.info("Routing request back from engine: $curr to engine: $target")
             throw BotRequestRerouteException(target)
         } catch (e: NoSuchElementException) {
             logger.warn("Failed to change route back as there is no engines left in stack")
-            routingContext.routingEngineStack.push(routingContext.currentEngine)
+            routingContext.routingStack.push(RoutingRequest(requireNotNull(routingContext.currentEngine)))
             throw NoRouteBackException()
         }
     }
@@ -108,7 +109,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
             botContext.routingContext.targetState = resolved
         }
 
-        botContext.routingContext.routingEngineStack.push(engineName)
+        botContext.routingContext.routingStack.push(RoutingRequest(engineName, botContext.routingContext.currentRouter))
     }
 
     /**
@@ -118,10 +119,10 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * */
     fun changeEngineBack() {
         val routingContext = botContext.routingContext
-        val curr = routingContext.routingEngineStack.pop()
-        val target = routingContext.routingEngineStack.peek()
+        val curr = routingContext.routingStack.pop()
+        val target = routingContext.routingStack.peek()
         if (target == null) {
-            routingContext.routingEngineStack.push(curr)
+            routingContext.routingStack.push(curr)
             logger.warn("Failed to change bot engine back as there is no engines left in stack")
             throw NoRouteBackException()
         } else {
@@ -132,13 +133,13 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
     /**
      * Checks if there is an engine in stack we can route to
      * */
-    fun hasPreviousEngineInStack(): Boolean = botContext.routingContext.routingEngineStack.size > 1
+    fun hasPreviousEngineInStack(): Boolean = botContext.routingContext.routingStack.size > 1
 
     /**
      * Cleans routing context. Deletes dialog contexts for other bots visited by client and removes engines from stack.
      * */
     fun cleanRoutingContext() {
-        botContext.routingContext.routingEngineStack.clear()
+        botContext.routingContext.routingStack.clear()
         botContext.routingContext.dialogContextMap.clear()
     }
 }
@@ -151,14 +152,19 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
  * */
 data class BotRoutingContext(
     val dialogContextMap: MutableMap<String, DialogContext> = mutableMapOf(),
-    val routingEngineStack: ArrayDeque<String> = ArrayDeque(),
+    val routingStack: ArrayDeque<RoutingRequest> = ArrayDeque(),
     var targetState: String? = null,
-    var currentEngine: String = "default-router",
-    var currentRoutingNode: String = "default-node"
+    var currentEngine: String? = null,
+    var currentRouter: String? = null,
+)
+
+data class RoutingRequest(
+    val engine: String,
+    val routeBackTo: String? = null,
 )
 
 /**
- * A helpful extension to get [BotRoutingContext] from BotEngine.
+ * A helpful extension to get [BotRoutingContext] from BotContext.
  *
  * @see BotRoutingContext
  * @see BotRoutingApi
