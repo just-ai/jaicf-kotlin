@@ -25,6 +25,9 @@ class HttpBotRequest(
     fun firstHeader(name: String) = headers[name]?.first()
 
     fun firstParameter(name: String) = parameters[name]?.first()
+
+    override fun toString() =
+        "HttpBotRequest(stream=$stream, headers=$headers, parameters=$parameters, requestMetadata=$requestMetadata"
 }
 
 fun <R> InputStream.runAndReset(action: InputStream.() -> R): R {
