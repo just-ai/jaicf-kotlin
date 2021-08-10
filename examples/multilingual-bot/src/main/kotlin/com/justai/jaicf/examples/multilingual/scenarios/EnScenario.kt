@@ -37,7 +37,7 @@ val EnScenario = Scenario {
             regex("Select language")
         }
         action {
-            routing.routeToMain(targetState = "/Main")
+            routing.route("main", targetState = "/Main")
         }
     }
 

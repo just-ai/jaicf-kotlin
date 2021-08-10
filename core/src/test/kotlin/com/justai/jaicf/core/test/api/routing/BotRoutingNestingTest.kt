@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 
 private fun createEngineWithFallback(answer: String) = BotEngine(Scenario {
-    state("changeEngine") {
+    state("changeEngine", noContext = true) {
         activators {
             regex("changeEngine .*")
         }
@@ -22,12 +22,23 @@ private fun createEngineWithFallback(answer: String) = BotEngine(Scenario {
         }
     }
 
-    state("changeEngineBack") {
+    state("changeEngineBack", noContext = true) {
         activators {
             regex("changeEngineBack")
         }
         action {
             routing.changeEngineBack()
+            reactions.say("Changing engine back")
+        }
+    }
+
+    state("parent") {
+        activators { regex("parent") }
+        action { reactions.say("parent") }
+
+        state("child") {
+            activators { regex("child") }
+            action { reactions.say("child") }
         }
     }
 
@@ -49,11 +60,12 @@ private val t1 = BotRoutingEngine(
     )
 )
 
+
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
-class HierarchicalRoutingTest : BotTest(t1) {
+class BotRoutingNestingTest : BotTest(t1) {
 
     @Test
-    fun `01 should answer in tests like a normal botEngine`() {
+    fun `01 should support nested bot routing engines`() {
         query("test") responds "t1-main"
 
         query("changeEngine echo") responds "Changing bot to echo"
@@ -65,5 +77,29 @@ class HierarchicalRoutingTest : BotTest(t1) {
         query("changeEngine echo") responds "Changing bot to echo"
         query("test") responds "t2-echo"
 
+        query("changeEngineBack") responds "Changing engine back"
+        query("test") responds "t2-main"
+
+        query("changeEngineBack") responds "Changing engine back"
+        query("test") responds "t1-echo"
+
+        query("changeEngineBack") responds "Changing engine back"
+        query("test") responds "t1-main"
+    }
+
+    @Test
+    fun `02 should keep dialogContext`() {
+        query("test") responds "t1-main"
+        query("parent") responds "parent"
+        query("child") responds "child"
+
+        query("changeEngine echo") responds "Changing bot to echo"
+        query("test") responds "t1-echo"
+
+        query("changeEngine t2-main") responds "Changing bot to t2-main"
+        query("test") responds "t2-main"
+
+        query("changeEngine t1-main") responds "Changing bot to t1-main"
+        query("child") responds "child"
     }
 }

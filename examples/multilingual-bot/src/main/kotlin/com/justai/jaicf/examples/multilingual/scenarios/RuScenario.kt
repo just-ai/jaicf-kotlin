@@ -37,7 +37,7 @@ val RuScenario = Scenario {
             regex("Выбор языка")
         }
         action {
-            routing.routeToMain(targetState = "/Main")
+            routing.route("main", targetState = "/Main")
         }
     }
 
