@@ -68,7 +68,7 @@ class MongoBotContextManagerTestWithExternalDatabase : MongoBotContextManagerTes
 
     @BeforeAll
     internal override fun setup() {
-        val client = MongoClients.create("mongodb://localhost:12701")
+        val client = MongoClients.create("mongodb://localhost:27017")
         manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
     }
 }
