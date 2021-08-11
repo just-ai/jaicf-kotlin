@@ -3,14 +3,22 @@ package com.justai.jaicf.core.test.api.routing
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.routing.BotRoutingEngine
+import com.justai.jaicf.api.routing.NoRouteBackException
 import com.justai.jaicf.api.routing.routing
 import com.justai.jaicf.builder.Scenario
+import com.justai.jaicf.hook.ActionErrorHook
 import com.justai.jaicf.test.BotTest
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 
 private fun createEngineWithFallback(answer: String) = BotEngine(Scenario {
+    handle<ActionErrorHook> {
+        if (exception.exception is NoRouteBackException){
+            reactions.say("No route back available")
+        }
+    }
+
     state("changeEngine", noContext = true) {
         activators {
             regex("changeEngine .*")
@@ -101,5 +109,39 @@ class BotRoutingNestingTest : BotTest(t1) {
 
         query("changeEngine t1-main") responds "Changing bot to t1-main"
         query("child") responds "child"
+    }
+
+    @Test
+    fun `03 should change engines in non-linear routes`() {
+        // get some routing stack
+        query("changeEngine t2-main")
+        query("test") responds "t2-main"
+
+        query("changeEngine echo")
+        query("test") responds "t2-echo"
+
+        query("changeEngine t1-main")
+        query("test") responds "t1-main"
+
+        query("changeEngine echo")
+        query("test") responds "t1-echo"
+
+        // and get back
+        query("changeEngineBack")
+        query("test") responds "t1-main"
+
+        query("changeEngineBack")
+        query("test") responds "t2-echo"
+
+        query("changeEngineBack")
+        query("test") responds "t2-main"
+
+        query("changeEngineBack")
+        query("test") responds "t1-main"
+
+        // check handler
+        query("changeEngineBack") responds "No route back available"
+        query("test") responds "t1-main"
+
     }
 }

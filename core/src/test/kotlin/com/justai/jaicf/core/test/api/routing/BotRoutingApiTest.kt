@@ -124,13 +124,13 @@ class BotRoutingApiTest : BotTest(router) {
     @Test
     fun `02 should have main engine in stack`() {
         query("Test")
-        assertEquals(botContext.routingContext.routingStack.pop().engine, "main")
+        assertEquals(botContext.routingContext.routingStack.pop().toEngine, "main")
     }
 
     @Test
     fun `03 should route`() {
         query("route sc1") hasAnswer "Routing current request to sc1" hasAnswer "SC1: Fallback"
-        assertEquals(botContext.routingContext.routingStack.pop().engine, "sc1")
+        assertEquals(botContext.routingContext.routingStack.pop().toEngine, "sc1")
     }
 
     @Test
