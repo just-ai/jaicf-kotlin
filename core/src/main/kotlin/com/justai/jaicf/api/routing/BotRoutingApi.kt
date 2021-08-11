@@ -68,7 +68,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * */
     fun route(engineName: String, targetState: String? = null): Nothing {
         changeEngine(engineName, targetState)
-        throw BotRequestRerouteException(RoutingRequest(engineName))
+        throw BotRequestRerouteException(RoutingRequest(engineName, botContext.routingContext.currentRouter))
     }
 
     /**
@@ -88,7 +88,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
             throw BotRequestRerouteException(target)
         } catch (e: NoSuchElementException) {
             logger.warn("Failed to change route back as there is no engines left in stack")
-            routingContext.routingStack.push(RoutingRequest(requireNotNull(routingContext.currentEngine)))
+            routingContext.routingStack.push(RoutingRequest(requireNotNull(routingContext.currentEngine), routingContext.currentRouter))
             throw NoRouteBackException()
         }
     }
@@ -158,9 +158,20 @@ data class BotRoutingContext(
     var currentRouter: String? = null,
 )
 
+/**
+ * Request to route execution from one engine to another using [BotRoutingEngine]
+ *
+ * @param toEngine target engine to process next or current request
+ * @param fromEngine engine request is sent from.
+ *
+ * @see BotRoutingEngine
+ * @see BotRoutingApi
+ * @see BotRoutingContext
+ * @see BotRequestRerouteException
+ * */
 data class RoutingRequest(
-    val engine: String,
-    val routeBackTo: String? = null,
+    val toEngine: String,
+    val fromEngine: String? = null,
 )
 
 /**
