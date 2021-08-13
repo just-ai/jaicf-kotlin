@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      mongo: external
+      MONGO_URL: mongodb://localhost:27017
 
     steps:
       - uses: actions/checkout@v2
