@@ -63,17 +63,18 @@ abstract class MongoBotContextManagerTestBase {
     }
 }
 
-@EnabledIfEnvironmentVariable(named = "mongo", matches = "external")
+@EnabledIfEnvironmentVariable(named = "CI", matches = "true")
 class MongoBotContextManagerTestWithExternalDatabase : MongoBotContextManagerTestBase() {
 
     @BeforeAll
     internal override fun setup() {
-        val client = MongoClients.create("mongodb://localhost:27017")
+        val url = System.getenv("MONGO_URL")
+        val client = MongoClients.create(url)
         manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
     }
 }
 
-@DisabledIfEnvironmentVariable(named = "mongo", matches = "external")
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class MongoBotContextManagerTestWithEmbeddedMongo : MongoBotContextManagerTestBase() {
 
     private lateinit var mongo: MongodExecutable
