@@ -162,7 +162,7 @@ data class BotRoutingContext(
  * Request to route execution from one engine to another using [BotRoutingEngine]
  *
  * @param toEngine target engine to process next or current request
- * @param fromEngine engine request is sent from.
+ * @param fromRouter router name request is sent from.
  *
  * @see BotRoutingEngine
  * @see BotRoutingApi
@@ -171,7 +171,7 @@ data class BotRoutingContext(
  * */
 data class RoutingRequest(
     val toEngine: String,
-    val fromEngine: String? = null,
+    val fromRouter: String? = null,
 )
 
 /**
