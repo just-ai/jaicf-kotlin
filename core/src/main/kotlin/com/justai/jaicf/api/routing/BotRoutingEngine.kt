@@ -48,7 +48,7 @@ import java.util.*
  *
  * See more usage examples at examples/multilingual-bot.
  *
- * @param main main engine to process requests.
+ * @param main a [BotEngine] implementation with name, this name will be used as this router's name
  * @param routables a map of engines with names to perform route from and to.
  *
  * @see BotRoutingApi scenario runtime api for routing.
@@ -73,6 +73,11 @@ class BotRoutingEngine(
         if (routables.values.distinctBy { it.defaultContextManager }.size > 1) {
             error("Collections of routable botEngines must have single shared context manager instance")
         }
+        if (main.second is BotRoutingEngine) {
+            error("Main bot cannot be an instance of BotRoutingEngine")
+        }
+        // TODO: Recursive validation of children routing engines to prevent naming clash
+
         routables.values.forEach { engine ->
             if (engine is BotRoutingEngine) {
                 routerDescriptor.children.add(engine.routerDescriptor)
@@ -93,7 +98,7 @@ class BotRoutingEngine(
     ) {
 
         val engineName = routeRequest.toEngine
-        val lastRouter = routeRequest.fromEngine ?: routerName
+        val lastRouter = routeRequest.fromRouter ?: routerName
         logger.info("Process route request: ${request.input} with routing for engine: $engineName and router: $lastRouter")
 
         val errorHandlingContext = BotRoutingErrorHandlerContext(
