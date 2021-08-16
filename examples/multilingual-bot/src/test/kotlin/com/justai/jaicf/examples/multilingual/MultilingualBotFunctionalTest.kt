@@ -2,8 +2,10 @@ package com.justai.jaicf.examples.multilingual
 
 import com.justai.jaicf.test.BotTest
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 
-class MultilingualBotTest : BotTest(MultilingualBotEngine) {
+@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
+class MultilingualBotFunctionalTest : BotTest(MultilingualBotEngine) {
 
     @Test
     fun `english scenario integrational test`() {
