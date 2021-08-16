@@ -46,6 +46,16 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
             ?.let(JSON::decodeFromJsonElement)
 
     /**
+     * Returns the history of completed and available call attempts for the current phone number.
+     * Returns an object of [DialHistory] having information about call attempts.
+     *
+     * @see [DialHistory]
+     */
+    val dialHistory: DialHistory?
+        get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("callScenarioData")
+            ?.jsonObject?.get("callAttemptsHistory")?.let(JSON::decodeFromJsonElement)
+
+    /**
      * Returns the dial schedule of current phone number. Returned object has two properties, allowedDays and allowedTime.
      * Works only when the call was created using the Calls API with a custom schedule of allowed call time intervals.
      */
@@ -105,6 +115,29 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
 data class Schedule(
     val allowedDays: List<String>? = null,
     val allowedTime: AllowedTime? = null,
+)
+
+/**
+ * Contains the history of completed and available call attempts for the current phone number for the current series and for the phone number.
+ * Several call attempts in a row form a series. If the bot reaches the customer and schedules a new call using the
+ * `redial` method, the series is reset, and new call attempts are made during a new series.
+ *
+ * @property completedAttempts is the number of call attempts already made during the current series.
+ * If a new series is scheduled from the script, the counter is reset to 0.
+ *
+ * @property availableAttempts is the number of call attempts available during the current series.
+ * This property can be set when creating a call campaign, can be added to a campaign through the Calls API, and from a script using the `redial` method.
+ *
+ * @property completedAttemptsToPhone is the total number of all call attempts made for the phone number. It never gets reset.
+ *
+ * @property availableAttemptsToPhone is the maximum number of call attempts allowed for the phone number.
+ */
+@Serializable
+data class DialHistory(
+    var completedAttempts: Int,
+    var completedAttemptsToPhone: Int,
+    var availableAttempts: Int,
+    var availableAttemptsToPhone: Int
 )
 
 data class TelephonyQueryRequest(
