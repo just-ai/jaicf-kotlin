@@ -3,14 +3,12 @@ package com.justai.jaicf.core.test.api.routing
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.api.routing.BotRoutingEngine
-import com.justai.jaicf.api.routing.handlers.BotRoutingErrorHandler
 import com.justai.jaicf.api.routing.routing
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.test.BotTest
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.junit.jupiter.api.assertThrows
 
 private fun createEngineWithFallback(answer: String) = BotEngine(Scenario {
     state("changeEngine", noContext = true) {
@@ -24,8 +22,7 @@ private val t2 = BotRoutingEngine(
     main = "t2-main" to createEngineWithFallback("t2-main"),
     routables = mapOf(
         "echo" to createEngineWithFallback("t2-echo")
-    ),
-    routingErrorHandler = BotRoutingErrorHandler.FailFast
+    )
 )
 
 private val t1 = BotRoutingEngine(
@@ -33,8 +30,7 @@ private val t1 = BotRoutingEngine(
     routables = mapOf(
         "echo" to createEngineWithFallback("t1-echo"),
         "t2" to t2,
-    ),
-    routingErrorHandler = BotRoutingErrorHandler.RollbackToMainEngine
+    )
 )
 
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
@@ -47,21 +43,9 @@ class BotRoutingErrorHandlingTest : BotTest(t1) {
     }
 
     @Test
-    fun `02 should fail fast with selected handler`() {
+    fun `02 should select mainEngine for nested router`() {
         query("changeEngine t2-main")
         query("changeEngine unknown")
-        assertThrows<IllegalStateException> {
-            query("test")
-        }
-    }
-
-    @Test
-    fun `03 routables should use same handler as their parent`() {
-        query("changeEngine t2-main")
-        query("changeEngine echo")
-        query("changeEngine unknown")
-        assertThrows<IllegalStateException> {
-            query("test")
-        }
+        query("test") responds "t2-main"
     }
 }

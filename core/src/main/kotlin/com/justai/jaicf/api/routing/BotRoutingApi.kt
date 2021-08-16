@@ -1,6 +1,5 @@
 package com.justai.jaicf.api.routing
 
-import com.justai.jaicf.api.routing.BotRoutingContext.*
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.DialogContext
