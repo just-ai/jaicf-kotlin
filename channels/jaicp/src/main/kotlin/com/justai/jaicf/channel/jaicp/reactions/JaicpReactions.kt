@@ -11,6 +11,7 @@ import com.justai.jaicf.logging.EndSessionReaction
 import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
@@ -22,7 +23,7 @@ open class JaicpReactions : Reactions() {
 
     internal val dialer by lazy { JaicpDialerAPI() }
 
-    protected val responseData: MutableMap<String, JsonObject> = mutableMapOf()
+    protected val responseData: MutableMap<String, JsonElement> = mutableMapOf()
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 

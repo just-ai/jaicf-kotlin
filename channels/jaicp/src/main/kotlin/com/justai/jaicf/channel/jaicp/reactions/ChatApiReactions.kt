@@ -12,6 +12,7 @@ import com.justai.jaicf.logging.ImageReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
 val Reactions.chatapi
@@ -48,9 +49,9 @@ class ChatApiReactions(
         return AudioReaction.create(url)
     }
 
-    fun addResponseData(data: Map<String, JsonObject>) = responseData.putAll(data)
+    fun addResponseData(data: Map<String, JsonElement>) = responseData.putAll(data)
 
-    fun addResponseData(key: String, value: JsonObject) = addResponseData(mapOf(key to value))
+    fun addResponseData(key: String, value: JsonElement) = addResponseData(mapOf(key to value))
 
-    fun addResponseData(element: Pair<String, JsonObject>) = addResponseData(mapOf(element.first to element.second))
+    fun addResponseData(element: Pair<String, JsonElement>) = addResponseData(mapOf(element.first to element.second))
 }
