@@ -2,8 +2,6 @@ package com.justai.jaicf.api.routing
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.api.routing.handlers.BotRoutingErrorHandler
-import com.justai.jaicf.api.routing.handlers.BotRoutingErrorHandlerContext
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
@@ -49,22 +47,20 @@ import java.util.*
  * See more usage examples at examples/multilingual-bot.
  *
  * @param main a [BotEngine] implementation with name, this name will be used as this router's name
- * @param routables a map of engines with names to perform route from and to.
+ * @param routables a map of engines with names to perform route from and to.][]
  *
  * @see BotRoutingApi scenario runtime api for routing.
  * */
 class BotRoutingEngine(
     main: Pair<String, BotEngine>,
     routables: Map<String, BotEngine>,
-    routingErrorHandler: BotRoutingErrorHandler = BotRoutingErrorHandler.RollbackToMainEngine,
 ) : BotEngine(MOCK_SCENARIO), WithLogger {
 
-    private var routerName = main.first
-    private val routerDefaultEngine = main.second
-    val routerDescriptor = BotRouterDescriptor(routerName,
-        routerDefaultEngine,
-        routables.toMutableMap(),
-        errorHandler = routingErrorHandler)
+    var routerName = main.first
+    val routerDefaultEngine = main.second
+    internal val routables: MutableMap<String, BotEngine> = routables.toMutableMap()
+    internal val children: MutableList<BotRoutingEngine> = mutableListOf()
+    internal var parent: BotRoutingEngine? = null
 
     init {
         if (routables.isEmpty()) {
@@ -80,11 +76,11 @@ class BotRoutingEngine(
 
         routables.values.forEach { engine ->
             if (engine is BotRoutingEngine) {
-                routerDescriptor.children.add(engine.routerDescriptor)
-                engine.routerDescriptor.parent = routerDescriptor
+                children.add(engine)
+                engine.parent = this
             }
         }
-        routerDescriptor.routables[routerName] = routerDefaultEngine
+        this.routables[routerName] = routerDefaultEngine
     }
 
     private fun processWithRouting(
@@ -101,33 +97,17 @@ class BotRoutingEngine(
         val lastRouter = routeRequest.fromRouter ?: routerName
         logger.info("Process route request: ${request.input} with routing for engine: $engineName and router: $lastRouter")
 
-        val errorHandlingContext = BotRoutingErrorHandlerContext(
-            request,
-            reactions,
-            requestContext,
-            contextManager,
-            botContext0,
-            routeRequest,
-            executionContext0,
-            null
-        )
-
-        var descriptor = routerDescriptor.getDescriptorRecursive(lastRouter)
-            ?: routerDescriptor.errorHandler.handleMissingRouter(lastRouter, errorHandlingContext)
-        errorHandlingContext.routerDescriptor = descriptor
-        if (engineName in descriptor.childrenNames) {
-            descriptor = routerDescriptor.getChildDescriptor(engineName)
-                ?: routerDescriptor.errorHandler.handleMissingRouter(lastRouter, errorHandlingContext)
-        } else if (engineName == descriptor.parent?.routerName) {
-            descriptor = descriptor.getParentDescriptor()
-                ?: routerDescriptor.errorHandler.handleMissingRouter(lastRouter, errorHandlingContext)
+        var router = getRouterRecursive(lastRouter) ?: this
+        if (engineName in router.childrenNames) {
+            router = getChildDescriptor(engineName) ?: router
+        } else if (engineName == router.parent?.routerName) {
+            router = router.getParentDescriptor() ?: router
         }
 
-        val engine = descriptor.routables[engineName]
-            ?: descriptor.errorHandler.handleMissingEngine(engineName, errorHandlingContext)
-        val dialogContext = botContext0.getDialogContext(descriptor.routerName, engineName)
+        val engine = router.routables[engineName] ?: router.routerDefaultEngine
+        val dialogContext = botContext0.getDialogContext(router.routerName, engineName)
         val botContext = botContext0
-            .withCurrentRoutingEngine(descriptor, engineName)
+            .withCurrentRoutingEngine(router, engineName)
             .withNewDialogContext(dialogContext)
 
         val executionContext = executionContext0 ?: ExecutionContext(requestContext, null, botContext, request)
@@ -166,16 +146,32 @@ class BotRoutingEngine(
 
     private fun getCurrentRouting(ctx: BotContext): RoutingRequest? = ctx.routingContext.routingStack.peek()
 
+    private fun getChildDescriptor(router: String): BotRoutingEngine? =
+        children.find { it.routerName == router }
+
+    private fun getParentDescriptor(): BotRoutingEngine? = parent
+
+    private fun getRouterRecursive(router: String): BotRoutingEngine? {
+        if (router == routerName) return this
+        children.forEach { child ->
+            if (child.routerName == router) return child
+            child.getRouterRecursive(router)?.let { return it }
+        }
+        return null
+    }
+
+    private val childrenNames get() = children.map { it.routerName }
+
     companion object {
         private val MOCK_SCENARIO = Scenario { }
     }
 }
 
 
-private fun BotContext.withCurrentRoutingEngine(descriptor: BotRouterDescriptor, engineName: String) = apply {
+private fun BotContext.withCurrentRoutingEngine(router: BotRoutingEngine, engineName: String) = apply {
     routingContext.currentEngine = engineName
-    routingContext.currentRouter = descriptor.routerName
-    val routingRecord = RoutingRequest(engineName, descriptor.routerName)
+    routingContext.currentRouter = router.routerName
+    val routingRecord = RoutingRequest(engineName, router.routerName)
     try {
         val curr: RoutingRequest? = routingContext.routingStack.peek()
         if (curr?.toEngine != engineName) {
@@ -199,43 +195,4 @@ private fun BotContext.getDialogContext(router: String, engine: String): DialogC
 
 private fun BotContext.saveDialogContext(router: String, engine: String) {
     routingContext.dialogContextMap["$router-$engine"] = dialogContext
-}
-
-/**
- * Descriptor for [BotRoutingEngine]
- *
- * @param routerName name of current [BotRoutingEngine]
- * @param mainEngine of current [BotRoutingEngine]
- * @param routables a map of named [BotEngine]s developer can route requests to
- * @param children list of derived [BotRoutingEngine]s
- * @param errorHandler a handler invoked on exceptions in [BotRoutingEngine]
- * */
-data class BotRouterDescriptor(
-    val routerName: String,
-    val mainEngine: BotEngine,
-    val routables: MutableMap<String, BotEngine> = mutableMapOf(),
-    val children: MutableList<BotRouterDescriptor> = mutableListOf(),
-    val errorHandler: BotRoutingErrorHandler,
-) {
-    internal var parent: BotRouterDescriptor? = null
-
-    internal fun getChildDescriptor(router: String): BotRouterDescriptor? =
-        children.find { it.routerName == router }
-
-    internal fun getDescriptorRecursive(router: String): BotRouterDescriptor? {
-        return getRouterRecursive(router)
-    }
-
-    internal fun getParentDescriptor(): BotRouterDescriptor? = parent
-
-    private fun getRouterRecursive(router: String): BotRouterDescriptor? {
-        if (router == routerName) return this
-        children.forEach { child ->
-            if (child.routerName == router) return child
-            child.getRouterRecursive(router)?.let { return it }
-        }
-        return null
-    }
-
-    val childrenNames get() = children.map { it.routerName }
 }
