@@ -9,11 +9,7 @@ import org.mapdb.DBMaker
 import org.mapdb.Serializer
 
 @Deprecated(
-    "MapDbBotContextManager is deprecated. Use JacksonMapDbBotContextManager instead",
-    ReplaceWith(
-        "JacksonMapDbBotContextManager(dbFilePath)",
-        "com.justai.jaicf.context.manager.mapdb.JacksonMapDbBotContextManager"
-    )
+    "MapDbBotContextManager is deprecated. Use JacksonMapDbBotContextManager with the new dbFilePath instead, because the format of the old base is incompatible with the new"
 )
 class MapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
 
@@ -37,7 +33,7 @@ class MapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
         response: BotResponse?,
         requestContext: RequestContext
     ) {
-        map[botContext.clientId] = BotContextModel.create(botContext)
+        map[botContext.clientId] = BotContextModel(botContext)
         db.commit()
     }
 
