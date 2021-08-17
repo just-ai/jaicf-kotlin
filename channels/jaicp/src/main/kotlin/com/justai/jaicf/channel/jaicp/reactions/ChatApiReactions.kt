@@ -13,7 +13,6 @@ import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 
 val Reactions.chatapi
     get() = this as? ChatApiReactions
@@ -51,7 +50,7 @@ class ChatApiReactions(
 
     fun addResponseData(data: Map<String, JsonElement>) = responseData.putAll(data)
 
-    fun addResponseData(key: String, value: JsonElement) = addResponseData(mapOf(key to value))
+    fun addResponseData(key: String, value: JsonElement) = addResponseData(key to value)
 
-    fun addResponseData(element: Pair<String, JsonElement>) = addResponseData(mapOf(element.first to element.second))
+    fun addResponseData(element: Pair<String, JsonElement>) = addResponseData(mapOf(element))
 }
