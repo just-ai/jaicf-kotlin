@@ -4,10 +4,20 @@ import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.mapdb.MapDbBotContextManager
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import java.nio.file.Files
+import java.nio.file.Paths
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MapDbBotContextManagerTest {
+
+    @AfterAll
+    internal fun shutdown() {
+        Files.deleteIfExists(Paths.get(".mapdb"))
+    }
 
     @Test
     fun testWithTempFile() {
@@ -37,6 +47,7 @@ class MapDbBotContextManagerTest {
 
         val result = MapDbBotContextManager(".mapdb").run {
             loadContext(EventBotRequest(context.clientId, "event"), RequestContext.DEFAULT)
+                .also { close() }
         }
 
         assertEquals(context.result, result.result)

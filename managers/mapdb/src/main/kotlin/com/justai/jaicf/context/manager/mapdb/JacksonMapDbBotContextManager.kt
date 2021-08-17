@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import org.mapdb.DBMaker
@@ -28,7 +29,7 @@ class JacksonMapDbBotContextManager(dbFilePath: String? = null) : BotContextMana
 
     override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
         val json = map[request.clientId] ?: return BotContext(request.clientId)
-        val model = mapper.readValue<BotContextModel>(json)
+        val model = mapper.readValue<JacksonBotContextModel>(json)
 
         return BotContext(request.clientId, model.dialogContext).apply {
             result = model.result
@@ -43,10 +44,26 @@ class JacksonMapDbBotContextManager(dbFilePath: String? = null) : BotContextMana
         response: BotResponse?,
         requestContext: RequestContext
     ) {
-        val model = BotContextModel.create(botContext)
+        val model = JacksonBotContextModel.create(botContext)
         map[botContext.clientId] = mapper.writeValueAsString(model)
         db.commit()
     }
 
     fun close() = db.close()
+}
+
+private class JacksonBotContextModel {
+    var result: Any? = null
+    lateinit var dialogContext: DialogContext
+    lateinit var client: Map<String, Any?>
+    lateinit var session: Map<String, Any?>
+
+    companion object {
+        fun create(botContext: BotContext) = JacksonBotContextModel().apply {
+            dialogContext = botContext.dialogContext
+            result = botContext.result
+            client = botContext.client.toMap()
+            session = botContext.session.toMap()
+        }
+    }
 }
