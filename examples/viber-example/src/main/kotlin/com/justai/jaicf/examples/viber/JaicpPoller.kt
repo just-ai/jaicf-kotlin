@@ -13,7 +13,7 @@ fun main() {
             botApi = viberTestBot,
             accessToken = accessToken,
             channels = listOf(
-                ViberChannel.Factory()
+                ViberChannel
             )
         ).runBlocking()
     }

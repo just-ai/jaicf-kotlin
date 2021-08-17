@@ -25,8 +25,8 @@ fun main() {
                 FacebookChannel,
                 AimyboxChannel,
                 AlexaChannel,
-                ViberChannel.Factory(),
-                ActionsFulfillmentDialogflow()
+                ViberChannel,
+                ActionsFulfillmentDialogflow
             )
         ).runBlocking()
     }

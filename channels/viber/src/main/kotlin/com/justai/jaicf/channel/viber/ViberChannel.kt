@@ -16,14 +16,21 @@ import com.justai.jaicf.channel.viber.sdk.api.ViberApi
 import com.justai.jaicf.channel.viber.sdk.api.ViberHttpClient
 import com.justai.jaicf.channel.viber.sdk.api.ViberKtorClient
 import com.justai.jaicf.channel.viber.sdk.asViberRequest
-import com.justai.jaicf.channel.viber.sdk.event.*
+import com.justai.jaicf.channel.viber.sdk.event.IncomingConversationStartedEvent
+import com.justai.jaicf.channel.viber.sdk.event.IncomingDeliveredEvent
+import com.justai.jaicf.channel.viber.sdk.event.IncomingFailedEvent
+import com.justai.jaicf.channel.viber.sdk.event.IncomingMessageEvent
+import com.justai.jaicf.channel.viber.sdk.event.IncomingSeenEvent
+import com.justai.jaicf.channel.viber.sdk.event.IncomingWebhookEvent
+import com.justai.jaicf.channel.viber.sdk.event.sender
+import com.justai.jaicf.channel.viber.sdk.event.senderId
 import com.justai.jaicf.channel.viber.sdk.profile.BotProfile
 import com.justai.jaicf.channel.viber.sdk.profile.UserProfile
 import com.justai.jaicf.context.RequestContext
+import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import java.util.concurrent.Executors
 
 class ViberChannel private constructor(
     override val botApi: BotApi,
