@@ -1,5 +1,9 @@
 package com.justai.jaicf.context.manager.mapdb
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotResponse
 import com.justai.jaicf.context.BotContext
@@ -8,21 +12,23 @@ import com.justai.jaicf.context.manager.BotContextManager
 import org.mapdb.DBMaker
 import org.mapdb.Serializer
 
-@Deprecated(
-    "MapDbBotContextManager is deprecated. Use JacksonMapDbBotContextManager instead",
-    ReplaceWith(
-        "JacksonMapDbBotContextManager(dbFilePath)",
-        "com.justai.jaicf.context.manager.mapdb.JacksonMapDbBotContextManager"
-    )
-)
-class MapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
+class JacksonMapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
 
     private val db = dbFilePath?.let { DBMaker.fileDB(it).make() } ?: DBMaker.tempFileDB().make()
 
-    private val map = db.hashMap("contexts", Serializer.STRING, Serializer.JAVA).createOrOpen()
+    private val map = db.hashMap("contexts", Serializer.STRING, Serializer.STRING).createOrOpen()
+
+    private val mapper = jacksonObjectMapper().apply {
+        activateDefaultTyping(
+            polymorphicTypeValidator,
+            ObjectMapper.DefaultTyping.EVERYTHING,
+            JsonTypeInfo.As.PROPERTY
+        )
+    }
 
     override fun loadContext(request: BotRequest, requestContext: RequestContext): BotContext {
-        val model = map[request.clientId] as? BotContextModel ?: return BotContext(request.clientId)
+        val json = map[request.clientId] ?: return BotContext(request.clientId)
+        val model = mapper.readValue<BotContextModel>(json)
 
         return BotContext(request.clientId, model.dialogContext).apply {
             result = model.result
@@ -37,7 +43,8 @@ class MapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
         response: BotResponse?,
         requestContext: RequestContext
     ) {
-        map[botContext.clientId] = BotContextModel.create(botContext)
+        val model = BotContextModel.create(botContext)
+        map[botContext.clientId] = mapper.writeValueAsString(model)
         db.commit()
     }
 
