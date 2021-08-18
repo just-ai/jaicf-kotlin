@@ -2,6 +2,8 @@ package com.justai.jaicf.examples.jaicptelephony
 
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.jaicp.channels.TelephonyEvents
+import com.justai.jaicf.channel.jaicp.dto.AllowedTime
+import com.justai.jaicf.channel.jaicp.dto.LocalTimeInterval
 import com.justai.jaicf.channel.jaicp.telephony
 import com.justai.jaicf.helpers.logging.logger
 import java.time.Instant
@@ -45,10 +47,9 @@ val TelephonyBotScenario = Scenario(telephony) {
             reactions.say("Ok, I will call you back in a minute!")
             reactions.redial(
                 startDateTime = Instant.now().plus(1, ChronoUnit.MINUTES),
-                localTimeFrom = "12:00",
-                localTimeTo = "23:59",
-                retryIntervalInMinutes = 1,
-                maxAttempts = 2
+                allowedTime = AllowedTime(listOf(LocalTimeInterval("12:00", "23:59"))),
+                maxAttempts = 2,
+                retryIntervalInMinutes = 1
             )
             reactions.hangup()
         }
