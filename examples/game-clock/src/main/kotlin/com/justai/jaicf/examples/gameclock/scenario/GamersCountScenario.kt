@@ -12,7 +12,7 @@ import com.justai.jaicf.test.context.runInTest
 class GamersCountScenario(private val min: Int, private val max: Int) : Scenario {
 
     companion object {
-        const val state = "/setup/gamers"
+        const val state = "gamers"
     }
 
     override val model = createModel {

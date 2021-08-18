@@ -11,10 +11,11 @@ object GameSetupScenario : Scenario {
 
     override val model = createModel {
 
-        append(GamersCountScenario(2, supportedColors.size))
-        append(GamersColorsScenario)
-
         state(state) {
+
+            append(GamersCountScenario(2, supportedColors.size))
+            append(GamersColorsScenario)
+
             action {
                 val game = GameController(context)
 
@@ -33,7 +34,7 @@ object GameSetupScenario : Scenario {
 
                     reactions.run {
                         say("${game.gamers} gamers! Cool! Now you have to choose a color for each of you!")
-                        go(GamersColorsScenario.state, "../complete")
+                        go("../${GamersColorsScenario.state}", "../complete")
                     }
                 }
             }

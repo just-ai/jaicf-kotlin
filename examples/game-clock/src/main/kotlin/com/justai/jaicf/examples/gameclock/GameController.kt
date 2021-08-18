@@ -62,7 +62,7 @@ class GameController(context: BotContext) {
 
     fun record(timeMs: Long) {
         currentTime = timeMs
-        overall = overall?.let { it.plus(timeMs) } ?: timeMs
+        overall = overall?.plus(timeMs) ?: timeMs
 
         currentColor()?.let { color ->
             val time = gamersTime[color] ?: 0
