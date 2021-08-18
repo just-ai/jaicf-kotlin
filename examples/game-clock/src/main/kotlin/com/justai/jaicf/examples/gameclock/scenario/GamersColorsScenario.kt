@@ -16,9 +16,10 @@ import com.justai.jaicf.test.context.runInTest
 
 object GamersColorsScenario : Scenario {
 
-    const val state = "/setup/colors"
+    const val state = "colors"
 
     override val model = createModel {
+
         state(state) {
             action {
                 val game = GameController(context)
