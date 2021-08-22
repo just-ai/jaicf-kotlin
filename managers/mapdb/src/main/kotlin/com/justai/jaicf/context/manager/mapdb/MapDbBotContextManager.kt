@@ -9,7 +9,7 @@ import org.mapdb.DBMaker
 import org.mapdb.Serializer
 
 @Deprecated(
-    "MapDbBotContextManager is deprecated. Use JacksonMapDbBotContextManager with the new dbFilePath instead, because the format of the old base is incompatible with the new"
+    "MapDbBotContextManager is deprecated. Use JacksonMapDbBotContextManager with the new dbFilePath instead, because the database format of this manager is incompatible with JacksonMapDbBotContextManager"
 )
 class MapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
 

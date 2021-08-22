@@ -44,7 +44,7 @@ class JacksonMapDbBotContextManager(dbFilePath: String? = null) : BotContextMana
         response: BotResponse?,
         requestContext: RequestContext
     ) {
-        val model = JacksonBotContextModel.create(botContext)
+        val model = JacksonBotContextModel(botContext)
         map[botContext.clientId] = mapper.writeValueAsString(model)
         db.commit()
     }
@@ -52,18 +52,16 @@ class JacksonMapDbBotContextManager(dbFilePath: String? = null) : BotContextMana
     fun close() = db.close()
 }
 
-private class JacksonBotContextModel {
-    var result: Any? = null
-    lateinit var dialogContext: DialogContext
-    lateinit var client: Map<String, Any?>
-    lateinit var session: Map<String, Any?>
-
-    companion object {
-        fun create(botContext: BotContext) = JacksonBotContextModel().apply {
-            dialogContext = botContext.dialogContext
-            result = botContext.result
-            client = botContext.client.toMap()
-            session = botContext.session.toMap()
-        }
-    }
+private data class JacksonBotContextModel(
+    val result: Any?,
+    val client: Map<String, Any?>,
+    val session: Map<String, Any?>,
+    val dialogContext: DialogContext
+) {
+    constructor(botContext: BotContext) : this(
+        result = botContext.result,
+        client = botContext.client.toMutableMap(),
+        session = botContext.session.toMutableMap(),
+        dialogContext = botContext.dialogContext
+    )
 }
