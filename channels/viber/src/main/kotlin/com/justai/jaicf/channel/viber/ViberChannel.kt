@@ -121,12 +121,8 @@ class ViberChannel private constructor(
         }
     }
 
-    companion object : JaicpCompatibleAsyncChannelFactory {
+    companion object : JaicpCompatibleAsyncChannelFactory by Factory() {
         private const val REQUEST_TEMPLATE_PATH = "/ViberRequestTemplate.json"
-        override val channelType = "viber"
-
-        override fun create(botApi: BotApi, apiUrl: String, liveChatProvider: JaicpLiveChatProvider) =
-            Factory().create(botApi, apiUrl, liveChatProvider)
     }
 }
 

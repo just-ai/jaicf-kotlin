@@ -10,8 +10,5 @@ class ActionsFulfillmentSDK(
     override val channelType = "google"
     override fun create(botApi: BotApi) = ActionsFulfillment.sdk(botApi, useDataStorage)
 
-    companion object : JaicpCompatibleChannelFactory {
-        override val channelType = "google"
-        override fun create(botApi: BotApi) = ActionsFulfillmentSDK().create(botApi)
-    }
+    companion object : JaicpCompatibleChannelFactory by ActionsFulfillmentSDK()
 }

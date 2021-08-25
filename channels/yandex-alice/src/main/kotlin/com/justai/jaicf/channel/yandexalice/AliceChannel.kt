@@ -52,10 +52,7 @@ class AliceChannel(
         override fun create(botApi: BotApi) = AliceChannel(botApi, oauthToken = "", useDataStorage = useDataStorage)
     }
 
-    companion object : JaicpCompatibleChannelFactory {
+    companion object : JaicpCompatibleChannelFactory by Factory() {
         private const val DEFAULT_ALICE_API_URL = "https://dialogs.yandex.net/api/v1"
-        override val channelType = "yandex"
-
-        override fun create(botApi: BotApi) = Factory().create(botApi)
     }
 }
