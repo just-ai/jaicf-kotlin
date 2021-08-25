@@ -10,8 +10,5 @@ class ActionsFulfillmentDialogflow(
     override val channelType = "dialogflow"
     override fun create(botApi: BotApi) = ActionsFulfillment.dialogflow(botApi, useDataStorage)
 
-    companion object : JaicpCompatibleChannelFactory {
-        override val channelType = "dialogflow"
-        override fun create(botApi: BotApi) = ActionsFulfillmentDialogflow().create(botApi)
-    }
+    companion object : JaicpCompatibleChannelFactory by ActionsFulfillmentDialogflow()
 }
