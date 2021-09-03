@@ -95,9 +95,9 @@ class BotRoutingEngine(
 
         var router = getRouterRecursive(lastRouter) ?: this
         if (engineName in router.childrenNames) {
-            router = children.first { it.routerName == engineName }
+            router = router.children.first { it.routerName == engineName }
         } else if (engineName == router.parent?.routerName) {
-            router = parent!!
+            router = router.parent!!
         }
 
         val engine = router.routables[engineName] ?: router.routerDefaultEngine
