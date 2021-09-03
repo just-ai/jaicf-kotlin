@@ -80,12 +80,12 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * */
     fun routeBack(): Nothing {
         val routingContext = botContext.routingContext
-        try {
+        if (hasPreviousEngineInStack()){
             val curr = routingContext.routingStack.pop()
             val target = routingContext.routingStack.pop()
             logger.info("Routing request back from engine: $curr to engine: $target")
             throw BotRequestRerouteException(target)
-        } catch (e: NoSuchElementException) {
+        } else {
             logger.warn("Failed to change route back as there is no engines left in stack")
             routingContext.routingStack.push(RoutingRequest(requireNotNull(routingContext.currentEngine), routingContext.currentRouter))
             throw NoRouteBackException()

@@ -56,7 +56,7 @@ class BotRoutingEngine(
     routables: Map<String, BotEngine>,
 ) : BotEngine(MOCK_SCENARIO), WithLogger {
 
-    var routerName = main.first
+    val routerName = main.first
     val routerDefaultEngine = main.second
     internal val routables: MutableMap<String, BotEngine> = routables.toMutableMap()
     internal val children: MutableList<BotRoutingEngine> = mutableListOf()
@@ -69,10 +69,6 @@ class BotRoutingEngine(
         if (routables.values.distinctBy { it.defaultContextManager }.size > 1) {
             error("Collections of routable botEngines must have single shared context manager instance")
         }
-        if (main.second is BotRoutingEngine) {
-            error("Main bot cannot be an instance of BotRoutingEngine")
-        }
-        // TODO: Recursive validation of children routing engines to prevent naming clash
 
         routables.values.forEach { engine ->
             if (engine is BotRoutingEngine) {
@@ -99,9 +95,9 @@ class BotRoutingEngine(
 
         var router = getRouterRecursive(lastRouter) ?: this
         if (engineName in router.childrenNames) {
-            router = getChildDescriptor(engineName) ?: router
+            router = children.first { it.routerName == engineName }
         } else if (engineName == router.parent?.routerName) {
-            router = router.getParentDescriptor() ?: router
+            router = parent!!
         }
 
         val engine = router.routables[engineName] ?: router.routerDefaultEngine
@@ -146,15 +142,9 @@ class BotRoutingEngine(
 
     private fun getCurrentRouting(ctx: BotContext): RoutingRequest? = ctx.routingContext.routingStack.peek()
 
-    private fun getChildDescriptor(router: String): BotRoutingEngine? =
-        children.find { it.routerName == router }
-
-    private fun getParentDescriptor(): BotRoutingEngine? = parent
-
     private fun getRouterRecursive(router: String): BotRoutingEngine? {
         if (router == routerName) return this
         children.forEach { child ->
-            if (child.routerName == router) return child
             child.getRouterRecursive(router)?.let { return it }
         }
         return null
