@@ -24,8 +24,8 @@ data class JaicpAnalyticsAPI internal constructor(
     private var sessionResult: String? = null,
     private var comment: String? = null,
     private val sessionData: MutableMap<String, String> = mutableMapOf(),
-    private val sessionLabel: MutableList<String> = mutableListOf(),
-    private val messageLabel: MutableList<MessageLabel> = mutableListOf(),
+    private val sessionLabels: MutableList<String> = mutableListOf(),
+    private val messageLabels: MutableList<MessageLabel> = mutableListOf(),
 ) {
     /**
      * Adds columns with arbitrary data in the session result report.
@@ -52,7 +52,7 @@ data class JaicpAnalyticsAPI internal constructor(
      * @param label displayed in Analytics section in JAICP Application Console and xls report
      * */
     fun setSessionLabel(vararg label: String) {
-        this.sessionLabel.addAll(label)
+        this.sessionLabels.addAll(label)
     }
 
     /**
@@ -71,7 +71,7 @@ data class JaicpAnalyticsAPI internal constructor(
      * @param labels
      * */
     fun setMessageLabel(vararg labels: MessageLabel) {
-        messageLabel.addAll(labels)
+        messageLabels.addAll(labels)
     }
 
     /**
