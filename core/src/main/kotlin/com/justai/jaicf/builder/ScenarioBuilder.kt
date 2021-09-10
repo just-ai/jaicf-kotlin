@@ -16,6 +16,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
+import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.plugin.StateBody
 import com.justai.jaicf.plugin.StateDeclaration
 import com.justai.jaicf.plugin.StateName
@@ -260,7 +261,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @param body a code block that contains activators list
      * @see com.justai.jaicf.activator.Activator
      */
-    fun activators(fromState: String = parent.toString(), body: ActivationRulesBuilder.() -> Unit) {
+    fun activators(@PathValue fromState: String = parent.toString(), body: ActivationRulesBuilder.() -> Unit) {
         val rules = ActivationRulesBuilder().apply(body).build()
         val transitions = rules.map { Transition(fromState, path.toString(), it) }
         scenarioModelBuilder.transitions.addAll(transitions)
