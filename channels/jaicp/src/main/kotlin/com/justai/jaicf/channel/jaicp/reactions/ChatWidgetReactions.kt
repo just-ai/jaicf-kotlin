@@ -8,6 +8,7 @@ import com.justai.jaicf.channel.jaicp.dto.ImageReply
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.CarouselReaction
 import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.buttons
@@ -26,7 +27,7 @@ class ChatWidgetReactions(
     }
 
     fun image(imageUrl: String, caption: String? = null): ImageReaction {
-        replies.add(ImageReply(imageUrl, caption))
+        replies.add(ImageReply(imageUrl, caption, currentState))
         return ImageReaction.create(imageUrl)
     }
 
@@ -38,12 +39,12 @@ class ChatWidgetReactions(
     }
 
     fun buttons(buttons: List<String>): ButtonsReaction {
-        replies.add(ButtonsReply(buttons.map { Button(it) }))
+        replies.add(ButtonsReply(buttons.map { Button(it) }, currentState))
         return ButtonsReaction.create(buttons)
     }
 
     fun carousel(text: String, vararg elements: CarouselReply.Element): CarouselReaction {
-        replies.add(CarouselReply(text, elements.asList()))
+        replies.add(CarouselReply(text, elements.asList(), currentState))
         return CarouselReaction.create(text, elements.toCarouselReactionElements())
     }
 }

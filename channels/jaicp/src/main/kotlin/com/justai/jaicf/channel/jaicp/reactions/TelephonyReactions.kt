@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import java.time.DayOfWeek
@@ -47,7 +48,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun say(text: String, @PathValue bargeInContext: String): SayReaction {
         ensureBargeInProps()
-        replies.add(TextReply(text, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
+        replies.add(TextReply(text, state = currentState, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
         return SayReaction.create(text)
     }
 
@@ -57,7 +58,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param url to play during call
      * */
     override fun audio(url: String): AudioReaction {
-        replies.add(AudioReply(url.toUrl()))
+        replies.add(AudioReply(url.toUrl(), currentState))
         return AudioReaction.create(url)
     }
 
@@ -90,7 +91,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * Hangs up and ends the call.
      * */
     fun hangup() {
-        replies.add(HangupReply())
+        replies.add(HangupReply(currentState))
     }
 
     /**
@@ -307,7 +308,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param phoneNumber another person's phone number
      * */
     fun transferCall(phoneNumber: String, sipHeaders: Map<String, String> = emptyMap()) {
-        replies.add(TelephonySwitchReply(phoneNumber = phoneNumber, headers = sipHeaders))
+        replies.add(TelephonySwitchReply(phoneNumber = phoneNumber, headers = sipHeaders, state = currentState))
     }
 
     /**

@@ -10,6 +10,7 @@ import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.EndSessionReaction
 import com.justai.jaicf.logging.NewSessionReaction
 import com.justai.jaicf.logging.SayReaction
+import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.reactions.Reactions
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -40,7 +41,7 @@ open class JaicpReactions : Reactions() {
     }
 
     override fun say(text: String): SayReaction {
-        replies.add(TextReply(text))
+        replies.add(TextReply(text, state = currentState))
         return SayReaction.create(text)
     }
 

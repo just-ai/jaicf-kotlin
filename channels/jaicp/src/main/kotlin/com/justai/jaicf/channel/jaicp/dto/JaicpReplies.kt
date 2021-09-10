@@ -61,7 +61,8 @@ data class CarouselReply(
     @SerialName("text")
     val title: String,
     @SerialName("content")
-    val elements: List<Element>
+    val elements: List<Element>,
+    val state: String? = null,
 ) : Reply("carousel") {
     @Serializable
     data class Element(
@@ -100,7 +101,8 @@ class TelephonySwitchReply(
     @SerialName("transferChannel")
     val transferBotId: String? = null,
     val continueCall: Boolean? = null,
-    val continueRecording: Boolean? = null
+    val continueRecording: Boolean? = null,
+    val state: String? = null
 ) : Reply("switch") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
@@ -136,7 +138,8 @@ data class LiveChatSwitchReply(
     val hiddenAttributes: Map<String, String> = emptyMap(),
     val sendMessagesToOperator: Boolean = false,
     val sendMessageHistoryAmount: Int? = null,
-    val customData: JsonElement? = null
+    val customData: JsonElement? = null,
+    val state: String? = null
 ) : Reply("switch") {
 
     constructor(
@@ -151,7 +154,8 @@ data class LiveChatSwitchReply(
         hiddenAttributes: Map<String, String> = emptyMap(),
         sendMessagesToOperator: Boolean = false,
         sendMessageHistoryAmount: Int? = null,
-        customData: LiveChatCustomData
+        customData: LiveChatCustomData,
+        state: String? = null
     ) : this(
         firstMessage,
         closeChatPhrases,
@@ -164,7 +168,8 @@ data class LiveChatSwitchReply(
         hiddenAttributes,
         sendMessagesToOperator,
         sendMessageHistoryAmount,
-        JSON.parseToJsonElement(customData.serialized())
+        JSON.parseToJsonElement(customData.serialized()),
+        state
     )
 
     override fun serialized() = JSON.encodeToString(serializer(), this)

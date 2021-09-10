@@ -17,7 +17,12 @@ import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
  * @throws NoOperatorChannelConfiguredException when current channel has no livechat configured
  * */
 fun JaicpCompatibleAsyncReactions.switchToLiveChat(message: String) =
-    switchToLiveChat(LiveChatSwitchReply(firstMessage = message))
+    switchToLiveChat(
+        LiveChatSwitchReply(
+            firstMessage = message,
+            state = executionContext.botContext.dialogContext.currentState
+        )
+    )
 
 
 /**
