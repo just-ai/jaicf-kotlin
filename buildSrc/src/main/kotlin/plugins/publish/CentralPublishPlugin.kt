@@ -108,7 +108,7 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
                 }
             }
 
-            if (isMavenCentralPublication) {
+            if (isMavenCentralPublication && !isSnapshot) {
                 configure<SigningExtension> {
                     useInMemoryPgpKeys(secKey, File(secRing).readText(), secPass)
                     sign(publications)
