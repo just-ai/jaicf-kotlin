@@ -4,6 +4,7 @@
       {
         "type": "text",
         "text": "You said: /start from TelephonyReactions",
+        "state": "/fallback",
         "bargeInReply": {
           "bargin_transition": ".",
           "bargeInIntent": {
