@@ -3,7 +3,8 @@
     "replies": [
       {
         "type": "text",
-        "text": "You said: /start from ChatWidgetReactions"
+        "text": "You said: /start from ChatWidgetReactions",
+        "state": "/fallback"
       }
     ],
     "answer": "You said: /start from ChatWidgetReactions"
