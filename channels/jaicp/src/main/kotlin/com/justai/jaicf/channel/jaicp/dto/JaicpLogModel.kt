@@ -208,7 +208,8 @@ private fun CarouselReaction.toReply() = CarouselReply(
             imageUrl = it.imageUrl,
             buttonRedirectUrl = it.buttons.firstOrNull()?.url
         )
-    }
+    },
+    fromState
 )
 
 private fun BotException.toReply() = ErrorReply(scenarioCause.stackTraceToString(), currentState, "")
