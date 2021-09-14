@@ -6,7 +6,6 @@ import com.justai.jaicf.channel.yandexalice.api.storage.Images
 import com.justai.jaicf.channel.yandexalice.api.storage.UploadedImage
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
@@ -16,10 +15,21 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
+private val client = HttpClient(CIO) {
+    expectSuccess = true
+
+    install(JsonFeature) {
+        serializer = KotlinxSerializer(JSON)
+    }
+    install(Logging) {
+        level = LogLevel.INFO
+    }
+}
+
 class AliceApi(
-    oauthToken: String,
+    private val oauthToken: String,
     private val skillId: String,
-    private val apiUrl: String
+    private val apiUrl: String,
 ) {
 
     companion object {
@@ -28,25 +38,10 @@ class AliceApi(
 
     private val images = mutableMapOf<String, String>()
 
-    private val client = HttpClient(CIO) {
-        expectSuccess = true
-
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(JSON)
-        }
-        install(Logging) {
-            level = LogLevel.INFO
-        }
-
-        defaultRequest {
-            header("Authorization", "OAuth $oauthToken")
-        }
-    }
-
     init {
         images.putAll(
             imageStorage.getOrPut(skillId) {
-                listImages().map { it.origUrl to it.id }.toMap().toMutableMap()
+                listImages().associate { it.origUrl to it.id }.toMutableMap()
             }
         )
     }
@@ -58,6 +53,7 @@ class AliceApi(
     fun uploadImage(url: String): Image = runBlocking {
         client.post<UploadedImage>("$apiUrl/skills/$skillId/images") {
             contentType(ContentType.Application.Json)
+            header("Authorization", "OAuth $oauthToken")
             body = JsonObject(mapOf("url" to JsonPrimitive(url)))
         }.image
     }.also { image ->
@@ -65,6 +61,8 @@ class AliceApi(
     }
 
     fun listImages(): List<Image> = runBlocking {
-        client.get<Images>("$apiUrl/skills/$skillId/images").images
+        client.get<Images>("$apiUrl/skills/$skillId/images") {
+            header("Authorization", "OAuth $oauthToken")
+        }.images
     }
 }
