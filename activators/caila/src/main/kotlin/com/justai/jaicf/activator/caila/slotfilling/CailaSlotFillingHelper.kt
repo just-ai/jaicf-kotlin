@@ -10,7 +10,11 @@ import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.slotfilling.*
+import com.justai.jaicf.slotfilling.SlotFillingFinished
+import com.justai.jaicf.slotfilling.SlotFillingInProgress
+import com.justai.jaicf.slotfilling.SlotFillingInterrupted
+import com.justai.jaicf.slotfilling.SlotFillingResult
+import com.justai.jaicf.slotfilling.SlotReactor
 
 
 internal class CailaSlotFillingHelper(
@@ -36,7 +40,7 @@ internal class CailaSlotFillingHelper(
         val filled = fillSlots(ctx, botRequest.input)
         for (slot in required) {
             if (slot.required && !known.any { k -> slot.name == k.name }) {
-                if (checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(botRequest.input)) {
+                if (checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(ctx, botRequest.input)) {
                     clearSlotFillingContext(botContext)
                     return SlotFillingInterrupted()
                 }
@@ -108,13 +112,15 @@ internal class CailaSlotFillingHelper(
         return curr > cailaSlotFillingSettings.maxSlotRetries
     }
 
-    private fun checkIntentInterrupts(text: String?): Boolean {
+    private fun checkIntentInterrupts(ctx: CailaSlotFillingContext, text: String?): Boolean {
         if (!cailaSlotFillingSettings.stopOnAnyIntent || text == null) {
             return false
         }
 
         val inference = cailaClient.simpleInference(text) ?: return false
-        if (inference.confidence > cailaSlotFillingSettings.stopOnAnyIntentThreshold) {
+        if (inference.confidence > cailaSlotFillingSettings.stopOnAnyIntentThreshold &&
+            inference.intent.name != ctx.initialActivatorContext.caila?.intent
+        ) {
             return true
         }
 
