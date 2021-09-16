@@ -5,6 +5,7 @@ import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.model.state.StatePath
+import java.io.Serializable
 import java.util.*
 
 /**
@@ -155,7 +156,7 @@ data class BotRoutingContext(
     var targetState: String? = null,
     var currentEngine: String? = null,
     var currentRouter: String? = null,
-)
+): Serializable
 
 /**
  * Request to route execution from one engine to another using [BotRoutingEngine]
@@ -171,7 +172,7 @@ data class BotRoutingContext(
 data class RoutingRequest(
     val toEngine: String,
     val fromRouter: String? = null,
-)
+): Serializable
 
 /**
  * A helpful extension to get [BotRoutingContext] from BotContext.

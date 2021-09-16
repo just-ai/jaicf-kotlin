@@ -66,8 +66,10 @@ class BotRoutingEngine(
         if (routables.isEmpty()) {
             error("Collection of routable engines must not be empty")
         }
-        if (routables.values.distinctBy { it.defaultContextManager }.size > 1) {
-            error("Collections of routable botEngines must have single shared context manager instance")
+
+        val routablesContextManagers = routables.values.distinctBy { it.defaultContextManager }
+        if (routablesContextManagers.size > 1 || main.second.defaultContextManager != routablesContextManagers.first().defaultContextManager) {
+            error("Collections of routable botEngines and main routing engine must have single shared context manager instance")
         }
 
         routables.values.forEach { engine ->

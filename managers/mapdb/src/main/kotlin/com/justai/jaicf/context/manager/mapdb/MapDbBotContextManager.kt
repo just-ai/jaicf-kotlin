@@ -13,7 +13,7 @@ import org.mapdb.Serializer
 )
 class MapDbBotContextManager(dbFilePath: String? = null) : BotContextManager {
 
-    private val db = dbFilePath?.let { DBMaker.fileDB(it).make() } ?: DBMaker.tempFileDB().make()
+    private val db = dbFilePath?.let { DBMaker.fileDB(it).closeOnJvmShutdown().make() } ?: DBMaker.tempFileDB().closeOnJvmShutdown().make()
 
     private val map = db.hashMap("contexts", Serializer.STRING, Serializer.JAVA).createOrOpen()
 
