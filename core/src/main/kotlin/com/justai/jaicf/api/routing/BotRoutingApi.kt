@@ -81,7 +81,7 @@ class BotRoutingApi(internal val botContext: BotContext) : WithLogger {
      * */
     fun routeBack(): Nothing {
         val routingContext = botContext.routingContext
-        if (hasPreviousEngineInStack()){
+        if (hasPreviousEngineInStack()) {
             val curr = routingContext.routingStack.pop()
             val target = routingContext.routingStack.pop()
             logger.info("Routing request back from engine: $curr to engine: $target")
@@ -156,7 +156,11 @@ data class BotRoutingContext(
     var targetState: String? = null,
     var currentEngine: String? = null,
     var currentRouter: String? = null,
-): Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID = 1
+    }
+}
 
 /**
  * Request to route execution from one engine to another using [BotRoutingEngine]
@@ -172,7 +176,11 @@ data class BotRoutingContext(
 data class RoutingRequest(
     val toEngine: String,
     val fromRouter: String? = null,
-): Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID = 1
+    }
+}
 
 /**
  * A helpful extension to get [BotRoutingContext] from BotContext.
