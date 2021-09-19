@@ -5,3 +5,5 @@ build/
 !gradle-plugins/jaicp-build-plugin/src/main/kotlin/com/justai/jaicf/plugins/jaicp/build
 .attach_*
 managers/mapdb/.mapdb
+/docs/.sass-cache/
+/docs/_site/
