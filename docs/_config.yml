@@ -24,6 +24,7 @@ github_username:  just-ai
 # Build settings
 markdown: kramdown
 theme: "just-the-docs"
+remote_theme: pmarsceill/just-the-docs
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
