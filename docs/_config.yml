@@ -16,8 +16,8 @@
 title: JAICF documentation
 description: >- # this means to ignore newlines until "baseurl:"
   Develop conversational chatbots with JAICF from Just AI
-baseurl: "/jaicf-kotlin" # the subpath of your site, e.g. /blog
-url: "https://just-ai.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://help.jaicf.com" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: JustAIglobal
 github_username:  just-ai
 
