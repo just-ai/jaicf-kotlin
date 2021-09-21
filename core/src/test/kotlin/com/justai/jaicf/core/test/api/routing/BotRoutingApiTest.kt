@@ -86,6 +86,26 @@ private val sc1 = Scenario {
         }
     }
 
+    state("changeBotWithTarget") {
+        activators {
+            regex("changeBotWithTarget")
+        }
+        action {
+            reactions.say("Changing bot to sc3, target state is /target")
+            routing.changeEngine("sc3", "/target")
+        }
+    }
+
+    state("routeWithTarget") {
+        activators {
+            regex("routeWithTarget")
+        }
+        action {
+            reactions.say("Routing to sc3, target state is /target")
+            routing.route("sc3", "/target")
+        }
+    }
+
     fallback {
         reactions.say("SC1: Fallback")
     }
@@ -108,9 +128,22 @@ private val sc2 = Scenario {
     }
 }
 
+private val sc3 = Scenario {
+    state("target") {
+        state("child") {
+            activators {
+                regex("child")
+            }
+            action {
+                reactions.say("sc3 target child")
+            }
+        }
+    }
+}
+
 private val router = BotRoutingEngine(
     "main" to createEngine(main),
-    mapOf("sc1" to createEngine(sc1), "sc2" to createEngine(sc2))
+    mapOf("sc1" to createEngine(sc1), "sc2" to createEngine(sc2), "sc3" to createEngine(sc3))
 )
 
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
@@ -166,4 +199,19 @@ class BotRoutingApiTest : BotTest(router) {
         query("changeBotBack") responds "changing bot back"
         query("test") responds "SC1: Fallback"
     }
+
+    @Test
+    fun `09 should changeEngine with target and be able to process next request`() {
+        query("changeBot sc1") responds "Changing bot to sc1"
+        query("changeBotWithTarget")
+        query("child") startsWithContext "/target" endsWithState "/target/child" responds "sc3 target child"
+    }
+
+    @Test
+    fun `10 should changeEngine with target and be able to process next request`() {
+        query("changeBot sc1") responds "Changing bot to sc1"
+        query("routeWithTarget")
+        query("child") startsWithContext "/target" endsWithState "/target/child" responds "sc3 target child"
+    }
+
 }
