@@ -1,8 +1,9 @@
 ---
 layout: default
-title: Catch All
-permalink: CatchAll-Activator
-parent: Natural Language Understanding
+title: catchAll
+permalink: catchAll
+parent: activators
+grand_parent: Scenario DSL
 ---
 
 [CatchAllActivator](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/activator/catchall/CatchAllActivator.kt) can be used in JAICF project to handle any user's query request that wasn't handled by any other activator.
@@ -10,7 +11,7 @@ parent: Natural Language Understanding
 Usually this activator is used to handle all raw user's input for some purposes (for example, if user dictates a text of reminder note).
 
 It also can be used as a fallback state to handle a request that can't be handled by any other state.
-We recommend to use a [fallback](fallback) builder for this purposes.
+We recommend using a [fallback](fallback) builder for these purposes.
 
 # How to use
 

@@ -5,7 +5,7 @@ permalink: Spring-Boot
 parent: Environments
 ---
 
-![](https://commons.bmstu.wiki/images/5/59/Spring-boot-logo.png)
+![](/assets/images/env/spring-boot.png)
 
 [Spring Boot](https://spring.io/projects/spring-boot) makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
 It allows you to serve your JAICF agents as a HTTP servlets.

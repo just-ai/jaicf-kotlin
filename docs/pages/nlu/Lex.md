@@ -6,10 +6,10 @@ parent: Natural Language Understanding
 ---
 
 <p style="text-align: center">
-    <img src="https://www.routeoneconnect.com/wp-content/uploads/2020/03/icon-amazon-lex.png" height="128" width="128" alt="Lex logo"/>
+    <img src="/assets/images/nlu/lex.png" height="128" width="128" alt="Lex logo"/>
 </p>
 
-<h1 style="text-align: center">Lex NLU activator</h1>
+<h1 style="text-align: center">Amazon Lex NLU activator</h1>
 
 Allows using [Amazon Lex V2](https://aws.amazon.com/lex/) NLU engine as a states activator in JAICF.
 

@@ -3,6 +3,7 @@ layout: default
 title: Channels
 nav_order: 6
 permalink: Channels
+has_children: true
 ---
 
 Channel in terms of JAICF is a messaging or voice platform that actually receives a user's requests through some user interface.
@@ -11,27 +12,25 @@ Channel in terms of JAICF is a messaging or voice platform that actually receive
 
 ### JAICP
 
-[JAICP](https://app.jaicp.com) (Just AI Conversational Platform) provides a wide range of channels for your chat and voice bots.
-Like telephony, web widget, live operators and others.
+[JAICP](https://app.jaicp.com) (_Just AI Conversational Platform_) provides a wide range of channels and features for your chat and voice bots.
+Like [telephony](Telephony), [web widget](Chat-Widget), live operators and others.
 Moreover JAICP transparently handles queries and reactions to store it to the internal database providing you with comprehensive conversations analytics tool.
 
-Learn more about JAICP and how to use it [here](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp).
-
-> JAICP also provides a [ready to use cloud environment](JAICP-Cloud) to serve your JAICF projects.
+Learn more about JAICP and how to use it [here](JAICP).
 
 ### Voice assistants
 
-* [Aimybox](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/aimybox)
-* [Amazon Alexa](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/alexa)
-* [Google Actions](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/google-actions)
+* [Aimybox](Aimybox)
+* [Amazon Alexa](Alexa)
+* [Google Actions](Google-Actions)
 
 ### Messengers
 
-* [Facebook Messenger](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/facebook)
-* [Slack](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/slack)
-* [Telegram](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/telegram)
-* [Viber](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/viber)
-* [Алиса](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/yandex-alice)
+* [Facebook Messenger](Facebook-Messenger)
+* [Slack](Slack)
+* [Telegram](Telegram)
+* [Viber](Viber)
+* [Алиса](Yandex-Alice)
 
 # Multi-channel support
 

@@ -2,7 +2,8 @@
 layout: default
 title: intent
 permalink: intent
-parent: Scenario DSL
+parent: activators
+grand_parent: Scenario DSL
 ---
 
 This activator builder appends intent name to the list of state activators:
@@ -23,7 +24,7 @@ Means that this state can be activated by this intent recognised by one of the c
 
 ## Activator context
 
-Once an intent was matched, the IntentActivatorContext becomes available in the action's block of the state:
+Once an intent was matched, the [IntentActivatorContext](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/activator/intent/IntentActivatorContext.kt) becomes available in the action's block of the state:
 
 ```kotlin
 state("state1") {

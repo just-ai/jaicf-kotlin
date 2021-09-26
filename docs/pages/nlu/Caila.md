@@ -6,10 +6,10 @@ parent: Natural Language Understanding
 ---
 
 <p align="center">
-    <img src="https://just-ai.com/wp-content/themes/justai/img/caila_sign.svg" height="128" width="128"/>
+    <img src="/assets/images/nlu/caila.svg" height="128" width="128"/>
 </p>
 
-<h1 align="center">Caila NLU activator</h1>
+<h1 align="center">CAILA NLU activator</h1>
 
 Allows to use [CAILA](https://just-ai.com/en/caila-conversational-ai-linguistic-assistant.php) NLU engine as a states activator in JAICF with named entity recognition.
 

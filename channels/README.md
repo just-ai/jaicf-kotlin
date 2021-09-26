@@ -2,6 +2,12 @@
 
 You can connect your JAICF conversational agent to the channels listed below.
 
+### JAICP channel
+
+This channel provides full [JAICP](https://just-ai.com/en/platform.php) infrastructural support for JAICF enabling telephony, live chats, analytics and more.
+
+Learn more about JAICP channel [here](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp).
+
 ### Voice assistants
 
 * [Aimybox](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/aimybox)
@@ -14,12 +20,13 @@ You can connect your JAICF conversational agent to the channels listed below.
 * [Facebook Messenger](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/facebook)
 * [Slack](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/slack)
 * [Telegram](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/telegram)
+* [Viber](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/viber)  
 
 # How to use
 
 Please refer to the selected channel page to learn how to connect your JAICF conversational agent to this channel.
 
-> Learn more about JAICF channels [here](https://github.com/just-ai/jaicf-kotlin/wiki/Channels).
+> Learn more about JAICF channels [here](https://help.jaicf.com/Channels).
 
 # How to create a new channel
 

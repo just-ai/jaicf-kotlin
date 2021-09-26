@@ -1,33 +1,28 @@
 ---
 layout: default
-title: Regular expressions
-permalink: Regex-Activator
-parent: Natural Language Understanding
+title: regex
+permalink: regex
+parent: activators
+grand_parent: Scenario DSL
 ---
 
-[RegexActivator](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/activator/regex/RegexActivator.kt) can be used in JAICF project to handle users' requests that strictly match some regular expression.
+Activates state if the user's query matches with the given regular expression.
 
 > Learn more about regular expressions [here](https://en.wikipedia.org/wiki/Regular_expression).
-
-# How to use
-
-All you need to use regular expressions activator in your JAICF project is to add `regex` activators to the scenarios and then append `RegexActivator` to the `BotEngine`'s array of activators.
-
-## regex activator
 
 ```kotlin
 state("state1") {
     activators {
-        regex("/start")
+        regex(".*")
+        regex(Pattern.compile("[a-z]+"))
     }
 
     action {
-        ...
+        val pattern = activator.regex?.pattern
+        val matcher = activator.regex?.matcher
     }
 }
 ```
-
-> Learn more about activators [here](activators).
 
 ## RegexActivator configuration
 

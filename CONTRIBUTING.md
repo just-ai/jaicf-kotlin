@@ -19,7 +19,7 @@ If you're finding some popular (or not) channel's lack, you're welcome to implem
 Every dialogue is driven by some NLU engines like Google Dialogflow or Rasa.
 If there is any engine that is not supported by JAICF yet, it's a good time for you to create its implementation right now!
 
-> Please learn more about activators [here](https://github.com/just-ai/jaicf-kotlin/wiki/Natural-Language-Understanding).
+> Please learn more about activators [here](https://help.jaicf.com/Natural-Language-Understanding).
 
 #### 3. Write a tutorial
 

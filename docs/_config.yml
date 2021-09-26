@@ -14,12 +14,14 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 title: JAICF documentation
-description: >- # this means to ignore newlines until "baseurl:"
-  Develop conversational chatbots with JAICF from Just AI
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://help.jaicf.com" # the base hostname & protocol for your site, e.g. http://example.com
+tagline: Develop conversational chatbots with JAICF from Just AI
+description: Develop conversational chatbots with JAICF from Just AI
+baseurl: ""
+url: "https://help.jaicf.com"
+logo: "https://help.jaicf.com/assets/images/jaicf-banner.png"
 twitter_username: JustAIglobal
 github_username:  just-ai
+author: Just AI
 
 # Build settings
 markdown: kramdown

@@ -38,7 +38,7 @@ You can report any issue or feature request [here](https://github.com/just-ai/ja
 
 ### 7. Where manuals and docs are living?
 
-[Here](https://github.com/just-ai/jaicf-kotlin/wiki) you can find a comprehensive JAICF documentation that covers all features and tools.
+[Here](https://help.jaicf.com) you can find a comprehensive JAICF documentation that covers all features and tools.
 JAICF also provides a Javadocs for every public interfaces and functions.
 
 ### 8. What languages does JAICF support?
@@ -51,8 +51,6 @@ JAICF is the same Kotlin framework as many others.
 Thus applications based on JAICF can be ran on [any environment](Environments) that can run JVM.
 
 On development stage JAICF can be ran locally right on your PC for debugging purposes and then been deployed to any cloud or even be ran [on Android device](https://github.com/just-ai/jaicf-kotlin/wiki/Android).
-
-> We recommend to use [JAICP](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/jaicp) and its [Cloud](https://github.com/just-ai/jaicf-kotlin/wiki/JAICP-Cloud) to host your JAICF projects
 
 ### 10. How to contribute to JAICF?
 

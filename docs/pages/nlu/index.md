@@ -6,7 +6,7 @@ permalink: Natural-Language-Understanding
 has_children: true
 ---
 
-![NLU](assets/images/nlu.png)
+![NLU](/assets/images/nlu.png)
 
 # Introduction to NLU
 
@@ -68,16 +68,16 @@ It is up to you how to design a dialogue using intents, events and regex as a st
 As you can see, activators in terms of JAICF are responsible for recognising the user's input and activating a corresponding states of the dialogue.
 JAICF provides the next types of activators:
 
-* [Intent activators](activators#intent): 
+* [Intent activators](intent): 
   - [Just AI CAILA](Caila)
   - [Rasa](Rasa)
   - [Google Dialogflow](Dialogflow)  
   - [Amazon Lex](Lex)  
-  - [Alexa](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/alexa)
+  - [Amazon Alexa](Alexa)
   
 * [Event activator](event)
-* [Regex activator](Regex-Activator)
-* [CatchAll activator](CatchAll-Activator)
+* [Regex activator](regex)
+* [CatchAll activator](catchAll)
 
 Please learn more about each of them to understand how it works.
 
@@ -118,4 +118,4 @@ It is important to notice that the order of activators in the `activators` array
 Meaning that JAICF will check each activator one by one starting from the first one if it can handle the user's request.
 In the case if activator handles the request and returns a corresponding dialogue's state, JAICF stops the traversing of the activators array and activates returned state.
 
-_For example, [CatchAllActivator](CatchAll-Activator) is usually placed the last because it can handle any query request but should be used only in case when no one activator before handled it._
+_For example, [CatchAllActivator](catchAll) is usually placed the last because it can handle any query request but should be used only in case when no one activator before handled it._

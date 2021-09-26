@@ -5,7 +5,7 @@ permalink: Heroku
 parent: Environments
 ---
 
-![](https://miro.medium.com/max/1200/1*F83F9d1ki3fG6LMG3AvIMg.png)
+![](/assets/images/env/heroku.png)
 
 [Heroku](https://heroku.com) is a cloud platform that can host your JAICF server running with [Ktor](Ktor), [Spring Boot](Spring-Boot) or any other HTTP server.
 

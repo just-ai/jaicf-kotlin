@@ -5,7 +5,7 @@ permalink: AWS-Lambda
 parent: Environments
 ---
 
-![AWS Lambda](https://pro.guslyon.fr/static/aws-lambda-2b1d0cba70279a419837ee007571761d.png)
+![AWS Lambda](/assets/images/env/aws-lambda.png)
 
 [AWS Lambda](https://developer.amazon.com/en-US/docs/alexa/custom-skills/host-a-custom-skill-as-an-aws-lambda-function.html) enables developers to host their Alexa voice skills on the Amazon's serverless cloud.
 
@@ -18,7 +18,7 @@ Also it's possible to use an AWS built-in [DynamoDB](https://aws.amazon.com/dyna
 # How to use
 
 ## 1. Create your Alexa skill
-[Learn](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/alexa) how to create the Alexa skill using JAICF.
+[Learn](Alexa) how to create the Alexa skill using JAICF.
 
 ## 2. Define Lambda handler
 Every AWS Lambda has to have _handler_ - a special function that should be invoked each time the user interacts with your Alexa skill.

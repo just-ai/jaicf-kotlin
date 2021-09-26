@@ -25,7 +25,6 @@ Once you're ready to go in production, you have to host your JAICF project anywh
 Being the Kotlin application JAICF project can be ran on every Java-compatible cloud environment.
 Here we list some ready to use environments to speed-up your deployment.
 
-* [JAICP Cloud](JAICP-Cloud)
 * [Heroku](Heroku)
 * [AWS Lambda](AWS-Lambda)
 
@@ -35,8 +34,8 @@ Here is a persistence implementations that can be used to transparently store an
 
 > Learn more about context [here](context).
 
-* [MongoDB](https://github.com/just-ai/jaicf-kotlin/tree/master/managers/mongo)
-* [MapDB](https://github.com/just-ai/jaicf-kotlin/tree/master/managers/mapdb)
+* [MongoDB](Mongo-DB)
+* [MapDB](Map-DB)
 
 # Others
 

@@ -3,10 +3,11 @@ layout: default
 title: JAICP Cloud
 permalink: JAICP-Cloud
 parent: Environments
+nav_exclude: true
 ---
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/just-ai/jaicf-kotlin/master/channels/jaicp/JACP-icon.svg" width=200>
+<img src="/assets/images/env/jaicp.svg" width=200>
 </p>
 
 <h1 align="center">JAICP Cloud</h1>

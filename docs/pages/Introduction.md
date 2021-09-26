@@ -5,7 +5,7 @@ nav_order: 5
 permalink: Introduction
 ---
 
-![JAICF Components](assets/images/jaicf-components.png)
+![JAICF Components](/assets/images/jaicf-components.png)
 
 JAICF is a Kotlin framework for conversational context-aware chatbot and voice assistant development.
 
@@ -51,7 +51,7 @@ Each JAICF conversational agent (chatbot or voice assistant skill) contains at l
 
 # JAICF components
 
-![JAICF components](assets/images/jaicf-components-2.png)
+![JAICF components](/assets/images/jaicf-components-2.png)
 
 JAICF is a modular framework that contains multiple components.
 All these components are used by JAICF to glue scenarios with persistent layers, channels, and NLU engines transparently for the developer.
@@ -63,9 +63,9 @@ All these components are used by JAICF to glue scenarios with persistent layers,
 Activators are used to activate a state of the dialogue scenario.
 In fact _every activator tries to handle a user's request_ to your JAICF agent and find the next state of the scenario regarding the current one. Each JAICF agent should have at least one activator configuration. 
 
-_Dialogflow, Rasa, and JAICP Caila - are examples of activators in JAICF._
+_Dialogflow, Rasa, and Just AI CAILA - are examples of NLU activators in JAICF._
 
-> Learn more about activators [here](Natural-Language-Understanding).
+> Learn more about NLU [here](Natural-Language-Understanding).
 
 ## Channels
 

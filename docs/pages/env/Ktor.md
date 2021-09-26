@@ -5,7 +5,7 @@ permalink: Ktor
 parent: Environments
 ---
 
-![](https://d3nmt5vlzunoa1.cloudfront.net/kotlin/files/2018/11/Ktor.png)
+![](/assets/images/env/ktor.png)
 
 [Ktor](https://ktor.io) is a framework for building asynchronous servers.
 It allows you to quickly setup any HTTP server like Netty or Jetty and serve your JAICF agent.
