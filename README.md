@@ -1,6 +1,6 @@
 [![JAICF](https://github.com/just-ai/jaicf-kotlin/raw/master/docs/assets/images/header.png)](https://just-ai.com/en/jaicf)
 
-JAICF is a comprehensive enterprise-level framework from [Just AI](https://just-ai.com) for conversational voice assistants and chatbots development using [Kotlin-based DSL](https://github.com/just-ai/jaicf-kotlin/wiki/Scenario-DSL).
+JAICF is a comprehensive enterprise-level framework from [Just AI](https://just-ai.com) for conversational voice assistants and chatbots development using [Kotlin-based DSL](https://help.jaicf.com/Scenario-DSL).
 
 <br/>
 
