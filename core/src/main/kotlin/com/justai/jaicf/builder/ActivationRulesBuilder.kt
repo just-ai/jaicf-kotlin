@@ -7,6 +7,7 @@ import com.justai.jaicf.activator.intent.AnyIntentActivationRule
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.model.activation.ActivationRule
+import org.intellij.lang.annotations.Language
 
 @ScenarioDsl
 class ActivationRulesBuilder internal constructor() {
@@ -46,7 +47,7 @@ class ActivationRulesBuilder internal constructor() {
      * @see com.justai.jaicf.activator.regex.RegexActivator
      * @see com.justai.jaicf.api.BotApi
      */
-    fun regex(pattern: String) = regex(pattern.toRegex())
+    fun regex(@Language("RegExp") pattern: String) = regex(pattern.toRegex())
 
     /**
      * Registers event activation rule that handles an event with name [event].
