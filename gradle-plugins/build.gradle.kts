@@ -5,26 +5,14 @@ plugins {
     id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
-    }
-}
-
 subprojects {
     group = "com.just-ai.jaicf"
 
     repositories {
-        google()
-        jcenter()
         mavenCentral()
-        mavenLocal()
+        maven(uri("https://plugins.gradle.org/m2"))
         maven(uri("https://jitpack.io"))
+        google()
     }
 
     apply(plugin = "com.gradle.plugin-publish")
@@ -49,6 +37,4 @@ subprojects {
             }
         }
     }
-
-    apply(from = rootProject.file("release/bintray.gradle"))
 }
