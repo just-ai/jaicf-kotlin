@@ -3,9 +3,8 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
-    jcenter()
     maven("https://plugins.gradle.org/m2")
+    mavenCentral()
 }
 
 val kotlinVersion = "1.4.21"

@@ -7,9 +7,8 @@ allprojects {
     version = "1.2.0"
 
     repositories {
-        google()
-        jcenter()
         mavenCentral()
         maven(uri("https://jitpack.io"))
+        google()
     }
 }
