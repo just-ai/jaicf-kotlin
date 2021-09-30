@@ -14,7 +14,7 @@ import com.justai.jaicf.model.activation.ActivationRule
  * @see [BaseActivator.provideRuleMatcher]
  * @see [BaseActivator.ruleMatcher]
  */
-interface ActivationRuleMatcher {
+fun interface ActivationRuleMatcher {
     /**
      * Attempts to match the [rule] and provide [ActivatorContext].
      *
