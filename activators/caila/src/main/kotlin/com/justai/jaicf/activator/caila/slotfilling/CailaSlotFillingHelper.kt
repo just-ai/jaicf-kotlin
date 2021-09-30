@@ -1,6 +1,7 @@
 package com.justai.jaicf.activator.caila.slotfilling
 
 
+import com.justai.jaicf.activator.caila.CailaIntentActivatorContext
 import com.justai.jaicf.activator.caila.caila
 import com.justai.jaicf.activator.caila.client.CailaHttpClient
 import com.justai.jaicf.activator.caila.dto.CailaEntityMarkupData
@@ -29,6 +30,10 @@ internal class CailaSlotFillingHelper(
         initialActivationContext: ActivatorContext?,
         slotReactor: SlotReactor?
     ): SlotFillingResult {
+        if (initialActivationContext != null && initialActivationContext !is CailaIntentActivatorContext) {
+            return SlotFillingFinished(initialActivationContext)
+        }
+
         val ctx = restoreContext(botContext, initialActivationContext)
         val required = ctx.requiredSlots
         val known = ctx.knownSlots
