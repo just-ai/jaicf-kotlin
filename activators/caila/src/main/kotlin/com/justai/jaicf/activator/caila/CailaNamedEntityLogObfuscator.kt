@@ -32,8 +32,11 @@ class CailaNamedEntityLogObfuscator private constructor(
         return out
     }
 
-    private fun getEntityTexts(activationContext: ActivationContext?) =
-        activationContext?.activation?.context?.caila?.entities
-            ?.filter { predicate(it.entity) }
-            ?.map { it.text to it.entity }?.toMap() ?: mapOf()
+    private fun getEntityTexts(activationContext: ActivationContext?): Map<String, String> {
+        val context = activationContext?.activation?.context ?: return mapOf()
+        val result = context.caila?.result ?: context.cailaEntity?.result ?: return mapOf()
+        return result.entitiesLookup.entities
+            .filter { predicate(it.entity) }
+            .map { it.text to it.entity }.toMap()
+    }
 }
