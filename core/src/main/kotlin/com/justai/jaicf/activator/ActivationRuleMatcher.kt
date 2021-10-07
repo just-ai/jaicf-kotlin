@@ -43,7 +43,6 @@ interface ActivationRuleMatcher {
      * @see [ActivatorContext]
      */
     fun match(botContext: BotContext, request: BotRequest, rule: ActivationRule): ActivatorContext? {
-        if (!rule.canHandle(botContext, request)) return null
-        return match(rule)
+        return match(rule)?.takeIf { rule.isOnlyIf(botContext, request, it) }
     }
 }
