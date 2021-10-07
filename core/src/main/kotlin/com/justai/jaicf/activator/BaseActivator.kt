@@ -25,6 +25,7 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         val matcher = provideRuleMatcher(botContext, request)
 
         val activations = transitions.mapNotNull { transition ->
+            if (!transition.rule.canHandle(botContext, request)) return@mapNotNull null
             matcher.match(transition.rule)?.let { transition to it }
         }
 
