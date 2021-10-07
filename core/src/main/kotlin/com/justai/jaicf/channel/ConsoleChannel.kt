@@ -3,7 +3,11 @@ package com.justai.jaicf.channel
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.logging.*
+import com.justai.jaicf.logging.AudioReaction
+import com.justai.jaicf.logging.ButtonsReaction
+import com.justai.jaicf.logging.ImageReaction
+import com.justai.jaicf.logging.Reaction
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.test.reactions.TestReactions
 import java.util.*
 
