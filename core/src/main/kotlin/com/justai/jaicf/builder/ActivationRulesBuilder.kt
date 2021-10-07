@@ -4,6 +4,8 @@ import com.justai.jaicf.activator.catchall.CatchAllActivationRule
 import com.justai.jaicf.activator.event.AnyEventActivationRule
 import com.justai.jaicf.activator.event.EventByNameActivationRule
 import com.justai.jaicf.activator.intent.AnyIntentActivationRule
+import com.justai.jaicf.activator.intent.IntentActivationRule
+import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.model.activation.ActivationRule
@@ -16,9 +18,7 @@ class ActivationRulesBuilder internal constructor() {
     /**
      * Registers the provided [ActivationRule].
      */
-    fun rule(rule: ActivationRule) {
-        rules += rule
-    }
+    fun <T: ActivationRule> rule(rule: T): T = rule.also(rules::add)
 
     internal fun build(): List<ActivationRule> = rules
 
