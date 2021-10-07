@@ -3,7 +3,7 @@ plugins {
 }
 
 repositories {
-    maven("https://plugins.gradle.org/m2")
+    maven(uri("https://plugins.gradle.org/m2"))
     mavenCentral()
 }
 
