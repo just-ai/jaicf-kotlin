@@ -1,5 +1,3 @@
-@file:Suppress("DeprecatedCallableAddReplaceWith")
-
 package com.justai.jaicf.activator
 
 import com.justai.jaicf.api.BotRequest
