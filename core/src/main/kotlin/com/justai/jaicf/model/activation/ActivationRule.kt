@@ -1,28 +1,35 @@
 package com.justai.jaicf.model.activation
 
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 
 interface ActivationRule {
 
     /**
-     * Tells whether this rule is able to activate given [request]
+     * Tells whether resulting [ActivatorContext] created by this rule is able to activate a scenario state
      *
      * @param botContext current context of the bot
      * @param request current request
+     * @param activator resulting activator context
      * @return `true` if this rule should be tested against given [request], `false` otherwise
      */
-    fun canHandle(botContext: BotContext, request: BotRequest): Boolean
+    fun isOnlyIf(botContext: BotContext, request: BotRequest, activator: ActivatorContext): Boolean
 
     /**
-     * Sets the given [predicate] as a pre-match condition for this rule,
-     * meaning that this rule will be tested by activator only if the given predicate returs true.
+     * Sets the given [predicate] as a post-match condition for this rule,
+     * meaning that [ActivatorContext] created by this rule will be passed to scenario
+     * only if the given predicate returs true.
      *
      * @param predicate a pre-match condition
      */
     fun onlyIf(predicate: OnlyIfContext.() -> Boolean)
 
-    data class OnlyIfContext(val context: BotContext, val request: BotRequest)
+    open class OnlyIfContext(
+        open val context: BotContext,
+        open val request: BotRequest,
+        open val activator: ActivatorContext
+    )
 }
 
 
@@ -32,8 +39,8 @@ interface ActivationRule {
 abstract class ActivationRuleAdapter : ActivationRule {
     private var onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = { true }
 
-    override fun canHandle(botContext: BotContext, request: BotRequest): Boolean {
-        return onlyIf.invoke(ActivationRule.OnlyIfContext(botContext, request))
+    override fun isOnlyIf(botContext: BotContext, request: BotRequest, activator: ActivatorContext): Boolean {
+        return onlyIf.invoke(ActivationRule.OnlyIfContext(botContext, request, activator))
     }
 
     override fun onlyIf(predicate: ActivationRule.OnlyIfContext.() -> Boolean) {
