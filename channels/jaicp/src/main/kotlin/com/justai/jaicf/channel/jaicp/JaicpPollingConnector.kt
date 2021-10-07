@@ -6,8 +6,8 @@ import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.polling.Dispatcher
 import com.justai.jaicf.helpers.logging.WithLogger
-import io.ktor.client.HttpClient
-import io.ktor.client.features.logging.LogLevel
+import io.ktor.client.*
+import io.ktor.client.features.logging.*
 
 /**
  * This class is used to create polling coroutines for each channel, polls requests and sends responses.
@@ -48,6 +48,7 @@ open class JaicpPollingConnector(
     override fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
         logger.debug("Register channel ${channelConfig.channelType}")
         dispatcher.registerPolling(channel, getChannelProxyUrl(channelConfig))
+        channelMap[channelConfig.channel] = channel
     }
 
     override fun evict(channelConfig: ChannelConfig) {

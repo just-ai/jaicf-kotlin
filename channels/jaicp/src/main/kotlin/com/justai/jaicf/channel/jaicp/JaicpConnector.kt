@@ -31,9 +31,10 @@ abstract class JaicpConnector(
     val accessToken: String,
     val url: String,
     httpClient: HttpClient,
-    executorThreadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE
+    executorThreadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE,
 ) : WithLogger {
 
+    protected val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
     protected val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
     private var registeredChannels = fetchChannels()
@@ -100,6 +101,8 @@ abstract class JaicpConnector(
 
     protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpResponse =
         threadPoolRequestExecutor.executeSync(request, channel)
+
+    fun getRunningChannels() = channelMap.toMap()
 
     companion object {
         const val PING_REQUEST_TYPE = "ping"

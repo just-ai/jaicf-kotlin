@@ -1,20 +1,23 @@
 package com.justai.jaicf.channel.jaicp
 
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.channel.http.*
+import com.justai.jaicf.channel.http.HttpBotChannel
+import com.justai.jaicf.channel.http.HttpBotRequest
+import com.justai.jaicf.channel.http.HttpBotResponse
+import com.justai.jaicf.channel.http.asJsonHttpBotResponse
 import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpAsyncResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpErrorResponse
 import com.justai.jaicf.channel.jaicp.dto.JaicpPingRequest
-import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
-import com.justai.jaicf.helpers.logging.WithLogger
-import io.ktor.client.HttpClient
-import io.ktor.client.features.logging.LogLevel
 import com.justai.jaicf.channel.jaicp.endpoints.ktor.channelCheckEndpoint
 import com.justai.jaicf.channel.jaicp.endpoints.ktor.healthCheckEndpoint
 import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
+import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
+import com.justai.jaicf.helpers.logging.WithLogger
+import io.ktor.client.*
+import io.ktor.client.features.logging.*
 
 
 /**
@@ -60,9 +63,6 @@ open class JaicpWebhookConnector(
 ) : WithLogger,
     HttpBotChannel,
     JaicpConnector(botApi, channels, accessToken, url, httpClient, threadPoolSize) {
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    protected val channelMap: MutableMap<String, JaicpBotChannel> = mutableMapOf()
 
     init {
         loadConfig()

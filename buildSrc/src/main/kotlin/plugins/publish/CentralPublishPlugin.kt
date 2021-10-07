@@ -8,7 +8,14 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.Jar
-import org.gradle.kotlin.dsl.*
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByName
+import org.gradle.kotlin.dsl.invoke
+import org.gradle.kotlin.dsl.provideDelegate
+import org.gradle.kotlin.dsl.register
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -52,11 +59,14 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
         applySafely<SigningPlugin>()
 
         afterEvaluate {
-            val dokkaJavadoc = tasks.register<DokkaTask>("dokkaJavadoc") {
-                outputFormat = "javadoc"
-                outputDirectory = "$buildDir/javadoc"
-                configuration.noStdlibLink = true
-                configuration.noJdkLink = true
+            val dokkaJavadoc = tasks.getByName("dokkaJavadoc", DokkaTask::class) {
+                dokkaSourceSets {
+                    configureEach {
+                        outputDirectory.set(File("$buildDir/javadoc"))
+                        noStdlibLink.set(true)
+                        noJdkLink.set(true)
+                    }
+                }
             }
 
             val sourcesJar = tasks.register<Jar>("sourcesJar") {
