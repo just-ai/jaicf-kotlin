@@ -12,7 +12,7 @@ import com.justai.jaicf.model.activation.ActivationRule
 import org.intellij.lang.annotations.Language
 
 @ScenarioDsl
-class ActivationRulesBuilder internal constructor() {
+class ActivationRulesBuilder internal constructor(private val fromState: String) {
     private val rules = mutableListOf<ActivationRule>()
 
     /**
@@ -84,5 +84,7 @@ class ActivationRulesBuilder internal constructor() {
      * @see com.justai.jaicf.api.BotApi
      */
     fun anyIntent() = rule(AnyIntentActivationRule())
+
+    fun ActivationRule.onlyFromParent() = onlyIf { context.dialogContext.currentContext == fromState }
 
 }
