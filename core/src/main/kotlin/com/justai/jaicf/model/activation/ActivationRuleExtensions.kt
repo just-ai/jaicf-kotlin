@@ -1,7 +1,10 @@
 package com.justai.jaicf.model.activation
 
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.context.ActivatorContext
+import com.justai.jaicf.generic.ActivatorTypeToken
 import com.justai.jaicf.generic.ChannelTypeToken
+import com.justai.jaicf.generic.ContextTypeToken
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -82,3 +85,26 @@ fun ActivationRule.onlyIfNotInSession(key: String) = disableIf { context.session
  * @see ChannelTypeToken.isInstance
  */
 fun ActivationRule.onlyFrom(token: ChannelTypeToken<out BotRequest, out Reactions>) = onlyIf { token.isInstance(request) }
+
+/**
+ * Allows activation of [this] rule only if the current request is received from channel specified by given [token]
+ * and the rule was activated by activator specified by given [token]
+ *
+ * @param token type of a desired channel and activator
+ *
+ * @see ContextTypeToken
+ * @see ContextTypeToken.isInstance
+ */
+fun ActivationRule.onlyFrom(token: ContextTypeToken<out ActivatorContext, out BotRequest, out Reactions>) =
+    onlyIf { token.isInstance(request) && token.isInstance(activator) }
+
+/**
+ * Allows activation of [this] rule only if the current request is received from channel specified by given [token]
+ * and the rule was activated by activator specified by given [token]
+ *
+ * @param token type of a desired activator
+ *
+ * @see ActivatorTypeToken
+ * @see ActivatorTypeToken.isInstance
+ */
+fun ActivationRule.onlyFrom(token: ActivatorTypeToken<out ActivatorContext>) = onlyIf { token.isInstance(activator) }
