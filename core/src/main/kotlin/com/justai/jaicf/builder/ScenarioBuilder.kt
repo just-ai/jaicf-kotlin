@@ -262,8 +262,9 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      * @see com.justai.jaicf.activator.Activator
      */
     fun activators(@PathValue fromState: String = parent.toString(), body: ActivationRulesBuilder.() -> Unit) {
-        val rules = ActivationRulesBuilder(fromState).apply(body).build()
-        val transitions = rules.map { Transition(fromState, path.toString(), it) }
+        val toState = path.toString()
+        val rules = ActivationRulesBuilder(fromState, toState).apply(body).build()
+        val transitions = rules.map { Transition(fromState, toState, it) }
         scenarioModelBuilder.transitions.addAll(transitions)
     }
 

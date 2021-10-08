@@ -9,10 +9,15 @@ import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.intent.IntentByNameActivationRule
 import com.justai.jaicf.activator.regex.RegexActivationRule
 import com.justai.jaicf.model.activation.ActivationRule
+import com.justai.jaicf.model.activation.disableIf
 import org.intellij.lang.annotations.Language
 
 @ScenarioDsl
-class ActivationRulesBuilder internal constructor(private val fromState: String) {
+class ActivationRulesBuilder internal constructor(
+    private val fromState: String,
+    private val toState: String
+) {
+
     private val rules = mutableListOf<ActivationRule>()
 
     /**
@@ -85,6 +90,16 @@ class ActivationRulesBuilder internal constructor(private val fromState: String)
      */
     fun anyIntent() = rule(AnyIntentActivationRule())
 
+    /**
+     * Allows activation of [this] rule only from a direct parent in a scenario tree.
+     */
     fun ActivationRule.onlyFromParent() = onlyIf { context.dialogContext.currentContext == fromState }
 
+    /**
+     * Disable activation of [this] rule from direct and indirect children in a scenario tree.
+     */
+    fun ActivationRule.disableFromChildren() = disableIf {
+        val current = context.dialogContext.currentContext
+        current.startsWith(toState) && current.length != toState.length
+    }
 }
