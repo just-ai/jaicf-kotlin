@@ -7,7 +7,7 @@ permalink: Deployment
 
 Here you can learn how to deploy your JAICF project into production-ready environments using multiple tools and approaches.
 
-> Deployment process and tools depends on your company environment, platforms and experience.
+> Deployment process and tools depend on your company environment, platforms and experience.
 > Here we provide common practices for any JAICF-related project that can be adopted or changed.
 
 ## Spring Boot
