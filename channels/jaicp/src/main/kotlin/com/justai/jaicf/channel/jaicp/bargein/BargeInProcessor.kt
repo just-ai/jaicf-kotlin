@@ -1,14 +1,21 @@
 package com.justai.jaicf.channel.jaicp.bargein
 
+import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyBargeInRequest
 import com.justai.jaicf.channel.jaicp.dto.TelephonyQueryRequest
 import com.justai.jaicf.channel.jaicp.dto.bargeIn
 import com.justai.jaicf.channel.jaicp.reactions.telephony
+import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.exceptions.scenarioCause
 import com.justai.jaicf.helpers.logging.WithLogger
-import com.justai.jaicf.hook.*
-import com.justai.jaicf.model.scenario.ScenarioModel
+import com.justai.jaicf.hook.AfterProcessHook
+import com.justai.jaicf.hook.AnyErrorHook
+import com.justai.jaicf.hook.BeforeActivationHook
+import com.justai.jaicf.hook.BeforeProcessHook
+import com.justai.jaicf.hook.BotHook
+import com.justai.jaicf.hook.BotHookException
+import com.justai.jaicf.hook.BotRequestHook
 import com.justai.jaicf.model.state.StatePath
 
 
@@ -35,10 +42,27 @@ open class BargeInProcessor : WithLogger {
             "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/bargeInContext"
         protected const val IS_INVALID_CONTEXT_KEY =
             "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor/isErrorContext"
+        const val BARGE_IN_PROCESSOR_TEMP_KEY =
+            "com/justai/jaicf/channel/jaicp/bargein/bargeInProcessor"
+
         val NON_FALLBACK = object : BargeInProcessor() {
             override fun isAllowInterruption(hook: BeforeProcessHook) =
                 hook.context.dialogContext.nextState?.endsWith("/fallback") == false
         }
+    }
+
+    /**
+     * Appended as hook to scenario in TelephonyChannel to process bargeIn events.
+     * Puts the current BargeInProcessor into [com.justai.jaicf.context.BotContext.temp]
+     *
+     * @see BotRequestHook
+     * */
+    fun handleBotRequest(hook: BotRequestHook) {
+        hook.context.temp[BARGE_IN_PROCESSOR_TEMP_KEY] = this
+    }
+
+    open fun isAfterSuccessfullBargeIn(botContext: BotContext, request: BotRequest): Boolean {
+        return botContext.session[IS_SUCCESSFULLY_INTERRUPTED] as? Boolean ?: false
     }
 
     /**

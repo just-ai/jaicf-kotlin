@@ -35,6 +35,7 @@ class TelephonyChannel(
 
     init {
         (botApi as? BotEngine)?.run {
+            hooks.addHookAction(bargeInProcessor::handleBotRequest)
             hooks.addHookAction(bargeInProcessor::handleBeforeProcess)
             hooks.addHookAction(bargeInProcessor::handleBeforeActivation)
             hooks.addHookAction(bargeInProcessor::handleActivationError)
