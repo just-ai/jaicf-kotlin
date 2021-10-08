@@ -23,8 +23,9 @@ interface ActivationRule {
      * only if the given predicate returs true.
      *
      * @param predicate a pre-match condition
+     * @return [this] rule for chaining
      */
-    fun onlyIf(predicate: OnlyIfContext.() -> Boolean)
+    fun onlyIf(predicate: OnlyIfContext.() -> Boolean): ActivationRule
 
     open class OnlyIfContext(
         open val context: BotContext,
@@ -45,7 +46,8 @@ abstract class ActivationRuleAdapter : ActivationRule {
         return onlyIf.all { it.invoke(context) }
     }
 
-    override fun onlyIf(predicate: ActivationRule.OnlyIfContext.() -> Boolean) {
+    override fun onlyIf(predicate: ActivationRule.OnlyIfContext.() -> Boolean): ActivationRule {
         onlyIf.add(predicate)
+        return this
     }
 }
