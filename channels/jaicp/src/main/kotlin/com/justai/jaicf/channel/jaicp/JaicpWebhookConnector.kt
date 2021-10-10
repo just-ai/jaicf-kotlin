@@ -82,8 +82,6 @@ open class JaicpWebhookConnector(
 
     fun reload() = reloadConfig()
 
-    fun getRunningChannels() = channelMap.map { it.key }
-
     override fun process(request: HttpBotRequest): HttpBotResponse {
         val botRequest = request.receiveText()
             .also { logger.debug("Received botRequest: $it") }

@@ -26,7 +26,7 @@ open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotC
     override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse) {
         if (req?.requestURI?.contains(CHANNEL_CHECK_URL) == true) {
             val channelId = req.requestURI.substringAfter("$CHANNEL_CHECK_URL/").split("/").firstOrNull()
-            if (connector.getRunningChannels().contains(channelId))
+            if (connector.getRunningChannels().containsKey(channelId))
                 resp.ok()
             else
                 resp.notFound("Channel $channelId is not configured.")

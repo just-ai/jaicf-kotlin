@@ -30,7 +30,7 @@ fun Routing.healthCheckEndpoint(connector: JaicpWebhookConnector) {
 fun Routing.channelCheckEndpoint(connector: JaicpWebhookConnector) {
     get("$CHANNEL_CHECK_URL/{channelId}") {
         val channelId = call.parameters["channelId"]
-        if (connector.getRunningChannels().contains(channelId)) {
+        if (connector.getRunningChannels().containsKey(channelId)) {
             call.respond(HttpStatusCode.OK, "OK")
         } else {
             call.respond(HttpStatusCode.NotFound, "Channel $channelId is not configured.")
