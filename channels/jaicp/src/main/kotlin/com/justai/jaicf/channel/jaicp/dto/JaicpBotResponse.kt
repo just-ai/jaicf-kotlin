@@ -5,11 +5,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 
+@Serializable
 sealed class JaicpResponse
 
+@Serializable
 object JaicpAsyncResponse : JaicpResponse()
 
-class JaicpErrorResponse(val message: String): JaicpResponse()
+@Serializable
+class JaicpErrorResponse(val message: String) : JaicpResponse()
 
 @Serializable
 data class JaicpBotResponse(
@@ -33,7 +36,7 @@ fun JaicpBotResponse.Companion.fromRequest(
     jaicpBotRequest: JaicpBotRequest,
     rawResponse: JsonElement,
     processingTime: Long = 0,
-    currentState: String = "/"
+    currentState: String = "/",
 ) = JaicpBotResponse(
     data = rawResponse,
     botId = jaicpBotRequest.botId,
