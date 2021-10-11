@@ -62,7 +62,7 @@ open class BargeInProcessor : WithLogger {
     }
 
     open fun isAfterSuccessfullBargeIn(botContext: BotContext, request: BotRequest): Boolean {
-        return botContext.session[IS_SUCCESSFULLY_INTERRUPTED] as? Boolean ?: false
+        return botContext.temp[IS_SUCCESSFULLY_INTERRUPTED] as? Boolean ?: false
     }
 
     /**
@@ -107,6 +107,8 @@ open class BargeInProcessor : WithLogger {
             } else if (originalContext != null) {
                 hook.context.dialogContext.currentContext = originalContext
             }
+
+            hook.context.temp[IS_SUCCESSFULLY_INTERRUPTED] = isAfterInterruption
 
             hook.context.session.remove(ORIGINAL_CONTEXT_KEY)
             hook.context.session.remove(BARGEIN_CONTEXT_KEY)
