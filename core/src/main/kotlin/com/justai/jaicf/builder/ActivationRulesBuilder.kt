@@ -13,10 +13,7 @@ import com.justai.jaicf.model.activation.disableIf
 import org.intellij.lang.annotations.Language
 
 @ScenarioDsl
-class ActivationRulesBuilder internal constructor(
-    private val fromState: String,
-    private val toState: String
-) {
+class ActivationRulesBuilder internal constructor() {
 
     private val rules = mutableListOf<ActivationRule>()
 
@@ -89,17 +86,4 @@ class ActivationRulesBuilder internal constructor(
      * @see com.justai.jaicf.api.BotApi
      */
     fun anyIntent() = rule(AnyIntentActivationRule())
-
-    /**
-     * Allows activation of [this] rule only from a direct parent in a scenario tree.
-     */
-    fun ActivationRule.onlyFromParent() = onlyIf { context.dialogContext.currentContext == fromState }
-
-    /**
-     * Disable activation of [this] rule from direct and indirect children in a scenario tree.
-     */
-    fun ActivationRule.disableFromChildren() = disableIf {
-        val current = context.dialogContext.currentContext
-        current.startsWith(toState) && current.length != toState.length
-    }
 }

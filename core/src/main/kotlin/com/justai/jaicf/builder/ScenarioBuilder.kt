@@ -263,7 +263,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      */
     fun activators(@PathValue fromState: String = parent.toString(), body: ActivationRulesBuilder.() -> Unit) {
         val toState = path.toString()
-        val rules = ActivationRulesBuilder(fromState, toState).apply(body).build()
+        val rules = ActivationRulesBuilder().apply(body).build()
         val transitions = rules.map { Transition(fromState, toState, it) }
         scenarioModelBuilder.transitions.addAll(transitions)
     }
