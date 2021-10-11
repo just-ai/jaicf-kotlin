@@ -99,8 +99,7 @@ fun ActivationRule.onlyFrom(token: ContextTypeToken<out ActivatorContext, out Bo
     onlyIf { token.isInstance(request) && token.isInstance(activator) }
 
 /**
- * Allows activation of [this] rule only if the current request is received from channel specified by given [token]
- * and the rule was activated by activator specified by given [token]
+ * Allows activation of [this] rule only if the rule was activated by activator specified by given [token]
  *
  * @param token type of a desired activator
  *
