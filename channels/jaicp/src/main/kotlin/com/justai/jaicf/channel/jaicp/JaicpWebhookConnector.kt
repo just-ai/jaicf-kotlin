@@ -64,6 +64,8 @@ open class JaicpWebhookConnector(
     HttpBotChannel,
     JaicpConnector(botApi, channels, accessToken, url, httpClient, threadPoolSize) {
 
+    protected val channelMap = mutableMapOf<String, JaicpBotChannel>()
+
     init {
         loadConfig()
     }
@@ -79,6 +81,8 @@ open class JaicpWebhookConnector(
         logger.debug("Evict channel ${channelConfig.channelType}")
         channelMap.remove(channelConfig.channel)
     }
+
+    override fun getRunningChannels() = channelMap
 
     fun reload() = reloadConfig()
 

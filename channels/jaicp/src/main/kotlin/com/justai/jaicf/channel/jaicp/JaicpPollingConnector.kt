@@ -38,6 +38,7 @@ open class JaicpPollingConnector(
     WithLogger {
 
     private val dispatcher = Dispatcher(httpClient, threadPoolRequestExecutor)
+    protected val channelMap = mutableMapOf<String, JaicpBotChannel>()
 
     init {
         loadConfig()
@@ -54,4 +55,6 @@ open class JaicpPollingConnector(
     override fun evict(channelConfig: ChannelConfig) {
         logger.debug("Eviction for polling connector is not supported yet.")
     }
+
+    override fun getRunningChannels() = channelMap
 }
