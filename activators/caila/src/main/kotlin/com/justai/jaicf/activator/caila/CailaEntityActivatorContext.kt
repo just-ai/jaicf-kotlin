@@ -13,6 +13,8 @@ data class CailaEntityActivatorContext(
 ) : StrictActivatorContext(), java.io.Serializable {
 
     val entity = entityData.entity
+    val value = entityData.value
+    val text = entityData.text
 
     companion object {
         private const val serialVersionUID = 1L
