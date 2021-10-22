@@ -15,6 +15,6 @@ dependencies {
     implementation(kotlin("serialization", kotlinVersion))
     implementation(kotlin("reflect", reflectVersion))
     implementation("com.github.breadmoirai:github-release:2.2.12")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.4.30")
+    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.4.32")
     implementation(gradleApi())
 }
