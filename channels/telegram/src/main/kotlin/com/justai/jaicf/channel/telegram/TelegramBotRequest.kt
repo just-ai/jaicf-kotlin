@@ -4,7 +4,14 @@ import com.github.kotlintelegrambot.entities.Contact
 import com.github.kotlintelegrambot.entities.Game
 import com.github.kotlintelegrambot.entities.Location
 import com.github.kotlintelegrambot.entities.Message
-import com.github.kotlintelegrambot.entities.files.*
+import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.entities.files.Animation
+import com.github.kotlintelegrambot.entities.files.Audio
+import com.github.kotlintelegrambot.entities.files.Document
+import com.github.kotlintelegrambot.entities.files.PhotoSize
+import com.github.kotlintelegrambot.entities.files.Video
+import com.github.kotlintelegrambot.entities.files.VideoNote
+import com.github.kotlintelegrambot.entities.files.Voice
 import com.github.kotlintelegrambot.entities.stickers.Sticker
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
@@ -32,85 +39,100 @@ val TelegramBotRequest.voice get() = this as? TelegramVoiceRequest
 internal val Message.clientId get() = chat.id.toString()
 
 interface TelegramBotRequest: BotRequest {
+    val update: Update
     val message: Message
     val chatId: Long get() = message.chat.id
 }
 
 data class TelegramTextRequest(
+    override val update: Update,
     override val message: Message
 ): TelegramBotRequest, QueryBotRequest(clientId = message.clientId, input = message.text.toString())
 
 data class TelegramQueryRequest(
+    override val update: Update,
     override val message: Message,
     val data: String
 ): TelegramBotRequest, QueryBotRequest(clientId = message.clientId, input = data)
 
 data class TelegramLocationRequest(
+    override val update: Update,
     override val message: Message,
     val location: Location
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.LOCATION)
 
 data class TelegramContactRequest(
+    override val update: Update,
     override val message: Message,
     val contact: Contact
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.CONTACT)
 
 data class TelegramAudioRequest(
+    override val update: Update,
     override val message: Message,
     val audio: Audio
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.AUDIO)
 
 data class TelegramDocumentRequest(
+    override val update: Update,
     override val message: Message,
     val document: Document
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.DOCUMENT)
 
 data class TelegramAnimationRequest(
+    override val update: Update,
     override val message: Message,
     val animation: Animation
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.ANIMATION)
 
 data class TelegramGameRequest(
+    override val update: Update,
     override val message: Message,
     val game: Game
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.GAME)
 
 data class TelegramPhotosRequest(
+    override val update: Update,
     override val message: Message,
     val photos: List<PhotoSize>
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.PHOTOS)
 
 data class TelegramStickerRequest(
+    override val update: Update,
     override val message: Message,
     val sticker: Sticker
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.STICKER)
 
 data class TelegramVideoRequest(
+    override val update: Update,
     override val message: Message,
     val video: Video
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VIDEO)
 
 data class TelegramVideoNoteRequest(
+    override val update: Update,
     override val message: Message,
     val videoNote: VideoNote
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VIDEO_NOTE)
 
 data class TelegramVoiceRequest(
+    override val update: Update,
     override val message: Message,
     val voice: Voice
 ): TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.VOICE)
 
 interface TelegramInvocationRequest : TelegramBotRequest, InvocationRequest {
     companion object {
-        fun create(r: InvocationRequest, message: Message): TelegramInvocationRequest? = when (r) {
-            is InvocationEventRequest -> TelegramInvocationEventRequest(message, r.clientId, r.input, r.requestData)
-            is InvocationQueryRequest -> TelegramInvocationQueryRequest(message, r.clientId, r.input, r.requestData)
+        fun create(r: InvocationRequest, update: Update, message: Message): TelegramInvocationRequest? = when (r) {
+            is InvocationEventRequest -> TelegramInvocationEventRequest(update, message, r.clientId, r.input, r.requestData)
+            is InvocationQueryRequest -> TelegramInvocationQueryRequest(update, message, r.clientId, r.input, r.requestData)
             else -> null
         }
     }
 }
 
 data class TelegramInvocationEventRequest(
+    override val update: Update,
     override val message: Message,
     override val clientId: String,
     override val input: String,
@@ -118,6 +140,7 @@ data class TelegramInvocationEventRequest(
 ) : TelegramInvocationRequest, InvocationEventRequest(clientId, input, requestData)
 
 data class TelegramInvocationQueryRequest(
+    override val update: Update,
     override val message: Message,
     override val clientId: String,
     override val input: String,

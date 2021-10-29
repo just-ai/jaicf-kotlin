@@ -48,62 +48,61 @@ class TelegramChannel(
         botUpdater = updater
 
         dispatch {
-            fun process(request: TelegramBotRequest, update: Update) {
-                botApi.process(request, TelegramReactions(bot, request, liveChatProvider), RequestContext.fromHttp(update.httpBotRequest))
+            fun process(request: TelegramBotRequest) {
+                botApi.process(request, TelegramReactions(bot, request, liveChatProvider), RequestContext.fromHttp(request.update.httpBotRequest))
             }
 
             text {
-                process(TelegramTextRequest(message), update)
+                process(TelegramTextRequest(update, message))
             }
 
             callbackQuery {
-                callbackQuery.message?.let { message ->
-                    process(TelegramQueryRequest(message, callbackQuery.data), update)
-                }
+                val message = callbackQuery.message ?: return@callbackQuery
+                process(TelegramQueryRequest(update, message, callbackQuery.data))
             }
 
             location {
-                process(TelegramLocationRequest(message, location), update)
+                process(TelegramLocationRequest(update, message, location))
             }
 
             contact {
-                process(TelegramContactRequest(message, contact), update)
+                process(TelegramContactRequest(update, message, contact))
             }
 
             audio {
-                process(TelegramAudioRequest(message, media), update)
+                process(TelegramAudioRequest(update, message, media))
             }
 
             document {
-                process(TelegramDocumentRequest(message, media), update)
+                process(TelegramDocumentRequest(update, message, media))
             }
 
             animation {
-                process(TelegramAnimationRequest(message, media), update)
+                process(TelegramAnimationRequest(update, message, media))
             }
 
             game {
-                process(TelegramGameRequest(message, media), update)
+                process(TelegramGameRequest(update, message, media))
             }
 
             photos {
-                process(TelegramPhotosRequest(message, media), update)
+                process(TelegramPhotosRequest(update, message, media))
             }
 
             sticker {
-                process(TelegramStickerRequest(message, media), update)
+                process(TelegramStickerRequest(update, message, media))
             }
 
             video {
-                process(TelegramVideoRequest(message, media), update)
+                process(TelegramVideoRequest(update, message, media))
             }
 
             videoNote {
-                process(TelegramVideoNoteRequest(message, media), update)
+                process(TelegramVideoNoteRequest(update, message, media))
             }
 
             voice {
-                process(TelegramVoiceRequest(message, media), update)
+                process(TelegramVoiceRequest(update, message, media))
             }
         }
     }
@@ -123,8 +122,9 @@ class TelegramChannel(
 
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val generatedRequest = generateRequestFromTemplate(request)
-        val message = gson.fromJson(generatedRequest, Update::class.java).message ?: return
-        val telegramRequest = TelegramInvocationRequest.create(request, message) ?: return
+        val update = gson.fromJson(generatedRequest, Update::class.java) ?: return
+        val message = update.message ?: return
+        val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
         botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider), requestContext)
     }
 
