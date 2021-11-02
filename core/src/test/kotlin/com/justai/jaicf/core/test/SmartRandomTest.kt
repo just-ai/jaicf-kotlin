@@ -5,9 +5,8 @@ import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.StrictActivatorContext
-import com.justai.jaicf.helpers.action.smartRandom
 import com.justai.jaicf.test.reactions.TestReactions
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
 import java.util.*
@@ -26,13 +25,20 @@ class SmartRandomTest {
         )
     }
 
-    @RepeatedTest(100)
-    fun testRandom() {
-        val check = mutableListOf<Int>()
-        for (i in 1..5) {
-            val r = smartRandom(10, context)
-            assertFalse(check.contains(r), "Element was found")
-            check.add(r)
-        }
+    @RepeatedTest(100, name = RepeatedTest.LONG_DISPLAY_NAME)
+    fun `Smart random generates no duplicates`() {
+        val (max, count) = 10 to 5
+        val randoms = IntArray(count) { context.random(max) }
+
+        assertTrue(randoms.distinct().size == count) { "Duplicated random value was found" }
+    }
+
+    @RepeatedTest(100, name = RepeatedTest.LONG_DISPLAY_NAME)
+    fun `Smart random generates values within its bounds`() {
+        val (max, count) = 10 to 100
+        val randoms = IntArray(count) { context.random(max) }
+
+        val range = 0 until max
+        randoms.forEach { assertTrue(it in range) { "Expected value in range $range but was $it" } }
     }
 }
