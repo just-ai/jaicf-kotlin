@@ -6,19 +6,21 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DefaultActionContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.test.reactions.TestReactions
+import org.junit.Rule
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
-import java.util.*
+import org.junit.jupiter.api.TestInstance
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SmartRandomTest {
 
     private lateinit var context: DefaultActionContext
 
-    @BeforeEach
+    @BeforeAll
     fun createContext() {
         context = ActionContext(
-            BotContext(UUID.randomUUID().toString()),
+            BotContext("clientId"),
             StrictActivatorContext(),
             QueryBotRequest("", ""),
             TestReactions()

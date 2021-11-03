@@ -20,7 +20,7 @@ internal fun smartRandom(max: Int, context: DefaultActionContext): Int {
         smartRandom = mutableMapOf()
     }
 
-    val prev = smartRandom!!.getOrDefault(id, mutableListOf())
+    val prev = smartRandom!!.computeIfAbsent(id) { mutableListOf() }
     val randoms = generateSequence { random(max, context) }.take(max * 5)
 
     val rand = randoms.firstOrNull { it !in prev } ?: 0
@@ -29,8 +29,6 @@ internal fun smartRandom(max: Int, context: DefaultActionContext): Int {
     if (prev.size > max / 2) {
         prev.removeFirst()
     }
-
-    smartRandom!![id] = prev
 
     return rand
 }
