@@ -13,7 +13,7 @@ An `onlyIf` function expects a predicate lambda-function as an argument bringing
 [request](request) and [activator](activator) in a lambda context.
 
 
-For example, this `intent` rule will be activated only if enttry with key `name` is in a client context:
+For example, this `intent` rule will be activated only if an entry with key `name` is in a client context:
 ```kotlin
         activators {
             intent("MakeOrder").onlyIf { context.client.containsKey("name") }
