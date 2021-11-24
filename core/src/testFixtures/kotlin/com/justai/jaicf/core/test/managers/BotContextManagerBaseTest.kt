@@ -4,8 +4,9 @@ import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.Serializable
@@ -24,10 +25,10 @@ abstract class BotContextManagerBaseTest {
 
         val result = manager.exchangeContext(context)
 
-        Assertions.assertNotNull(result)
-        Assertions.assertEquals(context.result, result.result)
-        Assertions.assertEquals(context.session, result.session)
-        Assertions.assertEquals(context.client, result.client)
+        assertNotNull(result)
+        assertEquals(context.result, result.result)
+        assertEquals(context.session, result.session)
+        assertEquals(context.client, result.client)
     }
 
     @Test
@@ -40,10 +41,10 @@ abstract class BotContextManagerBaseTest {
 
         val result = manager.exchangeContext(context)
 
-        Assertions.assertNotNull(result)
-        Assertions.assertTrue(result.result is CustomValue)
-        Assertions.assertTrue(result.session["value"] is CustomValue)
-        Assertions.assertTrue(result.client["value"] is CustomValue)
+        assertNotNull(result)
+        assertTrue(result.result is CustomValue)
+        assertTrue(result.session["value"] is CustomValue)
+        assertTrue(result.client["value"] is CustomValue)
     }
 
     @Test
