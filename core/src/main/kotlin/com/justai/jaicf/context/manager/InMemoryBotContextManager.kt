@@ -51,11 +51,26 @@ object InMemoryBotContextManager : BotContextManager {
 
 private fun DialogContext.clone(): DialogContext {
     val dc = DialogContext()
+
     dc.nextContext = nextContext
     dc.currentContext = currentContext
     dc.nextState = nextState
     dc.currentState = currentState
-    dc.transitions.putAll(transitions)
-    dc.backStateStack.addAll(backStateStack)
+
+    dc.transitions.apply {
+        clear()
+        putAll(transitions)
+    }
+
+    dc.backStateStack.apply {
+        clear()
+        addAll(backStateStack)
+    }
+
+    dc.transitionHistory.apply {
+        clear()
+        addAll(transitionHistory)
+    }
+
     return dc
 }

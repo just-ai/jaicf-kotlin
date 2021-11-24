@@ -19,7 +19,7 @@ class DialogContext: Serializable {
     val backStateStack = ArrayDeque<String>()
     var transitionHistory: ArrayDeque<String> = ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT)
         get() {
-            // don't remove, may be null due to java serialization
+            @Suppress("USELESS_ELVIS") // may be null due to java serialization
             field = field ?: ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT)
             return field.apply { if (isEmpty()) add(currentState) }
         }
@@ -55,8 +55,6 @@ class DialogContext: Serializable {
         }
         transitionHistory.add(state)
     }
-
-    private fun createTransitionHistory() = ArrayDeque<String>(TRANSITION_HISTORY_SIZE_LIMIT).apply { add(currentState) }
 
     companion object {
         private const val serialVersionUID = -9180292787182200322L

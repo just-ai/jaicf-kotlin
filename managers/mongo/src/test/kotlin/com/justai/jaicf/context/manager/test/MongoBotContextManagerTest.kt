@@ -3,7 +3,9 @@ package com.justai.jaicf.context.manager.test
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.mongo.MongoBotContextManager
+import com.justai.jaicf.core.test.managers.BotContextManagerBaseTest
 import com.mongodb.client.MongoClients
 import de.flapdoodle.embed.mongo.MongodExecutable
 import de.flapdoodle.embed.mongo.MongodStarter
@@ -19,55 +21,13 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-abstract class MongoBotContextManagerTestBase {
-
-    internal lateinit var manager: MongoBotContextManager
-
-    @BeforeAll
-    internal abstract fun setup()
-
-    @AfterAll
-    internal open fun shutdown() {}
-
-    @Test
-    fun testSave() {
-        val context = BotContext("client1").apply {
-            result = "some result"
-            session["key1"] = "some value"
-        }
-
-        manager.saveContext(context, null, null, RequestContext.DEFAULT)
-
-        val result = manager.loadContext(EventBotRequest("client1", "event"), RequestContext.DEFAULT)
-
-        assertNotNull(result)
-        assertEquals(context.result, result.result)
-        assertEquals(context.session, result.session)
-    }
-
-    @Test
-    fun testSaveCustomBean() {
-        val context = BotContext("client2").apply {
-            result = CustomValue(1)
-            session["value"] = CustomValue(CustomValue(2))
-        }
-
-        manager.saveContext(context, null, null, RequestContext.DEFAULT)
-
-        val result = manager.loadContext(EventBotRequest("client2", "event"), RequestContext.DEFAULT)
-
-        assertNotNull(result)
-        assertTrue(result.result is CustomValue)
-        assertTrue(result.session["value"] is CustomValue)
-    }
-}
-
 @EnabledIfEnvironmentVariable(named = "CI", matches = "true")
-class MongoBotContextManagerTestWithExternalDatabase : MongoBotContextManagerTestBase() {
+class MongoBotContextManagerTestWithExternalDatabase : BotContextManagerBaseTest() {
+
+    override lateinit var manager: BotContextManager
 
     @BeforeAll
-    internal override fun setup() {
+    fun setup() {
         val url = System.getenv("MONGO_URL")
         val client = MongoClients.create(url)
         manager = MongoBotContextManager(client.getDatabase("jaicf").getCollection("contexts"))
@@ -75,12 +35,14 @@ class MongoBotContextManagerTestWithExternalDatabase : MongoBotContextManagerTes
 }
 
 @DisabledIfEnvironmentVariable(named = "CI", matches = "true")
-class MongoBotContextManagerTestWithEmbeddedMongo : MongoBotContextManagerTestBase() {
+class MongoBotContextManagerTestWithEmbeddedMongo : BotContextManagerBaseTest() {
+
+    override lateinit var manager: BotContextManager
 
     private lateinit var mongo: MongodExecutable
 
     @BeforeAll
-    internal override fun setup() {
+    fun setup() {
         val port = Network.getFreeServerPort()
         MongodConfig.builder()
             .version(Version.Main.PRODUCTION)
@@ -95,7 +57,7 @@ class MongoBotContextManagerTestWithEmbeddedMongo : MongoBotContextManagerTestBa
     }
 
     @AfterAll
-    internal override fun shutdown() {
+    fun shutdown() {
         mongo.stop()
     }
 }

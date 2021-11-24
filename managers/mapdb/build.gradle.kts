@@ -14,4 +14,6 @@ dependencies {
     core()
     api(jackson())
     api("org.mapdb:mapdb:3.0.8")
+
+    testImplementation(testFixtures(project(":core")))
 }
