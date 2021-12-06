@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class MapDBBotContextManagerTest : BotContextManagerBaseTest() {
-    override lateinit var manager: BotContextManager
+    override lateinit var manager: MapDbBotContextManager
 
     @BeforeAll
     fun setup() {
@@ -18,13 +18,14 @@ class MapDBBotContextManagerTest : BotContextManagerBaseTest() {
 
     @AfterAll
     fun shutdown() {
+        manager.close()
         Files.deleteIfExists(Paths.get(".mapdb"))
     }
 }
 
 class MapDBBotContextManagerTestWithTempFile : BotContextManagerBaseTest() {
 
-    override lateinit var manager: BotContextManager
+    override lateinit var manager: MapDbBotContextManager
 
     @BeforeAll
     fun setup() {
@@ -33,6 +34,7 @@ class MapDBBotContextManagerTestWithTempFile : BotContextManagerBaseTest() {
 
     @AfterAll
     fun shutdown() {
+        manager.close()
         Files.deleteIfExists(Paths.get(".mapdb"))
     }
 }

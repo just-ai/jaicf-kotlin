@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class JaksonMapDBBotContextManagerTest : BotContextManagerBaseTest() {
-    override lateinit var manager: BotContextManager
+    override lateinit var manager: JacksonMapDbBotContextManager
 
     @BeforeAll
     fun setup() {
@@ -18,13 +18,14 @@ class JaksonMapDBBotContextManagerTest : BotContextManagerBaseTest() {
 
     @AfterAll
     fun shutdown() {
+        manager.close()
         Files.deleteIfExists(Paths.get(".mapdb"))
     }
 }
 
 class JaksonMapDBBotContextManagerTestWithTempFile : BotContextManagerBaseTest() {
 
-    override lateinit var manager: BotContextManager
+    override lateinit var manager: JacksonMapDbBotContextManager
 
     @BeforeAll
     fun setup() {
@@ -33,6 +34,7 @@ class JaksonMapDBBotContextManagerTestWithTempFile : BotContextManagerBaseTest()
 
     @AfterAll
     fun shutdown() {
+        manager.close()
         Files.deleteIfExists(Paths.get(".mapdb"))
     }
 }
