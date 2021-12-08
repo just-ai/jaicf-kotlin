@@ -19,6 +19,7 @@ import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.features.logging.*
 import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 
 /**
@@ -64,6 +65,24 @@ open class JaicpWebhookConnector(
 ) : WithLogger,
     HttpBotChannel,
     JaicpConnector(botApi, channels, accessToken, url, httpClient, executor) {
+
+    constructor(
+        botApi: BotApi,
+        accessToken: String,
+        url: String = DEFAULT_PROXY_URL,
+        channels: List<JaicpChannelFactory>,
+        logLevel: LogLevel = LogLevel.INFO,
+        httpClient: HttpClient = HttpClientFactory.create(logLevel),
+        executorThreadPoolSize: Int
+    ) : this(
+        botApi,
+        accessToken,
+        url,
+        channels,
+        logLevel,
+        httpClient,
+        Executors.newFixedThreadPool(executorThreadPoolSize)
+    )
 
     protected val channelMap = mutableMapOf<String, JaicpBotChannel>()
 

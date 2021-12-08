@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 
 internal class RequestPoller(
@@ -27,10 +28,10 @@ internal class RequestPoller(
     }
 
     private var unprocessed: Boolean = false
-    private var isActive: Boolean = false
+    private val isActive: AtomicBoolean = AtomicBoolean(false)
 
     suspend fun getUpdates(): Flow<List<JaicpBotRequest>> = flow {
-        while (isActive) {
+        while (isActive.get()) {
             try {
                 emit(doPoll())
             } catch (ex: Exception) {
@@ -48,11 +49,11 @@ internal class RequestPoller(
     }
 
     fun stopPolling() {
-        isActive = false
+        isActive.set(false)
     }
 
     fun startPolling() {
-        isActive = true
+        isActive.set(true)
     }
 
     private fun updateSince(requests: List<JaicpBotRequest>) {
