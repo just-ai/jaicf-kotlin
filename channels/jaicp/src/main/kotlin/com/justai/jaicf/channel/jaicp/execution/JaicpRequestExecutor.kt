@@ -28,13 +28,11 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
-import java.util.concurrent.Executors
+import java.util.concurrent.Executor
 import kotlin.coroutines.CoroutineContext
 
-class ThreadPoolRequestExecutor(nThreads: Int) : CoroutineScope, WithLogger {
-
-    override val coroutineContext: CoroutineContext =
-        Executors.newFixedThreadPool(nThreads).asCoroutineDispatcher()
+class JaicpRequestExecutor(val executorImpl: Executor) : CoroutineScope, WithLogger {
+    override val coroutineContext: CoroutineContext = executorImpl.asCoroutineDispatcher()
 
     fun executeAsync(request: JaicpBotRequest, channel: BotChannel) = async(coroutineContext + MDCContext()) {
         execute(request, channel)

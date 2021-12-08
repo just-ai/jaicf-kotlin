@@ -4,7 +4,7 @@ plugins {
 
 allprojects {
     group = "com.just-ai.jaicf"
-    version = "1.2.1"
+    version = "1.2.2-SNAPSHOT"
 
     repositories {
         mavenCentral()
