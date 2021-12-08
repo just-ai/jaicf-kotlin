@@ -33,8 +33,17 @@ abstract class JaicpConnector(
     val accessToken: String,
     val url: String,
     httpClient: HttpClient,
-    executor: Executor
+    executor: Executor,
 ) : WithLogger {
+
+    constructor(
+        botApi: BotApi,
+        channels: List<JaicpChannelFactory>,
+        accessToken: String,
+        url: String,
+        httpClient: HttpClient,
+        executorThreadPoolSize: Int,
+    ) : this(botApi, channels, accessToken, url, httpClient, Executors.newFixedThreadPool(executorThreadPoolSize))
 
     val jaicpExecutor = JaicpRequestExecutor(executor)
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
