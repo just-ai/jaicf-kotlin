@@ -5,18 +5,20 @@ import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.request.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
-import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.CoroutineContext
 
 internal class RequestPoller(
     private val client: HttpClient,
-    private val url: String
+    private val url: String,
+    private val executorContext: CoroutineContext,
 ) : WithLogger {
 
     private var since: Long = runBlocking {
@@ -25,16 +27,17 @@ internal class RequestPoller(
     }
 
     private var unprocessed: Boolean = false
+    private var isActive: Boolean = false
 
     suspend fun getUpdates(): Flow<List<JaicpBotRequest>> = flow {
-        while (coroutineContext.isActive) {
+        while (isActive) {
             try {
                 emit(doPoll())
             } catch (ex: Exception) {
-                delay(500)
+                delay(2000)
             }
         }
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(executorContext)
 
     private suspend fun doPoll() = client.get<List<JaicpBotRequest>>("$url/getUpdates".toUrl()) {
         parameter("ts", since)
@@ -42,6 +45,14 @@ internal class RequestPoller(
     }.also {
         updateSince(it)
         unprocessed = true
+    }
+
+    fun stopPolling() {
+        isActive = false
+    }
+
+    fun startPolling() {
+        isActive = true
     }
 
     private fun updateSince(requests: List<JaicpBotRequest>) {

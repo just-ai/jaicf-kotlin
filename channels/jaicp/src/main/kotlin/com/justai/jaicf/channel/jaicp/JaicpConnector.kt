@@ -5,11 +5,13 @@ import com.justai.jaicf.channel.jaicp.channels.JaicpNativeChannelFactory
 import com.justai.jaicf.channel.jaicp.dto.ChannelConfig
 import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.channel.jaicp.dto.JaicpResponse
-import com.justai.jaicf.channel.jaicp.execution.ThreadPoolRequestExecutor
+import com.justai.jaicf.channel.jaicp.execution.JaicpRequestExecutor
 import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 const val DEFAULT_PROXY_URL = "https://bot.jaicp.com"
 
@@ -31,10 +33,10 @@ abstract class JaicpConnector(
     val accessToken: String,
     val url: String,
     httpClient: HttpClient,
-    executorThreadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE,
+    executor: Executor
 ) : WithLogger {
 
-    protected val threadPoolRequestExecutor = ThreadPoolRequestExecutor(executorThreadPoolSize)
+    val jaicpExecutor = JaicpRequestExecutor(executor)
     private val chatAdapterConnector = ChatAdapterConnector(accessToken, url, httpClient)
     private var registeredChannels = fetchChannels()
 
@@ -101,7 +103,7 @@ abstract class JaicpConnector(
         "$apiProxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
 
     protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpResponse =
-        threadPoolRequestExecutor.executeSync(request, channel)
+        jaicpExecutor.executeSync(request, channel)
 
     companion object {
         const val PING_REQUEST_TYPE = "ping"
@@ -109,6 +111,10 @@ abstract class JaicpConnector(
 }
 
 internal const val DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE = 5
+
+internal val DEFAULT_EXECUTOR by lazy {
+    Executors.newFixedThreadPool(DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE)
+}
 
 val JaicpConnector.apiProxyUrl: String
     get() = "$url/api-proxy/$accessToken"

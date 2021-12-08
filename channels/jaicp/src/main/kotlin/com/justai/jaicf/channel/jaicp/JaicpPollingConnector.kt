@@ -8,6 +8,7 @@ import com.justai.jaicf.channel.jaicp.polling.Dispatcher
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
 import io.ktor.client.features.logging.*
+import java.util.concurrent.Executor
 
 /**
  * This class is used to create polling coroutines for each channel, polls requests and sends responses.
@@ -32,12 +33,12 @@ open class JaicpPollingConnector(
     url: String = DEFAULT_PROXY_URL,
     channels: List<JaicpChannelFactory>,
     logLevel: LogLevel = LogLevel.INFO,
-    httpClient: HttpClient = null ?: HttpClientFactory.create(logLevel),
-    threadPoolSize: Int = DEFAULT_REQUEST_EXECUTOR_THREAD_POOL_SIZE
-) : JaicpConnector(botApi, channels, accessToken, url, httpClient, threadPoolSize),
+    httpClient: HttpClient = HttpClientFactory.create(logLevel),
+    executor: Executor = DEFAULT_EXECUTOR,
+) : JaicpConnector(botApi, channels, accessToken, url, httpClient, executor),
     WithLogger {
 
-    private val dispatcher = Dispatcher(httpClient, threadPoolRequestExecutor)
+    private val dispatcher = Dispatcher(httpClient, jaicpExecutor)
     protected val channelMap = mutableMapOf<String, JaicpBotChannel>()
 
     init {
@@ -45,6 +46,10 @@ open class JaicpPollingConnector(
     }
 
     fun runBlocking() = dispatcher.startPollingBlocking()
+
+    fun run() = dispatcher.startPolling()
+
+    fun stop() = dispatcher.stopPolling()
 
     override fun register(channel: JaicpBotChannel, channelConfig: ChannelConfig) {
         logger.debug("Register channel ${channelConfig.channelType}")
