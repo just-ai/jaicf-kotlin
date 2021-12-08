@@ -38,7 +38,7 @@ internal class Dispatcher(
 
     fun stopPolling() {
         logger.info("Stop polling for ${pollingChannels.size} channels")
-        pollingChannels.forEach { it.stopPolling() }
+        pollingChannels.forEach { it.poller.stopPolling() }
     }
 
     private suspend fun PollingChannel.registerUpdatesCollector() = poller.getUpdates().collect { reqs ->
@@ -58,7 +58,7 @@ internal class Dispatcher(
         return pollingChannels.map { channel ->
             CoroutineScope(jaicpExecutor.coroutineContext + MDCContext()).launch {
                 logger.info("Starting polling coroutine for channel ${channel.botChannel}")
-                channel.startPolling()
+                channel.poller.startPolling()
                 channel.registerUpdatesCollector()
             }
         }
