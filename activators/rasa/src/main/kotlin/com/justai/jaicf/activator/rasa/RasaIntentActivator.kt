@@ -9,13 +9,13 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
-import java.util.UUID
+import java.util.*
 
 class RasaIntentActivator(
     model: ScenarioModel,
     private val api: RasaApi,
     private val confidenceThreshold: Double
-): BaseIntentActivator(model) {
+) : BaseIntentActivator(model) {
 
     override val name = "rasaIntentActivator"
 
@@ -23,17 +23,19 @@ class RasaIntentActivator(
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
         val messageId = UUID.randomUUID().toString()
-        val response = api.parseMessage(RasaParseMessageRequest(request.input, messageId)) ?: return emptyList()
+        val response = api.parseMessage(RasaParseMessageRequest(request.input, messageId))
+
+        response?.ranking ?: return emptyList()
 
         return response.ranking
-                .filter { it.confidence > confidenceThreshold }
-                .map { RasaActivatorContext(it, response.entities) }
+            .filter { it.confidence > confidenceThreshold }
+            .map { RasaActivatorContext(it, response.entities.orEmpty()) }
     }
 
     class Factory(
         private val api: RasaApi,
         private val confidenceThreshold: Double = 0.0
-    ): ActivatorFactory {
+    ) : ActivatorFactory {
         override fun create(model: ScenarioModel) = RasaIntentActivator(model, api, confidenceThreshold)
     }
 }
