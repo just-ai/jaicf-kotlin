@@ -3,10 +3,11 @@ package com.justai.jaicf.activator.caila
 import com.justai.jaicf.activator.ActivationRuleMatcher
 import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.ActivatorFactory
-import com.justai.jaicf.activator.BaseActivator
 import com.justai.jaicf.activator.caila.client.CailaHttpClient
 import com.justai.jaicf.activator.caila.client.CailaKtorClient
+import com.justai.jaicf.activator.caila.dto.CailaAnalyzeResponseData
 import com.justai.jaicf.activator.caila.slotfilling.CailaSlotFillingHelper
+import com.justai.jaicf.activator.intent.BaseIntentActivator
 import com.justai.jaicf.activator.intent.IntentActivationRule
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
@@ -26,7 +27,7 @@ class CailaIntentActivator(
         settings.cailaUrl,
         settings.classifierNBest
     )
-) : BaseActivator(model) {
+) : BaseIntentActivator(model) {
 
     override val name = "cailaIntentActivator"
 
@@ -37,22 +38,27 @@ class CailaIntentActivator(
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
         val results = client.analyze(request.input) ?: return ActivationRuleMatcher { null }
 
-        val intents = results.inference.variants.filter {  it.confidence >= settings.confidenceThreshold }
-            .map { CailaIntentActivatorContext(results, it) }
-            .sortedByDescending { it.confidence }
+        val intents = extractIntents(results).sortedByDescending { it.confidence }
+        val intentMatcher = ruleMatcher<IntentActivationRule> { intents.firstOrNull(it.matches) }
 
-        val intentMatcher = ruleMatcher<IntentActivationRule> { rule ->
-            intents.firstOrNull { rule.matches(it) }
-        }
-
-        val entities = results.entitiesLookup.entities
-            .map { CailaEntityActivatorContext(results, it) }
-
-        val entityMatcher = ruleMatcher<CailaEntityActivationRule> { rule ->
-            entities.firstOrNull { rule.matches(it) }
-        }
+        val entities = extractEntites(results)
+        val entityMatcher = ruleMatcher<CailaEntityActivationRule> { entities.firstOrNull(it.matches) }
 
         return ActivationRuleMatcher { intentMatcher.match(it) ?: entityMatcher.match(it) }
+    }
+
+    override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<CailaIntentActivatorContext> {
+        return client.analyze(request.input)?.let(::extractIntents) ?: emptyList()
+    }
+
+    private fun extractIntents(response: CailaAnalyzeResponseData): List<CailaIntentActivatorContext> {
+        return response.inference.variants
+            .filter { it.confidence >= settings.confidenceThreshold }
+            .map { CailaIntentActivatorContext(response, it) }
+    }
+
+    private fun extractEntites(response: CailaAnalyzeResponseData): List<CailaEntityActivatorContext> {
+        return response.entitiesLookup.entities.map { CailaEntityActivatorContext(response, it) }
     }
 
     override fun fillSlots(
