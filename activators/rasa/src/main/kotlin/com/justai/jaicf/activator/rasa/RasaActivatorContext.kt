@@ -4,10 +4,12 @@ import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.rasa.api.Entity
 import com.justai.jaicf.activator.rasa.api.Intent
 import com.justai.jaicf.context.ActivatorContext
+import kotlinx.serialization.json.JsonObject
 
 data class RasaActivatorContext(
-    private val rasaIntent: Intent,
-    private val entities: List<Entity>
+    val rasaIntent: Intent,
+    val entities: List<Entity>,
+    val rawResponse: JsonObject
 ): IntentActivatorContext(
     confidence = rasaIntent.confidence,
     intent = rasaIntent.name

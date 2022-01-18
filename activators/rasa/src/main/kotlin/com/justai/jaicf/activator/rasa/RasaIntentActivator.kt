@@ -5,6 +5,7 @@ import com.justai.jaicf.activator.intent.BaseIntentActivator
 import com.justai.jaicf.activator.intent.IntentActivatorContext
 import com.justai.jaicf.activator.rasa.api.RasaApi
 import com.justai.jaicf.activator.rasa.api.RasaParseMessageRequest
+import com.justai.jaicf.activator.rasa.api.RasaParseMessageResponse
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
@@ -23,13 +24,14 @@ class RasaIntentActivator(
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
         val messageId = UUID.randomUUID().toString()
-        val response = api.parseMessage(RasaParseMessageRequest(request.input, messageId))
+        val json = api.parseMessage(RasaParseMessageRequest(request.input, messageId)) ?: return emptyList()
+        val response = api.Json.decodeFromJsonElement(RasaParseMessageResponse.serializer(), json)
 
-        response?.ranking ?: return emptyList()
+        response.ranking ?: return emptyList()
 
         return response.ranking
             .filter { it.confidence > confidenceThreshold }
-            .map { RasaActivatorContext(it, response.entities.orEmpty()) }
+            .map { RasaActivatorContext(it, response.entities.orEmpty(), json) }
     }
 
     class Factory(
