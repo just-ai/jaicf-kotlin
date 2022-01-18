@@ -7,6 +7,7 @@ import kotlinx.serialization.modules.SerializersModule
 internal val JSON = Json {
 
     ignoreUnknownKeys = true
+    isLenient = true
     classDiscriminator = "type"
     encodeDefaults = true
 
