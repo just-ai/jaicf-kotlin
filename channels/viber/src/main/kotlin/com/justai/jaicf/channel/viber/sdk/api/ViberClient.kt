@@ -4,8 +4,10 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.justai.jaicf.channel.viber.sdk.api.request.ApiRequest
 import com.justai.jaicf.channel.viber.sdk.api.request.ApiResponse
 import com.justai.jaicf.channel.viber.sdk.viberObjectMapper
+import com.justai.jaicf.helpers.http.withTrailingSlash
 
-open class ViberClient(val apiUrl: String, val httpClient: ViberHttpClient) {
+open class ViberClient(apiUrl: String, val httpClient: ViberHttpClient) {
+    val apiUrl: String = apiUrl.withTrailingSlash(false)
 
     inline fun <T : ApiRequest, reified R : ApiResponse> sendRequest(
         endpoint: ViberHttpEndpoint,
