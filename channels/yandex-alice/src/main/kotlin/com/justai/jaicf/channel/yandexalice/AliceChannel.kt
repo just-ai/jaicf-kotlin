@@ -11,6 +11,7 @@ import com.justai.jaicf.channel.yandexalice.api.AliceBotRequest
 import com.justai.jaicf.channel.yandexalice.api.AliceBotResponse
 import com.justai.jaicf.channel.yandexalice.manager.AliceBotContextManager
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.ifTrue
 
 class AliceChannel(
@@ -20,6 +21,7 @@ class AliceChannel(
 ) : JaicpCompatibleChannelWithApiClient {
 
     private var aliceApiUrl = DEFAULT_ALICE_API_URL
+
     private val contextManager = useDataStorage.ifTrue { AliceBotContextManager() }
 
     override fun configureApiUrl(proxyUrl: String) {

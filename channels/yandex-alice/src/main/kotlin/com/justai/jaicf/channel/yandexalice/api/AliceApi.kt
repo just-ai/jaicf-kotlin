@@ -4,6 +4,7 @@ import com.justai.jaicf.channel.yandexalice.JSON
 import com.justai.jaicf.channel.yandexalice.api.storage.Image
 import com.justai.jaicf.channel.yandexalice.api.storage.Images
 import com.justai.jaicf.channel.yandexalice.api.storage.UploadedImage
+import com.justai.jaicf.helpers.http.withTrailingSlash
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
@@ -29,8 +30,9 @@ private val client = HttpClient(CIO) {
 class AliceApi(
     private val oauthToken: String,
     private val skillId: String,
-    private val apiUrl: String,
+    apiUrl: String,
 ) {
+    private val apiUrl: String = apiUrl.withTrailingSlash(false)
 
     companion object {
         private val imageStorage = mutableMapOf<String, MutableMap<String, String>>()

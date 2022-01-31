@@ -14,6 +14,7 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.helpers.http.withTrailingSlash
 import java.util.*
 
 class FacebookChannel private constructor(
@@ -29,7 +30,7 @@ class FacebookChannel private constructor(
     }
 
     private constructor(botApi: BotApi, baseUrl: String, liveChatProvider: JaicpLiveChatProvider) : this(botApi) {
-        messenger = Messenger.create("", "", "", baseUrl)
+        messenger = Messenger.create("", "", "", baseUrl.withTrailingSlash(false))
         this.liveChatProvider = liveChatProvider
     }
 
