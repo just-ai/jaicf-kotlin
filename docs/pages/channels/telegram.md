@@ -215,3 +215,61 @@ action {
 ```
 
 > Refer to the [TelegramReactions](https://github.com/just-ai/jaicf-kotlin/blob/master/channels/telegram/src/main/kotlin/com/justai/jaicf/channel/telegram/TelegramReactions.kt) class to learn more about buttons replies.
+
+## Payments
+
+You can accept payments for services or goods you provide from Telegram users.
+To do this, you need to [connect a payment system and obtain its unique token](https://core.telegram.org/bots/payments#getting-a-token).
+
+```kotlin
+action {
+    val info = PaymentInvoiceInfo(
+        "title",
+        "description",
+        "unique payload",
+        "381964478:TEST:67912",
+        "unique start parameter",
+        "USD",
+        listOf(LabeledPrice("price", valueOf(20_00)))
+    )
+    reactions.telegram?.sendInvoice(info)
+}
+```
+
+To learn about available currencies and more, you can read [the telegram payment documentation](https://core.telegram.org/bots/payments).
+
+### Goods availability
+
+Before proceeding with the payment, Telegram sends a request to bot to check the goods availability. 
+In the scenario this request triggers preCheckout event. Add the preCheckout as **a top level state**.
+
+> Note that when paying in group chats, payment confirmation is sent to the user who sent the payment request, not the entire chat. So there will be created a separate context for the user. 
+>If the user communicates with the user in a personal chat the context remains the same.
+
+```kotlin
+state("preCheckout") {
+    activators {
+        event(TelegramEvent.PRE_CHECKOUT)
+    }
+
+    action(telegram.preCheckout) {
+        reactions.answerPreCheckoutQuery(request.preCheckoutQuery.id, true)
+    }
+}
+```
+
+> You always need to handle the telegramPreCheckout event in the script. Otherwise payments will fail, and all subsequent user messages will be handled in the CatchAll state.
+
+Also you can handle successfulPayment event inside nested states in the TelegramPayment state
+
+```kotlin
+state("successfulPayment") {
+    activators {
+        event(TelegramEvent.SUCCESSFUL_PAYMENT)
+    }
+
+    action(telegram.successfulPayment) {
+        reactions.say("We are glad you bought from us")
+    }
+}
+```
