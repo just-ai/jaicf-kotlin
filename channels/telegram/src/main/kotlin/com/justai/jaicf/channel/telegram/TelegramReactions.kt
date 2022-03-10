@@ -8,6 +8,7 @@ import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.ReplyMarkup
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
+import com.github.kotlintelegrambot.entities.payments.PaymentInvoiceInfo
 import com.github.kotlintelegrambot.network.Response
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.logging.AudioReaction
@@ -241,4 +242,16 @@ class TelegramReactions(
     ) = api.sendVideoNote(
         chatId, url, duration, length, disableNotification, replyToMessageId, replyMarkup
     ).also { addResponse(it) }
+
+    fun sendInvoice(
+        paymentInvoiceInfo: PaymentInvoiceInfo,
+        disableNotification: Boolean? = null,
+        replyToMessageId: Long? = null,
+        inlineKeyboardMarkup: InlineKeyboardMarkup? = null
+    ) = api.sendInvoice(
+        chatId, paymentInvoiceInfo, disableNotification, replyToMessageId, inlineKeyboardMarkup
+    ).also { addResponse(it) }
+
+    fun answerPreCheckoutQuery(preCheckoutQueryId: String, ok: Boolean, errorMessage: String? = null) =
+        api.answerPreCheckoutQuery(preCheckoutQueryId, ok, errorMessage)
 }

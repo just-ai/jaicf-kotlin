@@ -10,6 +10,7 @@ import com.github.kotlintelegrambot.dispatcher.document
 import com.github.kotlintelegrambot.dispatcher.game
 import com.github.kotlintelegrambot.dispatcher.location
 import com.github.kotlintelegrambot.dispatcher.photos
+import com.github.kotlintelegrambot.dispatcher.preCheckoutQuery
 import com.github.kotlintelegrambot.dispatcher.sticker
 import com.github.kotlintelegrambot.dispatcher.text
 import com.github.kotlintelegrambot.dispatcher.video
@@ -103,6 +104,14 @@ class TelegramChannel(
 
             voice {
                 process(TelegramVoiceRequest(update, message, media))
+            }
+
+            preCheckoutQuery {
+                process(TelegramPreCheckoutRequest(update, preCheckoutQuery))
+            }
+
+            successfulPayment {
+                process(TelegramSuccessfulPaymentRequest(update, message, successfulPayment))
             }
         }
     }
