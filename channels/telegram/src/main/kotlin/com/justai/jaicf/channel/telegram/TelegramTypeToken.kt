@@ -19,3 +19,5 @@ val TelegramTypeToken.sticker get() = ChannelTypeToken<TelegramStickerRequest, T
 val TelegramTypeToken.video get() = ChannelTypeToken<TelegramVideoRequest, TelegramReactions>()
 val TelegramTypeToken.videoNote get() = ChannelTypeToken<TelegramVideoNoteRequest, TelegramReactions>()
 val TelegramTypeToken.voice get() = ChannelTypeToken<TelegramVoiceRequest, TelegramReactions>()
+val TelegramTypeToken.preCheckout get() = ChannelTypeToken<TelegramPreCheckoutRequest, TelegramReactions>()
+val TelegramTypeToken.successfulPayment get() = ChannelTypeToken<TelegramSuccessfulPaymentRequest, TelegramReactions>()

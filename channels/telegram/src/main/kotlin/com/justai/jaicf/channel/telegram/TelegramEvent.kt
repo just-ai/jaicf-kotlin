@@ -12,4 +12,6 @@ object TelegramEvent {
     const val VIDEO = "video"
     const val VIDEO_NOTE = "video_note"
     const val VOICE = "voice"
+    const val PRE_CHECKOUT = "pre_checkout"
+    const val SUCCESSFUL_PAYMENT = "successful_payment"
 }
