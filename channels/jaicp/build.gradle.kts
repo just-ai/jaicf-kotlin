@@ -20,7 +20,7 @@ dependencies {
     api(kotlinx("kotlinx-coroutines-slf4j") version { coroutinesCore })
     api(`coroutines-core`())
 
-    api(ktor("ktor-client-cio"))
+    api(ktor("ktor-client-cio-jvm"))
     api(ktor("ktor-client-logging-jvm"))
     api(ktor("ktor-client-json-jvm"))
     api(ktor("ktor-client-serialization-jvm"))

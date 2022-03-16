@@ -228,7 +228,7 @@ action {
         "description",
         "unique payload",
         "381964478:TEST:67912",
-        "unique start parameter",
+        "unique-start-parameter",
         "USD",
         listOf(LabeledPrice("price", valueOf(20_00)))
     )
@@ -241,7 +241,7 @@ To learn about available currencies and more, you can read [the telegram payment
 ### Goods availability
 
 Before proceeding with the payment, Telegram sends a request to bot to check the goods availability. 
-In the scenario this request triggers preCheckout event. Add the preCheckout as **a top level state**.
+This request triggers preCheckout event in scenario. Add the preCheckout as **a top level state**.
 
 > Note that when paying in group chats, payment confirmation is sent to the user who sent the payment request, not the entire chat. So there will be created a separate context for the user. 
 >If the user communicates with the user in a personal chat the context remains the same.
