@@ -230,7 +230,7 @@ action {
         "381964478:TEST:67912",
         "unique-start-parameter",
         "USD",
-        listOf(LabeledPrice("price", valueOf(20_00)))
+        listOf(LabeledPrice("price", BigInteger.valueOf(20_00)))
     )
     reactions.telegram?.sendInvoice(info)
 }
