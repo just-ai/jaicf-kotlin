@@ -118,6 +118,22 @@ fun main() {
 }
 ```
 
+##### Configuration
+
+When creating a channel, you can configure log level, for example, for debagging. You also can specify a proxy.
+
+Example of creating a channel for locally:
+```kotlin
+fun main() {
+    TelegramChannel(
+        helloWorldBot,
+        "access token",
+        logLevel = LogLevel.All(),
+        proxy = Proxy(HTTP, InetSocketAddress("hostname", 1234))
+    ).run()
+}
+```
+
 ## Commands
 
 Telegram enables users not only to send a text queries or use buttons.

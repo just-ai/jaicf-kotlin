@@ -17,6 +17,8 @@ import com.github.kotlintelegrambot.dispatcher.video
 import com.github.kotlintelegrambot.dispatcher.videoNote
 import com.github.kotlintelegrambot.dispatcher.voice
 import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.logging.LogLevel
+import com.github.kotlintelegrambot.logging.LogLevel.None
 import com.github.kotlintelegrambot.network.serialization.GsonFactory
 import com.github.kotlintelegrambot.updater.Updater
 import com.justai.jaicf.api.BotApi
@@ -30,13 +32,17 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
+import java.net.Proxy
+import java.net.Proxy.NO_PROXY
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/"
+    private val telegramApiUrl: String = "https://api.telegram.org/",
+    logLevel: LogLevel = None,
+    proxy: Proxy = NO_PROXY
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
     private val gson = GsonFactory.createForApiClient()
@@ -47,6 +53,8 @@ class TelegramChannel(
         apiUrl = telegramApiUrl
         token = telegramBotToken
         botUpdater = updater
+        this.logLevel = logLevel
+        this.proxy = proxy
 
         dispatch {
             fun process(request: TelegramBotRequest) {
@@ -141,17 +149,24 @@ class TelegramChannel(
         bot.startPolling()
     }
 
-    companion object : JaicpCompatibleAsyncChannelFactory {
+    class Factory(
+        private val logLevel: LogLevel = None,
+        private val proxy: Proxy = NO_PROXY
+    ) : JaicpCompatibleAsyncChannelFactory {
+
         override val channelType = "telegram"
+
         override fun create(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider
-        ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").apply {
+        ) = TelegramChannel(botApi, "", apiUrl, logLevel, proxy).apply {
             this.liveChatProvider = liveChatProvider
             this.botUpdater.startCheckingUpdates()
         }
+    }
 
+    companion object : JaicpCompatibleAsyncChannelFactory by Factory() {
         private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
     }
 }
