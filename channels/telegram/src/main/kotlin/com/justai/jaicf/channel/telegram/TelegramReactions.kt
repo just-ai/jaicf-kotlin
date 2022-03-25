@@ -11,6 +11,7 @@ import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import com.github.kotlintelegrambot.entities.payments.PaymentInvoiceInfo
 import com.github.kotlintelegrambot.network.Response
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
+import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -26,7 +27,7 @@ class TelegramReactions(
     val api: Bot,
     val request: TelegramBotRequest,
     override val liveChatProvider: JaicpLiveChatProvider?
-) : Reactions(), JaicpCompatibleAsyncReactions {
+) : Reactions(), JaicpCompatibleAsyncReactions, WithLogger {
 
     val chatId = ChatId.fromId(request.chatId)
     private val messages = mutableListOf<Message>()
@@ -53,7 +54,7 @@ class TelegramReactions(
                 chatId,
                 message.messageId,
                 replyMarkup = InlineKeyboardMarkup.create(keyboard)
-            ).also { addResponse(it) }
+            ).handleResponse()
         }
 
         return ButtonsReaction.create(buttons.asList())
@@ -89,7 +90,7 @@ class TelegramReactions(
     ): SayReaction {
         api.sendMessage(
             chatId, text, parseMode, disableWebPagePreview, disableNotification, replyToMessageId, replyMarkup
-        ).also { addResponse(it) }
+        ).handleResponse()
 
         return SayReaction.create(text)
     }
@@ -117,7 +118,7 @@ class TelegramReactions(
     ): ImageReaction {
         api.sendPhoto(
             chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
-        ).also { addResponse(it) }
+        ).handleResponse()
 
         return ImageReaction.create(url)
     }
@@ -133,7 +134,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVideo(
         chatId, url, duration, width, height, caption, disableNotification, replyToMessageId, replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun sendVoice(
         url: String,
@@ -148,7 +149,7 @@ class TelegramReactions(
         disableNotification = disableNotification,
         replyToMessageId = replyToMessageId,
         replyMarkup = replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     override fun audio(url: String): AudioReaction {
         return sendAudio(url)
@@ -165,7 +166,7 @@ class TelegramReactions(
     ): AudioReaction {
         api.sendAudio(
             chatId, url, duration, performer, title, disableNotification, replyToMessageId, replyMarkup
-        ).also { addResponse(it) }
+        ).handleResponse()
 
         return AudioReaction.create(url)
     }
@@ -179,7 +180,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ) = api.sendDocument(
         chatId, url, caption, parseMode, disableNotification, replyToMessageId, replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun sendVenue(
         latitude: Float,
@@ -202,7 +203,7 @@ class TelegramReactions(
         disableNotification,
         replyToMessageId,
         replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun sendContact(
         phoneNumber: String,
@@ -213,7 +214,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ) = api.sendContact(
         chatId, phoneNumber, firstName, lastName, disableNotification, replyToMessageId, replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun sendLocation(
         latitude: Float,
@@ -224,7 +225,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ) = api.sendLocation(
         chatId, latitude, longitude, livePeriod, disableNotification, replyToMessageId, replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun sendMediaGroup(
         mediaGroup: MediaGroup,
@@ -241,7 +242,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null
     ) = api.sendVideoNote(
         chatId, url, duration, length, disableNotification, replyToMessageId, replyMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun sendInvoice(
         paymentInvoiceInfo: PaymentInvoiceInfo,
@@ -250,8 +251,23 @@ class TelegramReactions(
         inlineKeyboardMarkup: InlineKeyboardMarkup? = null
     ) = api.sendInvoice(
         chatId, paymentInvoiceInfo, disableNotification, replyToMessageId, inlineKeyboardMarkup
-    ).also { addResponse(it) }
+    ).handleResponse()
 
     fun answerPreCheckoutQuery(preCheckoutQueryId: String, ok: Boolean, errorMessage: String? = null) =
         api.answerPreCheckoutQuery(preCheckoutQueryId, ok, errorMessage)
+
+    private fun Pair<retrofit2.Response<Response<Message>?>?, Exception?>.handleResponse() {
+        first?.let { response ->
+            if (!response.isSuccessful)
+                try {
+                    logger.error("${response.errorBody()?.string()}")
+                } catch (e: Exception) {
+                    logger.error("Cannot access class 'okhttp3.ResponseBody'", e)
+                }
+        }
+        second?.let {
+            logger.error("Exception when performing a reaction", it)
+        }
+        addResponse(this)
+    }
 }

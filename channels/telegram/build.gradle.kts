@@ -15,4 +15,5 @@ dependencies {
         exclude("com.github.kotlin-telegram-bot.kotlin-telegram-bot", "webhook")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
     }
+    api("com.squareup.okhttp3:okhttp:3.8.0")
 }
