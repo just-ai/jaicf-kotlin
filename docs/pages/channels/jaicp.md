@@ -212,4 +212,4 @@ state("Are you happy with our bot?") {
 }
 ```
 
-> See more about analytics api [JAICP Help Portal](https://help.just-ai.com/#/docs/ru/JS_API/built_in_services/analytics/analytics) and [In source code](https://help.just-ai.com/#/docs/ru/JS_API/built_in_services/analytics/analytics)
+> See more about analytics api [JAICP Help Portal](https://help.just-ai.com/#/docs/en/JS_API/built_in_services/analytics/analytics) and [In source code](https://help.just-ai.com/#/docs/en/JS_API/built_in_services/analytics/analytics)
