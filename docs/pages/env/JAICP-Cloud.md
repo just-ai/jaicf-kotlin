@@ -170,7 +170,7 @@ There are also dialogs between users and the bot available on the **Analytics** 
 > You can find it very useful to append unresolved phrases to new or existing CAILA intents using **Phrases tab**.
 This speed-ups the daily intents improvement routine.
 
-You can learn more about Dialogs feature [here](https://help.just-ai.com/#/docs/en/analytics/dialog_logs).
+You can learn more about Dialogs feature [here](https://help.just-ai.com/docs/en/analytics/dialog_logs).
 
 # Persistence
 

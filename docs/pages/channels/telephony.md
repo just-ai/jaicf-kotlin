@@ -13,7 +13,7 @@ parent: Channels
 
 TelephonyChannel can be used to process incoming calls and make smart outgoing calls with [JAICP](JAICP).
 
-> TelephonyChannel JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/telephony/telephony).
+> TelephonyChannel JAICP Documentation can be found [here](https://help.just-ai.com/docs/en/telephony/telephony).
 
 ## How to use
 

@@ -28,7 +28,7 @@ JAICP is used to connect your bots to JAICP infrastructure. This infrastructure 
 JAICP supports multiple channels, including Facebook, WeChat, Google Assistant, ZenDesk, and many many others. Also,
 there are JAICP-native channels, such as ChatWidget, ChatApi and Telephony channels.
 
-> Learn more about using JAICP with channels [here](https://help.just-ai.com/#/docs/en/jaicf/jaicf).
+> Learn more about using JAICP with channels [here](https://help.just-ai.com/docs/en/jaicf/jaicf).
 
 ## How to use
 
@@ -131,9 +131,9 @@ JAICP also provides a set of additional channels:
 
 ## Live Chats
 
-Connecting your bot via JAICP enables a lot of customer engagement platform integrations, such as [Chat2Desk](https://help.just-ai.com/#/docs/en/operator_channels/chat2desk/incoming_chat2desk)
-, [Salesforce](https://help.just-ai.com/#/docs/en/operator_channels/salesforce/salesforce)
-, [JivoSite](https://help.just-ai.com/#/docs/en/operator_channels/jivosite/jivosite), and [others](https://help.just-ai.com/docs/en/operator_channels/operator_channels).
+Connecting your bot via JAICP enables a lot of customer engagement platform integrations, such as [Chat2Desk](https://help.just-ai.com/docs/en/operator_channels/chat2desk/incoming_chat2desk)
+, [Salesforce](https://help.just-ai.com/docs/en/operator_channels/salesforce/salesforce)
+, [JivoSite](https://help.just-ai.com/docs/en/operator_channels/jivosite/jivosite), and [others](https://help.just-ai.com/docs/en/operator_channels/operator_channels).
 
 After you've created a project in [JAICP Application Panel](https://app.jaicp.com/register?utm_source=github&utm_medium=article&utm_campaign=quickstart), you can create a customer engagement platform channel and connect it to your messaging channel.
 
@@ -212,4 +212,4 @@ state("Are you happy with our bot?") {
 }
 ```
 
-> See more about analytics api [JAICP Help Portal](https://help.just-ai.com/#/docs/en/JS_API/built_in_services/analytics/analytics) and [In source code](https://help.just-ai.com/#/docs/en/JS_API/built_in_services/analytics/analytics)
+> See more about analytics api [JAICP Help Portal](https://help.just-ai.com/docs/en/JS_API/built_in_services/analytics/analytics) and [In source code](https://help.just-ai.com/docs/en/JS_API/built_in_services/analytics/analytics)
