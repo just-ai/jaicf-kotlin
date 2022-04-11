@@ -1,5 +1,4 @@
 source "https://rubygems.org"
 
 gem "kramdown-parser-gfm"
-gem "just-the-docs"
 gem "listen", "~> 3.2.1"
