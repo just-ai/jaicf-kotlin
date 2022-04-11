@@ -14,4 +14,4 @@ parent: Channels
 ChatApiChannel can be used to process simple POST and GET requests with queries. 
 The only reaction this channel can process is `reactions.say`.
 
-> ChatApiChannel JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/api/chat_api).
+> ChatApiChannel JAICP Documentation can be found [here](https://help.just-ai.com/docs/en/api/chat_api).

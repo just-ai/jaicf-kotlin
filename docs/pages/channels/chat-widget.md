@@ -13,7 +13,7 @@ parent: Channels
 
 Chat Widget channel can be used to add a web widget onto your website and process incoming messages from visitors.
 
-> ChatWidget JAICP Documentation can be found [here](https://help.just-ai.com/#/docs/en/channels/chatwidget/chatwidget).
+> ChatWidget JAICP Documentation can be found [here](https://help.just-ai.com/docs/en/channels/chatwidget/chatwidget).
 
 # How to use
 
@@ -47,5 +47,5 @@ Please refer to the [ChatWidgetReactions](https://github.com/just-ai/jaicf-kotli
 Sometimes it is necessary to be able to pass some parameters when loading the widget. For example, to let the bot know the user's ID, name or other data. 
 Such parameters are transferred to the widget when the widget is opened on the website.
 
-These parameters can be set to widget page, as it [referenced in widget documentation](https://help.just-ai.com/#/docs/en/channels/chatwidget/parameters_transfer), and retrieved in scenario from `reactions.chatwidget.jaicp.data` json object.
+These parameters can be set to widget page, as it [referenced in widget documentation](https://help.just-ai.com/docs/en/channels/chatwidget/parameters_transfer), and retrieved in scenario from `reactions.chatwidget.jaicp.data` json object.
 
