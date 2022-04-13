@@ -1,0 +1,13 @@
+{
+  "intent": {
+    "id": 5124,
+    "path": "/Hello",
+    "answer": null,
+    "customData": null,
+    "slots": null,
+    "priority": 0
+  },
+  "confidence": 0.8,
+  "slots": [],
+  "debug": null
+}
