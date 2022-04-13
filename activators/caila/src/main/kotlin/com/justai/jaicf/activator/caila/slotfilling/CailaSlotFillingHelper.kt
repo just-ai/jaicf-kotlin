@@ -35,45 +35,46 @@ internal class CailaSlotFillingHelper(
         }
 
         val ctx = restoreContext(botContext, initialActivationContext)
-        val required = ctx.requiredSlots
+        val required = ctx.slots.filter { it.required }
         val known = ctx.knownSlots
         if (known.map { it.name }.containsAll(required.map { it.name })) {
             return SlotFillingFinished(ctx.initialActivatorContext)
         }
 
         val actionContext = ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions)
-        val filled = fillSlots(ctx, botRequest.input)
+        val modified = fillSlots(ctx, botRequest.input)
+        val filled = ctx.filledSlots
+
         for (slot in required) {
-            if (slot.required && !known.any { k -> slot.name == k.name }) {
-                if (checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(ctx, botRequest.input)) {
+            if (slot.required && slot.name !in filled) {
+                if (!modified && checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(ctx, botRequest.input)) {
                     clearSlotFillingContext(botContext)
                     return SlotFillingInterrupted()
                 }
-                if (slot.name !in filled) {
-                    if (slotReactor?.canReact(slot.name) == true) {
-                        slotReactor.react(
-                            botRequest,
-                            botContext,
-                            reactions,
-                            ctx.initialActivatorContext,
-                            slot.name,
-                            slot.prompts ?: emptyList()
-                        )
-                    } else {
-                        with(actionContext) {
-                            slot.prompts?.let { prompts ->
-                                if (prompts.isEmpty()) return SlotFillingFinished(ctx.initialActivatorContext)
-                                reactions.sayRandom(*prompts.toTypedArray())
-                            } ?: return SlotFillingFinished(ctx.initialActivatorContext)
-                        }
+
+                if (slotReactor?.canReact(slot.name) == true) {
+                    slotReactor.react(
+                        botRequest,
+                        botContext,
+                        reactions,
+                        ctx.initialActivatorContext,
+                        slot.name,
+                        slot.prompts ?: emptyList()
+                    )
+                } else {
+                    with(actionContext) {
+                        slot.prompts?.let { prompts ->
+                            if (prompts.isEmpty()) return SlotFillingFinished(ctx.initialActivatorContext)
+                            reactions.sayRandom(*prompts.toTypedArray())
+                        } ?: return SlotFillingFinished(ctx.initialActivatorContext)
                     }
-                    saveSlotFillingContext(botContext, ctx)
-                    return SlotFillingInProgress
                 }
+                saveSlotFillingContext(botContext, ctx)
+                return SlotFillingInProgress
             }
         }
 
-        val newSlots = known.map { it.name to it.value }.toMap()
+        val newSlots = ctx.knownSlots.map { it.name to it.value }.toMap()
         val newEntities = ctx.knownEntities
         ctx.initialActivatorContext.caila?.slots = newSlots
         ctx.initialActivatorContext.caila?.result?.entitiesLookup?.entities?.addAll(newEntities)
@@ -81,7 +82,7 @@ internal class CailaSlotFillingHelper(
         return SlotFillingFinished(ctx.initialActivatorContext)
     }
 
-    private fun fillSlots(ctx: CailaSlotFillingContext, text: String): List<String> {
+    private fun fillSlots(ctx: CailaSlotFillingContext, text: String): Boolean {
         val md = cailaClient.entitiesLookup(text) ?: error("Failed to query CAILA for entities")
         val default = md.entities.filter { it.default == true }
         val other = md.entities
@@ -93,13 +94,11 @@ internal class CailaSlotFillingHelper(
                 isDefaultContainsText.not() && isDefaultLonger.not()
             }
         // first fill default entities, then other if it's needed
-        default.forEach { entity -> tryFillSlot(ctx, entity) }
-        other.forEach { entity -> tryFillSlot(ctx, entity) }
-
-        return ctx.filledSlots
+        return (default + other).any { entity -> tryFillSlot(ctx, entity) }
     }
 
-    private fun tryFillSlot(ctx: CailaSlotFillingContext, e: CailaEntityMarkupData) {
+    private fun tryFillSlot(ctx: CailaSlotFillingContext, e: CailaEntityMarkupData): Boolean {
+        var modified: Boolean = false
         for (s in ctx.slotForEntity(e)) {
             val valueAtPos = "${e.value}-${e.startPos}"
             val isArray = s.array ?: false
@@ -107,8 +106,10 @@ internal class CailaSlotFillingHelper(
                 e.slot = s.name
                 ctx.knownSlots.add(CailaKnownSlotData(s.name, e.value, isArray))
                 ctx.knownEntities.add(e)
+                modified = true
             }
         }
+        return modified
     }
 
     private fun checkRetriesInterrupts(ctx: CailaSlotFillingContext, name: String): Boolean {
@@ -168,4 +169,4 @@ private val CailaSlotFillingContext.filledValues: List<String>
     get() = knownEntities.map { "${it.value}-${it.startPos}" }
 
 private fun CailaSlotFillingContext.slotForEntity(e: CailaEntityMarkupData) =
-    requiredSlots.filter { s -> s.entity == e.entity }
+    slots.filter { s -> s.entity == e.entity }
