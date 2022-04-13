@@ -1,0 +1,228 @@
+{
+  "markup": {
+    "source": "Order pizza 10 am",
+    "correctedText": "Order pizza 10 am",
+    "words": [
+      {
+        "annotations": {
+          "lemma": "order",
+          "pos": "PROPN"
+        },
+        "startPos": 0,
+        "endPos": 5,
+        "pattern": false,
+        "punctuation": false,
+        "source": "Order",
+        "word": "order"
+      },
+      {
+        "annotations": {
+          "lemma": "pizza",
+          "pos": "X"
+        },
+        "startPos": 6,
+        "endPos": 11,
+        "pattern": false,
+        "punctuation": false,
+        "source": "pizza",
+        "word": "pizza"
+      },
+      {
+        "annotations": {
+          "lemma": "10",
+          "pos": "NUM"
+        },
+        "startPos": 12,
+        "endPos": 14,
+        "pattern": false,
+        "punctuation": false,
+        "source": "10",
+        "word": "10"
+      },
+      {
+        "annotations": {
+          "lemma": "am",
+          "pos": "X"
+        },
+        "startPos": 15,
+        "endPos": 17,
+        "pattern": false,
+        "punctuation": false,
+        "source": "am",
+        "word": "am"
+      }
+    ]
+  },
+  "entitiesLookup": {
+    "text": "Order pizza 10 am",
+    "entities": [
+      {
+        "entity": "Pizza",
+        "slot": null,
+        "startPos": 6,
+        "endPos": 11,
+        "text": "pizza",
+        "value": "pizza",
+        "default": true,
+        "system": false,
+        "entityId": 82729,
+        "fuzzy": null
+      },
+      {
+        "entity": "duckling.time",
+        "slot": null,
+        "startPos": 12,
+        "endPos": 17,
+        "text": "10 am",
+        "value": "10 am",
+        "default": true,
+        "system": true,
+        "entityId": null,
+        "fuzzy": null
+      }
+    ],
+    "stagedPhraseIdx": null,
+    "phraseMarkup": [
+      {
+        "annotations": {
+          "lemma": "order",
+          "pos": "PROPN"
+        },
+        "startPos": 0,
+        "endPos": 5,
+        "pattern": false,
+        "punctuation": false,
+        "source": "Order",
+        "word": "order"
+      },
+      {
+        "annotations": {
+          "lemma": "pizza",
+          "pos": "X"
+        },
+        "startPos": 6,
+        "endPos": 11,
+        "pattern": false,
+        "punctuation": false,
+        "source": "pizza",
+        "word": "pizza"
+      },
+      {
+        "annotations": {
+          "lemma": "10",
+          "pos": "NUM"
+        },
+        "startPos": 12,
+        "endPos": 14,
+        "pattern": false,
+        "punctuation": false,
+        "source": "10",
+        "word": "10"
+      },
+      {
+        "annotations": {
+          "lemma": "am",
+          "pos": "X"
+        },
+        "startPos": 15,
+        "endPos": 17,
+        "pattern": false,
+        "punctuation": false,
+        "source": "am",
+        "word": "am"
+      }
+    ]
+  },
+  "inference": {
+    "phrase": {
+      "text": "Order pizza 10 am",
+      "entities": [
+        {
+          "entity": "Pizza",
+          "slot": null,
+          "startPos": 6,
+          "endPos": 11,
+          "text": "pizza",
+          "value": "pizza",
+          "default": true,
+          "system": false,
+          "entityId": 82729,
+          "fuzzy": null
+        },
+        {
+          "entity": "duckling.time",
+          "slot": null,
+          "startPos": 12,
+          "endPos": 17,
+          "text": "10 am",
+          "value": "10 am",
+          "default": true,
+          "system": true,
+          "entityId": null,
+          "fuzzy": null
+        }
+      ],
+      "stagedPhraseIdx": null,
+      "phraseMarkup": null
+    },
+    "variants": [
+      {
+        "intent": {
+          "id": 2824235,
+          "path": "/Order",
+          "answer": null,
+          "customData": null,
+          "slots": [
+            {
+              "name": "pizza",
+              "entity": "Pizza",
+              "required": true,
+              "prompts": [
+                "what do you want to order?"
+              ],
+              "array": null
+            },
+            {
+              "name": "time",
+              "entity": "duckling.time",
+              "required": false,
+              "prompts": [
+                "when?"
+              ],
+              "array": null
+            }
+          ],
+          "priority": 0
+        },
+        "confidence": 0.8,
+        "slots": [
+          {
+            "name": "pizza",
+            "value": "pizza",
+            "array": null
+          },
+          {
+            "name": "time",
+            "value": "10 am",
+            "array": null
+          }
+        ],
+        "debug": null
+      },
+      {
+        "intent": {
+          "id": 5124,
+          "path": "/Hello",
+          "answer": null,
+          "customData": null,
+          "slots": null,
+          "priority": 0
+        },
+        "confidence": 0.2,
+        "slots": [],
+        "debug": null
+      }
+    ],
+    "spelledWords": null
+  }
+}

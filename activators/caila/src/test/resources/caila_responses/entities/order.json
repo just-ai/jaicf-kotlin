@@ -1,0 +1,19 @@
+{
+  "text": "Order",
+  "entities": [],
+  "stagedPhraseIdx": null,
+  "phraseMarkup": [
+    {
+      "annotations": {
+        "lemma": "order",
+        "pos": "PROPN"
+      },
+      "startPos": 0,
+      "endPos": 5,
+      "pattern": false,
+      "punctuation": false,
+      "source": "Order",
+      "word": "order"
+    }
+  ]
+}

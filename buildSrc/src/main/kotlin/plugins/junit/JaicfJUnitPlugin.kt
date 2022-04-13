@@ -14,6 +14,7 @@ class JaicfJUnitPlugin : Plugin<Project> by apply<JaicfJUnit>()
 class JaicfJUnit(project: Project) : PluginAdapter(project) {
     override fun Project.apply() {
         dependencies {
+            "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit" version { kotlin })
             "testImplementation"("org.junit.jupiter:junit-jupiter-api" version { jUnit })
             "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
         }

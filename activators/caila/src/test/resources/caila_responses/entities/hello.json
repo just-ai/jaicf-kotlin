@@ -1,0 +1,19 @@
+{
+  "text": "Hello",
+  "entities": [],
+  "stagedPhraseIdx": null,
+  "phraseMarkup": [
+    {
+      "annotations": {
+        "lemma": "hello",
+        "pos": "NOUN"
+      },
+      "startPos": 0,
+      "endPos": 5,
+      "pattern": false,
+      "punctuation": false,
+      "source": "Hello",
+      "word": "hello"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "markup": {
+    "source": "Hello",
+    "correctedText": "Hello",
+    "words": [
+      {
+        "annotations": {
+          "lemma": "hello",
+          "pos": "NOUN"
+        },
+        "startPos": 0,
+        "endPos": 5,
+        "pattern": false,
+        "punctuation": false,
+        "source": "Hello",
+        "word": "hello"
+      }
+    ]
+  },
+  "entitiesLookup": {
+    "text": "Hello",
+    "entities": [],
+    "stagedPhraseIdx": null,
+    "phraseMarkup": [
+      {
+        "annotations": {
+          "lemma": "hello",
+          "pos": "NOUN"
+        },
+        "startPos": 0,
+        "endPos": 5,
+        "pattern": false,
+        "punctuation": false,
+        "source": "Hello",
+        "word": "hello"
+      }
+    ]
+  },
+  "inference": {
+    "phrase": {
+      "text": "Hello",
+      "entities": [],
+      "stagedPhraseIdx": null,
+      "phraseMarkup": null
+    },
+    "variants": [
+      {
+        "intent": {
+          "id": 5124,
+          "path": "/Hello",
+          "answer": null,
+          "customData": null,
+          "slots": null,
+          "priority": 0
+        },
+        "confidence": 0.8,
+        "slots": [],
+        "debug": null
+      },
+      {
+        "intent": {
+          "id": 2824235,
+          "path": "/Order",
+          "answer": null,
+          "customData": null,
+          "slots": [
+            {
+              "name": "pizza",
+              "entity": "Pizza",
+              "required": true,
+              "prompts": [
+                "what do you want to order?"
+              ],
+              "array": null
+            },
+            {
+              "name": "time",
+              "entity": "duckling.time",
+              "required": false,
+              "prompts": [
+                "when?"
+              ],
+              "array": null
+            }
+          ],
+          "priority": 0
+        },
+        "confidence": 0.2,
+        "slots": [],
+        "debug": null
+      }
+    ],
+    "spelledWords": null
+  }
+}

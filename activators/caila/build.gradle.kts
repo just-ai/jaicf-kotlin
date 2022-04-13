@@ -8,6 +8,7 @@ plugins {
     `jaicf-kotlin`
     `jaicf-kotlin-serialization`
     `jaicf-publish`
+    `jaicf-junit`
 }
 
 dependencies {
@@ -15,4 +16,6 @@ dependencies {
     api(ktor("ktor-client-cio"))
     api(ktor("ktor-client-logging-jvm"))
     api(ktor("ktor-client-serialization-jvm"))
+    testImplementation("io.mockk:mockk" version { mockk })
+    testImplementation(ktor("ktor-client-mock"))
 }
