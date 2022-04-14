@@ -42,12 +42,11 @@ internal class CailaSlotFillingHelper(
         }
 
         val actionContext = ActionContext(botContext, ctx.initialActivatorContext, botRequest, reactions)
-        val modified = fillSlots(ctx, botRequest.input)
-        val filled = ctx.filledSlots
+        val filled = fillSlots(ctx, botRequest.input)
 
         for (slot in required) {
             if (slot.required && slot.name !in filled) {
-                if (!modified && checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(ctx, botRequest.input)) {
+                if (checkRetriesInterrupts(ctx, slot.name) || checkIntentInterrupts(ctx, botRequest.input)) {
                     clearSlotFillingContext(botContext)
                     return SlotFillingInterrupted()
                 }
@@ -82,7 +81,7 @@ internal class CailaSlotFillingHelper(
         return SlotFillingFinished(ctx.initialActivatorContext)
     }
 
-    private fun fillSlots(ctx: CailaSlotFillingContext, text: String): Boolean {
+    private fun fillSlots(ctx: CailaSlotFillingContext, text: String): List<String> {
         val md = cailaClient.entitiesLookup(text) ?: error("Failed to query CAILA for entities")
         val default = md.entities.filter { it.default == true }
         val other = md.entities
@@ -94,11 +93,11 @@ internal class CailaSlotFillingHelper(
                 isDefaultContainsText.not() && isDefaultLonger.not()
             }
         // first fill default entities, then other if it's needed
-        return (default + other).any { entity -> tryFillSlot(ctx, entity) }
+        (default + other).map { entity -> tryFillSlot(ctx, entity) }
+        return ctx.filledSlots
     }
 
-    private fun tryFillSlot(ctx: CailaSlotFillingContext, e: CailaEntityMarkupData): Boolean {
-        var modified: Boolean = false
+    private fun tryFillSlot(ctx: CailaSlotFillingContext, e: CailaEntityMarkupData) {
         for (s in ctx.slotForEntity(e)) {
             val valueAtPos = "${e.value}-${e.startPos}"
             val isArray = s.array ?: false
@@ -106,10 +105,8 @@ internal class CailaSlotFillingHelper(
                 e.slot = s.name
                 ctx.knownSlots.add(CailaKnownSlotData(s.name, e.value, isArray))
                 ctx.knownEntities.add(e)
-                modified = true
             }
         }
-        return modified
     }
 
     private fun checkRetriesInterrupts(ctx: CailaSlotFillingContext, name: String): Boolean {
