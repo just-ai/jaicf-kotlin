@@ -126,7 +126,7 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
         }
 
         @Test
-        fun `Should now answer with slot prompt on slotfilling finished`() = test {
+        fun `Should not answer with slot prompt on slotfilling finished`() = test {
             val activation = mustActivate(query("order pizza 10 am"))
             fillSlots(query("order pizza 10 am"), activation = activation).assertType<SlotFillingFinished>()
 
@@ -144,8 +144,8 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
             val activation = mustActivate(query("order pizza 10 am"))
             fillSlots(query("order pizza 10 am"), activation = activation).assertType<SlotFillingFinished>().assertCaila {
                 assertEquals("Order", intent)
-                assertSlot("pizza", "pizza")
-                assertSlot("time", "10 am")
+                assertSlots("pizza" to "pizza", "time" to "10 am")
+                assertEntities("Pizza" to "pizza", "duckling.time" to "10 am")
             }
         }
 
@@ -154,7 +154,8 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
             val activation = mustActivate(query("order pizza"))
             fillSlots(query("order pizza"), activation = activation).assertType<SlotFillingFinished>().assertCaila {
                 assertEquals("Order", intent)
-                assertSlot("pizza", "pizza")
+                assertSlots("pizza" to "pizza")
+                assertEntities("Pizza" to "pizza")
             }
         }
 
@@ -165,8 +166,19 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
             fillSlots(query("order 10 am")).assertType<SlotFillingInProgress>()
             fillSlots(query("order pizza 10 am")).assertType<SlotFillingFinished>().assertCaila {
                 assertEquals("Order", intent)
-                assertSlot("pizza", "pizza")
-                assertSlot("time", "10 am")
+                assertSlots("pizza" to "pizza", "time" to "10 am")
+                assertEntities("Pizza" to "pizza", "duckling.time" to "10 am")
+            }
+        }
+
+        @Test
+        fun `Should fill all required slots 2`() = test {
+            val activation = mustActivate(query("order 10 am"))
+            fillSlots(query("order 10 am"), activation = activation).assertType<SlotFillingInProgress>()
+            fillSlots(query("order pizza 10 am")).assertType<SlotFillingFinished>().assertCaila {
+                assertEquals("Order", intent)
+                assertSlots("pizza" to "pizza", "time" to "10 am")
+                assertEntities("Pizza" to "pizza", "duckling.time" to "10 am")
             }
         }
 
@@ -178,7 +190,6 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
             fillSlots(query("hello")).assertType<SlotFillingInProgress>()
             fillSlots(query("hello")).assertType<SlotFillingInterrupted>()
         }
-
 
         @Test
         fun `Should interrupt slot filling if enabled with big confidence`() = test(stopOnAnyIntent = true, stopOnAnyIntentThreshold = 0.7) {

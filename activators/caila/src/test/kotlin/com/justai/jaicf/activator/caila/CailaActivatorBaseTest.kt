@@ -121,6 +121,22 @@ abstract class CailaActivatorBaseTest {
         assertEquals(value, slot)
     }
 
+    fun CailaIntentActivatorContext.assertSlots(vararg content: Pair<String, String>) {
+        content.forEach {
+            val slot = assertNotNull(slots[it.first])
+            assertEquals(it.second, slot)
+        }
+        assertEquals(slots.size, content.size)
+    }
+
+    fun CailaIntentActivatorContext.assertEntities(vararg content: Pair<String, String>) {
+        content.forEach { e ->
+            val entity = assertNotNull(entities.find { it.entity == e.first }).value
+            assertEquals(e.second, entity)
+        }
+        assertEquals(entities.size, content.size)
+    }
+
     private fun createReactions() = mockk<TestReactions>(relaxed = true).also { _reactions = it }
 
     fun saveContext(botContext: BotContext) =
