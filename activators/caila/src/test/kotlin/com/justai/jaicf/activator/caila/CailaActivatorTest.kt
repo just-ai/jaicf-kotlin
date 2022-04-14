@@ -7,6 +7,8 @@ import com.justai.jaicf.slotfilling.SlotFillingInterrupted
 import io.mockk.Called
 import io.mockk.verify
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.RepeatedTest
+import org.junit.jupiter.api.RepetitionInfo
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -197,6 +199,14 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
             val activation = mustActivate(query("order"))
             fillSlots(query("order"), activation = activation).assertType<SlotFillingInProgress>()
             fillSlots(query("hello")).assertType<SlotFillingInProgress>()
+        }
+
+        @RepeatedTest(4)
+        fun `Should interrupt slot filling on start`(repetition: RepetitionInfo) = test(stopOnAnyIntent = false) {
+            val starts = arrayOf("/start", "/START", "/Start", "/StArT")
+            val activation = mustActivate(query("order"))
+            fillSlots(query("order"), activation = activation).assertType<SlotFillingInProgress>()
+            fillSlots(query(starts[repetition.currentRepetition - 1])).assertType<SlotFillingInterrupted>()
         }
     }
 
