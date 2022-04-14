@@ -169,7 +169,7 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
         }
 
         @Test
-        fun `Should stop slotfilling after max retries`() = test(stopOnAnyIntent = false, maxSlotRetries = 2) {
+        fun `Should stop slotfilling after max retries`() = test(stopOnAnyIntent = false, maxSlotRetries = 3) {
             val activation = mustActivate(query("order"))
             fillSlots(query("order"), activation = activation).assertType<SlotFillingInProgress>()
             fillSlots(query("order 10 am")).assertType<SlotFillingInProgress>()
