@@ -34,6 +34,10 @@ internal class CailaSlotFillingHelper(
             return SlotFillingFinished(initialActivationContext)
         }
 
+        if (initialActivationContext == null && botRequest.input.matches(Regex("/start", RegexOption.IGNORE_CASE))) {
+            return SlotFillingInterrupted()
+        }
+
         val ctx = restoreContext(botContext, initialActivationContext)
         val required = ctx.slots.filter { it.required }
         val known = ctx.knownSlots
