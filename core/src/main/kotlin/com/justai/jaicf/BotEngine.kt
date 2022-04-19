@@ -198,7 +198,7 @@ open class BotEngine(
             hooks.triggerHook(hook)
             block.invoke()
         } catch (e: BotHookException) {
-            logger.error("Hook $hook interrupted a request processing", e)
+            logger.debug("Hook $hook interrupted a request processing", e)
         }
     }
 
