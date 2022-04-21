@@ -16,4 +16,6 @@ dependencies {
     api(ktor("ktor-client-cio"))
     api(ktor("ktor-client-serialization-jvm"))
     api(ktor("ktor-client-logging-jvm"))
+    testImplementation(ktor("ktor-client-mock"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit" version { kotlin })
 }

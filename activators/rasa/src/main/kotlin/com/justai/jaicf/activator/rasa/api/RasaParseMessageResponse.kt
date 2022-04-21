@@ -6,18 +6,18 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RasaParseMessageResponse(
     val text: String,
-    val intent: Intent?,
-    val entities: List<Entity>?,
+    val intent: Intent? = null,
+    val entities: List<Entity>? = null,
 
     @SerialName("intent_ranking")
-    val ranking: List<Intent>?
+    val ranking: List<Intent>? = null
 )
 
 @Serializable
 data class Entity(
     val start: Int,
     val end: Int,
-    val confidence: Float?,
+    val confidence: Float? = null,
     val value: String,
     val entity: String
 )
