@@ -19,7 +19,7 @@ import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotReactor
 
 
-class CailaIntentActivator(
+open class CailaIntentActivator(
     model: ScenarioModel,
     private val settings: CailaNLUSettings,
     private val client: CailaHttpClient = CailaKtorClient(
