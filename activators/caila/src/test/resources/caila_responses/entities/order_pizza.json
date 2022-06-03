@@ -1,0 +1,44 @@
+{
+  "text": "Order pizza",
+  "entities": [
+    {
+      "entity": "Pizza",
+      "slot": null,
+      "startPos": 6,
+      "endPos": 11,
+      "text": "pizza",
+      "value": "pizza",
+      "default": true,
+      "system": false,
+      "entityId": 82729,
+      "fuzzy": null
+    }
+  ],
+  "stagedPhraseIdx": null,
+  "phraseMarkup": [
+    {
+      "annotations": {
+        "lemma": "order",
+        "pos": "X"
+      },
+      "startPos": 0,
+      "endPos": 5,
+      "pattern": false,
+      "punctuation": false,
+      "source": "Order",
+      "word": "order"
+    },
+    {
+      "annotations": {
+        "lemma": "pizza",
+        "pos": "X"
+      },
+      "startPos": 6,
+      "endPos": 11,
+      "pattern": false,
+      "punctuation": false,
+      "source": "pizza",
+      "word": "pizza"
+    }
+  ]
+}

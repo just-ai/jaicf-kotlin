@@ -1,0 +1,38 @@
+{
+  "intent": {
+    "id": 2824235,
+    "path": "/Order",
+    "answer": null,
+    "customData": null,
+    "slots": [
+      {
+        "name": "pizza",
+        "entity": "Pizza",
+        "required": true,
+        "prompts": [
+          "what do you want to order?"
+        ],
+        "array": null
+      },
+      {
+        "name": "time",
+        "entity": "duckling.time",
+        "required": false,
+        "prompts": [
+          "when?"
+        ],
+        "array": null
+      }
+    ],
+    "priority": 0
+  },
+  "confidence": 0.8,
+  "slots": [
+    {
+      "name": "pizza",
+      "value": "pizza",
+      "array": null
+    }
+  ],
+  "debug": null
+}

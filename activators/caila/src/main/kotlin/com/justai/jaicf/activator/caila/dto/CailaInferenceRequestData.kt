@@ -27,7 +27,7 @@ data class CailaInferenceRequestData(
 @Serializable
 data class CailaPhraseMarkupData(
     val text: String,
-    val entities: MutableList<CailaEntityMarkupData>
+    var entities: MutableList<CailaEntityMarkupData>
 ) : java.io.Serializable {
     companion object {
         private const val serialVersionUID = -6194136165197848082L

@@ -1,0 +1,80 @@
+{
+  "text": "Order pizza 10 am",
+  "entities": [
+    {
+      "entity": "Pizza",
+      "slot": null,
+      "startPos": 6,
+      "endPos": 11,
+      "text": "pizza",
+      "value": "pizza",
+      "default": true,
+      "system": false,
+      "entityId": 82729,
+      "fuzzy": null
+    },
+    {
+      "entity": "duckling.time",
+      "slot": null,
+      "startPos": 12,
+      "endPos": 17,
+      "text": "10 am",
+      "value": "10 am",
+      "default": true,
+      "system": true,
+      "entityId": null,
+      "fuzzy": null
+    }
+  ],
+  "stagedPhraseIdx": null,
+  "phraseMarkup": [
+    {
+      "annotations": {
+        "lemma": "order",
+        "pos": "PROPN"
+      },
+      "startPos": 0,
+      "endPos": 5,
+      "pattern": false,
+      "punctuation": false,
+      "source": "Order",
+      "word": "order"
+    },
+    {
+      "annotations": {
+        "lemma": "pizza",
+        "pos": "X"
+      },
+      "startPos": 6,
+      "endPos": 11,
+      "pattern": false,
+      "punctuation": false,
+      "source": "pizza",
+      "word": "pizza"
+    },
+    {
+      "annotations": {
+        "lemma": "10",
+        "pos": "NUM"
+      },
+      "startPos": 12,
+      "endPos": 14,
+      "pattern": false,
+      "punctuation": false,
+      "source": "10",
+      "word": "10"
+    },
+    {
+      "annotations": {
+        "lemma": "am",
+        "pos": "X"
+      },
+      "startPos": 15,
+      "endPos": 17,
+      "pattern": false,
+      "punctuation": false,
+      "source": "am",
+      "word": "am"
+    }
+  ]
+}

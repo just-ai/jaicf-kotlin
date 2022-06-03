@@ -5,6 +5,7 @@ import com.justai.jaicf.activator.caila.JSON
 import com.justai.jaicf.activator.caila.dto.*
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
+import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
@@ -18,11 +19,12 @@ class CailaKtorClient(
     override val accessToken: String,
     override val url: String = DEFAULT_CAILA_URL,
     override val inferenceNBest: Int,
-    logLevel: LogLevel = LogLevel.INFO
+    logLevel: LogLevel = LogLevel.INFO,
+    engine: HttpClientEngine = CIO.create()
 ) : WithLogger,
     CailaHttpClient {
 
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient(engine) {
         expectSuccess = true
         install(Logging) {
             logger = Logger.DEFAULT

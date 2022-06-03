@@ -3,6 +3,7 @@ package com.justai.jaicf.activator.rasa.api
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
@@ -12,15 +13,16 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 
 class RasaApi(
-    private val uri: String
+    private val uri: String,
+    logLevel: LogLevel = LogLevel.INFO,
+    httpClient: HttpClientEngine = CIO.create()
 ) : WithLogger {
 
     internal val Json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    private val client = HttpClient(CIO) {
+    private val client = HttpClient(httpClient) {
         expectSuccess = true
 
         install(JsonFeature) {
@@ -28,13 +30,13 @@ class RasaApi(
         }
 
         install(Logging) {
-            level = LogLevel.INFO
+            level = logLevel
         }
     }
 
-    fun parseMessage(request: RasaParseMessageRequest): JsonObject? = runBlocking {
+    fun parseMessage(request: RasaParseMessageRequest): String? = runBlocking {
         try {
-            client.post<JsonObject>("$uri/model/parse".toUrl()) {
+            client.post<String>("$uri/model/parse".toUrl()) {
                 contentType(ContentType.Application.Json)
                 body = request
             }

@@ -10,6 +10,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.scenario.ScenarioModel
+import kotlinx.serialization.json.jsonObject
 import java.util.*
 
 class RasaIntentActivator(
@@ -24,7 +25,8 @@ class RasaIntentActivator(
 
     override fun recogniseIntent(botContext: BotContext, request: BotRequest): List<IntentActivatorContext> {
         val messageId = UUID.randomUUID().toString()
-        val json = api.parseMessage(RasaParseMessageRequest(request.input, messageId)) ?: return emptyList()
+        val rawJson = api.parseMessage(RasaParseMessageRequest(request.input, messageId)) ?: return emptyList()
+        val json = api.Json.parseToJsonElement(rawJson).jsonObject
         val response = api.Json.decodeFromJsonElement(RasaParseMessageResponse.serializer(), json)
 
         response.ranking ?: return emptyList()
