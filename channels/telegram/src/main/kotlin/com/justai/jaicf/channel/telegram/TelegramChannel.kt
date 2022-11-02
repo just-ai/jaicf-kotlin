@@ -49,6 +49,8 @@ class TelegramChannel(
         token = telegramBotToken
         botUpdater = updater
 
+        botUpdater.startCheckingUpdates()
+
         dispatch {
             fun process(request: TelegramBotRequest) {
                 botApi.process(request, TelegramReactions(bot, request, liveChatProvider), RequestContext.fromHttp(request.update.httpBotRequest))
@@ -139,6 +141,7 @@ class TelegramChannel(
     }
 
     fun run() {
+        botUpdater.stopCheckingUpdates()
         bot.startPolling()
     }
 
@@ -150,7 +153,6 @@ class TelegramChannel(
             liveChatProvider: JaicpLiveChatProvider
         ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").apply {
             this.liveChatProvider = liveChatProvider
-            this.botUpdater.startCheckingUpdates()
         }
 
         private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
