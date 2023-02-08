@@ -70,7 +70,12 @@ We have full guide, [How to integrate with JAICP](https://github.com/just-ai/jai
 val cailaActivator = CailaIntentActivator.Factory(
     CailaNLUSettings(
         accessToken = "<your_jaicp_access_token>", 
-        confidenceThreshold = 0.2  
+        confidenceThreshold = 0.2,
+        // optional thresholds for patterns and phrases match. If it's not specified, confidenceThreshold will be used
+        intentThresholds = IntentThresholds (
+            patterns = 0.3,
+            phrases = 0.3
+        )
 ))
 
 val helloWorldBot = BotEngine(

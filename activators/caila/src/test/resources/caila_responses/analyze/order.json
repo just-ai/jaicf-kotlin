@@ -74,7 +74,11 @@
         },
         "confidence": 0.8,
         "slots": [],
-        "debug": null
+        "debug": null,
+        "weights": {
+          "patterns": 0.1,
+          "phrases": 0.8
+        }
       },
       {
         "intent": {
@@ -87,7 +91,11 @@
         },
         "confidence": 0.2,
         "slots": [],
-        "debug": null
+        "debug": null,
+        "weights": {
+          "patterns": 0.2,
+          "phrases": 0.1
+        }
       }
     ],
     "spelledWords": null

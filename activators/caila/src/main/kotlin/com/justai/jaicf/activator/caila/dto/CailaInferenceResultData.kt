@@ -9,7 +9,8 @@ data class CailaInferenceResultData(
     val intent: CailaIntentData,
     val confidence: Double,
     val slots: List<CailaKnownSlotData>?,
-    val debug: JsonObject?
+    val debug: JsonObject?,
+    val weights: InferenceResultWeights? = null
 ) : java.io.Serializable {
     companion object {
         private const val serialVersionUID = 1698636910227622116L
@@ -52,5 +53,15 @@ data class CailaKnownSlotData(
 ) : java.io.Serializable {
     companion object {
         private const val serialVersionUID = 1467148388316177817L
+    }
+}
+
+@Serializable
+data class InferenceResultWeights(
+    val patterns: Double,
+    val phrases: Double,
+) : java.io.Serializable {
+    companion object {
+        private const val serialVersionUID = 7438255714694047836L;
     }
 }

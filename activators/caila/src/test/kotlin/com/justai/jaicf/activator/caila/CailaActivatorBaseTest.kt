@@ -72,6 +72,7 @@ abstract class CailaActivatorBaseTest {
 
     fun test(
         confidenceThreshold: Double = 0.2,
+        intentThresholds: IntentThresholds = IntentThresholds(),
         maxSlotRetries: Int = 2,
         stopOnAnyIntent: Boolean = false,
         stopOnAnyIntentThreshold: Double = 1.0,
@@ -83,7 +84,8 @@ abstract class CailaActivatorBaseTest {
             confidenceThreshold = confidenceThreshold,
             cailaSlotFillingSettings = CailaSlotFillingSettings(
                 maxSlotRetries, stopOnAnyIntent, stopOnAnyIntentThreshold
-            )
+            ),
+            intentThresholds = intentThresholds
         ),
         cailaHttpClientMock
     ).run(body)
