@@ -17,6 +17,7 @@ dependencies {
     implementation(`tomcat-servlet`())
     implementation(ktor("ktor-server-core"))
     implementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    implementation("org.junit.jupiter:junit-jupiter-params" version { jUnit })
 
     testImplementation(kotlin("test-junit"))
     testImplementation(kotlin("test"))

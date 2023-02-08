@@ -25,7 +25,7 @@ val dialogflowActivator = DialogflowIntentActivator.Factory(
 val cailaActivator = CailaIntentActivator.Factory(
     CailaNLUSettings(
         accessToken = "<your_jaicp_access_token>", 
-        confidenceThreshold = 0.2  
+        confidenceThreshold = 0.2 
 ))
 
 

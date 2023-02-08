@@ -17,6 +17,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotReactor
+import com.justai.zb.scenarios.engine.CailaThresholdProcessor
 
 
 open class CailaIntentActivator(
@@ -52,8 +53,9 @@ open class CailaIntentActivator(
     }
 
     private fun extractIntents(response: CailaAnalyzeResponseData): List<CailaIntentActivatorContext> {
+        val thresholdProcessor = CailaThresholdProcessor(settings)
         return response.inference.variants
-            .filter { it.confidence >= settings.confidenceThreshold }
+            .mapNotNull { thresholdProcessor.applyThresholds(it) }
             .map { CailaIntentActivatorContext(response, it) }
     }
 

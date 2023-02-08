@@ -98,6 +98,26 @@ class CailaActivatorTest : CailaActivatorBaseTest() {
                 assertEquals("/Order", state)
             }
         }
+
+        @Test
+        fun `Should activate intent Order by phrases threshold `() = test(
+            intentThresholds = IntentThresholds(patterns = 0.3, phrases = 0.0)
+        ) {
+            mustActivate(query("order")).run {
+                assertEquals("Order", intentContext.intent)
+                assertEquals("/Order", state)
+            }
+        }
+
+        @Test
+        fun `Should activate intent Hello by phrases threshold `() = test(
+            intentThresholds = IntentThresholds(patterns = 0.05, phrases = 0.99)
+        ) {
+            mustActivate(query("order")).run {
+                assertEquals("Hello", intentContext.intent)
+                assertEquals("/Hello", state)
+            }
+        }
     }
 
     @Nested
