@@ -1,6 +1,5 @@
-package com.justai.zb.scenarios.engine
+package com.justai.jaicf.activator.caila
 
-import com.justai.jaicf.activator.caila.CailaNLUSettings
 import com.justai.jaicf.activator.caila.dto.CailaInferenceResultData
 import kotlin.math.max
 

@@ -17,7 +17,6 @@ import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.slotfilling.SlotFillingResult
 import com.justai.jaicf.slotfilling.SlotReactor
-import com.justai.zb.scenarios.engine.CailaThresholdProcessor
 
 
 open class CailaIntentActivator(

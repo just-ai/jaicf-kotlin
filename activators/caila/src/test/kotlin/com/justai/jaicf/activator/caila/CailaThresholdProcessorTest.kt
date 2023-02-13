@@ -3,7 +3,6 @@ package com.justai.jaicf.activator.caila
 import com.justai.jaicf.activator.caila.dto.CailaInferenceResultData
 import com.justai.jaicf.activator.caila.dto.CailaIntentData
 import com.justai.jaicf.activator.caila.dto.InferenceResultWeights
-import com.justai.zb.scenarios.engine.CailaThresholdProcessor
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
