@@ -1,11 +1,9 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.dto.JaicpDialerAPI
-import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
-import com.justai.jaicf.channel.jaicp.dto.Reply
-import com.justai.jaicf.channel.jaicp.dto.TextReply
+import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
+import com.justai.jaicf.channel.jaicp.reactions.reaction.SmsReaction
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.EndSessionReaction
 import com.justai.jaicf.logging.NewSessionReaction
@@ -43,6 +41,14 @@ open class JaicpReactions : Reactions() {
     override fun say(text: String): SayReaction {
         replies.add(TextReply(text, state = currentState))
         return SayReaction.create(text)
+    }
+
+    /**
+     * todo
+     * */
+    fun sendSms(text: String, destination: String, providerData: JsonObject? = null): SmsReaction {
+        replies.add(SmsReply(text, destination, providerData, currentState))
+        return SmsReaction.fromReply(SmsReply(text, destination, providerData), currentState)
     }
 
     /**

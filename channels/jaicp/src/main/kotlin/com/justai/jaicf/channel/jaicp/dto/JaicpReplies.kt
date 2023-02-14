@@ -5,6 +5,7 @@ import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInReplyData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 abstract class Reply(val type: String) {
@@ -191,5 +192,25 @@ data class ErrorReply(
     val state: String,
     val text: String,
 ) : Reply("text") {
+    override fun serialized() = JSON.encodeToString(serializer(), this)
+}
+
+/**
+ * An object with parameters to send sms to user.
+ *
+ * @param text - a message content to send to user.
+ * @param destination - a destination phone number to send sms to.
+ * @param providerData -  a JSON object with provider configuration
+ * */
+
+@Serializable
+data class SmsReply(
+    val text: String?,
+    val destination: String?,
+    @SerialName("providerConfiguration")
+    val providerData: JsonObject? = null, //
+    val state: String? = null
+
+) : Reply("sms") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }
