@@ -83,6 +83,14 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
             ?.let { JSON.decodeFromJsonElement(it) }
 
     /**
+     * Returns an object with data about the transfer status of a customer to an operator.
+     *
+     * @see [TransferStatus]
+     */
+    val transferStatus: TransferStatus?
+        get() = jaicp.rawRequest.jsonObject["transferStatus"]?.let(JSON::decodeFromJsonElement)
+
+    /**
      * Returns a token for downloading call recordings made in the current project.
      * The Record calls toggle in the phone channel settings must be set to active so that call recordings become available for download.
      */
@@ -127,6 +135,26 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
             BotRequestType.INTENT -> error("Jaicp intent events are not supported")
         }
     }
+}
+
+/**
+ * Contains the status of the transfer of a customer to an operator.
+ *
+ * @property status agent transfer status. It returns a string: `SUCCESS` or `FAIL`.
+ *
+ * @property hangup true means the customer has ended the conversation.
+ * false means the customer is still online and was re-directed to the bot (if continueCall: true in [TelephonySwitchReply]).
+ *
+ * @property number the phone number the call was transferred to.
+ */
+
+@Serializable
+data class TransferStatus(
+    val status: String,
+    val hangup: Boolean,
+    val number: String
+) {
+    val isSuccess = status == "SUCCESS"
 }
 
 @Serializable
