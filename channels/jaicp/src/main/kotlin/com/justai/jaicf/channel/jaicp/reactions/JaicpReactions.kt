@@ -85,7 +85,9 @@ open class JaicpReactions : Reactions() {
                 bargeInData = telephony?.bargeIn,
                 bargeInInterrupt = telephony?.bargeInInterrupt,
                 sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId,
-                responseData = responseData
+                responseData = responseData,
+                ttsConfig = telephony?.ttsConfig,
+                asrConfig = telephony?.asrConfig
             )
         ).jsonObject
     }

@@ -6,6 +6,8 @@ import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.jaicp.JSON
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInRequest
+import com.justai.jaicf.channel.jaicp.dto.config.AsrConfig
+import com.justai.jaicf.channel.jaicp.dto.config.TtsConfig
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -63,6 +65,22 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
         get() = jaicp.rawRequest.jsonObject["originateData"]?.jsonObject?.get("callScenarioData")
             ?.jsonObject?.get("schedule")?.jsonObject?.get("dialSchedule")?.jsonObject
             ?.let(JSON::decodeFromJsonElement)
+
+    /**
+     * Returns the ASR provider settings of the phone channel used for the current call.
+     * Returns a settings object of [AsrConfig].
+     */
+    val asrConfig: AsrConfig?
+        get() = jaicp.rawRequest.jsonObject["asrTtsProviderData"]?.jsonObject?.get("asr")
+            ?.let { JSON.decodeFromJsonElement(it) }
+
+    /**
+     * Returns the TTS provider settings of the phone channel used for the current call.
+     * Returns a settings object of [TtsConfig].
+     */
+    val ttsConfig: TtsConfig?
+        get() = jaicp.rawRequest.jsonObject["asrTtsProviderData"]?.jsonObject?.get("tts")
+            ?.let { JSON.decodeFromJsonElement(it) }
 
     /**
      * Returns a token for downloading call recordings made in the current project.
