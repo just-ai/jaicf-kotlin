@@ -44,11 +44,12 @@ open class JaicpReactions : Reactions() {
     }
 
     /**
-     * todo
+     * Send SMS from scenario. You can send SMS messages from the phone channel.
+     * To do this, the SMS package must be connected to the JAICP platform.
      * */
-    fun sendSms(text: String, destination: String, providerData: JsonObject? = null): SmsReaction {
-        replies.add(SmsReply(text, destination, providerData, currentState))
-        return SmsReaction.fromReply(SmsReply(text, destination, providerData), currentState)
+    fun sendSms(text: String, phoneNumber: String, provider: ProviderConfig? = null): SmsReaction {
+        replies.add(SmsReply(text, phoneNumber, provider, currentState))
+        return SmsReaction.fromReply(SmsReply(text, phoneNumber, provider), currentState)
     }
 
     /**

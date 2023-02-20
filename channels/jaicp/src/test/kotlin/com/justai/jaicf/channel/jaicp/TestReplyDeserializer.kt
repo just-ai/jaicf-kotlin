@@ -13,6 +13,7 @@ object TestJaicpRepliesParser {
             "audio" -> JSON.decodeFromJsonElement(AudioReply.serializer(), it)
             "image" -> JSON.decodeFromJsonElement(ImageReply.serializer(), it)
             "hangup" -> JSON.decodeFromJsonElement(HangupReply.serializer(), it)
+            "sms" -> JSON.decodeFromJsonElement(SmsReply.serializer(), it)
             else -> error("Unknown reply type: it")
         }
     }
