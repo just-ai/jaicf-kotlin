@@ -114,17 +114,20 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     }
 
     /**
-     * This method overrides the TTS provider settings of the phone channel used for the current call.
+     * This method overrides the TTS configuration of the phone channel used for the current call.
      *
-     * example usage:
+     * Example usage:
      * ```
      * state("tts") {
      *    action {
      *        reactions.telephony?.setTtsConfig(TtsConfigAimyvoice("Никита"))
-     *        )
      *    }
      * }
      * ```
+     * The configuration is determined by the TtsProviderConfig subclass passed in as a parameter.
+     * The appropriate provider-specific configuration settings are extracted and assigned
+     * to the corresponding fields in the TtsConfig class.
+     * @param config TtsProviderConfig subclass containing the provider-specific configuration settings to use for TTS.
      * */
     fun <T : TtsProviderConfig> setTtsConfig(config: T) {
         ttsConfig = TtsConfig(
@@ -140,8 +143,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     }
 
     /**
-     * This method overrides the ASR provider settings of the phone channel used for the current call.
-     *
+     * This method overrides the ASR configuration of the phone channel used for the current call.
      * example usage:
      * ```
      * state("asr") {
@@ -152,11 +154,15 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      *                lang = "ru-RU",
      *                numbersAsWords = true,
      *                sensitivityReduction = true
-     *            )
-     *         )
+     *           )
+     *        )
      *    }
      * }
      * ```
+     * The configuration is determined by the AsrProviderConfig subclass passed in as a parameter.
+     * The appropriate provider-specific configuration settings are extracted and assigned
+     * to the corresponding fields in the AsrConfig class.
+     * @param config AsrProviderConfig subclass containing the provider-specific configuration settings to use for ASR.
      * */
     fun <T : AsrProviderConfig> setAsrConfig(config: T) {
         asrConfig = AsrConfig(

@@ -4,12 +4,19 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Properties for TTS provider setting for telephone channel.
+ * Configuration parameters for the text-to-speech (TTS) provider used in a telephone channel.
  *
- * The properties for each provider are different and determined in the relevant classes.
- * Not null there can be only one provider.
- * @param type is provider of the current session.
+ * The properties for each TTS provider are different and are defined in the relevant classes.
+ * Only one provider can be specified in the configuration.
  *
+ * @param type is provider TTS of the current session.
+ * @param yandex configuration options for the Yandex TTS provider, if used.
+ * @param google configuration options for the Google TTS provider, if used.
+ * @param mts configuration options for the MTS TTS provider, if used.
+ * @param zitech configuration options for the Zitech TTS provider, if used.
+ * @param azure configuration options for the Azure TTS provider, if used.
+ * @param aimyvoice configuration options for the Aimyvoice TTS provider, if used.
+ * @param sber configuration options for the Sber TTS provider, if used.
  **/
 @Serializable
 data class TtsConfig(
@@ -47,6 +54,10 @@ data class TtsConfig(
     }
 }
 
+/**
+ * Base class for TTS provider configuration.
+ * Subclasses contain provider-specific settings that are used to configure the TTS provider for the current session.
+ **/
 @Serializable
 sealed class TtsProviderConfig
 
