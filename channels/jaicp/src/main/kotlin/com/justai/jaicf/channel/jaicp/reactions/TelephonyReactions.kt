@@ -3,6 +3,7 @@ package com.justai.jaicf.channel.jaicp.reactions
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.dto.bargein.*
+import com.justai.jaicf.channel.jaicp.dto.config.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
@@ -22,6 +23,10 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     internal var bargeIn: BargeInProperties? = null
 
     internal var bargeInInterrupt: BargeInResponse? = null
+
+    internal var ttsConfig: TtsConfig? = null
+
+    internal var asrConfig: AsrConfig? = null
 
     companion object {
         private const val CURRENT_CONTEXT_PATH = "."
@@ -106,6 +111,65 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun bargeIn(mode: BargeInMode, trigger: BargeInTrigger, noInterruptTimeMs: Int) {
         bargeIn = BargeInProperties(mode, trigger, noInterruptTimeMs)
+    }
+
+    /**
+     * This method overrides the TTS provider settings of the phone channel used for the current call.
+     *
+     * example usage:
+     * ```
+     * state("tts") {
+     *    action {
+     *        reactions.telephony?.setTtsConfig(TtsConfigAimyvoice("Никита"))
+     *        )
+     *    }
+     * }
+     * ```
+     * */
+    fun <T : TtsProviderConfig> setTtsConfig(config: T) {
+        ttsConfig = TtsConfig(
+            type = executionContext.request.telephony?.ttsConfig?.type,
+            yandex = config as? TtsConfigYandex,
+            google = config as? TtsConfigGoogle,
+            mts = config as? TtsConfigMts,
+            zitech = config as? TtsConfigZitech,
+            azure = config as? TtsConfigAzure,
+            aimyvoice = config as? TtsConfigAimyvoice,
+            sber = config as? TtsConfigSber
+        )
+    }
+
+    /**
+     * This method overrides the ASR provider settings of the phone channel used for the current call.
+     *
+     * example usage:
+     * ```
+     * state("asr") {
+     *    action {
+     *        reactions.telephony?.setAsrConfig(
+     *            AsrYandexConfig(
+     *                model = "general",
+     *                lang = "ru-RU",
+     *                numbersAsWords = true,
+     *                sensitivityReduction = true
+     *            )
+     *         )
+     *    }
+     * }
+     * ```
+     * */
+    fun <T : AsrProviderConfig> setAsrConfig(config: T) {
+        asrConfig = AsrConfig(
+            type = executionContext.request.telephony?.asrConfig?.type,
+            yandex = config as? AsrYandexConfig,
+            zitech = config as? AsrZitechConfig,
+            google = config as? AsrGoogleConfig,
+            amiVoice = config as? AsrAmiVoiceConfig,
+            mts = config as? AsrMtsConfig,
+            azure = config as? AsrAzureConfig,
+            asm = config as? AsrAsmConfig,
+            sber = config as? AsrSberConfig
+        )
     }
 
     /**
