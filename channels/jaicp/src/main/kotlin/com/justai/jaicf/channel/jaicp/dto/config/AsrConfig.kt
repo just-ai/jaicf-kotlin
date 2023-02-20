@@ -4,12 +4,20 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Properties for ASR provider setting for telephone channel.
+ * Configuration parameters for the automatic speech recognition (ASR) provider used in a telephone channel.
  *
- * The properties for each provider are different and determined in the relevant classes.
- * Not null there can be only one provider.
- * @param type is provider of the current session.
+ * The properties for each ASR provider are different and are defined in the relevant classes.
+ * Only one provider can be specified in the configuration.
  *
+ * @param type is asr provider of the current session.
+ * @param yandex configuration options for the Yandex ASR provider, if used.
+ * @param zitech configuration options for the Zitech ASR provider, if used.
+ * @param google configuration options for the Google ASR provider, if used.
+ * @param amiVoice configuration options for the AmiVoice ASR provider, if used.
+ * @param mts configuration options for the MTS ASR provider, if used.
+ * @param azure configuration options for the Azure ASR provider, if used.
+ * @param asm configuration options for the ASM ASR provider, if used.
+ * @param sber configuration options for the Sber ASR provider, if used.
  **/
 @Serializable
 data class AsrConfig(
@@ -57,6 +65,10 @@ data class AsrConfig(
     }
 }
 
+/**
+ * Base class for ASR provider configuration.
+ * Subclasses contain provider-specific settings that are used to configure the ASR provider for the current session.
+ **/
 @Serializable
 sealed class AsrProviderConfig
 
