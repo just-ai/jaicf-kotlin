@@ -1,7 +1,12 @@
 package com.justai.jaicf.channel.jaicp.reactions
 
 import com.justai.jaicf.channel.jaicp.JSON
-import com.justai.jaicf.channel.jaicp.dto.*
+import com.justai.jaicf.channel.jaicp.dto.JaicpDialerAPI
+import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
+import com.justai.jaicf.channel.jaicp.dto.Reply
+import com.justai.jaicf.channel.jaicp.dto.TextReply
+import com.justai.jaicf.channel.jaicp.dto.ProviderConfig
+import com.justai.jaicf.channel.jaicp.dto.SmsReply
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.channel.jaicp.reactions.reaction.SmsReaction
 import com.justai.jaicf.context.DialogContext

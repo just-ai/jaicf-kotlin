@@ -199,7 +199,7 @@ data class ErrorReply(
  *
  * @param text a message content to send to user.
  * @param phoneNumber a destination phone number to send sms to. Phone number must begin with 7.
- * @param provider a JSON object with provider configuration
+ * @param provider a JSON object with provider configuration.
  * */
 
 @Serializable
