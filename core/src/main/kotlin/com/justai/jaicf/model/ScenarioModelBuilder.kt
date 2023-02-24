@@ -65,20 +65,26 @@ internal class ScenarioModelBuilder {
     }
 
     private fun postProcess(): ScenarioModel {
-        val newTransitions = transitions.groupBy { it.fromState }.flatMap { (_, transitions) ->
+        transitions.groupBy { it.fromState }.forEach { (_, transitions) ->
             val intents = transitions.map { it.rule }.filterIsInstance<IntentByNameActivationRule>().map { it.intent }
             val events = transitions.map { it.rule }.filterIsInstance<EventByNameActivationRule>().map { it.event }
 
-            transitions.map {
+            transitions.forEach {
                 when (it.rule) {
-                    is AnyIntentActivationRule -> it.copy(rule = AnyIntentActivationRule(intents))
-                    is AnyEventActivationRule -> it.copy(rule = AnyEventActivationRule(events))
-                    else -> it
+                    is AnyIntentActivationRule -> it.rule.except.apply {
+                        clear()
+                        addAll(intents)
+                    }
+
+                    is AnyEventActivationRule -> it.rule.except.apply {
+                        clear()
+                        addAll(events)
+                    }
                 }
             }
         }
 
-        return ScenarioModel(states.associateBy { it.path.toString() }, newTransitions, hooks)
+        return ScenarioModel(states.associateBy { it.path.toString() }, transitions, hooks)
     }
 
     private fun ScenarioModel.resolve(statePath: StatePath): ScenarioModel {
