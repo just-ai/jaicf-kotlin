@@ -11,6 +11,7 @@ import com.justai.jaicf.model.activation.onlyIfNotInSession
 import com.justai.jaicf.test.ScenarioTest
 import com.justai.jaicf.test.reactions.TestReactions
 import org.junit.jupiter.api.Test
+import kotlin.test.assertNull
 
 private class BotRequestType1(clientId: String, input: String) : QueryBotRequest(clientId, input)
 private class BotRequestType2(clientId: String, input: String) : QueryBotRequest(clientId, input)
@@ -58,6 +59,18 @@ private val contextTestScenario = Scenario {
     state("context test 7") {
         activators {
             regex("context test").onlyIfInSession("age")
+        }
+    }
+
+    state("context test 8") {
+        activators {
+            anyIntent().onlyIfInClient("age")
+        }
+    }
+
+    state("context test 9") {
+        activators {
+            anyEvent().onlyIfInClient("age")
         }
     }
 }
@@ -137,5 +150,32 @@ class OnlyIfPredicatesTest : ScenarioTest(onlyIfScenario) {
 
         withCurrentContext("/type test")
         process(BotRequestType2(botContext.clientId, "type test")) goesToState "/type test/type test 2"
+    }
+
+    @Test
+    fun `onlyIf should activate by anyIntent`() {
+        withCurrentContext("/context test")
+        withBotContext { client["age"] = "something" }
+        intent("context test") goesToState "/context test/context test 8"
+    }
+
+    @Test
+    fun `onlyIf should prohibit activation by anyIntent on no client property`() {
+        withCurrentContext("/context test")
+        assertNull(intent("context test").reactions.executionContext.activationContext)
+    }
+
+    @Test
+    fun `onlyIf should activate by anyEvent`() {
+        withCurrentContext("/context test")
+        withBotContext { client["age"] = "something" }
+        event("context test") goesToState "/context test/context test 9"
+    }
+
+
+    @Test
+    fun `onlyIf should prohibit activation by anyEvent on no client property`() {
+        withCurrentContext("/context test")
+        assertNull(intent("context test").reactions.executionContext.activationContext)
     }
 }
