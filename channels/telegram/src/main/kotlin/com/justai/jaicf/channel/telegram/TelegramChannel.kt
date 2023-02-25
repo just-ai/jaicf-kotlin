@@ -17,6 +17,7 @@ import com.github.kotlintelegrambot.dispatcher.video
 import com.github.kotlintelegrambot.dispatcher.videoNote
 import com.github.kotlintelegrambot.dispatcher.voice
 import com.github.kotlintelegrambot.entities.Update
+import com.github.kotlintelegrambot.logging.LogLevel
 import com.github.kotlintelegrambot.network.serialization.GsonFactory
 import com.github.kotlintelegrambot.updater.Updater
 import com.justai.jaicf.api.BotApi
@@ -31,13 +32,17 @@ import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
-import java.util.*
+import java.util.UUID
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/"
+    private val telegramApiUrl: String = "https://api.telegram.org/",
+    private val telegramLogLevel: LogLevel = LogLevel.None,
+    private val requestExecutor: Executor = Executors.newFixedThreadPool(10)
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
     private val gson = GsonFactory.createForApiClient()
@@ -48,12 +53,19 @@ class TelegramChannel(
         apiUrl = telegramApiUrl.withTrailingSlash()
         token = telegramBotToken
         botUpdater = updater
+        logLevel = telegramLogLevel
 
         botUpdater.startCheckingUpdates()
 
         dispatch {
             fun process(request: TelegramBotRequest) {
-                botApi.process(request, TelegramReactions(bot, request, liveChatProvider), RequestContext.fromHttp(request.update.httpBotRequest))
+                requestExecutor.execute {
+                    botApi.process(
+                        request,
+                        TelegramReactions(bot, request, liveChatProvider),
+                        RequestContext.fromHttp(request.update.httpBotRequest)
+                    )
+                }
             }
 
             text {
@@ -150,12 +162,28 @@ class TelegramChannel(
         override fun create(
             botApi: BotApi,
             apiUrl: String,
-            liveChatProvider: JaicpLiveChatProvider
+            liveChatProvider: JaicpLiveChatProvider,
         ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").apply {
             this.liveChatProvider = liveChatProvider
         }
 
         private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
+    }
+
+    class Jaicp(
+        private val executor: Executor,
+        private val logLevel: LogLevel
+    ) : JaicpCompatibleAsyncChannelFactory {
+
+        override fun create(
+            botApi: BotApi,
+            apiUrl: String,
+            liveChatProvider: JaicpLiveChatProvider
+        ): JaicpCompatibleAsyncBotChannel = TelegramChannel(botApi, "", apiUrl, logLevel, executor).apply {
+            this.liveChatProvider = liveChatProvider
+        }
+
+        override val channelType: String = "telegram"
     }
 }
 
