@@ -140,7 +140,7 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
 /**
  * Contains the status of the transfer of a customer to an operator.
  *
- * @property status agent transfer status. It returns a string: `SUCCESS` or `FAIL`.
+ * @property status agent transfer status. It returns an enum value of [Status.SUCCESS] or [Status.FAIL].
  *
  * @property hangup true means the customer has ended the conversation.
  * false means the customer is still online and was re-directed to the bot (if continueCall: true in [TelephonySwitchReply]).
@@ -150,11 +150,16 @@ interface TelephonyBotRequest : JaicpNativeBotRequest {
 
 @Serializable
 data class TransferStatus(
-    val status: String,
+    val status: Status,
     val hangup: Boolean,
     val number: String
 ) {
-    val isSuccess = status == "SUCCESS"
+
+    enum class Status {
+        SUCCESS, FAIL
+    }
+
+    val isSuccess = status == Status.SUCCESS
 }
 
 @Serializable
