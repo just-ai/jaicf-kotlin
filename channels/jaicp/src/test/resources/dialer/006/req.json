@@ -1,0 +1,27 @@
+{
+  "data": {
+    "livechatStatus": {
+      "enabled": false
+    }
+  },
+  "version": 1,
+  "botId": "mva_jaicf_project-263-XQt",
+  "channelType": "resterisk",
+  "channelBotId": "mva_jaicf_project-263-XQt",
+  "channelUserId": "chatapi-mva_jaicf_project-263-XQt-test",
+  "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+  "query": "/start",
+  "timestamp": 1583767519.497000000,
+  "rawRequest": {
+    "token": "GNVXJdeo:718e36f7005fbba3e2a9696784b83dc3bd0f3d9a",
+    "clientId": "test",
+    "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+    "query": "/start",
+    "timestamp": "2020-03-09T15:25:19.497",
+    "userId": "test"
+  },
+  "userFrom": {
+    "id": "test",
+    "firstName": "test"
+  }
+}

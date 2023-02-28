@@ -13,6 +13,7 @@ class JaicpDialerAPI {
     private var callResultPayload: String? = null
     private var reportData: MutableMap<String, CallReportData> = mutableMapOf()
     private var redial: RedialData? = null
+    private var noInputTimeout: Int? = null
 
     /**
      * Reports data to be stored in .xsls report.
@@ -155,6 +156,10 @@ class JaicpDialerAPI {
     internal fun result(result: String?, resultPayload: String?) {
         callResult = result
         callResultPayload = resultPayload
+    }
+
+    internal fun noInputTimeout(duration: Int) {
+        noInputTimeout = duration
     }
 }
 

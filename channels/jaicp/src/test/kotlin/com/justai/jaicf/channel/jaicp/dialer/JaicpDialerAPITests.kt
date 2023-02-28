@@ -108,4 +108,16 @@ internal class JaicpDialerAPITests : JaicpBaseTest() {
         val response = channel.process(requestFromResources)
         assertEquals(responseFromResources, response.jaicp)
     }
+
+    @Test
+    fun `006 dialer should set no input timeout`() {
+        val scenario = echoWithAction {
+            reactions.telephony?.noInputTimeout(15000)
+            reactions.say("You said: ${request.input}")
+        }
+
+        val channel = JaicpTestChannel(scenario, TelephonyChannel)
+        val response = channel.process(requestFromResources)
+        assertEquals(responseFromResources, response.jaicp)
+    }
 }

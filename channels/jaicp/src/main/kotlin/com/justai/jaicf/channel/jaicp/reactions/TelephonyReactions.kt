@@ -321,6 +321,24 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     }
 
     /**
+     * Allows changing the default timeout (5 seconds) for the speechNotRecognized event in state.
+     *
+     * Example usage:
+     * ```
+     * state("BeforeSilence") {
+     *    activators {
+     *        regex(.*)
+     *    }
+     *    action {
+     *        reactions.noInputTimeout(15000)
+     *    }
+     * }
+     * ```
+     * @param duration the duration of the timeout in milliseconds.
+     * */
+    fun noInputTimeout(duration: Int) = dialer.noInputTimeout(duration)
+
+    /**
      * Allows to barge in speech synthesis or audio playback during handling bargeIn event.
      *
      * This reaction works only when manually handling bargeIn event.
