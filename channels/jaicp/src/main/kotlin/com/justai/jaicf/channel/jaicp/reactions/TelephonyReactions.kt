@@ -322,6 +322,8 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
 
     /**
      * Allows changing the default timeout (5 seconds) for the speechNotRecognized event in state.
+     * The timeout duration must be specified in milliseconds as an integer between 1000 (1 second) and 20000 (20 seconds).
+     * If you set a duration outside the range, the default timeout will be used.
      *
      * Example usage:
      * ```
