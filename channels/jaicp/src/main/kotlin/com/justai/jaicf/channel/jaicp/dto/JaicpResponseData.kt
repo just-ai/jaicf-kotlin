@@ -29,8 +29,8 @@ internal class JaicpResponseData private constructor(
         bargeInInterrupt: BargeInResponse?,
         sessionId: String,
         responseData: Map<String, JsonElement> = mapOf(),
-        ttsConfig: TtsConfig?,
-        asrConfig: AsrConfig?
+        ttsConfig: TtsConfig? = null,
+        asrConfig: AsrConfig? = null
     ) : this(
         replies = replies.map { it.serialized().toJson() },
         answer = replies.filterIsInstance<TextReply>().joinToString("\n\n") { it.text },

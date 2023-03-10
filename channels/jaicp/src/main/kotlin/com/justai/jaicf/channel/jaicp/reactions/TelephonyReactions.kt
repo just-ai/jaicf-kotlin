@@ -129,7 +129,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * to the corresponding fields in the TtsConfig class.
      * @param config TtsProviderConfig subclass containing the provider-specific configuration settings to use for TTS.
      * */
-    fun <T : TtsProviderConfig> setTtsConfig(config: T) {
+    fun setTtsConfig(config: TtsProviderConfig) {
         ttsConfig = TtsConfig(
             type = executionContext.request.telephony?.ttsConfig?.type,
             yandex = config as? TtsConfigYandex,
@@ -164,7 +164,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * to the corresponding fields in the AsrConfig class.
      * @param config AsrProviderConfig subclass containing the provider-specific configuration settings to use for ASR.
      * */
-    fun <T : AsrProviderConfig> setAsrConfig(config: T) {
+    fun setAsrConfig(config: AsrProviderConfig) {
         asrConfig = AsrConfig(
             type = executionContext.request.telephony?.asrConfig?.type,
             yandex = config as? AsrYandexConfig,
