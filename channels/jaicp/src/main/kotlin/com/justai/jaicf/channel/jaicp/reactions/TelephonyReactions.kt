@@ -120,7 +120,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * ```
      * state("tts") {
      *    action {
-     *        reactions.telephony?.setTtsConfig(TtsConfigAimyvoice("Никита"))
+     *        reactions.telephony?.setTtsConfig(TtsAimyvoiceConfig("Никита"))
      *    }
      * }
      * ```
@@ -132,13 +132,13 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     fun setTtsConfig(config: TtsProviderConfig) {
         ttsConfig = TtsConfig(
             type = executionContext.request.telephony?.ttsConfig?.type,
-            yandex = config as? TtsConfigYandex,
-            google = config as? TtsConfigGoogle,
-            mts = config as? TtsConfigMts,
-            zitech = config as? TtsConfigZitech,
-            azure = config as? TtsConfigAzure,
-            aimyvoice = config as? TtsConfigAimyvoice,
-            sber = config as? TtsConfigSber
+            yandex = config as? TtsYandexConfig,
+            google = config as? TtsGoogleConfig,
+            mts = config as? TtsMtsConfig,
+            zitech = config as? TtsZitechConfig,
+            azure = config as? TtsAzureConfig,
+            aimyvoice = config as? TtsAimyvoiceConfig,
+            sber = config as? TtsSberConfig
         )
     }
 
@@ -170,7 +170,7 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
             yandex = config as? AsrYandexConfig,
             zitech = config as? AsrZitechConfig,
             google = config as? AsrGoogleConfig,
-            amiVoice = config as? AsrAmiVoiceConfig,
+            aimyvoice = config as? AsrAimyvoiceConfig,
             mts = config as? AsrMtsConfig,
             azure = config as? AsrAzureConfig,
             asm = config as? AsrAsmConfig,
