@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  * @param yandex configuration options for the Yandex ASR provider, if used.
  * @param zitech configuration options for the Zitech ASR provider, if used.
  * @param google configuration options for the Google ASR provider, if used.
- * @param amiVoice configuration options for the AmiVoice ASR provider, if used.
+ * @param aimyvoice configuration options for the Aimyvoice ASR provider, if used.
  * @param mts configuration options for the MTS ASR provider, if used.
  * @param azure configuration options for the Azure ASR provider, if used.
  * @param asm configuration options for the ASM ASR provider, if used.
@@ -25,7 +25,8 @@ data class AsrConfig(
     val yandex: AsrYandexConfig? = null,
     val zitech: AsrZitechConfig? = null,
     val google: AsrGoogleConfig? = null,
-    val amiVoice: AsrAmiVoiceConfig? = null,
+    @SerialName("amiVoice")
+    val aimyvoice: AsrAimyvoiceConfig? = null,
     val mts: AsrMtsConfig? = null,
     val azure: AsrAzureConfig? = null,
     val asm: AsrAsmConfig? = null,
@@ -49,7 +50,7 @@ data class AsrConfig(
         ZITECH,
 
         @SerialName("amiVoice")
-        AMIVOICE,
+        AIMYVOICE,
 
         @SerialName("azure")
         AZURE,
@@ -100,7 +101,7 @@ data class AsrMtsConfig(
 ) : AsrProviderConfig()
 
 @Serializable
-data class AsrAmiVoiceConfig(
+data class AsrAimyvoiceConfig(
     val codec: String? = null,
     val mode: String? = null,
     val grammarFileNames: String? = null

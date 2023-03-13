@@ -5,7 +5,7 @@ import com.justai.jaicf.channel.jaicp.JaicpTestChannel
 import com.justai.jaicf.channel.jaicp.ScenarioFactory.echoWithAction
 import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.config.AsrYandexConfig
-import com.justai.jaicf.channel.jaicp.dto.config.TtsConfigAimyvoice
+import com.justai.jaicf.channel.jaicp.dto.config.TtsAimyvoiceConfig
 import com.justai.jaicf.channel.jaicp.reactions.telephony
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -15,7 +15,7 @@ internal class ProviderConfigTest : JaicpBaseTest() {
     @Test
     fun `001 config tts provider`() {
         val scenario = echoWithAction {
-            reactions.telephony?.setTtsConfig(TtsConfigAimyvoice("Никита"))
+            reactions.telephony?.setTtsConfig(TtsAimyvoiceConfig("Никита"))
         }
         val channel = JaicpTestChannel(scenario, TelephonyChannel)
         val response = channel.process(requestFromResources)

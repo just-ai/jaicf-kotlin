@@ -21,13 +21,13 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TtsConfig(
     val type: TtsProviderType? = null,
-    val yandex: TtsConfigYandex? = null,
-    val google: TtsConfigGoogle? = null,
-    val mts: TtsConfigMts? = null,
-    val zitech: TtsConfigZitech? = null,
-    val azure: TtsConfigAzure? = null,
-    val aimyvoice: TtsConfigAimyvoice? = null,
-    val sber: TtsConfigSber? = null,
+    val yandex: TtsYandexConfig? = null,
+    val google: TtsGoogleConfig? = null,
+    val mts: TtsMtsConfig? = null,
+    val zitech: TtsZitechConfig? = null,
+    val azure: TtsAzureConfig? = null,
+    val aimyvoice: TtsAimyvoiceConfig? = null,
+    val sber: TtsSberConfig? = null,
 ) {
     @Serializable
     enum class TtsProviderType {
@@ -62,12 +62,12 @@ data class TtsConfig(
 sealed class TtsProviderConfig
 
 @Serializable
-data class TtsConfigAimyvoice(
+data class TtsAimyvoiceConfig(
     val voice: String? = null
 ) : TtsProviderConfig()
 
 @Serializable
-data class TtsConfigYandex(
+data class TtsYandexConfig(
     val lang: String? = null,
     val voice: String? = null,
     val emotion: String? = null,
@@ -78,7 +78,7 @@ data class TtsConfigYandex(
 ) : TtsProviderConfig()
 
 @Serializable
-data class TtsConfigMts(
+data class TtsMtsConfig(
     val sampleRate: Int? = null,
     val lang: String? = null,
     val mediaType: String? = null,
@@ -87,7 +87,7 @@ data class TtsConfigMts(
 ) : TtsProviderConfig()
 
 @Serializable
-data class TtsConfigGoogle(
+data class TtsGoogleConfig(
     val voice: String? = null,
     val pitch: Double? = null,
     val speakingRate: Double? = null,
@@ -95,7 +95,7 @@ data class TtsConfigGoogle(
 ) : TtsProviderConfig()
 
 @Serializable
-data class TtsConfigZitech(
+data class TtsZitechConfig(
     val sampleRate: Int? = null,
     val model: String? = null,
     val speed: Double? = null,
@@ -103,12 +103,12 @@ data class TtsConfigZitech(
 ) : TtsProviderConfig()
 
 @Serializable
-data class TtsConfigAzure(
+data class TtsAzureConfig(
     val sampleRate: Int? = null,
     val voiceName: String? = null
 ) : TtsProviderConfig()
 
 @Serializable
-data class TtsConfigSber(
+data class TtsSberConfig(
     val voice: String? = null
 ) : TtsProviderConfig()
