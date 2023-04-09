@@ -10,6 +10,7 @@ package com.justai.jaicf.channel.jaicp.channels
  * NO_DTMF_ANSWER           - is sent when we expect client to dial specific code on keypad, but client dialed nothing.
  * BARGE_IN_EVENT           - is sent when client barged in.
  * ON_CALL_NOT_CONNECTED    - is sent when the bot doesn't reach the client. For example, the client did not pick up the phone or the number was busy.
+ * TRANSFER                 - is sent when the call was transferred to the agent
  *
  * @see com.justai.jaicf.channel.jaicp.JaicpEvents
  * */
@@ -21,4 +22,5 @@ object TelephonyEvents {
     const val NO_DTMF_ANSWER = "noDtmfAnswerEvent"
     const val BARGE_IN_EVENT = "bargeInIntent"
     const val ON_CALL_NOT_CONNECTED = "onCallNotConnected"
+    const val TRANSFER = "transfer"
 }

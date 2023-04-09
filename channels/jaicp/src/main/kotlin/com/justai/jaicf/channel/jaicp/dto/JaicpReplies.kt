@@ -92,6 +92,7 @@ class HangupReply(val state: String? = null) : Reply("hangup") {
  * @param transferBotId - JAICP bot identifier to transfer call to. This bot must be a telephony bot created in JAICP Console.
  * @param continueCall - whether to return call back to bot after transfer. True to return call back.
  * @param continueRecording - whether to continue recording after transfer. True to continue recording after transfer.
+ * @param method - [TelephonySwitchMethod] - call routing method.
  *  */
 @Suppress("MemberVisibilityCanBePrivate")
 @Serializable
@@ -102,9 +103,30 @@ class TelephonySwitchReply(
     val transferBotId: String? = null,
     val continueCall: Boolean? = null,
     val continueRecording: Boolean? = null,
-    val state: String? = null
+    val state: String? = null,
+    val method: TelephonySwitchMethod = TelephonySwitchMethod.INVITE
 ) : Reply("switch") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
+}
+
+/**
+ * TelephonySwitchMethod to specify call routing method.
+ * Not all providers support call routing via SIP REFER.
+ * When you route calls via SIP REFER, the headers, transferBotId, continueCall, and continueRecording properties will be ignored.
+ * @property INVITE call transfer with the connection preserved. This is the default value.
+ * @property REFER call transfer with the connection terminated
+ * */
+@Serializable
+enum class TelephonySwitchMethod {
+    @SerialName("refer")
+    REFER,
+
+    @SerialName("invite")
+    INVITE,
+
+    @Deprecated("Deprecated in JAICP Cloud releases", replaceWith = ReplaceWith("REFER"))
+    @SerialName("transfer")
+    TRANSFER
 }
 
 /**
