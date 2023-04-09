@@ -3,10 +3,14 @@ package com.justai.jaicf.channel.jaicp.channels
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.channel.jaicp.JaicpBaseTest
 import com.justai.jaicf.channel.jaicp.JaicpTestChannel
+import com.justai.jaicf.channel.jaicp.ScenarioFactory
 import com.justai.jaicf.channel.jaicp.ScenarioFactory.echoWithAction
+import com.justai.jaicf.channel.jaicp.dto.TelephonySwitchMethod
+import com.justai.jaicf.channel.jaicp.dto.TelephonySwitchReply
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInMode
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInTrigger
 import com.justai.jaicf.channel.jaicp.reactions.telephony
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -51,6 +55,55 @@ internal class JaicpNativeChannelTests : JaicpBaseTest() {
         val channel = JaicpTestChannel(bot, TelephonyChannel)
         val response = channel.process(requestFromResources)
         assertEquals(responseFromResources, response.jaicp)
+    }
+
+    @Test
+    fun `005 webhooks should answer telephony with default transfer`() {
+        val bot = BotEngine(
+            ScenarioFactory.echoWithAction {
+                reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
+                reactions.telephony?.transferCall("79123456789")
+            }
+        )
+        val channel = JaicpTestChannel(bot, TelephonyChannel)
+        val response = channel.process(requestFromResources)
+        Assertions.assertEquals(responseFromResources, response.jaicp)
+    }
+
+    @Test
+    fun `006 webhooks should answer telephony with REFER transfer`() {
+        val bot = BotEngine(
+            ScenarioFactory.echoWithAction {
+                reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
+                reactions.telephony?.transferCall(
+                    TelephonySwitchReply(
+                        phoneNumber = "79123456789",
+                        method = TelephonySwitchMethod.REFER
+                    )
+                )
+            }
+        )
+        val channel = JaicpTestChannel(bot, TelephonyChannel)
+        val response = channel.process(requestFromResources)
+        Assertions.assertEquals(responseFromResources, response.jaicp)
+    }
+
+    @Test
+    fun `007 webhooks should answer telephony with INVITE transfer`() {
+        val bot = BotEngine(
+            ScenarioFactory.echoWithAction {
+                reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
+                reactions.telephony?.transferCall(
+                    TelephonySwitchReply(
+                        phoneNumber = "79123456789",
+                        method = TelephonySwitchMethod.INVITE
+                    )
+                )
+            }
+        )
+        val channel = JaicpTestChannel(bot, TelephonyChannel)
+        val response = channel.process(requestFromResources)
+        Assertions.assertEquals(responseFromResources, response.jaicp)
     }
 }
 

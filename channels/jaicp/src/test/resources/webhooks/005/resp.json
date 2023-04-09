@@ -1,0 +1,37 @@
+{
+  "data": {
+    "replies": [
+      {
+        "type": "text",
+        "text": "You said: /start from TelephonyReactions",
+        "state": "/fallback"
+      },
+      {
+        "type": "switch",
+        "phoneNumber": "79123456789",
+        "state": "/fallback"
+      }
+    ],
+    "answer": "You said: /start from TelephonyReactions",
+    "dialer": {},
+    "sessionId": "resterisk-mva_jaicf_project-263-XQt-test-3b7a0f56-5605-427a-991b-8c4c51f0333e"
+  },
+  "botId": "mva_jaicf_project-263-XQt",
+  "accountId": "mva_jaicf_project-263-XQt",
+  "channelType": "resterisk",
+  "channelBotId": "mva_jaicf_project-263-XQt",
+  "channelUserId": "resterisk-mva_jaicf_project-263-XQt-test",
+  "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+  "query": "/start",
+  "timestamp": 1681996038987,
+  "currentState": "/fallback",
+  "processingTime": 41,
+  "requestData": {
+    "token": "GNVXJdeo:718e36f7005fbba3e2a9696784b83dc3bd0f3d9a",
+    "clientId": "test",
+    "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+    "query": "/start",
+    "timestamp": "2020-03-09T15:25:19.497",
+    "userId": "test"
+  }
+}
