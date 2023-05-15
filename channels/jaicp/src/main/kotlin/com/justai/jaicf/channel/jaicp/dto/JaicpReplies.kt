@@ -1,6 +1,8 @@
 package com.justai.jaicf.channel.jaicp.dto
 
 import com.justai.jaicf.channel.jaicp.JSON
+import com.justai.jaicf.channel.jaicp.dto.TelephonySwitchMethod.INVITE
+import com.justai.jaicf.channel.jaicp.dto.TelephonySwitchMethod.REFER
 import com.justai.jaicf.channel.jaicp.dto.bargein.BargeInReplyData
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -93,6 +95,7 @@ class HangupReply(val state: String? = null) : Reply("hangup") {
  * @param continueCall - whether to return call back to bot after transfer. True to return call back.
  * @param continueRecording - whether to continue recording after transfer. True to continue recording after transfer.
  * @param method - [TelephonySwitchMethod] - call routing method.
+ * @param sipUri - a SIP address to transfer call to.
  *  */
 @Suppress("MemberVisibilityCanBePrivate")
 @Serializable
@@ -104,7 +107,8 @@ class TelephonySwitchReply(
     val continueCall: Boolean? = null,
     val continueRecording: Boolean? = null,
     val state: String? = null,
-    val method: TelephonySwitchMethod = TelephonySwitchMethod.INVITE
+    val method: TelephonySwitchMethod = TelephonySwitchMethod.INVITE,
+    val sipUri: String? = null,
 ) : Reply("switch") {
     override fun serialized() = JSON.encodeToString(serializer(), this)
 }

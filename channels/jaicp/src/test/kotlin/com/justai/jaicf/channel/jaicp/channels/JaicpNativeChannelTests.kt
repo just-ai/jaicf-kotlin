@@ -105,6 +105,23 @@ internal class JaicpNativeChannelTests : JaicpBaseTest() {
         val response = channel.process(requestFromResources)
         Assertions.assertEquals(responseFromResources, response.jaicp)
     }
+
+    @Test
+    fun `008 webhooks should answer telephony with sip URI`() {
+        val bot = BotEngine(
+            ScenarioFactory.echoWithAction {
+                reactions.say("You said: ${request.input} from ${reactions::class.simpleName}")
+                reactions.telephony?.transferCall(
+                    TelephonySwitchReply(
+                        sipUri = "123@123.org"
+                    )
+                )
+            }
+        )
+        val channel = JaicpTestChannel(bot, TelephonyChannel)
+        val response = channel.process(requestFromResources)
+        Assertions.assertEquals(responseFromResources, response.jaicp)
+    }
 }
 
 private val echoBot = BotEngine(
