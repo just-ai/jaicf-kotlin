@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.dto.config
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 /**
  * Configuration parameters for the text-to-speech (TTS) provider used in a telephone channel.
@@ -28,6 +29,7 @@ data class TtsConfig(
     val azure: TtsAzureConfig? = null,
     val aimyvoice: TtsAimyvoiceConfig? = null,
     val sber: TtsSberConfig? = null,
+    val tokenData: JsonObject? = null,
 ) {
     @Serializable
     enum class TtsProviderType {
