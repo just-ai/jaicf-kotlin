@@ -5,6 +5,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpDialerAPI
 import com.justai.jaicf.channel.jaicp.dto.JaicpResponseData
 import com.justai.jaicf.channel.jaicp.dto.Reply
 import com.justai.jaicf.channel.jaicp.dto.TextReply
+import com.justai.jaicf.channel.jaicp.jaicpRequest
 import com.justai.jaicf.channel.jaicp.logging.internal.SessionManager
 import com.justai.jaicf.context.DialogContext
 import com.justai.jaicf.logging.EndSessionReaction
@@ -25,6 +26,8 @@ open class JaicpReactions : Reactions() {
     internal val dialer by lazy { JaicpDialerAPI() }
 
     protected val responseData: MutableMap<String, JsonElement> = mutableMapOf()
+
+    private var ttsTokenData: JsonObject? = null
 
     internal fun getCurrentState() = botContext.dialogContext.currentState
 
@@ -77,6 +80,11 @@ open class JaicpReactions : Reactions() {
     fun collect(): JsonObject {
         doBeforeCollect()
 
+        ttsTokenData = checkNotNull(executionContext.jaicpRequest)
+            .rawRequest.jsonObject["asrTtsProviderData"]?.jsonObject?.get("tts")?.jsonObject?.get("tokenData")?.jsonObject
+            ?: ttsTokenData
+        val ttsConfig = telephony?.ttsConfig?.copy(tokenData = ttsTokenData?.jsonObject)
+
         return JSON.encodeToJsonElement(
             serializer = JaicpResponseData.serializer(),
             value = JaicpResponseData(
@@ -86,7 +94,7 @@ open class JaicpReactions : Reactions() {
                 bargeInInterrupt = telephony?.bargeInInterrupt,
                 sessionId = SessionManager.get(executionContext).getOrCreateSessionId().sessionId,
                 responseData = responseData,
-                ttsConfig = telephony?.ttsConfig,
+                ttsConfig = ttsConfig,
                 asrConfig = telephony?.asrConfig
             )
         ).jsonObject
