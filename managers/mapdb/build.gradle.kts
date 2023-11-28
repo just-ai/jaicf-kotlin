@@ -10,6 +10,15 @@ plugins {
     `jaicf-junit`
 }
 
+sourceSets.all {
+    configurations.getByName(runtimeClasspathConfigurationName) {
+        attributes.attribute(Attribute.of("org.gradle.jvm.environment", String::class.java), "standard-jvm")
+    }
+    configurations.getByName(compileClasspathConfigurationName) {
+        attributes.attribute(Attribute.of("org.gradle.jvm.environment", String::class.java), "standard-jvm")
+    }
+}
+
 dependencies {
     core()
     api(jackson())
