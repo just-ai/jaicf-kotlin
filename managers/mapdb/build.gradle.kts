@@ -22,7 +22,11 @@ sourceSets.all {
 dependencies {
     core()
     api(jackson())
-    api("org.mapdb:mapdb:3.0.8")
+    api("org.mapdb:mapdb:3.0.8") {
+        exclude("org.eclipse.collections")
+    }
+
+    implementation("org.eclipse.collections", "eclipse-collections", "11.1.0")
 
     testImplementation(testFixtures(project(":core")))
 }
