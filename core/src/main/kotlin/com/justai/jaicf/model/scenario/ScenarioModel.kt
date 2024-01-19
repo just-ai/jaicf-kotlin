@@ -1,8 +1,11 @@
 package com.justai.jaicf.model.scenario
 
+import com.justai.jaicf.activator.selection.isTo
+import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.BotHookListener
 import com.justai.jaicf.model.state.State
+import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 
 /**
@@ -30,5 +33,26 @@ data class ScenarioModel(
             }
         }
         return this
+    }
+
+    fun generateTransitions(botContext: BotContext): List<Transition> {
+        val currentPath = StatePath.parse(botContext.dialogContext.currentContext)
+
+        val allStatesBack = listOf(currentPath.toString()) + currentPath.parents.reversedArray()
+
+        val transitionsFrom = transitions.groupBy { it.fromState }
+        val availableTransitions = mutableListOf<Transition>()
+
+        for (state in allStatesBack) {
+            availableTransitions += transitionsFrom[state] ?: emptyList()
+
+            if (states[state]?.modal == true) {
+                val parent = StatePath.parse(state).parent
+                availableTransitions += transitionsFrom[parent]?.filter { it.isTo(state) } ?: emptyList()
+                break
+            }
+        }
+
+        return availableTransitions
     }
 }

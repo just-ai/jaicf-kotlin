@@ -65,9 +65,15 @@ interface Activator {
     fun activate(
         botContext: BotContext,
         request: BotRequest,
-        selector: ActivationSelector
+        selector: ActivationSelector,
     ): Activation?
 
+    fun activate(
+        botContext: BotContext,
+        request: BotRequest,
+        selector: ActivationSelector,
+        activation: ActivatorContext
+    ): Activation? = null
 
     /**
      * Fills slots for activator implementations.

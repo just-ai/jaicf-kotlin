@@ -12,6 +12,8 @@ include("examples:viber-example")
 findProject(":examples:viber-example")?.name = "viber-example"
 include("examples:multilingual-bot")
 findProject(":examples:multilingual-bot")?.name = "multilingual-bot"
+include("examples:llm-example")
+findProject(":examples:llm-example")?.name = "llm-example"
 
 include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"
@@ -45,3 +47,5 @@ include("managers:mapdb")
 findProject(":managers:mapdb")?.name = "mapdb"
 include("activators:rasa")
 findProject(":activators:rasa")?.name = "rasa"
+include("activators:llm")
+findProject(":activators:llm")?.name = "llm"

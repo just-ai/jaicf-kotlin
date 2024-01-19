@@ -4,28 +4,20 @@ import com.justai.jaicf.activator.Activator
 import com.justai.jaicf.activator.rasa.RasaActivatorContext
 import com.justai.jaicf.activator.rasa.RasaIntentActivator
 import com.justai.jaicf.activator.rasa.api.RasaApi
-import com.justai.jaicf.activator.rasa.api.RasaParseMessageRequest
-import com.justai.jaicf.activator.rasa.rasa
 import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
 import io.ktor.client.engine.mock.*
-import io.ktor.http.*
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class RasaDeserializationTest {
 

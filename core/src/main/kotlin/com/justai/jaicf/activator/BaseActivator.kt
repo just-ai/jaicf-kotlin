@@ -1,15 +1,12 @@
 package com.justai.jaicf.activator
 
 import com.justai.jaicf.activator.selection.ActivationSelector
-import com.justai.jaicf.activator.selection.isTo
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.model.activation.Activation
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.ScenarioModel
-import com.justai.jaicf.model.state.StatePath
-import com.justai.jaicf.model.transition.Transition
 
 /**
  * A base abstraction for every [Activator] that should activate a state if it contains a particular rule like event or intent.
@@ -21,7 +18,7 @@ import com.justai.jaicf.model.transition.Transition
 abstract class BaseActivator(private val model: ScenarioModel) : Activator {
 
     override fun activate(botContext: BotContext, request: BotRequest, selector: ActivationSelector): Activation? {
-        val transitions = generateTransitions(botContext)
+        val transitions = model.generateTransitions(botContext)
         val matcher = provideRuleMatcher(botContext, request)
 
         val activations = transitions.mapNotNull { transition ->
@@ -77,25 +74,4 @@ abstract class BaseActivator(private val model: ScenarioModel) : Activator {
         object : ActivationRuleMatcher {
             override fun match(rule: ActivationRule) = (rule as? R)?.let(matcher)
         }
-
-    private fun generateTransitions(botContext: BotContext): List<Transition> {
-        val currentPath = StatePath.parse(botContext.dialogContext.currentContext)
-
-        val allStatesBack = listOf(currentPath.toString()) + currentPath.parents.reversedArray()
-
-        val transitionsFrom = model.transitions.groupBy { it.fromState }
-        val availableTransitions = mutableListOf<Transition>()
-
-        for (state in allStatesBack) {
-            availableTransitions += transitionsFrom[state] ?: emptyList()
-
-            if (model.states[state]?.modal == true) {
-                val parent = StatePath.parse(state).parent
-                availableTransitions += transitionsFrom[parent]?.filter { it.isTo(state) } ?: emptyList()
-                break
-            }
-        }
-
-        return availableTransitions
-    }
 }

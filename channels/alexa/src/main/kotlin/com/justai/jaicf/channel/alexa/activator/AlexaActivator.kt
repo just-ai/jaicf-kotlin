@@ -30,6 +30,13 @@ class AlexaActivator private constructor(
             ?: eventActivator.activate(botContext, request, selector)
     }
 
+    override fun activate(
+        botContext: BotContext,
+        request: BotRequest,
+        selector: ActivationSelector,
+        activation: ActivatorContext
+    ): Activation? = null
+
     override fun fillSlots(
         request: BotRequest,
         reactions: Reactions,

@@ -150,7 +150,7 @@ open class BotEngine(
         reactions: Reactions,
         executionContext: ExecutionContext,
     ) {
-        val slotFillingContext = if (isActiveSlotFilling(botContext)) {
+        var slotFillingContext: SlotFillingContext? = if (isActiveSlotFilling(botContext)) {
             getSlotFillingContext(botContext)!!
         } else {
             withHook(BeforeActivationHook(botContext, request, reactions))
@@ -162,33 +162,44 @@ open class BotEngine(
             }
         }
 
-        with(slotFillingContext) {
-            val res = activator.fillSlots(request, reactions, botContext, activatorContext, slotReactor)
+        do {
+            with(slotFillingContext!!) {
+                val res = activator.fillSlots(request, reactions, botContext, activatorContext, slotReactor)
 
-            when (res) {
-                is SlotFillingInProgress -> return
-                is SlotFillingInterrupted -> {
-                    cancelSlotFilling(botContext)
-                    if (res.shouldReprocess) {
-                        processRequest(botContext, request, requestContext, reactions, executionContext)
+                when (res) {
+                    is SlotFillingInProgress -> return
+                    is SlotFillingInterrupted -> {
+                        cancelSlotFilling(botContext)
+                        if (res.shouldReprocess) {
+                            processRequest(botContext, request, requestContext, reactions, executionContext)
+                        }
+                        return
+                    }
+                    is SlotFillingFinished -> {
+                        val activation = finishSlotFilling(botContext, res)
+                        executionContext.activationContext = activation
+                        processStates(
+                            ProcessContext(
+                                request,
+                                reactions,
+                                requestContext,
+                                botContext,
+                                activation,
+                                executionContext
+                            )
+                        )
                     }
                 }
-                is SlotFillingFinished -> {
-                    val activation = finishSlotFilling(botContext, res)
-                    executionContext.activationContext = activation
-                    processStates(
-                        ProcessContext(
-                            request,
-                            reactions,
-                            requestContext,
-                            botContext,
-                            activation,
-                            executionContext
-                        )
-                    )
-                }
+
+                slotFillingContext = activator.activate(
+                    botContext,
+                    request,
+                    activationSelector,
+                    activatorContext!!)?.let {
+                        startSlotFilling(botContext, ActivationContext(activator, it))
+                    }
             }
-        }
+        } while (slotFillingContext != null)
     }
 
     internal fun getActivatorForName(activatorName: String) = activators.find { it.name == activatorName }
