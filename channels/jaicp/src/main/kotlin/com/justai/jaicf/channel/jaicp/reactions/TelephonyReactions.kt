@@ -38,10 +38,14 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      *
      * @param text to synthesis speech from
      * @param bargeIn true to allow interruption and handle in in current dialog context
+     * @param tts true to allow SSML parsing of text
      * */
-    fun say(text: String, bargeIn: Boolean) = when (bargeIn) {
-        true -> say(text, CURRENT_CONTEXT_PATH)
-        false -> say(text)
+    fun say(text: String, bargeIn: Boolean, tts: Boolean = false) = when (bargeIn) {
+        true -> say(text, CURRENT_CONTEXT_PATH, tts)
+        false -> if (tts) {
+            replies.add(TextReply(text, state = currentState, tts = text))
+            SayReaction.create(text)
+        } else say(text)
     }
 
     /**
@@ -50,10 +54,18 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      *
      * @param text to synthesis speech from speech from
      * @param bargeInContext scenario context with states which should handle possible interruptions.
+     * @param tts true to allow SSML parsing of text
      * */
-    fun say(text: String, @PathValue bargeInContext: String): SayReaction {
+    fun say(text: String, @PathValue bargeInContext: String, tts: Boolean): SayReaction {
         ensureBargeInProps()
-        replies.add(TextReply(text, state = currentState, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
+        replies.add(
+            TextReply(
+                text,
+                state = currentState,
+                bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT),
+                tts = if (tts) text else null
+            )
+        )
         return SayReaction.create(text)
     }
 
