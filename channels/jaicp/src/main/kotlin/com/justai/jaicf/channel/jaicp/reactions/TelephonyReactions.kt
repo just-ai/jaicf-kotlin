@@ -42,7 +42,18 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun say(text: String, bargeIn: Boolean, tts: String? = null) = when (bargeIn) {
         true -> say(text, CURRENT_CONTEXT_PATH, tts)
-        false -> if (tts != null) {
+        false -> say(text, tts)
+    }
+
+    /**
+     * Sends text to synthesis in telephony channel.
+     * Allows to interrupt synthesis only by phrases which we can handle in scenario.
+     *
+     * @param text to synthesis speech from text
+     * @param tts SSML text for telephony channel
+     * */
+    fun say(text: String, tts: String? = null): SayReaction {
+        return if (tts != null) {
             replies.add(TextReply(text, state = currentState, tts = tts))
             SayReaction.create(text)
         } else say(text)
