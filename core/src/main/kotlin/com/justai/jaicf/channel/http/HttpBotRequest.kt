@@ -7,7 +7,7 @@ import java.nio.charset.Charset
 /**
  * Contains details of the HTTP request to the corresponding [HttpBotChannel]
  *
- * @property stream input stream containing a request data
+ * @param stream input stream containing a request data
  * @property headers request HTTP headers
  * @property parameters HTTP query parameters
  * @property requestMetadata optional metadata for request processing
@@ -18,21 +18,20 @@ class HttpBotRequest(
     val parameters: Map<String, List<String>> = mapOf(),
     val requestMetadata: String? = null
 ) {
-    val stream = stream.buffered()
+    private val streamBody: ByteArray
 
-    fun receiveText(charset: Charset = Charset.forName("UTF-8")) = stream.runAndReset { bufferedReader(charset).readText() }
+    init {
+        streamBody = stream.readBytes()
+    }
+
+    fun receiveText(charset: Charset = Charset.forName("UTF-8")) = streamBody.toString(charset)
 
     fun firstHeader(name: String) = headers[name]?.first()
 
     fun firstParameter(name: String) = parameters[name]?.first()
 
     override fun toString() =
-        "HttpBotRequest(stream=$stream, headers=$headers, parameters=$parameters, requestMetadata=$requestMetadata"
-}
-
-fun <R> InputStream.runAndReset(action: InputStream.() -> R): R {
-    mark(0)
-    return action().also { reset() }
+        "HttpBotRequest(streamBody=$streamBody, headers=$headers, parameters=$parameters, requestMetadata=$requestMetadata"
 }
 
 fun String.asHttpBotRequest(requestMetadata: String? = null) = HttpBotRequest(
