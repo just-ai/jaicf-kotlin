@@ -37,6 +37,7 @@ open class CailaIntentActivator(
 
     override fun provideRuleMatcher(botContext: BotContext, request: BotRequest): ActivationRuleMatcher {
         val results = client.analyze(request.input) ?: return ActivationRuleMatcher { null }
+        botContext.cailaAnalyzeResult = results
 
         val intents = extractIntents(results).sortedByDescending { it.confidence }
         val intentMatcher = ruleMatcher<IntentActivationRule> { intents.firstOrNull(it.matches) }
