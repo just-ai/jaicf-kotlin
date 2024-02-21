@@ -6,7 +6,7 @@ import com.justai.jaicf.context.StrictActivatorContext
 /**
  * Appears in the context of action block if [CatchAllActivator] handled the user's request.
  */
-class CatchAllActivatorContext: StrictActivatorContext()
+open class CatchAllActivatorContext : StrictActivatorContext()
 
 val ActivatorContext.catchAll
     get() = this as? CatchAllActivatorContext

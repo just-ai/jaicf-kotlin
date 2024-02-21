@@ -28,7 +28,7 @@ import com.justai.jaicf.model.scenario.ScenarioModel
  *
  * @see CatchAllActivatorContext
  */
-class CatchAllActivator(model: ScenarioModel) : BaseActivator(model) {
+open class CatchAllActivator(model: ScenarioModel) : BaseActivator(model) {
 
     override val name = "catchAllActivator"
 
