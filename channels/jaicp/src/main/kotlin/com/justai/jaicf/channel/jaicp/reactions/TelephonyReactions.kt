@@ -10,6 +10,8 @@ import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
@@ -199,6 +201,25 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
             asm = config as? AsrAsmConfig,
             sber = config as? AsrSberConfig
         )
+    }
+
+    /**
+     * This method overrides the ASR properties of the ASR used for the current call.
+     * example usage:
+     * ```
+     * state("asr") {
+     *    action {
+     *        reactions.telephony?.setAsrProperties(
+     *            mapOf("enable_profanity_filter" to "true")
+     *        )
+     *    }
+     * }
+     * ```
+     * @param properties map of properties names with its assigned values.
+     * */
+    fun setAsrProperties(properties: Map<String, String>) {
+        val propertiesJson = JsonObject(properties.toMutableMap().mapValues { entry -> JsonPrimitive(entry.value) })
+        asrConfig = asrConfig?.copy(asrProperties = propertiesJson)
     }
 
     /**

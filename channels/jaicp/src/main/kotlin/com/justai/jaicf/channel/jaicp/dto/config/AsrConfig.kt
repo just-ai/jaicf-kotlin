@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.dto.config
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 /**
  * Configuration parameters for the automatic speech recognition (ASR) provider used in a telephone channel.
@@ -18,6 +19,7 @@ import kotlinx.serialization.Serializable
  * @param azure configuration options for the Azure ASR provider, if used.
  * @param asm configuration options for the ASM ASR provider, if used.
  * @param sber configuration options for the Sber ASR provider, if used.
+ * @param asrProperties special properties used with selected ASR, if used.
  **/
 @Serializable
 data class AsrConfig(
@@ -30,7 +32,8 @@ data class AsrConfig(
     val mts: AsrMtsConfig? = null,
     val azure: AsrAzureConfig? = null,
     val asm: AsrAsmConfig? = null,
-    val sber: AsrSberConfig? = null
+    val sber: AsrSberConfig? = null,
+    val asrProperties: JsonObject? = null
 ) {
     @Serializable
     enum class AsrProviderType {
