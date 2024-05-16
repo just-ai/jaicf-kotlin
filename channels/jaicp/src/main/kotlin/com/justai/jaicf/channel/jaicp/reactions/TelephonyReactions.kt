@@ -219,7 +219,74 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * */
     fun setAsrProperties(properties: Map<String, String>) {
         val propertiesJson = JsonObject(properties.toMutableMap().mapValues { entry -> JsonPrimitive(entry.value) })
-        asrConfig = asrConfig?.copy(asrProperties = propertiesJson)
+        asrConfig = (executionContext.request as TelephonyBotRequest).asrConfig
+        when (checkNotNull(asrConfig?.type)) {
+            AsrConfig.AsrProviderType.SBER -> {
+                val asrProviderConfig: AsrSberConfig = checkNotNull(asrConfig?.sber)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    sber = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.YANDEX -> {
+                val asrProviderConfig: AsrYandexConfig = checkNotNull(asrConfig?.yandex)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    yandex = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.GOOGLE -> {
+                val asrProviderConfig: AsrGoogleConfig = checkNotNull(asrConfig?.google)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    google = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.MTS -> {
+                val asrProviderConfig: AsrMtsConfig = checkNotNull(asrConfig?.mts)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    mts = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.ZITECH -> {
+                val asrProviderConfig: AsrZitechConfig = checkNotNull(asrConfig?.zitech)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    zitech = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.AIMYVOICE -> {
+                val asrProviderConfig: AsrAimyvoiceConfig = checkNotNull(asrConfig?.aimyvoice)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    aimyvoice = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.AZURE -> {
+                val asrProviderConfig: AsrAzureConfig = checkNotNull(asrConfig?.azure)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    azure = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.ASM -> {
+                val asrProviderConfig: AsrAsmConfig = checkNotNull(asrConfig?.asm)
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson,
+                    asm = asrProviderConfig.copy(asrProperties = propertiesJson)
+                )
+            }
+
+            AsrConfig.AsrProviderType.KALDI, AsrConfig.AsrProviderType.TINKOFF -> {}
+        }
     }
 
     /**
