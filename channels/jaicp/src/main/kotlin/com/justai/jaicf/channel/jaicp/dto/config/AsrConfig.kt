@@ -33,7 +33,8 @@ data class AsrConfig(
     val azure: AsrAzureConfig? = null,
     val asm: AsrAsmConfig? = null,
     val sber: AsrSberConfig? = null,
-    val asrProperties: JsonObject? = null
+    val asrProperties: JsonObject? = null,
+    val tokenData: JsonObject? = null
 ) {
     @Serializable
     enum class AsrProviderType {
