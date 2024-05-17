@@ -285,7 +285,11 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
                 )
             }
 
-            AsrConfig.AsrProviderType.KALDI, AsrConfig.AsrProviderType.TINKOFF -> {}
+            AsrConfig.AsrProviderType.KALDI, AsrConfig.AsrProviderType.TINKOFF -> {
+                asrConfig = asrConfig?.copy(
+                    asrProperties = propertiesJson
+                )
+            }
         }
     }
 
