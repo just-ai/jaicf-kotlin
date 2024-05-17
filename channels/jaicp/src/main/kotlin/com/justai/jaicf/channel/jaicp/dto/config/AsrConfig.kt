@@ -20,6 +20,7 @@ import kotlinx.serialization.json.JsonObject
  * @param asm configuration options for the ASM ASR provider, if used.
  * @param sber configuration options for the Sber ASR provider, if used.
  * @param asrProperties special properties used with selected ASR, if used.
+ * @param tokenData data used for ASR auth, if used.
  **/
 @Serializable
 data class AsrConfig(
