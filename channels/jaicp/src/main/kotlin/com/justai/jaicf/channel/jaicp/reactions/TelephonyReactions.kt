@@ -4,14 +4,13 @@ import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.channel.jaicp.dto.config.*
+import com.justai.jaicf.channel.jaicp.reactions.handlers.SetAsrPropertiesHandler
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
@@ -29,6 +28,8 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
     internal var ttsConfig: TtsConfig? = null
 
     internal var asrConfig: AsrConfig? = null
+
+    private val setAsrPropertiesHandler = SetAsrPropertiesHandler()
 
     companion object {
         private const val CURRENT_CONTEXT_PATH = "."
@@ -218,79 +219,10 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      * @param properties map of properties names with its assigned values.
      * */
     fun setAsrProperties(properties: Map<String, String>) {
-        val propertiesJson = JsonObject(properties.toMutableMap().mapValues { entry -> JsonPrimitive(entry.value) })
-        asrConfig = (executionContext.request as TelephonyBotRequest).asrConfig
-        when (checkNotNull(asrConfig?.type)) {
-            AsrConfig.AsrProviderType.SBER -> {
-                val asrProviderConfig: AsrSberConfig = checkNotNull(asrConfig?.sber)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    sber = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.YANDEX -> {
-                val asrProviderConfig: AsrYandexConfig = checkNotNull(asrConfig?.yandex)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    yandex = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.GOOGLE -> {
-                val asrProviderConfig: AsrGoogleConfig = checkNotNull(asrConfig?.google)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    google = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.MTS -> {
-                val asrProviderConfig: AsrMtsConfig = checkNotNull(asrConfig?.mts)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    mts = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.ZITECH -> {
-                val asrProviderConfig: AsrZitechConfig = checkNotNull(asrConfig?.zitech)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    zitech = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.AIMYVOICE -> {
-                val asrProviderConfig: AsrAimyvoiceConfig = checkNotNull(asrConfig?.aimyvoice)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    aimyvoice = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.AZURE -> {
-                val asrProviderConfig: AsrAzureConfig = checkNotNull(asrConfig?.azure)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    azure = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.ASM -> {
-                val asrProviderConfig: AsrAsmConfig = checkNotNull(asrConfig?.asm)
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson,
-                    asm = asrProviderConfig.copy(asrProperties = propertiesJson)
-                )
-            }
-
-            AsrConfig.AsrProviderType.KALDI, AsrConfig.AsrProviderType.TINKOFF -> {
-                asrConfig = asrConfig?.copy(
-                    asrProperties = propertiesJson
-                )
-            }
-        }
+        asrConfig = setAsrPropertiesHandler.handle(
+            properties,
+            mergeAsrConfigs(asrConfig, (executionContext.request as TelephonyBotRequest).asrConfig)
+        )
     }
 
     /**
@@ -551,5 +483,21 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
 
     private fun ensureBargeInProps() {
         bargeIn = bargeIn ?: bargeInDefaultProps
+    }
+
+    private fun mergeAsrConfigs(firstAsrConfig: AsrConfig?, secondAsrConfig: AsrConfig?): AsrConfig {
+        return AsrConfig(
+            type = firstAsrConfig?.type ?: secondAsrConfig?.type,
+            yandex = firstAsrConfig?.yandex ?: secondAsrConfig?.yandex,
+            zitech = firstAsrConfig?.zitech ?: secondAsrConfig?.zitech,
+            google = firstAsrConfig?.google ?: secondAsrConfig?.google,
+            aimyvoice = firstAsrConfig?.aimyvoice ?: secondAsrConfig?.aimyvoice,
+            mts = firstAsrConfig?.mts ?: secondAsrConfig?.mts,
+            azure = firstAsrConfig?.azure ?: secondAsrConfig?.azure,
+            asm = firstAsrConfig?.asm ?: secondAsrConfig?.asm,
+            sber = firstAsrConfig?.sber ?: secondAsrConfig?.sber,
+            asrProperties = firstAsrConfig?.asrProperties ?: secondAsrConfig?.asrProperties,
+            tokenData = firstAsrConfig?.tokenData ?: secondAsrConfig?.tokenData
+        )
     }
 }
