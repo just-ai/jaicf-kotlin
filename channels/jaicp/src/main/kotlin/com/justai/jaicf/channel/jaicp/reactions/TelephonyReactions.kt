@@ -4,7 +4,7 @@ import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.channel.jaicp.dto.config.*
-import com.justai.jaicf.channel.jaicp.reactions.handlers.SetAsrPropertiesHandler
+import com.justai.jaicf.channel.jaicp.reactions.handlers.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
@@ -29,7 +29,20 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
 
     internal var asrConfig: AsrConfig? = null
 
-    private val setAsrPropertiesHandler = SetAsrPropertiesHandler()
+    private val setAsrPropertiesHandler = SetAsrPropertiesHandler(
+        listOf(
+            SetAsrPropertiesHandlerSber(),
+            SetAsrPropertiesHandlerYandex(),
+            SetAsrPropertiesHandlerGoogle(),
+            SetAsrPropertiesHandlerMts(),
+            SetAsrPropertiesHandlerZitech(),
+            SetAsrPropertiesHandlerAimyvoice(),
+            SetAsrPropertiesHandlerAzure(),
+            SetAsrPropertiesHandlerAsm(),
+            SetAsrPropertiesHandlerKaldi(),
+            SetAsrPropertiesHandlerTinkoff(),
+        )
+    )
 
     companion object {
         private const val CURRENT_CONTEXT_PATH = "."

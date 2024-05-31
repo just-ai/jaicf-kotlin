@@ -4,70 +4,26 @@ import com.justai.jaicf.channel.jaicp.dto.config.*
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
-class SetAsrPropertiesHandler {
-
-    private val setAsrPropertiesHandlerSber = SetAsrPropertiesHandlerSber()
-    private val setAsrPropertiesHandlerYandex = SetAsrPropertiesHandlerYandex()
-    private val setAsrPropertiesHandlerGoogle = SetAsrPropertiesHandlerGoogle()
-    private val setAsrPropertiesHandlerMts = SetAsrPropertiesHandlerMts()
-    private val setAsrPropertiesHandlerZitech = SetAsrPropertiesHandlerZitech()
-    private val setAsrPropertiesHandlerAimyvoice = SetAsrPropertiesHandlerAimyvoice()
-    private val setAsrPropertiesHandlerAzure = SetAsrPropertiesHandlerAzure()
-    private val setAsrPropertiesHandlerAsm = SetAsrPropertiesHandlerAsm()
-    private val setAsrPropertiesHandlerKaldi = SetAsrPropertiesHandlerKaldi()
-    private val setAsrPropertiesHandlerTinkoff = SetAsrPropertiesHandlerTinkoff()
+class SetAsrPropertiesHandler(
+    private val listOfActualHandlers: List<SetAsrPropertiesHandlerAbstract>
+) {
 
     fun handle(properties: Map<String, String>, asrConfig: AsrConfig): AsrConfig {
         val propertiesJson = JsonObject(properties.toMutableMap().mapValues { entry -> JsonPrimitive(entry.value) })
-        return when (checkNotNull(asrConfig.type)) {
-            AsrConfig.AsrProviderType.SBER -> {
-                setAsrPropertiesHandlerSber.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.YANDEX -> {
-                setAsrPropertiesHandlerYandex.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.GOOGLE -> {
-                setAsrPropertiesHandlerGoogle.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.MTS -> {
-                setAsrPropertiesHandlerMts.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.ZITECH -> {
-                setAsrPropertiesHandlerZitech.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.AIMYVOICE -> {
-                setAsrPropertiesHandlerAimyvoice.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.AZURE -> {
-                setAsrPropertiesHandlerAzure.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.ASM -> {
-                setAsrPropertiesHandlerAsm.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.TINKOFF -> {
-                setAsrPropertiesHandlerTinkoff.handle(asrConfig, propertiesJson)
-            }
-
-            AsrConfig.AsrProviderType.KALDI -> {
-                setAsrPropertiesHandlerKaldi.handle(asrConfig, propertiesJson)
-            }
-        }
+        return listOfActualHandlers.first { it.canHandle(checkNotNull(asrConfig.type)) }
+            .handle(asrConfig, propertiesJson)
     }
 }
 
-abstract class SetAsrPropertiesHandlerAbstract {
-    abstract fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig
+interface SetAsrPropertiesHandlerAbstract {
+    fun canHandle(type: AsrConfig.AsrProviderType): Boolean
+    fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig
 }
 
-class SetAsrPropertiesHandlerSber() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerSber() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.SBER
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrSberConfig = checkNotNull(asrConfig.sber)
         return asrConfig.copy(
@@ -77,7 +33,10 @@ class SetAsrPropertiesHandlerSber() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerYandex() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerYandex() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.YANDEX
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrYandexConfig = checkNotNull(asrConfig.yandex)
         return asrConfig.copy(
@@ -87,7 +46,10 @@ class SetAsrPropertiesHandlerYandex() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerGoogle() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerGoogle() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.GOOGLE
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrGoogleConfig = checkNotNull(asrConfig.google)
         return asrConfig.copy(
@@ -97,7 +59,10 @@ class SetAsrPropertiesHandlerGoogle() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerMts() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerMts() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.MTS
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrMtsConfig = checkNotNull(asrConfig.mts)
         return asrConfig.copy(
@@ -107,7 +72,10 @@ class SetAsrPropertiesHandlerMts() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerZitech() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerZitech() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.ZITECH
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrZitechConfig = checkNotNull(asrConfig.zitech)
         return asrConfig.copy(
@@ -117,7 +85,10 @@ class SetAsrPropertiesHandlerZitech() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerAimyvoice() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerAimyvoice() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.AIMYVOICE
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrAimyvoiceConfig = checkNotNull(asrConfig.aimyvoice)
         return asrConfig.copy(
@@ -127,7 +98,10 @@ class SetAsrPropertiesHandlerAimyvoice() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerAzure() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerAzure() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.AZURE
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrAzureConfig = checkNotNull(asrConfig.azure)
         return asrConfig.copy(
@@ -137,7 +111,10 @@ class SetAsrPropertiesHandlerAzure() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerAsm() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerAsm() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.ASM
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         val asrProviderConfig: AsrAsmConfig = checkNotNull(asrConfig.asm)
         return asrConfig.copy(
@@ -147,7 +124,10 @@ class SetAsrPropertiesHandlerAsm() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerKaldi() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerKaldi() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.KALDI
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         return asrConfig.copy(
             asrProperties = propertiesJson
@@ -155,7 +135,10 @@ class SetAsrPropertiesHandlerKaldi() : SetAsrPropertiesHandlerAbstract() {
     }
 }
 
-class SetAsrPropertiesHandlerTinkoff() : SetAsrPropertiesHandlerAbstract() {
+class SetAsrPropertiesHandlerTinkoff() : SetAsrPropertiesHandlerAbstract {
+    override fun canHandle(type: AsrConfig.AsrProviderType): Boolean =
+        type == AsrConfig.AsrProviderType.TINKOFF
+
     override fun handle(asrConfig: AsrConfig, propertiesJson: JsonObject): AsrConfig {
         return asrConfig.copy(
             asrProperties = propertiesJson
