@@ -10,6 +10,7 @@ object Version {
     const val jUnit = "5.6.0"
     const val jetty = "9.4.3.v20170317"
 
+    const val okhttp3 = "4.9.3"
     const val ktor = "1.5.1"
     const val serializationRuntime = "1.0.1"
     const val coroutinesCore = "1.4.2"
