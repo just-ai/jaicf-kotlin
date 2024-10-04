@@ -22,6 +22,6 @@ dependencies {
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("com.squareup.okhttp3", "logging-interceptor")
     }
-    api("com.squareup.okhttp3:okhttp", Version.okhttp3)
-    api("com.squareup.okhttp3:logging-interceptor", Version.okhttp3)
+    api("com.squareup.okhttp3:okhttp:${Version.okhttp3}")
+    api("com.squareup.okhttp3:logging-interceptor:${Version.okhttp3}")
 }
