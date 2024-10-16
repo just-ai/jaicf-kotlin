@@ -229,9 +229,9 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      *    }
      * }
      * ```
-     * @param properties map of properties names with its assigned values.
+     * @param properties map of properties names with its assigned values (String or List).
      * */
-    fun setAsrProperties(properties: Map<String, String>) {
+    fun setAsrProperties(properties: Map<String, Any>) {
         asrConfig = setAsrPropertiesHandler.handle(
             properties,
             mergeAsrConfigs(asrConfig, (executionContext.request as TelephonyBotRequest).asrConfig)
