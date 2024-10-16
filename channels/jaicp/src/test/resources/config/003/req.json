@@ -1,0 +1,44 @@
+{
+  "data": {
+    "livechatStatus": {
+      "enabled": false
+    }
+  },
+  "version": 1,
+  "botId": "jaicf_project",
+  "channelType": "resterisk",
+  "channelBotId": "jaicf_project",
+  "channelUserId": "chatapi-jaicf_project-puga",
+  "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+  "query": "/start",
+  "timestamp": 1583767519.497000000,
+  "rawRequest": {
+    "token": "GNVXJdeo:718e36f7005fbba3e2a9696784b83dc3bd0f3d9a",
+    "clientId": "test",
+    "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+    "query": "/start",
+    "timestamp": "2020-03-09T15:25:19.497",
+    "userId": "puga",
+    "asrTtsProviderData": {
+      "asr": {
+        "type": "sber",
+        "internal": true,
+        "sber": {
+          "model": "callcenter",
+          "language": "ru-RU"
+        }
+      },
+      "tts": {
+        "type": "aimyvoice",
+        "internal": true,
+        "aimyvoice": {
+          "voice": "Татьяна"
+        }
+      }
+    }
+  },
+  "userFrom": {
+    "id": "test",
+    "firstName": "test"
+  }
+}

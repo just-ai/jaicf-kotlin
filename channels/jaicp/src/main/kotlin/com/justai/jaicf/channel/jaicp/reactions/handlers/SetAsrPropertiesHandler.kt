@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.jaicp.reactions.handlers
 
 import com.justai.jaicf.channel.jaicp.dto.config.*
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -8,8 +9,14 @@ class SetAsrPropertiesHandler(
     private val listOfActualHandlers: List<SetAsrPropertiesHandlerAbstract>
 ) {
 
-    fun handle(properties: Map<String, String>, asrConfig: AsrConfig): AsrConfig {
-        val propertiesJson = JsonObject(properties.toMutableMap().mapValues { entry -> JsonPrimitive(entry.value) })
+    fun handle(properties: Map<String, Any>, asrConfig: AsrConfig): AsrConfig {
+        val propertiesJson = JsonObject(properties.mapValues { entry ->
+            when (val value = entry.value) {
+                is List<*> -> JsonArray(value.map { JsonPrimitive(it.toString()) })
+                is String -> JsonPrimitive(value)
+                else -> throw IllegalArgumentException("Unsupported property type: ${value::class.simpleName}")
+            }
+        })
         return listOfActualHandlers.first { it.canHandle(checkNotNull(asrConfig.type)) }
             .handle(asrConfig, propertiesJson)
     }

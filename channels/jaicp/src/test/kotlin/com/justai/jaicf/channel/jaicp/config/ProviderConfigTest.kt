@@ -38,4 +38,17 @@ internal class ProviderConfigTest : JaicpBaseTest() {
         val response = channel.process(requestFromResources)
         assertEquals(responseFromResources, response.jaicp)
     }
+
+    @Test
+    fun `003 config asr properties`() {
+        val scenario = echoWithAction {
+            reactions.telephony?.setAsrProperties(mapOf(
+                "hints.eou_timeout" to "4s",
+                "insight_models" to listOf("call_features")
+            ))
+        }
+        val channel = JaicpTestChannel(scenario, TelephonyChannel)
+        val response = channel.process(requestFromResources)
+        assertEquals(responseFromResources, response.jaicp)
+    }
 }
