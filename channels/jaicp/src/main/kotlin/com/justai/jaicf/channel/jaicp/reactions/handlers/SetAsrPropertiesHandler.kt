@@ -12,8 +12,9 @@ class SetAsrPropertiesHandler(
     fun handle(properties: Map<String, Any>, asrConfig: AsrConfig): AsrConfig {
         val propertiesJson = JsonObject(properties.mapValues { entry ->
             when (val value = entry.value) {
-                is List<*> -> JsonArray(value.map { JsonPrimitive(it.toString()) })
+                is Collection<*> -> JsonArray(value.map { JsonPrimitive(it.toString()) })
                 is String -> JsonPrimitive(value)
+                is Map<*,*> -> JsonObject(value.mapKeys { it.key.toString() }.mapValues { JsonPrimitive(it.value.toString()) })
                 else -> throw IllegalArgumentException("Unsupported property type: ${value::class.simpleName}")
             }
         })
