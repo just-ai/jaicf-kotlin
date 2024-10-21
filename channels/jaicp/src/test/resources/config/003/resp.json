@@ -10,12 +10,14 @@
         "model": "callcenter",
         "asrProperties": {
           "hints.eou_timeout": "4s",
-          "insight_models": ["call_features"]
+          "insight_models": ["call_features"],
+          "time":{"now":"21:00"}
         }
       },
       "asrProperties": {
         "hints.eou_timeout": "4s",
-        "insight_models": ["call_features"]
+        "insight_models": ["call_features"],
+        "time":{"now":"21:00"}
       }
     }
   },
