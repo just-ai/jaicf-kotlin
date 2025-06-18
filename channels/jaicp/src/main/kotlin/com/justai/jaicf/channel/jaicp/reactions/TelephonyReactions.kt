@@ -4,6 +4,7 @@ import com.justai.jaicf.channel.jaicp.channels.TelephonyChannel
 import com.justai.jaicf.channel.jaicp.dto.*
 import com.justai.jaicf.channel.jaicp.dto.bargein.*
 import com.justai.jaicf.channel.jaicp.dto.config.*
+import com.justai.jaicf.channel.jaicp.reactions.handlers.*
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.SayReaction
@@ -28,6 +29,21 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
 
     internal var asrConfig: AsrConfig? = null
 
+    private val setAsrPropertiesHandler = SetAsrPropertiesHandler(
+        listOf(
+            SetAsrPropertiesHandlerSber(),
+            SetAsrPropertiesHandlerYandex(),
+            SetAsrPropertiesHandlerGoogle(),
+            SetAsrPropertiesHandlerMts(),
+            SetAsrPropertiesHandlerZitech(),
+            SetAsrPropertiesHandlerAimyvoice(),
+            SetAsrPropertiesHandlerAzure(),
+            SetAsrPropertiesHandlerAsm(),
+            SetAsrPropertiesHandlerKaldi(),
+            SetAsrPropertiesHandlerTinkoff(),
+        )
+    )
+
     companion object {
         private const val CURRENT_CONTEXT_PATH = "."
     }
@@ -38,10 +54,25 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      *
      * @param text to synthesis speech from
      * @param bargeIn true to allow interruption and handle in in current dialog context
+     * @param tts SSML text for telephony channel
      * */
-    fun say(text: String, bargeIn: Boolean) = when (bargeIn) {
-        true -> say(text, CURRENT_CONTEXT_PATH)
-        false -> say(text)
+    fun say(text: String, bargeIn: Boolean, tts: String? = null) = when (bargeIn) {
+        true -> say(text, CURRENT_CONTEXT_PATH, tts)
+        false -> say(text, tts)
+    }
+
+    /**
+     * Sends text to synthesis in telephony channel.
+     * Allows to interrupt synthesis only by phrases which we can handle in scenario.
+     *
+     * @param text to synthesis speech from text
+     * @param tts SSML text for telephony channel
+     * */
+    fun say(text: String, tts: String? = null): SayReaction {
+        return if (tts != null) {
+            replies.add(TextReply(text, state = currentState, tts = tts))
+            SayReaction.create(text)
+        } else say(text)
     }
 
     /**
@@ -50,10 +81,18 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
      *
      * @param text to synthesis speech from speech from
      * @param bargeInContext scenario context with states which should handle possible interruptions.
+     * @param tts SSML text for telephony channel
      * */
-    fun say(text: String, @PathValue bargeInContext: String): SayReaction {
+    fun say(text: String, @PathValue bargeInContext: String, tts: String? = null): SayReaction {
         ensureBargeInProps()
-        replies.add(TextReply(text, state = currentState, bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT)))
+        replies.add(
+            TextReply(
+                text,
+                state = currentState,
+                bargeInReply = BargeInReplyData(bargeInContext, BargeInType.INTENT),
+                tts = tts
+            )
+        )
         return SayReaction.create(text)
     }
 
@@ -175,6 +214,27 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
             azure = config as? AsrAzureConfig,
             asm = config as? AsrAsmConfig,
             sber = config as? AsrSberConfig
+        )
+    }
+
+    /**
+     * This method overrides the ASR properties of the ASR used for the current call.
+     * example usage:
+     * ```
+     * state("asr") {
+     *    action {
+     *        reactions.telephony?.setAsrProperties(
+     *            mapOf("enable_profanity_filter" to "true")
+     *        )
+     *    }
+     * }
+     * ```
+     * @param properties map of properties names with its assigned values (String/Collection/Map).
+     * */
+    fun setAsrProperties(properties: Map<String, Any>) {
+        asrConfig = setAsrPropertiesHandler.handle(
+            properties,
+            mergeAsrConfigs(asrConfig, (executionContext.request as TelephonyBotRequest).asrConfig)
         )
     }
 
@@ -436,5 +496,21 @@ class TelephonyReactions(private val bargeInDefaultProps: BargeInProperties) : J
 
     private fun ensureBargeInProps() {
         bargeIn = bargeIn ?: bargeInDefaultProps
+    }
+
+    private fun mergeAsrConfigs(firstAsrConfig: AsrConfig?, secondAsrConfig: AsrConfig?): AsrConfig {
+        return AsrConfig(
+            type = firstAsrConfig?.type ?: secondAsrConfig?.type,
+            yandex = firstAsrConfig?.yandex ?: secondAsrConfig?.yandex,
+            zitech = firstAsrConfig?.zitech ?: secondAsrConfig?.zitech,
+            google = firstAsrConfig?.google ?: secondAsrConfig?.google,
+            aimyvoice = firstAsrConfig?.aimyvoice ?: secondAsrConfig?.aimyvoice,
+            mts = firstAsrConfig?.mts ?: secondAsrConfig?.mts,
+            azure = firstAsrConfig?.azure ?: secondAsrConfig?.azure,
+            asm = firstAsrConfig?.asm ?: secondAsrConfig?.asm,
+            sber = firstAsrConfig?.sber ?: secondAsrConfig?.sber,
+            asrProperties = firstAsrConfig?.asrProperties ?: secondAsrConfig?.asrProperties,
+            tokenData = firstAsrConfig?.tokenData ?: secondAsrConfig?.tokenData
+        )
     }
 }

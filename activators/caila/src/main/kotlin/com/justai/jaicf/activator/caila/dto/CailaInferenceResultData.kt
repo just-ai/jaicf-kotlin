@@ -19,7 +19,7 @@ data class CailaInferenceResultData(
 
 @Serializable
 data class CailaIntentData(
-    private val id: Long,
+    private val id: Long?,
     val path: String,
     val answer: String?,
     val customData: String?,

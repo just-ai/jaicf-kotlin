@@ -1,0 +1,59 @@
+{
+  "data": {
+    "replies": [],
+    "answer": "",
+    "dialer": {},
+    "asrConfig": {
+      "type": "sber",
+      "sber": {
+        "language": "ru-RU",
+        "model": "callcenter",
+        "asrProperties": {
+          "hints.eou_timeout": "4s",
+          "insight_models": ["call_features"],
+          "time":{"now":"21:00"}
+        }
+      },
+      "asrProperties": {
+        "hints.eou_timeout": "4s",
+        "insight_models": ["call_features"],
+        "time":{"now":"21:00"}
+      }
+    }
+  },
+  "botId": "jaicf_project",
+  "accountId": "jaicf_project",
+  "channelType": "resterisk",
+  "channelBotId": "jaicf_project",
+  "channelUserId": "chatapi-jaicf_project-puga",
+  "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+  "query": "/start",
+  "timestamp": 0,
+  "currentState": "/fallback",
+  "processingTime": 0,
+  "requestData": {
+    "token": "GNVXJdeo:718e36f7005fbba3e2a9696784b83dc3bd0f3d9a",
+    "clientId": "test",
+    "questionId": "aaa99bea-aae1-41d2-aede-76e4f13b0ccc",
+    "query": "/start",
+    "timestamp": "2020-03-09T15:25:19.497",
+    "userId": "puga",
+    "asrTtsProviderData": {
+      "asr": {
+        "type": "sber",
+        "internal": true,
+        "sber": {
+          "model": "callcenter",
+          "language": "ru-RU"
+        }
+      },
+      "tts": {
+        "type": "aimyvoice",
+        "internal": true,
+        "aimyvoice": {
+          "voice": "Татьяна"
+        }
+      }
+    }
+  }
+}

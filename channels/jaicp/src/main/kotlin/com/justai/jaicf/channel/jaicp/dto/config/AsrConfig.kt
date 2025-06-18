@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.jaicp.dto.config
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 /**
  * Configuration parameters for the automatic speech recognition (ASR) provider used in a telephone channel.
@@ -18,6 +19,8 @@ import kotlinx.serialization.Serializable
  * @param azure configuration options for the Azure ASR provider, if used.
  * @param asm configuration options for the ASM ASR provider, if used.
  * @param sber configuration options for the Sber ASR provider, if used.
+ * @param asrProperties special properties used with selected ASR, if used.
+ * @param tokenData data used for ASR auth, if used.
  **/
 @Serializable
 data class AsrConfig(
@@ -30,7 +33,9 @@ data class AsrConfig(
     val mts: AsrMtsConfig? = null,
     val azure: AsrAzureConfig? = null,
     val asm: AsrAsmConfig? = null,
-    val sber: AsrSberConfig? = null
+    val sber: AsrSberConfig? = null,
+    val asrProperties: JsonObject? = null,
+    val tokenData: JsonObject? = null
 ) {
     @Serializable
     enum class AsrProviderType {
@@ -71,18 +76,22 @@ data class AsrConfig(
  * Subclasses contain provider-specific settings that are used to configure the ASR provider for the current session.
  **/
 @Serializable
-sealed class AsrProviderConfig
+sealed class AsrProviderConfig{
+    abstract val asrProperties: JsonObject?
+}
 
 @Serializable
 data class AsrGoogleConfig(
     val model: String? = null,
-    val lang: String? = null
+    val lang: String? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
 data class AsrZitechConfig(
     val model: String? = null,
-    val lang: String? = null
+    val lang: String? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
@@ -90,21 +99,24 @@ data class AsrYandexConfig(
     val model: String? = null,
     val lang: String? = null,
     val numbersAsWords: Boolean? = null,
-    val sensitivityReduction: Boolean? = null
+    val sensitivityReduction: Boolean? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
 data class AsrMtsConfig(
     val model: String? = null,
     val lang: String? = null,
-    val transferType: String? = null
+    val transferType: String? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
 data class AsrAimyvoiceConfig(
     val codec: String? = null,
     val mode: String? = null,
-    val grammarFileNames: String? = null
+    val grammarFileNames: String? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
@@ -112,17 +124,20 @@ data class AsrAzureConfig(
     val language: String? = null,
     val outputFormat: String? = null,
     val profanityOption: String? = null,
-    val enableDictation: Boolean? = null
+    val enableDictation: Boolean? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
 data class AsrAsmConfig(
     val sampleRate: Long? = null,
     val model: String? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()
 
 @Serializable
 data class AsrSberConfig(
     val language: String? = null,
-    val model: String? = null
+    val model: String? = null,
+    override val asrProperties: JsonObject? = null
 ) : AsrProviderConfig()

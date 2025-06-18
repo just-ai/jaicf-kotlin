@@ -10,10 +10,23 @@ plugins {
     `jaicf-junit`
 }
 
+sourceSets.all {
+    configurations.getByName(runtimeClasspathConfigurationName) {
+        attributes.attribute(Attribute.of("org.gradle.jvm.environment", String::class.java), "standard-jvm")
+    }
+    configurations.getByName(compileClasspathConfigurationName) {
+        attributes.attribute(Attribute.of("org.gradle.jvm.environment", String::class.java), "standard-jvm")
+    }
+}
+
 dependencies {
     core()
     api(jackson())
-    api("org.mapdb:mapdb:3.0.8")
+    api("org.mapdb:mapdb:3.0.8") {
+        exclude("org.eclipse.collections")
+    }
+
+    implementation("org.eclipse.collections", "eclipse-collections", "11.1.0")
 
     testImplementation(testFixtures(project(":core")))
 }
