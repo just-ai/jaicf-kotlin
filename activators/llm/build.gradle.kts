@@ -17,6 +17,7 @@ dependencies {
     api(ktor("ktor-client-jackson"))
     api(ktor("ktor-client-logging-jvm"))
     implementation("com.knuddels:jtokkit:0.6.1")
+    implementation("com.openai:openai-java:2.8.0")
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(ktor("ktor-client-mock"))
 }

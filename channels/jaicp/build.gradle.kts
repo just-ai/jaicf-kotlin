@@ -29,5 +29,4 @@ dependencies {
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation("io.ktor:ktor-client-mock" version { ktor })
     testImplementation(kotlin("test-junit"))
-    testImplementation(kotlin("test"))
 }

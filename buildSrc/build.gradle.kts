@@ -2,13 +2,17 @@ plugins {
     `kotlin-dsl`
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 repositories {
     maven(uri("https://plugins.gradle.org/m2"))
     mavenCentral()
 }
 
-val kotlinVersion = "1.4.21"
-val reflectVersion = "1.4.21"
+val kotlinVersion = "2.0.20"
+val reflectVersion = "2.0.20"
 
 dependencies {
     implementation(kotlin("gradle-plugin", kotlinVersion))

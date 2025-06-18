@@ -85,7 +85,7 @@ By default, the latest verion of the `ShadowPlugin` applies, but any versions gr
 If you want to use a custom `ShadowJar` version, just apply the `ShadowJar` plugin with version specified:
 ```
 plugins {
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("com.justai.jaicf.jaicp-build-plugin") version "0.1.1"
 }
 ```

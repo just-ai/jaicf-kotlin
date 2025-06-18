@@ -31,8 +31,8 @@ Here is an example:
 ```kotlin
 plugins {
     application
-    kotlin("jvm") version "1.3.61"
-    id("com.github.johnrengelman.shadow") version "5.0.0"
+    kotlin("jvm") version "11"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 application {
     mainClassName = "com.justai.jaicf.template.ServerKt"

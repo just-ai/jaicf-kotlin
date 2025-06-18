@@ -12,17 +12,16 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.3")
 
     testImplementation(kotlin("test-junit"))
-    testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
     test {
         useJUnitPlatform()

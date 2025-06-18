@@ -20,11 +20,9 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter-params" version { jUnit })
 
     testImplementation(kotlin("test-junit"))
-    testImplementation(kotlin("test"))
     testImplementation("ch.qos.logback:logback-classic:1.2.3")
 
     testFixturesApi("org.junit.jupiter:junit-jupiter-api" version { jUnit })
     testFixturesApi(kotlin("test-junit"))
-    testFixturesApi(kotlin("test"))
     testFixturesApi("ch.qos.logback:logback-classic:1.2.3")
 }

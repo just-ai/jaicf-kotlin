@@ -37,11 +37,11 @@ Append this to your _build.gradle_:
 ```kotlin
 plugins {
     kotlin("jvm") version "1.3.71"
-    id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "17"
     }
     build {
         dependsOn(shadowJar)

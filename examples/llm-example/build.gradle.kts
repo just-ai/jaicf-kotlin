@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -18,15 +18,15 @@ dependencies {
     implementation("org.slf4j:slf4j-log4j12" version {slf4j})
 
     testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntime("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "17"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "17"
     }
     test {
         useJUnitPlatform()

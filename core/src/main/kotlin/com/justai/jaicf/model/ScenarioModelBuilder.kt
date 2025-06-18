@@ -12,7 +12,7 @@ import com.justai.jaicf.model.state.State
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.model.transition.Transition
 
-internal class ScenarioModelBuilder {
+class ScenarioModelBuilder {
 
     val states: MutableList<State>
     val transitions: MutableList<Transition>
