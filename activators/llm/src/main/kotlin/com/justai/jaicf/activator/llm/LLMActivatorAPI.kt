@@ -6,7 +6,6 @@ import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
 import com.openai.core.http.StreamResponse
@@ -16,7 +15,6 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.jvm.Throws
 import kotlin.jvm.optionals.getOrNull
@@ -42,15 +40,13 @@ class LLMActivatorAPI(
         origin: ActivatorContext? = null,
     ): LLMActivatorContext {
         val props = LLMProps.Builder(botContext, request).apply(props).build()
-
         val params = defaultProps.withOptions(props).toChatCompletionCreateParams().apply {
             if (botContext.handoffMessages.isEmpty()) {
                 addUserMessage(request.input)
             }
         }.build()
 
-        val res = createStreaming(params, props.client)
-        return LLMActivatorContext(this, params,res, props, botContext, request, origin)
+        return LLMActivatorContext(this, params, props, botContext, request, origin)
     }
 
     internal fun callTools(context: LLMActivatorContext) = runBlocking(toolsDispatcher) {
@@ -115,8 +111,7 @@ class LLMActivatorAPI(
             )
         }
 
-        val res = createStreaming(params, context.props.client)
-        context.setResponse(params, res)
+        context.startStream(params)
         return toolCallResults
     }
 }

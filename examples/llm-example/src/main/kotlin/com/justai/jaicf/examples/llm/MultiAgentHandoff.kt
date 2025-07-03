@@ -10,6 +10,8 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
  * Handoff pattern means the agent can route the entire conversation context to another agent at any time it decides.
  * Once an agent receives a handoff, the next user requests go to this agent until it handoffs again.
  * Agents can hand off in a cycle to each other if needed.
+ *
+ * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 
 /**

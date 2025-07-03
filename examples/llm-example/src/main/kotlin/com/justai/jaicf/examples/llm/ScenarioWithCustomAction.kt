@@ -14,6 +14,8 @@ import com.justai.jaicf.examples.llm.props.llmProps
  * Simple LLM scenario with memory that re-creates system prompt with actual date-time.
  * Creates a single state "chat" that handles all user text requests and responds with each intermediate assistant message in between tool calls.
  * "start" message is handled by regex instead of LLM.
+ *
+ * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 private val scenario = Scenario {
     state("start") {

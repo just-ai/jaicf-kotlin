@@ -18,6 +18,8 @@ private data class Output(
 
 /**
  * Simple scenario that handles every user request and responds with structured output instead of a text message.
+ *
+ * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 private val scenario = Scenario {
     llmChat("chat", {

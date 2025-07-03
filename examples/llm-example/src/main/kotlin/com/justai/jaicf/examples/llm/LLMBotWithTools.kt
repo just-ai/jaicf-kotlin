@@ -12,6 +12,8 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
  * Simple LLM chatbot with calculator tool and custom action block.
  * Responds with intermediate messages in between tool calls.
  * Static properties are used in scenario constructor.
+ *
+ * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 private val scenario = LLMChatScenario(
     name = "chat",

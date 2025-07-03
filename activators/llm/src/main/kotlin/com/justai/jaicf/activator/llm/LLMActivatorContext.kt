@@ -33,40 +33,33 @@ val StructuredOutputMapper =
 data class LLMActivatorContext(
     val api: LLMActivatorAPI,
     private var params: ChatCompletionCreateParams,
-    private var response: StreamResponse<ChatCompletionChunk>,
     val props: LLMProps,
     val context: BotContext,
     val request: BotRequest,
     val origin: ActivatorContext? = null,
 ) : EventActivatorContext(LLMEvent.RESPONSE) {
-    private lateinit var acc: ChatCompletionAccumulator
     private lateinit var stream: Stream<ChatCompletionChunk>
+    private lateinit var acc: ChatCompletionAccumulator
 
-    init {
-        setResponse(params, response)
-    }
-
-    internal fun setResponse(
-        params: ChatCompletionCreateParams,
-        response: StreamResponse<ChatCompletionChunk>,
-    ) {
+    internal fun startStream(params: ChatCompletionCreateParams) {
         this.params = params
-        this.response = response
-        this.acc = ChatCompletionAccumulator.create()
-        this.stream = response.stream()
-            .peek(acc::accumulate)
-            .peek(::processFinalChunk)
+        acc = ChatCompletionAccumulator.create()
+        stream = api.createStreaming(params).let { response ->
+            response.stream()
+                .peek(acc::accumulate)
+                .peek({ c -> response.processFinalChunk(c) })
+        }
     }
 
-    private fun processFinalChunk(chunk: ChatCompletionChunk) {
+    private fun StreamResponse<ChatCompletionChunk>.processFinalChunk(chunk: ChatCompletionChunk) {
         chunk.choices().first().finishReason().ifPresent { reason ->
-            response.close()
+            close()
             if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
                 props.messages?.ifLLMMemory { memory ->
                     val toolCalls = message.toolCalls()
                         .getOrDefault(emptyList()).takeIf { it.isNotEmpty() }
                     memory.set(
-                        // fix nullable tool calls in assistant message
+                        // fix nullable tool calls in an assistant message
                         params.toBuilder()
                             .addMessage(message.toBuilder()
                                 .toolCalls(JsonField.ofNullable(toolCalls))
@@ -78,7 +71,12 @@ data class LLMActivatorContext(
         }
     }
 
-    fun stream() = stream
+    fun getStream(): Stream<ChatCompletionChunk> {
+        if (!::stream.isInitialized) {
+            startStream(params)
+        }
+        return stream
+    }
 
     val chatCompletionParams
         get() = params
@@ -88,7 +86,7 @@ data class LLMActivatorContext(
             return try {
                 acc.chatCompletion()
             } catch (e: Exception) {
-                stream.count()
+                getStream().count()
                 acc.chatCompletion()
             }
         }
@@ -110,7 +108,7 @@ val LLMActivatorContext.hasToolCalls
     get() = toolCalls.isNotEmpty()
 
 val LLMActivatorContext.deltaStream: Stream<ChatCompletionChunk.Choice.Delta>
-    get() = stream()
+    get() = getStream()
         .map { it.choices().first().delta() }
 
 val LLMActivatorContext.contentStream: Stream<String>
