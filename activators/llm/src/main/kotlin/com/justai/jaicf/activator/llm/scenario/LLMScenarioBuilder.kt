@@ -1,59 +1,26 @@
 package com.justai.jaicf.activator.llm.scenario
 
-import com.justai.jaicf.activator.llm.LLMFunctionActivatorContext
-import com.justai.jaicf.activator.llm.function.LLMFunction
-import com.justai.jaicf.activator.llm.function.LLMFunctionParametersBuilder
-import com.justai.jaicf.activator.llm.llmFunction
+import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.builder.ScenarioDsl
 import com.justai.jaicf.builder.ScenarioGraphBuilder
 import com.justai.jaicf.context.ActionContext
+import com.justai.jaicf.plugin.StateBody
 import com.justai.jaicf.plugin.StateDeclaration
+import com.justai.jaicf.plugin.StateName
+
 
 @ScenarioDsl
 @StateDeclaration
-fun ScenarioGraphBuilder<*, *>.llmFunction(
-    function: LLMFunction,
-    block: LLMFunctionActivatorContext.() -> Unit
+fun ScenarioGraphBuilder<*, *>.llmChat(
+    @StateName state: String,
+    props: LLMPropsBuilder = DefaultLLMProps,
+    @StateBody block: LLMActionBlock = DefaultLLMActionBlock,
 ) {
-    state(function.name, noContext = true) {
+    state(state) {
         activators {
-            llmFunction(function)
+            llmActivator(props)
         }
 
-        action(llmFunction) {
-            activator.apply(block)
-        }
-    }
-}
-
-@ScenarioDsl
-@StateDeclaration
-fun ScenarioGraphBuilder<*, *>.llmFunction(
-    name: String,
-    block: ActionContext<LLMFunctionActivatorContext, *, *>.() -> Unit
-) {
-    state(name, noContext = true) {
-        activators {
-            llmFunction(name)
-        }
-
-        action(llmFunction, block)
-    }
-}
-
-@ScenarioDsl
-@StateDeclaration
-fun ScenarioGraphBuilder<*, *>.llmFunction(
-    name: String,
-    description: String,
-    parameters: LLMFunctionParametersBuilder,
-    block: ActionContext<LLMFunctionActivatorContext, *, *>.() -> Unit
-) {
-    state(name, noContext = true) {
-        activators {
-            llmFunction(name, description, parameters)
-        }
-
-        action(llmFunction, block)
+        action(llm, block)
     }
 }

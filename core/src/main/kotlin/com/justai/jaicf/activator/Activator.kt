@@ -68,13 +68,6 @@ interface Activator {
         selector: ActivationSelector,
     ): Activation?
 
-    fun activate(
-        botContext: BotContext,
-        request: BotRequest,
-        selector: ActivationSelector,
-        activation: ActivatorContext
-    ): Activation? = null
-
     /**
      * Fills slots for activator implementations.
      * When activator is selected for user query, engine will call this function to see,

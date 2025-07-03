@@ -17,6 +17,6 @@ dependencies {
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("com.squareup.okhttp3", "logging-interceptor")
     }
-    api("com.squareup.okhttp3:okhttp:3.14.0")
-    api("com.squareup.okhttp3:logging-interceptor:3.14.0")
+    api(okHttp("okhttp"))
+    api(okHttp("logging-interceptor"))
 }

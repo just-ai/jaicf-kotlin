@@ -62,8 +62,8 @@ class ConsoleChannel(override val botApi: BotApi, private val clientId: String =
 
     private fun render(reaction: Reaction): List<String> = when (reaction) {
         is SayReaction -> reaction.text.split("\n")
-        is ImageReaction -> listOf("${reaction.imageUrl} (image)")
-        is AudioReaction -> listOf("${reaction.audioUrl} (audio)")
+        is ImageReaction -> listOf("[image](${reaction.imageUrl})")
+        is AudioReaction -> listOf("[audio](${reaction.audioUrl})")
         is ButtonsReaction -> listOf(reaction.buttons.joinToString(" ") { "[$it]" })
         else -> listOf(reaction.toString())
     }

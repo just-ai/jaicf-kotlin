@@ -5,7 +5,7 @@ object Version {
     const val reflect = "2.0.20"
 
     // Libraries
-    const val jackson = "2.12.3"
+    const val jackson = "2.13.4"
     const val slf4j = "1.7.30"
     const val jUnit = "5.13.1"
     const val jetty = "9.4.3.v20170317"
@@ -16,6 +16,7 @@ object Version {
     const val tomcatServletApi = "6.0.53"
     const val logbackGelfAppender = "1.5"
     const val mockk = "1.10.2"
+    const val okHttp = "4.12.0"
 }
 
 infix fun String.version(versionProvider: Version.() -> String) = "$this:${versionProvider(Version)}"

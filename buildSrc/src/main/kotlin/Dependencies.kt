@@ -8,3 +8,4 @@ fun DependencyHandlerScope.slf4j(module: String): String = "org.slf4j:$module" v
 fun DependencyHandlerScope.`coroutines-core`(): String = "org.jetbrains.kotlinx:kotlinx-coroutines-core" version { coroutinesCore }
 fun DependencyHandlerScope.kotlinx(module: String): String = "org.jetbrains.kotlinx:$module"
 fun DependencyHandlerScope.`tomcat-servlet`(): String = "org.apache.tomcat:servlet-api" version { tomcatServletApi }
+fun DependencyHandlerScope.okHttp(module: String): String = "com.squareup.okhttp3:$module" version { okHttp }

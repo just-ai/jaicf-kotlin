@@ -5,6 +5,7 @@ import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DefaultActionContext
+import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.reactions.Reactions
 
 /**
@@ -13,12 +14,13 @@ import com.justai.jaicf.reactions.Reactions
  * This class contains some functions that determines a smart random numbers generation and others helpers.
  */
 data class TestActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
+    override val scenario: ScenarioModel,
     override val context: BotContext,
     override val activator: A,
     override val request: B,
     override val reactions: R,
     private val requestContext: TestRequestContext
-) : ActionContext<A, B, R>(context, activator, request, reactions) {
+) : ActionContext<A, B, R>(scenario, context, activator, request, reactions) {
 
     internal fun nextRandomInt() = requestContext.randomNumbers.poll() ?: 0
     override fun random(min: Int, max: Int) = min

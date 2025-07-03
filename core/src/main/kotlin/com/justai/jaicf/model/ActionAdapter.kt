@@ -12,9 +12,9 @@ class ActionAdapter(private val action: ActionContext<ActivatorContext, BotReque
 
     fun execute(context: ProcessContext) = with(context) {
         val actionContext = if (context.requestContext is TestRequestContext) {
-            TestActionContext(botContext, activationContext.activation.context, request, reactions, context.requestContext)
+            TestActionContext(model, botContext, activationContext.activation.context, request, reactions, context.requestContext)
         } else {
-            ActionContext(botContext, activationContext.activation.context, request, reactions)
+            ActionContext(model, botContext, activationContext.activation.context, request, reactions)
         }
 
         actionContext.action()

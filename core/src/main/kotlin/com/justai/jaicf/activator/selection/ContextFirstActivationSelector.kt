@@ -24,6 +24,8 @@ class ContextFirstActivationSelector : ActivationSelector {
                 it.first.fromState.commonPrefixWith(current).length
             }.thenByDescending {
                 it.second.confidence
+            }.thenByDescending {
+                it.first.toState == current
             }
         ).firstOrNull() ?: return null
 

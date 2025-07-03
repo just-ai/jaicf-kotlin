@@ -12,7 +12,6 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":activators:llm"))
-    implementation(project(":channels:telegram"))
 
     implementation("org.slf4j:slf4j-simple" version {slf4j})
     implementation("org.slf4j:slf4j-log4j12" version {slf4j})

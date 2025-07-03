@@ -13,11 +13,16 @@ plugins {
 
 dependencies {
     core()
-    api(ktor("ktor-client-apache"))
-    api(ktor("ktor-client-jackson"))
-    api(ktor("ktor-client-logging-jvm"))
-    implementation("com.knuddels:jtokkit:0.6.1")
-    implementation("com.openai:openai-java:2.8.0")
+    api(okHttp("okhttp"))
+    api(okHttp("logging-interceptor"))
+    api(`coroutines-core`())
+    api("com.openai:openai-java:2.11.0") {
+        exclude("com.squareup.okhttp3", "okhttp")
+        exclude("com.squareup.okhttp3", "logging-interceptor")
+    }
+    implementation(jackson())
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${Version.jackson}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.jackson}")
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(ktor("ktor-client-mock"))
 }
