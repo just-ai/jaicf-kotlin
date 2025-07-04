@@ -1,13 +1,16 @@
 package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
 import com.openai.models.chat.completions.StructuredChatCompletionCreateParams
 
 typealias LLMPropsBuilder = LLMProps.Builder.() -> Unit
+typealias LLMInputBuilder = (request: BotRequest) -> List<ChatCompletionMessageParam>?
 
 val DefaultLLMProps: LLMPropsBuilder = {}
 
@@ -24,6 +27,7 @@ data class LLMProps(
     val client: OpenAIClient? = null,
     val messages: List<ChatCompletionMessageParam>? = null,
     val tools: List<LLMTool<*>>? = null,
+    val input: LLMInputBuilder? = null,
 ) {
 
     fun withOptions(props: LLMProps) =
@@ -38,6 +42,7 @@ data class LLMProps(
             client = props.client ?: client,
             messages = props.messages ?: messages,
             tools = props.tools ?: tools,
+            input = props.input ?: input,
         )
 
     fun toChatCompletionCreateParams() =
@@ -67,6 +72,7 @@ data class LLMProps(
         var client: OpenAIClient? = null
         var messages: List<ChatCompletionMessageParam>? = null
         var tools: List<LLMTool<*>>? = null
+        var input: LLMInputBuilder? = null
 
         fun setModel(value: String?) = apply { this.model = value }
         fun setTemperature(value: Double?) = apply { this.temperature = value }
@@ -78,6 +84,7 @@ data class LLMProps(
         fun setClient(value: OpenAIClient?) = apply { this.client = value }
         fun setMessages(value: List<ChatCompletionMessageParam>?) = apply { this.messages = value }
         fun setTools(value: List<LLMTool<*>>?) = apply { this.tools = value }
+        fun setInput(value: LLMInputBuilder?) = apply { this.input = value }
 
         fun tool(tool: LLMTool<*>) {
             tools = tools.orEmpty() + tool
@@ -89,7 +96,7 @@ data class LLMProps(
 
         fun build() = LLMProps(
             model, temperature, maxTokens, topP, frequencyPenalty,
-            presencePenalty, responseFormat, client, messages, tools,
+            presencePenalty, responseFormat, client, messages, tools, input,
         )
     }
 }

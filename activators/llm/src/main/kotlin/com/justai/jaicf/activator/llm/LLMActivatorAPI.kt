@@ -37,12 +37,14 @@ class LLMActivatorAPI(
         props: LLMPropsBuilder = DefaultLLMProps,
         botContext: BotContext,
         request: BotRequest,
-        origin: ActivatorContext? = null,
+        origin: ActivatorContext,
     ): LLMActivatorContext {
         val props = LLMProps.Builder(botContext, request).apply(props).build()
         val params = defaultProps.withOptions(props).toChatCompletionCreateParams().apply {
             if (botContext.handoffMessages.isEmpty()) {
-                addUserMessage(request.input)
+                val builder = props.input ?: LLMInputs.TextOnly
+                builder.invoke(request)?.forEach(::addMessage)
+                    ?: throw IllegalArgumentException("Request is not supported: $request")
             }
         }.build()
 

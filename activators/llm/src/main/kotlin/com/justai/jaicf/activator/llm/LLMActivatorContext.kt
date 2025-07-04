@@ -34,7 +34,7 @@ data class LLMActivatorContext(
     val props: LLMProps,
     val context: BotContext,
     val request: BotRequest,
-    val origin: ActivatorContext? = null,
+    val origin: ActivatorContext,
 ) : StrictActivatorContext() {
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
