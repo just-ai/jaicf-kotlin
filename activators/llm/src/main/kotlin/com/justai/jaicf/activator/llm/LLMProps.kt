@@ -47,7 +47,7 @@ data class LLMProps(
 
     fun toChatCompletionCreateParams() =
         ChatCompletionCreateParams.builder().apply {
-            model(model!!)
+            model(model ?: throw IllegalArgumentException("Missing model"))
             temperature(temperature)
             topP(topP)
             frequencyPenalty(frequencyPenalty)

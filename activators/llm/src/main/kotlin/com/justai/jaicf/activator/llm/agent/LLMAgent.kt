@@ -8,10 +8,12 @@ import com.justai.jaicf.activator.llm.LLMPropsBuilder
 import com.justai.jaicf.activator.llm.LLMTool
 import com.justai.jaicf.activator.llm.llmAction
 import com.justai.jaicf.activator.llm.llmMemory
+import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.withSystemMessage
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
+import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.Scenario
 import com.openai.client.OpenAIClient
 
@@ -21,6 +23,7 @@ private fun stateName(agentName: String) = "/Agent/$agentName"
 interface LLMAgentScenario : Scenario {
     val name: String
     val props: LLMPropsBuilder
+    val onlyIf: ActivationRule.OnlyIfContext.() -> Boolean
     val action: LLMActionBlock
 
     fun handoff(vararg agents: AgentWithRole)
@@ -35,6 +38,7 @@ class AgentWithRole(
 open class LLMAgent(
     override val name: String,
     override val props: LLMPropsBuilder = DefaultLLMProps,
+    override val onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = DefaultLLMOnlyIf,
     override val action: LLMActionBlock = DefaultLLMActionBlock,
 ) : LLMAgentScenario {
     var handoffs = listOf<AgentWithRole>()
@@ -52,10 +56,12 @@ open class LLMAgent(
         instructions: String? = null,
         tools: List<LLMTool<*>>? = null,
         client: OpenAIClient? = null,
+        onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = DefaultLLMOnlyIf,
         action: LLMActionBlock = DefaultLLMActionBlock,
     ) : this(
         name = name,
         action = action,
+        onlyIf = onlyIf,
         props = {
             setModel(model)
             setTemperature(temperature)
@@ -80,7 +86,7 @@ open class LLMAgent(
         createModel {
             state(stateName(name)) {
                 activators {
-                    catchAll()
+                    catchAll().onlyIf(onlyIf)
                 }
 
                 llmAction({
