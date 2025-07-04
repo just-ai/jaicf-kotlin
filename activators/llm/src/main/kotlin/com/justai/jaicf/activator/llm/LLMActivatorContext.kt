@@ -8,6 +8,7 @@ import com.justai.jaicf.activator.event.EventActivatorContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.StrictActivatorContext
 import com.openai.core.JsonField
 import com.openai.core.http.StreamResponse
 import com.openai.helpers.ChatCompletionAccumulator
@@ -19,9 +20,6 @@ import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
-
-val ActivatorContext.llm
-    get() = this as? LLMActivatorContext
 
 val StructuredOutputMapper =
     JsonMapper.builder()
@@ -37,7 +35,7 @@ data class LLMActivatorContext(
     val context: BotContext,
     val request: BotRequest,
     val origin: ActivatorContext? = null,
-) : EventActivatorContext(LLMEvent.RESPONSE) {
+) : StrictActivatorContext() {
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
 

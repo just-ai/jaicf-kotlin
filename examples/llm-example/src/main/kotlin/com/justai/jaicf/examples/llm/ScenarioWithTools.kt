@@ -1,8 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.*
-import com.justai.jaicf.activator.llm.scenario.llmChat
+import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.ConsoleChannel
@@ -25,7 +24,7 @@ private val scenario = Scenario {
             reactions.say("TYPE ME ANYTHING")
         }
 
-        llmChat("chat", llmProps)
+        llmState("chat", llmProps)
 
         /**
          * The same with custom action block:
@@ -42,7 +41,7 @@ private val scenario = Scenario {
 fun main() {
     val bot = BotEngine(
         scenario = scenario,
-        activators = arrayOf(RegexActivator, LLMActivator)
+        activators = arrayOf(RegexActivator)
     )
     ConsoleChannel(bot).run("start")
 }

@@ -15,11 +15,23 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
  */
 
 /**
+ * The main agent that doesn't have any tools and works on the fastest LLM
+ */
+val mainAgent = LLMAgent(
+    name = "Main",
+    props = {
+        model = "gpt-4.1-nano"
+    }
+) {
+    println(">> Main agent is thinking...")
+    activator.awaitFinalContent()?.also(reactions::say)
+}
+
+/**
  * This agent has a calculator tool
  */
 val calculatorAgent = LLMAgent(
-    name = "calculator",                                // Name used for state definition
-    role = "Agent that makes math calculations well",   // Role describes how other agents determine this agent
+    name = "Calculator",
     props = {
         model = "gpt-4.1-mini"
         tool(CalcTool)
@@ -29,27 +41,16 @@ val calculatorAgent = LLMAgent(
     println(">> Calculator agent is thinking...")
     activator.awaitFinalContent()?.also(reactions::say)
 }
+    .withRole("Agent that makes math calculations well")  // Agent's role describes how other agents determine it
 
-/**
- * The main agent that doesn't have any tools and works on the fastest LLM
- */
-val mainAgent = LLMAgent(
-    name = "main",
-    role = "Main agent that dispatches to other agents",
-    props = {
-        model = "gpt-4.1-nano"
-    }
-) {
-    println(">> Main agent is thinking...")
-    activator.awaitFinalContent()?.also(reactions::say)
-}
 
 fun main() {
     // Main agent can hand off to calculator agent, while calculator can hand off back if non-math request was received.
-    mainAgent.handoff(
-    calculatorAgent.handoff(
-        mainAgent.asHandoff("Handoff to this agent any non-math request")  // Define a different role for better routing
-    ))
+    mainAgent.handoff(calculatorAgent)
 
+    // Calculator agent can hand off back to the main agent with a custom role
+    calculatorAgent.handoff(mainAgent.withRole("Handoff to this agent if you received a non-math request"))
+
+    // Agent with its handoffs can be exposed as a standalone BotEngine via `asBot`
     ConsoleChannel(mainAgent.asBot).run("2 + 2")
 }

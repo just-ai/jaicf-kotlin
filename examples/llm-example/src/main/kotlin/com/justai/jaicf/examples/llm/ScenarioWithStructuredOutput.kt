@@ -2,13 +2,12 @@ package com.justai.jaicf.examples.llm
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.LLMActivator
 import com.justai.jaicf.activator.llm.awaitStructuredContent
-import com.justai.jaicf.activator.llm.scenario.llmChat
+import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.CalcTool
-import java.util.Optional
+import java.util.*
 
 @JsonClassDescription("Output with response and optional tool names called during request")
 private data class Output(
@@ -22,7 +21,7 @@ private data class Output(
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 private val scenario = Scenario {
-    llmChat("chat", {
+    llmState("chat", {
         model = "gpt-4.1-mini"
         responseFormat = Output::class.java
         tool(CalcTool)
@@ -36,9 +35,6 @@ private val scenario = Scenario {
 }
 
 fun main() {
-    val bot = BotEngine(
-        scenario = scenario,
-        activators = arrayOf(LLMActivator)
-    )
+    val bot = BotEngine(scenario)
     ConsoleChannel(bot).run()
 }

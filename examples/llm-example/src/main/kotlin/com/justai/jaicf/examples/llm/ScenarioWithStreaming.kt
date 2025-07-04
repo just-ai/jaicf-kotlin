@@ -1,10 +1,9 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.LLMActivator
 import com.justai.jaicf.activator.llm.contentStream
 import com.justai.jaicf.activator.llm.hasToolCalls
-import com.justai.jaicf.activator.llm.scenario.llmChat
+import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.toolCalls
 import com.justai.jaicf.activator.llm.withToolCalls
 import com.justai.jaicf.activator.regex.RegexActivator
@@ -28,7 +27,7 @@ private val scenario = Scenario {
             reactions.say("TYPE ME ANYTHING")
         }
 
-        llmChat("chat", llmProps) {
+        llmState("chat", llmProps) {
             activator.withToolCalls { results ->
                 // Printing tool call results
                 results.forEach {
@@ -51,7 +50,7 @@ private val scenario = Scenario {
 fun main() {
     val bot = BotEngine(
         scenario = scenario,
-        activators = arrayOf(RegexActivator, LLMActivator)
+        activators = arrayOf(RegexActivator)
     )
     ConsoleChannel(bot).run("start")
 }

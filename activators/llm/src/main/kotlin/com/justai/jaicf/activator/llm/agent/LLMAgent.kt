@@ -5,68 +5,118 @@ import com.justai.jaicf.activator.llm.DefaultLLMActionBlock
 import com.justai.jaicf.activator.llm.DefaultLLMProps
 import com.justai.jaicf.activator.llm.LLMActionBlock
 import com.justai.jaicf.activator.llm.LLMPropsBuilder
+import com.justai.jaicf.activator.llm.LLMTool
 import com.justai.jaicf.activator.llm.llmAction
 import com.justai.jaicf.activator.llm.llmMemory
+import com.justai.jaicf.activator.llm.withSystemMessage
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.model.scenario.Scenario
-import com.openai.models.chat.completions.ChatCompletionMessageParam
+import com.openai.client.OpenAIClient
 
 
-internal fun agentStateName(agentName: String) = "/Agent/$agentName"
+private fun stateName(agentName: String) = "/Agent/$agentName"
 
-class LLMAgent(
-    val name: String,
+interface LLMAgentScenario : Scenario {
+    val name: String
+    val props: LLMPropsBuilder
+    val action: LLMActionBlock
+
+    fun handoff(vararg agents: AgentWithRole)
+    fun withRole(role: String) = AgentWithRole(this, role)
+}
+
+class AgentWithRole(
+    internal val agent: LLMAgentScenario,
     val role: String,
-    props: LLMPropsBuilder = DefaultLLMProps,
-    action: LLMActionBlock = DefaultLLMActionBlock,
-) : Scenario {
-    var handoffs = listOf<HandoffAgent>()
+) : LLMAgentScenario by agent
+
+open class LLMAgent(
+    override val name: String,
+    override val props: LLMPropsBuilder = DefaultLLMProps,
+    override val action: LLMActionBlock = DefaultLLMActionBlock,
+) : LLMAgentScenario {
+    var handoffs = listOf<AgentWithRole>()
         private set
 
-    override val model = createModel {
-        state(agentStateName(name)) {
-            activators {
-                catchAll()
-            }
+    constructor(
+        name: String,
+        model: String? = null,
+        temperature: Double? = null,
+        topP: Double? = null,
+        maxTokens: Long? = null,
+        frequencyPenalty: Double? = null,
+        presencePenalty: Double? = null,
+        responseFormat: Class<*>? = null,
+        instructions: String? = null,
+        tools: List<LLMTool<*>>? = null,
+        client: OpenAIClient? = null,
+        action: LLMActionBlock = DefaultLLMActionBlock,
+    ) : this(
+        name = name,
+        action = action,
+        props = {
+            setModel(model)
+            setTemperature(temperature)
+            setTopP(topP)
+            setMaxTokens(maxTokens)
+            setFrequencyPenalty(frequencyPenalty)
+            setPresencePenalty(presencePenalty)
+            setResponseFormat(responseFormat)
+            setClient(client)
+            setTools(tools)
+            setMessages(
+                llmMemory(name, instructions?.let { withSystemMessage(it) })
+            )
+        }
+    )
 
-            llmAction({
-                props.invoke(this)
-                messages = messages ?: llmMemory(name)
-                setupHandoffProps(this@LLMAgent)
-            }) {
-                try {
-                    action(this)
-                } catch (e: HandoffException) {
-                    val state = agentStateName(e.agentName)
-                    scenario.states.keys.find { it.endsWith(state) }?.also { path ->
-                        context.handoffMessages = e.messages
-                        reactions.go(path)
-                    } ?: throw e
+    override fun handoff(vararg agents: AgentWithRole) {
+        handoffs += agents
+    }
+
+    override val model by lazy {
+        createModel {
+            state(stateName(name)) {
+                activators {
+                    catchAll()
+                }
+
+                llmAction({
+                    props.invoke(this)
+                    messages = messages ?: llmMemory(name)
+                    setupHandoffProps(this@LLMAgent)
+                }) {
+                    try {
+                        action(this)
+                    } catch (e: HandoffException) {
+                        val state = stateName(e.agentName)
+                        scenario.states.keys.find { it.endsWith(state) }?.also { path ->
+                            reactions.handoff(path, e.messages)
+                        } ?: throw e
+                    }
                 }
             }
         }
     }
 
-    fun handoff(vararg agents: LLMAgent) =
-        handoff(*agents.map { HandoffAgent(it) }.toTypedArray())
-
-    fun handoff(vararg agents: HandoffAgent) = apply {
-        handoffs += agents
+    private fun appendTo(scenario: Scenario, appended: Set<String> = emptySet()): Scenario {
+        val state = stateName(name)
+        return if (appended.contains(state)) {
+            scenario
+        } else {
+            var next = scenario append this
+            handoffs.forEach {
+                if (it.agent is LLMAgent) {
+                    next = it.agent.appendTo(next, appended + state)
+                }
+            }
+            return next
+        }
     }
-
-    fun asHandoff(role: String = this.role) = HandoffAgent(this, role)
 
     val asBot by lazy {
-        BotEngine(Scenario {
-            append(this@LLMAgent)
-            handoffs.forEach { append(it.agent) }
-        })
+        BotEngine(appendTo(Scenario {}))
     }
 }
-
-class HandoffException(
-    val agentName: String,
-    val messages: List<ChatCompletionMessageParam>,
-) : Exception()

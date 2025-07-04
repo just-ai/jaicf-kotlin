@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.llm
 
+import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.content
-import com.justai.jaicf.activator.llm.scenario.LLMChatScenario
 import com.justai.jaicf.activator.llm.toolCalls
 import com.justai.jaicf.activator.llm.withToolCalls
 import com.justai.jaicf.channel.ConsoleChannel
@@ -15,7 +15,7 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
  *
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
-private val scenario = LLMChatScenario(
+private val agent = LLMAgent(
     name = "chat",
     model = "gpt-4.1-nano",
     instructions = "You're a helpful assistant",
@@ -40,6 +40,6 @@ private val scenario = LLMChatScenario(
 }
 
 fun main() {
-    ConsoleChannel(scenario.asBot)
+    ConsoleChannel(agent.asBot)
         .run("Calculate any random math expression many times")
 }
