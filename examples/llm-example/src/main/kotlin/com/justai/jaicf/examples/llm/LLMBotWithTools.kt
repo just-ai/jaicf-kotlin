@@ -38,10 +38,6 @@ private val agent = LLMAgent(
 }
 
 fun main() {
-    ConsoleChannel(agent.asBot.apply {
-        hooks.addHookAction<AnyErrorHook> {
-            exception.printStackTrace()
-        }
-    })
+    ConsoleChannel(agent.asBot)
         .run("Calculate any random math expression many times")
 }

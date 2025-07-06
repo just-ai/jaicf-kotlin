@@ -20,7 +20,7 @@ private fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionContext<A, 
     body: LLMActionBlock,
 ) {
     val ac = LLMActivatorAPI.get
-        .createActivatorContext(props, context, request, activator)
+        .createActivatorContext(context, request, activator, props)
     body.invoke(ActionContext(scenario, context, ac, request, reactions))
 }
 

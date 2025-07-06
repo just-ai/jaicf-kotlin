@@ -41,10 +41,10 @@ class LLMActivatorAPI(
     }
 
     internal fun createActivatorContext(
-        props: LLMPropsBuilder = DefaultLLMProps,
         botContext: BotContext,
         request: BotRequest,
         origin: ActivatorContext,
+        props: LLMPropsBuilder = DefaultLLMProps,
     ): LLMActivatorContext {
         val props = props.build(botContext, request)
         val params = defaultProps.withOptions(props).toChatCompletionCreateParams().apply {
@@ -59,7 +59,7 @@ class LLMActivatorAPI(
     }
 
     internal fun callTools(activator: LLMActivatorContext) = runBlocking(toolsDispatcher) {
-        val context = LLMToolCallContext(activator.botContext, activator.request)
+        val context = LLMToolCallContext(activator, activator.botContext, activator.request)
         activator.toolCalls.mapNotNull { call ->
             val function = call.function()
             activator.props.tools?.find { t -> t.definition.name == function.name() }?.let { tool ->

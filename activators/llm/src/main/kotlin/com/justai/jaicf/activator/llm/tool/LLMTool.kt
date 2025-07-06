@@ -1,16 +1,18 @@
 package com.justai.jaicf.activator.llm.tool
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.justai.jaicf.activator.llm.LLMActivatorContext
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.models.FunctionDefinition
 import com.openai.models.FunctionParameters
 import com.openai.models.chat.completions.ChatCompletionTool
 
-typealias LLMToolFunction<T> = LLMToolCallContext.(call: LLMToolCall<T>) -> Any
+typealias LLMToolFunction<T> = LLMToolCallContext.(call: LLMToolCall<T>) -> Any?
 
 data class LLMToolCallContext(
-    val context: BotContext,
+    val activator: LLMActivatorContext,
+    val botContext: BotContext,
     val request: BotRequest,
 )
 
@@ -70,7 +72,7 @@ data class LLMToolResult(
     val callId: String,
     val name: String,
     val arguments: Any,
-    val result: Any,
+    val result: Any?,
 ) {
     inline fun <reified T> arguments() = arguments as T
     inline fun <reified T> result() = result as T

@@ -16,7 +16,7 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
 /**
  * The main agent that doesn't have any tools and works on the fastest LLM
  */
-val mainAgent = LLMAgent(
+private val mainAgent = LLMAgent(
     name = "Main",
     props = {
         model = "gpt-4.1-nano"
@@ -29,7 +29,7 @@ val mainAgent = LLMAgent(
 /**
  * This agent has a calculator tool
  */
-val calculatorAgent = LLMAgent(
+private val calculatorAgent = LLMAgent(
     name = "Calculator",
     props = {
         model = "gpt-4.1-mini"

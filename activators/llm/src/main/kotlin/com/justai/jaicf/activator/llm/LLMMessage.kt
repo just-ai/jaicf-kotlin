@@ -43,7 +43,7 @@ object LLMMessage {
     )
 
     fun tool(result: LLMToolResult) = ChatCompletionMessageParam.ofTool(
-        toolBuilder.toolCallId(result.callId).contentAsJson(result.result).build()
+        toolBuilder.toolCallId(result.callId).contentAsJson(result.result ?: "null").build()
     )
 
     fun image(url: String, detail: Detail = Detail.AUTO) = user {

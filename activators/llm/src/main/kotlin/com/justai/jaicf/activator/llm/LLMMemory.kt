@@ -7,9 +7,9 @@ import kotlin.collections.emptyList
 typealias MessagesTransform = (List<Message>) -> List<Message>
 
 class LLMMemory(
-    val botContext: BotContext,
+    private val botContext: BotContext,
     val key: String,
-    transform: MessagesTransform? = null,
+    private val transform: MessagesTransform? = null,
 ) : AbstractList<Message>() {
     private val messages =
         botContext.session.getOrDefault(key, emptyList<Message>()) as List<Message>
@@ -19,6 +19,9 @@ class LLMMemory(
     init {
         transform(transform)
     }
+
+    val initial
+        get() = transform?.invoke(emptyList()) ?: emptyList()
 
     override val size
         get() = list.size
