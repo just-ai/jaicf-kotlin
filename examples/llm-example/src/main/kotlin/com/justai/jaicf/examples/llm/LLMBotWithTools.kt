@@ -3,7 +3,6 @@ package com.justai.jaicf.examples.llm
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.CalcTool
-import com.justai.jaicf.hook.AnyErrorHook
 
 
 /**

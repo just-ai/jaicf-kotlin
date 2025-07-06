@@ -1,25 +1,16 @@
 package com.justai.jaicf.activator.llm.agent
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.DefaultLLMActionBlock
-import com.justai.jaicf.activator.llm.DefaultLLMProps
-import com.justai.jaicf.activator.llm.LLMActionBlock
-import com.justai.jaicf.activator.llm.LLMMessage
-import com.justai.jaicf.activator.llm.LLMPropsBuilder
-import com.justai.jaicf.activator.llm.ifLLMMemory
-import com.justai.jaicf.activator.llm.tool.LLMTool
-import com.justai.jaicf.activator.llm.llmAction
-import com.justai.jaicf.activator.llm.llmMemory
+import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
+import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.llmTool
-import com.justai.jaicf.activator.llm.withSystemMessage
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.activation.ActivationRule
