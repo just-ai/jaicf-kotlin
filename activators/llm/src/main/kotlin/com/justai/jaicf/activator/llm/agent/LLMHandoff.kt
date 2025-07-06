@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.justai.jaicf.activator.llm.LLMMessage
 import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.activator.llm.MessagesTransform
-import com.justai.jaicf.activator.llm.llmTool
+import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.activator.llm.transform
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.context.tempProperty

@@ -1,13 +1,15 @@
 package com.justai.jaicf.activator.llm
 
+import com.justai.jaicf.activator.llm.tool.JsonSchemaBuilder
+import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolDefinition
+import com.justai.jaicf.activator.llm.tool.LLMToolFunction
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.api.hasQuery
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
+import com.openai.core.JsonValue
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
-import com.openai.models.chat.completions.StructuredChatCompletionCreateParams
 
 typealias LLMPropsBuilder = LLMProps.Builder.() -> Unit
 typealias LLMInputBuilder = (request: BotRequest) -> List<ChatCompletionMessageParam>?
@@ -55,7 +57,12 @@ data class LLMProps(
             maxCompletionTokens(maxTokens)
             messages(messages.orEmpty())
             responseFormat?.let { responseFormat(it) }
-            tools?.forEach { addTool(it.definition) }
+            tools?.forEach {
+                when (it.definition) {
+                    is LLMToolDefinition.ClassDefinition<*> -> addTool(it.definition.parametersType)
+                    is LLMToolDefinition.SchemaDefinition<*> -> addTool(it.definition.asChatCompletionTool)
+                }
+            }
         }
 
     class Builder(
@@ -92,7 +99,14 @@ data class LLMProps(
 
         inline fun <reified T> tool(
             noinline function: LLMToolFunction<T>
-        ) = tool(LLMTool(T::class.java, function))
+        ) = tool(LLMTool(LLMToolDefinition.ClassDefinition(T::class.java), function))
+
+        inline fun <reified T> tool(
+            name: String,
+            description: String? = null,
+            noinline parameters: JsonSchemaBuilder.() -> Unit,
+            noinline function: LLMToolFunction<T>
+        ) = tool(LLMTool(LLMToolDefinition.SchemaDefinition(name, description, T::class.java, parameters), function))
 
         fun build() = LLMProps(
             model, temperature, maxTokens, topP, frequencyPenalty,
@@ -104,3 +118,5 @@ data class LLMProps(
 fun LLMProps.Builder.llmMemory(key: String, transform: MessagesTransform? = null) =
     context.llmMemory(key, transform)
 
+fun LLMPropsBuilder.build(context: BotContext, request: BotRequest): LLMProps =
+    LLMProps.Builder(context, request).apply(this).build()

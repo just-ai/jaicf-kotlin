@@ -1,5 +1,6 @@
 package com.justai.jaicf.activator.llm
 
+import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.openai.models.chat.completions.*
 import com.openai.models.chat.completions.ChatCompletionContentPartImage.ImageUrl.*
 

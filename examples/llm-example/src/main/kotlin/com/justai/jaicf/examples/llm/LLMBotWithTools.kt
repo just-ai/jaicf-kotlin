@@ -1,11 +1,9 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.activator.llm.content
-import com.justai.jaicf.activator.llm.toolCalls
-import com.justai.jaicf.activator.llm.withToolCalls
 import com.justai.jaicf.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.CalcTool
+import com.justai.jaicf.hook.AnyErrorHook
 
 
 /**
@@ -40,6 +38,10 @@ private val agent = LLMAgent(
 }
 
 fun main() {
-    ConsoleChannel(agent.asBot)
+    ConsoleChannel(agent.asBot.apply {
+        hooks.addHookAction<AnyErrorHook> {
+            exception.printStackTrace()
+        }
+    })
         .run("Calculate any random math expression many times")
 }

@@ -8,7 +8,6 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.reactions.Reactions
 
-private val api = LLMActivatorAPI()
 
 typealias LLMActionBlock = ActionContext<LLMActivatorContext, *, *>.() -> Unit
 
@@ -20,7 +19,8 @@ private fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionContext<A, 
     props: LLMPropsBuilder,
     body: LLMActionBlock,
 ) {
-    val ac = api.createActivatorContext(props, context, request, activator)
+    val ac = LLMActivatorAPI.get
+        .createActivatorContext(props, context, request, activator)
     body.invoke(ActionContext(scenario, context, ac, request, reactions))
 }
 

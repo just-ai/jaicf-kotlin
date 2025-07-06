@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.justai.jaicf.activator.event.EventActivatorContext
+import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
@@ -30,10 +30,10 @@ val StructuredOutputMapper =
 
 data class LLMActivatorContext(
     val api: LLMActivatorAPI,
+    internal val botContext: BotContext,
+    internal val request: BotRequest,
     private var params: ChatCompletionCreateParams,
     val props: LLMProps,
-    val context: BotContext,
-    val request: BotRequest,
     val origin: ActivatorContext,
 ) : StrictActivatorContext() {
     private lateinit var stream: Stream<ChatCompletionChunk>
@@ -88,61 +88,61 @@ data class LLMActivatorContext(
                 acc.chatCompletion()
             }
         }
-}
 
-val LLMActivatorContext.choice
-    get() = chatCompletion.choices().first()
+    val choice
+        get() = chatCompletion.choices().first()
 
-val LLMActivatorContext.message
-    get() = choice.message()
+    val message
+        get() = choice.message()
 
-val LLMActivatorContext.content
-    get() = message.content().getOrNull()
+    val content
+        get() = message.content().getOrNull()
 
-val LLMActivatorContext.toolCalls
-    get() = message.toolCalls().getOrDefault(emptyList())
+    val toolCalls
+        get() = message.toolCalls().getOrDefault(emptyList())
 
-val LLMActivatorContext.hasToolCalls
-    get() = toolCalls.isNotEmpty()
+    val hasToolCalls
+        get() = toolCalls.isNotEmpty()
 
-val LLMActivatorContext.deltaStream: Stream<ChatCompletionChunk.Choice.Delta>
-    get() = getStream()
-        .map { it.choices().first().delta() }
+    val deltaStream: Stream<ChatCompletionChunk.Choice.Delta>
+        get() = getStream()
+            .map { it.choices().first().delta() }
 
-val LLMActivatorContext.contentStream: Stream<String>
-    get() = deltaStream
-        .map { it.content() }
-        .filter { it.isPresent }
-        .map { it.get() }
+    val contentStream: Stream<String>
+        get() = deltaStream
+            .map { it.content() }
+            .filter { it.isPresent }
+            .map { it.get() }
 
-fun LLMActivatorContext.callTools(): List<LLMToolResult> {
-    if (!hasToolCalls || props.tools.isNullOrEmpty()) {
-        return emptyList()
+    fun callTools(): List<LLMToolResult> {
+        if (!hasToolCalls || props.tools.isNullOrEmpty()) {
+            return emptyList()
+        }
+        return api.callTools(this)
     }
-    return api.callTools(this)
+
+    fun submitToolResults(results: List<LLMToolResult> = emptyList()): List<LLMToolResult> {
+        return api.submitToolResults(this, results)
+    }
+
+    fun withToolCalls(
+        block: (LLMActivatorContext.(results: List<LLMToolResult>) -> Unit)? = null
+    ) = apply {
+        var toolCalls: Boolean
+        var results: List<LLMToolResult> = emptyList()
+        do {
+            block?.invoke(this, results)
+            toolCalls = hasToolCalls
+            results = submitToolResults()
+        } while (toolCalls)
+    }
+
+    fun awaitFinalMessage() =
+        withToolCalls().message
+
+    fun awaitFinalContent() =
+        awaitFinalMessage().content().getOrNull()
+
+    inline fun <reified T> awaitStructuredContent(): T? =
+        awaitFinalContent().let { StructuredOutputMapper.readValue(it, T::class.java) }
 }
-
-fun LLMActivatorContext.submitToolResults(results: List<LLMToolResult> = emptyList()): List<LLMToolResult> {
-    return api.submitToolResults(this, results)
-}
-
-fun LLMActivatorContext.withToolCalls(
-    block: (LLMActivatorContext.(results: List<LLMToolResult>) -> Unit)? = null
-) = apply {
-    var toolCalls: Boolean
-    var results: List<LLMToolResult> = emptyList()
-    do {
-        block?.invoke(this, results)
-        toolCalls = hasToolCalls
-        results = submitToolResults()
-    } while (toolCalls)
-}
-
-fun LLMActivatorContext.awaitFinalMessage() =
-    withToolCalls().message
-
-fun LLMActivatorContext.awaitFinalContent() =
-    awaitFinalMessage().content().getOrNull()
-
-inline fun <reified T> LLMActivatorContext.awaitStructuredContent(): T? =
-    awaitFinalContent().let { StructuredOutputMapper.readValue(it, T::class.java) }

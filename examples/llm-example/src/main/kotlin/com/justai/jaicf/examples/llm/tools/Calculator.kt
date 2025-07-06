@@ -1,11 +1,20 @@
 package com.justai.jaicf.examples.llm.tools
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
-import com.justai.jaicf.activator.llm.llmTool
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonTypeName
+import com.justai.jaicf.activator.llm.tool.llmTool
 
-// Calculator function definition
-@JsonClassDescription("Calculates math expression")
-data class Calculator(val expression: String)
+/**
+ * Calculator function definition.
+ * Use @JsonTypeName to override function name.
+ */
+//@JsonTypeName("calc")
+@JsonClassDescription("Calculates math expressions")
+data class Calculator(
+    @field:JsonPropertyDescription("Math expression")
+    val expression: String
+)
 
 // Calculator function
 val CalcTool = llmTool<Calculator> {

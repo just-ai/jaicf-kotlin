@@ -5,7 +5,7 @@ import com.justai.jaicf.activator.llm.DefaultLLMActionBlock
 import com.justai.jaicf.activator.llm.DefaultLLMProps
 import com.justai.jaicf.activator.llm.LLMActionBlock
 import com.justai.jaicf.activator.llm.LLMPropsBuilder
-import com.justai.jaicf.activator.llm.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.llmAction
 import com.justai.jaicf.activator.llm.llmMemory
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf

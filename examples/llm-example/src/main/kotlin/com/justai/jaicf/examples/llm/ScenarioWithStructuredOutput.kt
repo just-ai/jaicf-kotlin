@@ -2,7 +2,6 @@ package com.justai.jaicf.examples.llm
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.awaitStructuredContent
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.channel.ConsoleChannel
