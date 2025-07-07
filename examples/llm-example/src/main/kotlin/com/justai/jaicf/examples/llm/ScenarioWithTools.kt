@@ -21,7 +21,7 @@ private val scenario = Scenario {
             regex("start")
         }
         action {
-            reactions.say("TYPE ME ANYTHING")
+            reactions.say("TYPE ANY MATH EXPRESSION")
         }
 
         llmState("chat", llmProps)

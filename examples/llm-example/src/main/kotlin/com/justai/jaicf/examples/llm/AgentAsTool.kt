@@ -5,6 +5,8 @@ import com.justai.jaicf.channel.ConsoleChannel
 
 /**
  * This example shows how an agent can be exposed as a tool to call it from anywhere instead of hand off an entire conversation to it.
+ *
+ * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 
 // Calculator agent with custom instructions

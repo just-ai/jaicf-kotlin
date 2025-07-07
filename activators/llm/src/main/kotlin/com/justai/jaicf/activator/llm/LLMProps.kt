@@ -1,13 +1,9 @@
 package com.justai.jaicf.activator.llm
 
-import com.justai.jaicf.activator.llm.tool.JsonSchemaBuilder
-import com.justai.jaicf.activator.llm.tool.LLMTool
-import com.justai.jaicf.activator.llm.tool.LLMToolDefinition
-import com.justai.jaicf.activator.llm.tool.LLMToolFunction
+import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
-import com.openai.core.JsonValue
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
 
@@ -93,25 +89,53 @@ data class LLMProps(
         fun setTools(value: List<LLMTool<*>>?) = apply { this.tools = value }
         fun setInput(value: LLMInputBuilder?) = apply { this.input = value }
 
-        fun tool(tool: LLMTool<*>) {
+        fun tool(tool: LLMTool<*>) = InlineTool(tool).also {
             tools = tools.orEmpty() + tool
         }
 
         inline fun <reified T> tool(
             noinline function: LLMToolFunction<T>
-        ) = tool(LLMTool(LLMToolDefinition.ClassDefinition(T::class.java), function))
+        ) = tool(llmTool<T>(function))
+
+        inline fun <reified T> tool(
+            name: String? = null,
+            description: String? = null,
+            noinline function: LLMToolFunction<T>
+        ) = tool(llmTool(name, description, function))
 
         inline fun <reified T> tool(
             name: String,
             description: String? = null,
             noinline parameters: JsonSchemaBuilder.() -> Unit,
             noinline function: LLMToolFunction<T>
-        ) = tool(LLMTool(LLMToolDefinition.SchemaDefinition(name, description, T::class.java, parameters), function))
+        ) = tool(llmTool(name, description, parameters, function))
 
         fun build() = LLMProps(
-            model, temperature, maxTokens, topP, frequencyPenalty,
-            presencePenalty, responseFormat, client, messages, tools, input,
+            model,
+            temperature,
+            maxTokens,
+            topP,
+            frequencyPenalty,
+            presencePenalty,
+            responseFormat,
+            client,
+            messages,
+            tools,
+            input,
         )
+
+        inner class InlineTool<T>(private var tool: LLMTool<T>) {
+            private fun replaceWith(tool: LLMTool<T>) = tool.also {
+                tools = tools?.map { if (it === this.tool) tool else it }
+                this.tool = tool
+            }
+
+            fun withConfirmation(block: LLMToolConfirmationFunction<T>) =
+                replaceWith(tool.withConfirmation(block))
+
+            fun withConfirmation(message: String? = null) =
+                replaceWith(tool.withConfirmation(message))
+        }
     }
 }
 

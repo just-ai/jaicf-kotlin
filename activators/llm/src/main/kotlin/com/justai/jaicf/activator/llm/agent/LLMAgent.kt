@@ -3,6 +3,7 @@ package com.justai.jaicf.activator.llm.agent
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
+import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.api.QueryBotRequest
@@ -101,24 +102,22 @@ open class LLMAgent(
 
     override val model by lazy {
         createModel {
-            state(stateName(name)) {
-                activators {
-                    catchAll().onlyIf(onlyIf)
-                }
-
-                llmAction({
+            llmState(
+                state = stateName(name),
+                onlyIf = onlyIf,
+                props = {
                     props.invoke(this)
                     messages = messages ?: llmMemory(name)
                     setupHandoffProps(this@LLMAgent)
-                }) {
-                    try {
-                        action(this)
-                    } catch (e: HandoffException) {
-                        val state = stateName(e.agentName)
-                        scenario.states.keys.find { it.endsWith(state) }?.also { path ->
-                            reactions.handoff(path, e.messages)
-                        } ?: throw e
-                    }
+                }
+            ) {
+                try {
+                    action(this)
+                } catch (e: HandoffException) {
+                    val state = stateName(e.agentName)
+                    scenario.states.keys.find { it.endsWith(state) }?.also { path ->
+                        reactions.handoff(path, e.messages)
+                    } ?: throw e
                 }
             }
         }
@@ -139,7 +138,7 @@ open class LLMAgent(
         }
     }
 
-    val asBot get() = asBot()
+    val asBot by lazy { asBot() }
 
     fun asBot(
         defaultContextManager: BotContextManager = InMemoryBotContextManager,
@@ -150,7 +149,7 @@ open class LLMAgent(
         conversationLoggers = conversationLoggers,
     )
 
-    val asTool get() = asTool()
+    val asTool by lazy { asTool() }
 
     override fun asTool(
         name: String,

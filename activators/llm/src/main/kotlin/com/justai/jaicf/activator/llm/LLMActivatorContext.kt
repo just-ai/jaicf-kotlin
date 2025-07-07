@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolCall
+import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
+import com.justai.jaicf.activator.llm.tool.LLMToolFunction
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
@@ -16,6 +20,7 @@ import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionChunk.Choice.FinishReason
 import com.openai.models.chat.completions.ChatCompletionCreateParams
+import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 import java.util.stream.Stream
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
@@ -113,6 +118,30 @@ data class LLMActivatorContext(
             .map { it.content() }
             .filter { it.isPresent }
             .map { it.get() }
+
+    fun callTool(call: ChatCompletionMessageToolCall): LLMToolResult {
+        val function = call.function()
+        val tool = props.tools?.find { t -> t.definition.name == function.name() }
+        val args = tool?.arguments(call)
+
+        return LLMToolResult(
+            callId = call.id(),
+            name = function.name(),
+            arguments = args,
+            result = tool?.let { tool ->
+                try {
+                    @Suppress("UNCHECKED_CAST")
+                    (tool.function as LLMToolFunction<Any>)
+                        .invoke(
+                            LLMToolCallContext(this, botContext, request),
+                            LLMToolCall(function.name(), call.id(), args!!, call)
+                        )
+                } catch (e: Exception) {
+                    "Error: ${e.message}"
+                }
+            } ?: "Error: no tool found with name ${function.name()}"
+        )
+    }
 
     fun callTools(): List<LLMToolResult> {
         if (!hasToolCalls || props.tools.isNullOrEmpty()) {

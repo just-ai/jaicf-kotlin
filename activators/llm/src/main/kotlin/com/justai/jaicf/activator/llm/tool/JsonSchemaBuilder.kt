@@ -2,6 +2,7 @@ package com.justai.jaicf.activator.llm.tool
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.core.JsonValue
 
 enum class JsonType {

@@ -3,15 +3,16 @@ package com.justai.jaicf.activator.llm
 import com.justai.jaicf.activator.llm.agent.Handoff
 import com.justai.jaicf.activator.llm.agent.HandoffException
 import com.justai.jaicf.activator.llm.agent.handoffMessages
+import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCall
-import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
-import com.justai.jaicf.activator.llm.tool.LLMToolFunction
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
+import com.openai.core.JsonValue
 import com.openai.core.http.StreamResponse
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
@@ -20,9 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.jvm.Throws
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -46,39 +45,22 @@ class LLMActivatorAPI(
         origin: ActivatorContext,
         props: LLMPropsBuilder = DefaultLLMProps,
     ): LLMActivatorContext {
-        val props = props.build(botContext, request)
-        val params = defaultProps.withOptions(props).toChatCompletionCreateParams().apply {
+        val props = defaultProps.withOptions(props.build(botContext, request))
+        val params = props.toChatCompletionCreateParams().apply {
             if (botContext.handoffMessages.isEmpty()) {
                 val builder = props.input ?: LLMInputs.TextOnly
                 builder.invoke(request)?.forEach(::addMessage)
                     ?: throw IllegalArgumentException("Request is not supported: $request")
             }
-        }.build()
+        }.build(props)
 
         return LLMActivatorContext(this, botContext, request, params, props, origin)
     }
 
     internal fun callTools(activator: LLMActivatorContext) = runBlocking(toolsDispatcher) {
-        val context = LLMToolCallContext(activator, activator.botContext, activator.request)
-        activator.toolCalls.mapNotNull { call ->
-            val function = call.function()
-            activator.props.tools?.find { t -> t.definition.name == function.name() }?.let { tool ->
-                async {
-                    val args = function.arguments(tool.definition.parametersType) as Any
-                    val result = try {
-                        @Suppress("UNCHECKED_CAST")
-                        (tool.function as LLMToolFunction<Any>)
-                            .invoke(context, LLMToolCall(function.name(), call.id(), args))
-                    } catch (e: Exception) {
-                        "Error: ${e.message}"
-                    }
-                    LLMToolResult(
-                        callId = call.id(),
-                        name = function.name(),
-                        arguments = args,
-                        result = result,
-                    )
-                }
+        activator.toolCalls.map { call ->
+            async {
+                activator.callTool(call)
             }
         }.awaitAll()
     }
@@ -150,4 +132,38 @@ class LLMActivatorAPI(
                return instance
             }
     }
+}
+
+private fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatCompletionCreateParams {
+    val params = build()
+    if (props.tools.isNullOrEmpty()) return params
+
+    params.tools().getOrNull()?.mapIndexed { index, tool ->
+        val function = tool.function()
+        val propTool = props.tools[index]
+        if (propTool.requiresConfirmation || propTool.definition.name != function.name() || propTool.definition.description != function.description().getOrNull()) {
+            tool.toBuilder().function(
+                function.toBuilder()
+                    .strict(!propTool.requiresConfirmation)
+                    .name(propTool.definition.name)
+                    .description(propTool.definition.description ?: "")
+                    .apply {
+                        if (propTool.requiresConfirmation) {
+                            parameters(
+                                JsonValue.from(
+                                    JsonValue.from(tool.function()._parameters()).asObject().get().toMutableMap().apply {
+                                        put("properties", JsonValue.from(getValue("properties").asObject().get().plus(LLMTool.CONFIRM_FIELD to LLMTool.CONFIRM_PROPERTY)))
+                                    }
+                                )
+                            )
+                        }
+                    }
+                    .build()
+            ).build()
+        } else {
+            tool
+        }
+    }?.also(::tools)
+
+    return build()
 }
