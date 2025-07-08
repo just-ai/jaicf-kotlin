@@ -12,6 +12,7 @@ import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.activation.ActivationRule
@@ -28,8 +29,16 @@ interface LLMAgentScenario : Scenario {
     val action: LLMActionBlock
 
     fun handoff(vararg agents: AgentWithRole)
+
     fun withRole(role: String) = AgentWithRole(this, role)
-    fun asTool(name: String = this.name, description: String? = null): LLMTool<AgentTool>
+
+    fun asTool(
+        name: String = this.name,
+        description: String? = AgentWithRole::class
+            .isInstance(this)
+            .ifTrue { (this as AgentWithRole).role },
+    ): LLMTool<AgentTool>
+
     fun withoutMemory(): LLMAgentScenario
 }
 
