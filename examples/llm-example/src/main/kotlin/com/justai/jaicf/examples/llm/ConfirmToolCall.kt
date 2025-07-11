@@ -18,7 +18,7 @@ private data class SendMail(
 
 // SendMailTool will be invoked only if the user confirmed
 private val SendMailTool = llmTool<SendMail> {
-    println("...SENDING MESSAGE...\n\n${it.arguments.message}")
+    println("...SENDING MESSAGE...\n\n${call.arguments.message}")
 
     "Mail was sent successfully"
 }

@@ -8,9 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.justai.jaicf.activator.llm.LLMActivatorContext
-import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.context.sessionProperty
@@ -20,18 +18,17 @@ import com.openai.models.FunctionDefinition
 import com.openai.models.FunctionParameters
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 import com.openai.models.chat.completions.ChatCompletionTool
-import java.util.Optional
-import kotlin.jvm.optionals.getOrNull
 
-typealias LLMToolFunction<T> = LLMToolCallContext.(call: LLMToolCall<T>) -> Any?
-typealias LLMToolConfirmationFunction<T> = LLMToolCallContext.(call: LLMToolCall<T>) -> Boolean
+typealias LLMToolFunction<T> = LLMToolCallContext<T>.() -> Any?
+typealias LLMToolConfirmationFunction<T> = LLMToolCallContext<T>.() -> Boolean
 
 internal var BotContext.confirmToolCalls by sessionProperty { listOf<String>() }
 
-data class LLMToolCallContext(
+data class LLMToolCallContext<T>(
     val activator: LLMActivatorContext,
     val botContext: BotContext,
     val request: BotRequest,
+    val call: LLMToolCall<T>,
 )
 
 data class LLMToolCall<T>(
@@ -58,11 +55,11 @@ open class LLMTool<T>(
     val requiresConfirmation = this is WithConfirmation
 
     internal open fun arguments(call: ChatCompletionMessageToolCall) =
-        MAPPER.readValue(call.function().arguments(), definition.parametersType)
+        ArgumentsMapper.readValue(call.function().arguments(), definition.parametersType)
 
     fun withConfirmation(block: LLMToolConfirmationFunction<T>): LLMTool<T> {
-        return LLMTool(definition) { call ->
-            block(call).ifTrue { function(call) } ?: "ERROR: user has declined this tool call"
+        return LLMTool(definition) {
+            block().ifTrue { function() } ?: "ERROR: user has declined this tool call"
         }
     }
 
@@ -72,8 +69,8 @@ open class LLMTool<T>(
     internal class WithConfirmation<T>(
         tool: LLMTool<T>,
         message: String? = null,
-    ) : LLMTool<T>(tool.definition, { call ->
-        val confirmId = MAPPER
+    ) : LLMTool<T>(tool.definition, {
+        val confirmId = ArgumentsMapper
             .readValue(call.origin.function().arguments(), ObjectNode::class.java)
             .get(CONFIRM_FIELD)?.asText()
 
@@ -84,7 +81,7 @@ open class LLMTool<T>(
                 "Ask user to confirm this tool call ${message?.let { "using message like '$it'" }.orEmpty()}. " +
                 "Only if the user confirms, call this tool again with '$CONFIRM_FIELD' = ${call.callId}"
         } else {
-            tool.function(this, call).also {
+            tool.function(this).also {
                 synchronized(request.clientId) {
                     botContext.confirmToolCalls = botContext.confirmToolCalls.filter {
                         it != confirmId
@@ -101,7 +98,7 @@ open class LLMTool<T>(
             "description" to "ID of confirmed tool call",
         ))
 
-        val MAPPER = JsonMapper.builder()
+        val ArgumentsMapper = JsonMapper.builder()
             .addModule(kotlinModule())
             .addModule(Jdk8Module())
             .addModule(JavaTimeModule())

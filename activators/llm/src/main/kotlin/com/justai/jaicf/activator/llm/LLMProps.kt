@@ -4,6 +4,7 @@ import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
+import com.openai.core.JsonSchemaLocalValidation
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
 
@@ -55,7 +56,7 @@ data class LLMProps(
             responseFormat?.let { responseFormat(it) }
             tools?.forEach {
                 when (it.definition) {
-                    is LLMToolDefinition.ClassDefinition<*> -> addTool(it.definition.parametersType)
+                    is LLMToolDefinition.ClassDefinition<*> -> addTool(it.definition.parametersType, JsonSchemaLocalValidation.NO)
                     is LLMToolDefinition.SchemaDefinition<*> -> addTool(it.definition.asChatCompletionTool)
                 }
             }

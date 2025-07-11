@@ -23,6 +23,12 @@ dependencies {
     implementation(jackson())
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${Version.jackson}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.jackson}")
+    implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
+
+    api("io.ktor:ktor-client:3.0.2")
+    implementation("io.ktor:ktor-client-content-negotiation:3.0.2")
+    implementation("io.ktor:ktor-serialization-jackson:3.0.2")
+
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(ktor("ktor-client-mock"))
 }

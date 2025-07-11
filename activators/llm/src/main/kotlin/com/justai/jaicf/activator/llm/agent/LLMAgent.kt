@@ -170,7 +170,7 @@ open class LLMAgent(
             str("input", "Standalone request text", true)
         })
     {
-        val request = QueryBotRequest(request.clientId, it.arguments.input)
+        val request = QueryBotRequest(request.clientId, call.arguments.input)
         activator.api
             .createActivatorContext(botContext, request, activator, props)
             .awaitFinalContent()

@@ -1,21 +1,23 @@
 package com.justai.jaicf.activator.llm
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.justai.jaicf.activator.llm.agent.Handoff
 import com.justai.jaicf.activator.llm.agent.HandoffException
 import com.justai.jaicf.activator.llm.agent.handoffMessages
-import com.justai.jaicf.activator.llm.tool.LLMTool
-import com.justai.jaicf.activator.llm.tool.LLMToolCall
+import com.justai.jaicf.activator.llm.builder.build
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
-import com.openai.core.JsonValue
 import com.openai.core.http.StreamResponse
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
+import io.ktor.client.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.sse.*
+import io.ktor.serialization.jackson.*
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -25,9 +27,23 @@ import java.util.concurrent.Executors
 import kotlin.jvm.optionals.getOrNull
 
 
+private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
+private val DefaultToolsExecutor = Executors.newCachedThreadPool()
+private val DefaultProps = LLMProps(client = DefaultOpenAIClient)
+private val DefaultHttpClient = HttpClient {
+    install(SSE)
+    install(ContentNegotiation) {
+        jackson {
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+        }
+    }
+}
+
 class LLMActivatorAPI(
     toolsExecutor: Executor = DefaultToolsExecutor,
     val defaultProps: LLMProps = DefaultProps,
+    val httpClient: HttpClient = DefaultHttpClient,
 ) {
     private val toolsDispatcher = toolsExecutor.asCoroutineDispatcher()
 
@@ -109,10 +125,6 @@ class LLMActivatorAPI(
     }
 
     companion object {
-        private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
-        private val DefaultToolsExecutor = Executors.newCachedThreadPool()
-        private val DefaultProps = LLMProps(client = DefaultOpenAIClient)
-
         private lateinit var instance: LLMActivatorAPI
 
         fun init(
@@ -132,38 +144,4 @@ class LLMActivatorAPI(
                return instance
             }
     }
-}
-
-private fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatCompletionCreateParams {
-    val params = build()
-    if (props.tools.isNullOrEmpty()) return params
-
-    params.tools().getOrNull()?.mapIndexed { index, tool ->
-        val function = tool.function()
-        val propTool = props.tools[index]
-        if (propTool.requiresConfirmation || propTool.definition.name != function.name() || propTool.definition.description != function.description().getOrNull()) {
-            tool.toBuilder().function(
-                function.toBuilder()
-                    .strict(!propTool.requiresConfirmation)
-                    .name(propTool.definition.name)
-                    .description(propTool.definition.description ?: "")
-                    .apply {
-                        if (propTool.requiresConfirmation) {
-                            parameters(
-                                JsonValue.from(
-                                    JsonValue.from(tool.function()._parameters()).asObject().get().toMutableMap().apply {
-                                        put("properties", JsonValue.from(getValue("properties").asObject().get().plus(LLMTool.CONFIRM_FIELD to LLMTool.CONFIRM_PROPERTY)))
-                                    }
-                                )
-                            )
-                        }
-                    }
-                    .build()
-            ).build()
-        } else {
-            tool
-        }
-    }?.also(::tools)
-
-    return build()
 }
