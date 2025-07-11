@@ -33,17 +33,31 @@ private val GetRecipeTool = llmTool<GetRecipe>(
     httpGet("https://dummyjson.com/recipes/{id}")  // Placeholders can be used to fill URL parts with tool argument fields
 )
 
+private val AddToCartTool = llmTool<GetRecipe>(
+    name = "AddToCart",
+    description = "Add recipe ingredients to cart"
+) {
+    "Ingredients of recipe [${call.arguments.id}] added to cart"
+}
+
 private val agent = LLMAgent(
     name = "recipes",
     model = "gpt-4.1-mini",
     instructions = "Assist user with recipes from your database. Reply with markdown and write a lot of emojis.",
-    tools = listOf(ListRecipesTool, GetRecipeTool)
+    tools = listOf(
+        ListRecipesTool,
+        GetRecipeTool,
+        AddToCartTool.withConfirmation(),
+    )
 ) {
     // Custom action block just for tool calling progress output
     activator.withToolCalls {
         activator.contentStream.forEach(::print)
         if (activator.hasToolCalls) {
-            activator.toolCalls.joinToString(", ", "CALLING ", "...") { it.function().name() }.also(::println)
+            activator.toolCalls
+                .joinToString(", ", "CALLING ", "...") {
+                    it.function().name()
+                }.also(::println)
         }
     }
 }

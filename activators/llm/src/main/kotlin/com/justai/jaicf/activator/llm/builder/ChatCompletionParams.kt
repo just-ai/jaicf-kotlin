@@ -2,6 +2,7 @@ package com.justai.jaicf.activator.llm.builder
 
 import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolWithConfirmation
 import com.openai.core.JsonValue
 import com.openai.models.FunctionParameters
 import com.openai.models.chat.completions.ChatCompletionCreateParams
@@ -32,7 +33,9 @@ internal fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatComp
                             parameters(
                                 JsonValue.from(
                                     JsonValue.from(tool.function()._parameters()).asObject().get().toMutableMap().apply {
-                                        put("properties", JsonValue.from(getValue("properties").asObject().get().plus(LLMTool.CONFIRM_FIELD to LLMTool.CONFIRM_PROPERTY)))
+                                        put("properties", JsonValue.from(getValue("properties").asObject().get().plus(
+                                            LLMToolWithConfirmation.WithLLMConfirmation.CONFIRM_PARAM)
+                                        ))
                                     }
                                 )
                             )

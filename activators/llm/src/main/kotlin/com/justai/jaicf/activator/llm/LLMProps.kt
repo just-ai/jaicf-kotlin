@@ -56,8 +56,8 @@ data class LLMProps(
             responseFormat?.let { responseFormat(it) }
             tools?.forEach {
                 when (it.definition) {
-                    is LLMToolDefinition.ClassDefinition<*> -> addTool(it.definition.parametersType, JsonSchemaLocalValidation.NO)
-                    is LLMToolDefinition.SchemaDefinition<*> -> addTool(it.definition.asChatCompletionTool)
+                    is LLMToolDefinition.FromClass<*> -> addTool(it.definition.parametersType, JsonSchemaLocalValidation.NO)
+                    is LLMToolDefinition.CustomSchema<*> -> addTool(it.definition.asChatCompletionTool)
                 }
             }
         }

@@ -123,12 +123,6 @@ data class LLMActivatorContext(
         val function = call.function()
         val tool = props.tools?.find { t -> t.definition.name == function.name() }
         val args = tool?.arguments(call)
-        val context = LLMToolCallContext(
-            this,
-            botContext,
-            request,
-            LLMToolCall(function.name(), call.id(), args!!, call)
-        )
 
         return LLMToolResult(
             callId = call.id(),
@@ -137,7 +131,14 @@ data class LLMActivatorContext(
             result = tool?.let { tool ->
                 try {
                     @Suppress("UNCHECKED_CAST")
-                    (tool.function as LLMToolFunction<Any>).invoke(context)
+                    (tool.function as LLMToolFunction<Any>).invoke(
+                        LLMToolCallContext(
+                            this,
+                            botContext,
+                            request,
+                            LLMToolCall(function.name(), call.id(), args!!, call)
+                        )
+                    )
                 } catch (e: Exception) {
                     "Error: ${e.message}"
                 }
