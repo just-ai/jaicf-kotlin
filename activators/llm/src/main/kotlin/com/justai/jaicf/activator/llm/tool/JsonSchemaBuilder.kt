@@ -9,6 +9,7 @@ import com.openai.core.JsonValue
 enum class JsonType {
     string,
     number,
+    integer,
     boolean,
 }
 
@@ -40,6 +41,9 @@ class JsonSchemaBuilder {
 
     fun num(name: String, description: String? = null, required: Boolean = false) =
         addProperty(name, JsonType.number, description, required)
+
+    fun int(name: String, description: String? = null, required: Boolean = false) =
+        addProperty(name, JsonType.integer, description, required)
 
     fun bool(name: String, description: String? = null, required: Boolean = false) =
         addProperty(name, JsonType.boolean, description, required)
