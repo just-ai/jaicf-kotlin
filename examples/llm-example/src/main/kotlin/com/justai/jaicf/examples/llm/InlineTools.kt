@@ -37,7 +37,7 @@ private val agent = LLMAgent("agent", {
             str("message", required = true)
         }
     ) {
-        "Message sent: ${it.arguments.asObject().get()["message"]?.asStringOrThrow()}"
+        "Message sent: ${call.arguments.asObject().get()["message"]?.asStringOrThrow()}"
     }
         .withConfirmation("Confirm to send MESSAGE_TEXT")  // Requires confirmation before calling
 })
