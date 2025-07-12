@@ -17,7 +17,12 @@ internal fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatComp
     params.tools().getOrNull()?.mapIndexed { index, tool ->
         val function = tool.function()
         val propTool = props.tools[index]
-        val properties = function._parameters().asObject().get()["properties"]?.asObject()?.get() ?: emptyMap()
+
+        val parameters = function._parameters().let { parameters ->
+            parameters.asKnown().getOrNull()?._additionalProperties() ?: parameters.asObject().getOrNull()
+        } ?: emptyMap()
+
+        val properties = parameters["properties"]?.asObject()?.get() ?: emptyMap()
 
         if (properties.isEmpty() || propTool.requiresConfirmation || propTool.definition.name != function.name() || propTool.definition.description != function.description().getOrNull()) {
             tool.toBuilder().function(
@@ -30,18 +35,15 @@ internal fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatComp
                             parameters(FunctionParameters.builder().build())
                         }
                         if (propTool.requiresConfirmation) {
-                            parameters(
-                                JsonValue.from(
-                                    JsonValue.from(tool.function()._parameters()).asObject().get().toMutableMap().apply {
-                                        put("properties", JsonValue.from(getValue("properties").asObject().get().plus(
-                                            LLMToolWithConfirmation.WithLLMConfirmation.CONFIRM_PARAM)
-                                        ))
-                                    }
-                                )
-                            )
+                            parameters(JsonValue.from(parameters.toMutableMap().apply {
+                                put("properties", JsonValue.from(
+                                    getValue("properties").asObject().get().plus(
+                                        LLMToolWithConfirmation.WithLLMConfirmation.CONFIRM_PARAM
+                                    )
+                                ))
+                            }))
                         }
-                    }
-                    .build()
+                    }.build()
             ).build()
         } else {
             tool

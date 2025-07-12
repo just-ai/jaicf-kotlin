@@ -31,15 +31,15 @@ sealed interface LLMToolDefinition<T> {
         private val parameters: JsonSchemaBuilder.() -> Unit
     ) : LLMToolDefinition<T> {
         val asChatCompletionTool
-            get() = ChatCompletionTool.Companion.builder().function(asFunctionDefinition).build()
+            get() = ChatCompletionTool.builder().function(asFunctionDefinition).build()
 
         val asFunctionDefinition: FunctionDefinition
-            get() = FunctionDefinition.Companion.builder().apply {
+            get() = FunctionDefinition.builder().apply {
                 strict(false)
                 name(name)
                 description?.also { description(it) }
                 parameters(
-                    FunctionParameters.Companion.builder().additionalProperties(
+                    FunctionParameters.builder().additionalProperties(
                     JsonSchemaBuilder().apply(parameters).build()
                 ).build())
             }.build()
