@@ -126,7 +126,7 @@ data class LLMProps(
         )
 
         inner class InlineTool<T>(private var tool: LLMTool<T>) {
-            private fun replaceWith(tool: LLMTool<T>) = tool.also {
+            private fun replaceWith(tool: LLMTool<T>) = apply {
                 tools = tools?.map { if (it === this.tool) tool else it }
                 this.tool = tool
             }

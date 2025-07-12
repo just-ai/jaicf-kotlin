@@ -48,11 +48,12 @@ open class LLMTool<T>(
     open fun withConfirmation(block: LLMToolConfirmationFunction<T>) =
         LLMToolWithConfirmation.WithCustomConfirmation(this, block)
 
-    open fun withConfirmation(message: String? = null): LLMTool<T> =
+    open fun withConfirmation(message: String? = null) =
         LLMToolWithConfirmation.WithLLMConfirmation(this, message)
 
-    val withoutConfirmation
-        get() = withConfirmation { true }
+    val withoutConfirmation by lazy {
+        withConfirmation { true }
+    }
 
     companion object {
         val ArgumentsMapper = JsonMapper.builder()
