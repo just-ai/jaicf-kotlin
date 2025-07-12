@@ -51,6 +51,9 @@ open class LLMTool<T>(
     open fun withConfirmation(message: String? = null): LLMTool<T> =
         LLMToolWithConfirmation.WithLLMConfirmation(this, message)
 
+    val withoutConfirmation
+        get() = withConfirmation { true }
+
     companion object {
         val ArgumentsMapper = JsonMapper.builder()
             .addModule(kotlinModule())
