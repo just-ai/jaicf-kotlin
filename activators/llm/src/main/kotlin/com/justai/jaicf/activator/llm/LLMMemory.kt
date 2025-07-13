@@ -1,8 +1,8 @@
 package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.context.BotContext
+import kotlin.jvm.optionals.getOrNull
 import com.openai.models.chat.completions.ChatCompletionMessageParam as Message
-import kotlin.collections.emptyList
 
 typealias MessagesTransform = (List<Message>) -> List<Message>
 
@@ -53,7 +53,7 @@ fun withSystemMessage(producer: () -> String): MessagesTransform = { messages ->
             val idx = indexOfFirst { it.isSystem() }
             if (idx != -1) set(idx, msg)
             else add(msg)
-        }
+        }.toList()
     }
 }
 
@@ -72,4 +72,19 @@ fun List<Message>?.transform(
     } else {
         messages.transform(transform)
     }
+}
+
+fun List<Message>?.withSystemMessage(name: String, message: String) = transform { messages ->
+    val msg = LLMMessage.system {
+        name(name)
+        content(message)
+    }
+    val idx = messages.indexOfLast { it.isSystem() && it.asSystem().name().getOrNull() == name }
+    messages.toMutableList().apply {
+        if (idx != -1) {
+            set(idx, msg)
+        } else {
+            add(indexOfLast { it.isSystem() } + 1, msg)
+        }
+    }.toList()
 }

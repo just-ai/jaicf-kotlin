@@ -16,20 +16,20 @@ sealed interface LLMToolDefinition<T> {
         name: String? = null,
         description: String? = null,
     ) : LLMToolDefinition<T> {
-        override val name: String = name
-            ?: parametersType.getAnnotation(JsonTypeName::class.java)?.value
-            ?: parametersType.simpleName
+        override val name: String = name ?: parametersType.toolName
 
         override val description: String? =
             description ?: parametersType.getAnnotation(JsonClassDescription::class.java)?.value
     }
 
-    data class CustomSchema<T>(
-        override val name: String,
+    class CustomSchema<T>(
+        name: String? = null,
         override val description: String? = null,
         override val parametersType: Class<T>,
         private val parameters: JsonSchemaBuilder.() -> Unit
     ) : LLMToolDefinition<T> {
+        override val name: String = name ?: parametersType.toolName
+
         val asChatCompletionTool
             get() = ChatCompletionTool.builder().function(asFunctionDefinition).build()
 
@@ -45,3 +45,6 @@ sealed interface LLMToolDefinition<T> {
             }.build()
     }
 }
+
+internal val Class<*>.toolName
+    get() = getAnnotation(JsonTypeName::class.java)?.value ?: simpleName

@@ -76,7 +76,7 @@ inline fun <reified T> llmTool(
 ) = LLMTool(LLMToolDefinition.FromClass(T::class.java, name, description), function)
 
 inline fun <reified T> llmTool(
-    name: String,
+    name: String? = null,
     description: String? = null,
     noinline parameters: JsonSchemaBuilder.() -> Unit,
     noinline function: LLMToolFunction<T>

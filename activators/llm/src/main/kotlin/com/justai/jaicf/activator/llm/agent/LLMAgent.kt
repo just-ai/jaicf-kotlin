@@ -28,7 +28,7 @@ interface LLMAgentScenario : Scenario {
     val onlyIf: ActivationRule.OnlyIfContext.() -> Boolean
     val action: LLMActionBlock
 
-    fun handoff(vararg agents: AgentWithRole)
+    fun handoffs(vararg agents: AgentWithRole)
 
     fun withRole(role: String) = AgentWithRole(this, role)
 
@@ -97,7 +97,7 @@ open class LLMAgent(
         }
     )
 
-    override fun handoff(vararg agents: AgentWithRole) {
+    override fun handoffs(vararg agents: AgentWithRole) {
         handoffs += agents
     }
 

@@ -18,9 +18,8 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
  */
 private val mainAgent = LLMAgent(
     name = "Main",
-    props = {
-        model = "gpt-4.1-nano"
-    }
+    model = "gpt-4.1-nano",
+    instructions = "Speak as a pirate with emojis"
 ) {
     println(">> Main agent is thinking...")
     activator.awaitFinalContent()?.also(reactions::say)
@@ -31,10 +30,8 @@ private val mainAgent = LLMAgent(
  */
 private val calculatorAgent = LLMAgent(
     name = "Calculator",
-    props = {
-        model = "gpt-4.1-mini"
-        tool(CalcTool)
-    }
+    model = "gpt-4.1-mini",
+    tools = listOf(CalcTool)
 ) {
     // Custom action block for LLM responses processing
     println(">> Calculator agent is thinking...")
@@ -45,10 +42,10 @@ private val calculatorAgent = LLMAgent(
 
 fun main() {
     // Main agent can hand off to calculator agent, while calculator can hand off back if non-math request was received.
-    mainAgent.handoff(calculatorAgent)
+    mainAgent.handoffs(calculatorAgent)
 
     // Calculator agent can hand off back to the main agent with a custom role
-    calculatorAgent.handoff(mainAgent.withRole("Handoff to this agent if you received a non-math request"))
+    calculatorAgent.handoffs(mainAgent.withRole("Processes all non-math requests"))
 
     // Agent with its handoffs can be exposed as a standalone BotEngine via `asBot`
     ConsoleChannel(mainAgent.asBot).run("2 + 2")

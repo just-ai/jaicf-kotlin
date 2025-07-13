@@ -1,11 +1,13 @@
 package com.justai.jaicf.activator.llm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.justai.jaicf.activator.llm.agent.HANDOFF_TOOL_NAME
 import com.justai.jaicf.activator.llm.agent.Handoff
 import com.justai.jaicf.activator.llm.agent.HandoffException
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
+import com.justai.jaicf.activator.llm.tool.toolName
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
@@ -98,7 +100,7 @@ class LLMActivatorAPI(
         message.toolCalls().ifPresent {
             message = activator.message.toBuilder().toolCalls(
                 activator.message.toolCalls().get().filter {
-                    it.function().name() != Handoff::class.java.simpleName
+                    it.function().name() != HANDOFF_TOOL_NAME
                 }
             ).build()
         }
@@ -115,7 +117,7 @@ class LLMActivatorAPI(
 
         toolCallResults.find { it.arguments is Handoff }?.also {
             throw HandoffException(
-                it.arguments<Handoff>().agentName,
+                it.arguments<Handoff>().agent,
                 params.messages().filter { msg ->!msg.isSystem() && !msg.isDeveloper() },
             )
         }
