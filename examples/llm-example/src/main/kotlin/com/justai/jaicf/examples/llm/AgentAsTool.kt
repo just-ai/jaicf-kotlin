@@ -1,6 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
+import com.justai.jaicf.activator.llm.tool.JsonType
 import com.justai.jaicf.channel.ConsoleChannel
 
 /**

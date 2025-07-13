@@ -5,6 +5,7 @@ import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolParameters
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.builder.Scenario
@@ -12,15 +13,24 @@ import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.Scenario
 import com.openai.client.OpenAIClient
+import com.openai.core.JsonValue
+import kotlin.jvm.optionals.getOrNull
 
 
 private fun stateName(agentName: String) = "/Agent/$agentName"
+
+private val DefaultAgentToolParams: LLMToolParameters = {
+    str(
+        name = "input",
+        description = "Request text",
+        required = true
+    )
+}
 
 interface LLMAgentScenario : Scenario {
     val name: String
@@ -34,10 +44,9 @@ interface LLMAgentScenario : Scenario {
 
     fun asTool(
         name: String = this.name,
-        description: String? = AgentWithRole::class
-            .isInstance(this)
-            .ifTrue { (this as AgentWithRole).role },
-    ): LLMTool<AgentTool>
+        description: String? = (this as? AgentWithRole)?.role,
+        parameters: LLMToolParameters? = null,
+    ): LLMTool<JsonValue>
 
     fun withoutMemory(): LLMAgentScenario
 }
@@ -46,13 +55,9 @@ class AgentWithRole(
     internal val agent: LLMAgentScenario,
     val role: String,
 ) : LLMAgentScenario by agent {
-    override fun asTool(name: String, description: String?) =
-        agent.asTool(name, description ?: role)
+    override fun asTool(name: String, description: String?, parameters: LLMToolParameters?) =
+        agent.asTool(name, description ?: role, parameters)
 }
-
-data class AgentTool(
-    val input: String
-)
 
 open class LLMAgent(
     override val name: String,
@@ -163,14 +168,15 @@ open class LLMAgent(
     override fun asTool(
         name: String,
         description: String?,
-    ) = llmTool<AgentTool>(
-        name = name,
-        description = description,
-        parameters = {
-            str("input", "Standalone request text", true)
-        })
-    {
-        val request = QueryBotRequest(request.clientId, call.arguments.input)
+        parameters: LLMToolParameters?
+    ): LLMTool<JsonValue> = llmTool<JsonValue>(name, description, parameters ?: DefaultAgentToolParams) {
+        val args = call.arguments.asObject().get()
+        var input = args["input"]?.asString()?.getOrNull()
+        if (args.size > 1 || input == null) {
+            input = LLMTool.ArgumentsMapper.writeValueAsString(args)
+        }
+
+        val request = QueryBotRequest(request.clientId, input)
         activator.api
             .createActivatorContext(botContext, request, activator, props)
             .awaitFinalContent()

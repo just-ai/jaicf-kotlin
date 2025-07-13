@@ -26,7 +26,7 @@ sealed interface LLMToolDefinition<T> {
         name: String? = null,
         override val description: String? = null,
         override val parametersType: Class<T>,
-        private val parameters: JsonSchemaBuilder.() -> Unit
+        private val parameters: LLMToolParameters,
     ) : LLMToolDefinition<T> {
         override val name: String = name ?: parametersType.toolName
 

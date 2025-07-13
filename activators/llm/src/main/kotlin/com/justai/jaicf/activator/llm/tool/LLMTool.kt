@@ -11,6 +11,7 @@ import com.justai.jaicf.context.BotContext
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 
 typealias LLMToolFunction<T> = LLMToolCallContext<T>.() -> Any?
+typealias LLMToolParameters = JsonSchemaBuilder.() -> Unit
 
 data class LLMToolCallContext<T>(
     val activator: LLMActivatorContext,
@@ -78,6 +79,6 @@ inline fun <reified T> llmTool(
 inline fun <reified T> llmTool(
     name: String? = null,
     description: String? = null,
-    noinline parameters: JsonSchemaBuilder.() -> Unit,
+    noinline parameters: LLMToolParameters,
     noinline function: LLMToolFunction<T>
 ) = LLMTool(LLMToolDefinition.CustomSchema(name, description, T::class.java, parameters), function)

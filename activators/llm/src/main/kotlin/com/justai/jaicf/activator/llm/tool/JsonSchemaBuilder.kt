@@ -61,7 +61,7 @@ class JsonSchemaBuilder {
         if (required) requiredProps.add(name)
     }
 
-    fun arr(name: String, itemsType: JsonType, required: Boolean = false, description: String? = null) {
+    fun arr(name: String, description: String? = null, itemsType: JsonType, required: Boolean = false) {
         val map = mutableMapOf(
             "type" to JsonValue.from("array"),
             "items" to JsonValue.from(mapOf("type" to JsonValue.from(itemsType.name)))
@@ -71,7 +71,7 @@ class JsonSchemaBuilder {
         if (required) requiredProps.add(name)
     }
 
-    fun arr(name: String, required: Boolean = false, description: String? = null, itemsBuilder: JsonSchemaBuilder.() -> Unit) {
+    fun arr(name: String, description: String? = null, required: Boolean = false, itemsBuilder: JsonSchemaBuilder.() -> Unit) {
         val sub = JsonSchemaBuilder().apply(itemsBuilder)
         val objMap = mutableMapOf(
             "type" to JsonValue.from("object"),
