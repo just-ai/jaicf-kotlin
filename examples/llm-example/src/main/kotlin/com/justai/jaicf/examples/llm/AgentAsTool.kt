@@ -2,7 +2,10 @@ package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.tool.JsonType
+import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolParameters
 import com.justai.jaicf.channel.ConsoleChannel
+import com.openai.core.JsonValue
 
 /**
  * This example shows how an agent can be exposed as a tool to call it from anywhere instead of hand off an entire conversation to it.
@@ -22,7 +25,7 @@ private val mainAgent = LLMAgent("main", {
     model = "gpt-4.1-nano"
 
     // Add calculator agent as a tool to main agent
-    // You can also define custom "name" and "description" of the created tool using `asTool()`
+    // You can also define custom "name", "description" and "parameters" of the created tool using `asTool()`
     tool(calculatorAgent.asTool)
 }) {
     activator.withToolCalls {
