@@ -1,7 +1,6 @@
 package com.justai.jaicf.activator.llm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.justai.jaicf.activator.llm.agent.HandoffException
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
@@ -10,6 +9,8 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
+import com.openai.core.JsonField
+import com.openai.core.JsonNull
 import com.openai.core.http.StreamResponse
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
@@ -21,6 +22,7 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import java.util.Optional
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.jvm.optionals.getOrNull
@@ -86,7 +88,6 @@ class LLMActivatorAPI(
         }.awaitAll()
     }
 
-    @Throws(HandoffException::class)
     internal fun submitToolResults(
         activator: LLMActivatorContext,
         results: List<LLMToolResult>,
@@ -105,15 +106,18 @@ class LLMActivatorAPI(
 
         var message = activator.message
         message.toolCalls().ifPresent {
-            message = activator.message.toBuilder().toolCalls(
-                activator.message.toolCalls().get().filter { tc ->
-                    toolCallResults.any { it.callId == tc.id() }
-                }
-            ).build()
+            val toolCalls = message.toolCalls().get().filter { tc ->
+                toolCallResults.any { it.callId == tc.id() }
+            }
+            message = message.toBuilder()
+                .toolCalls(toolCalls.takeIf { it.isNotEmpty() }
+                    ?.let { JsonField.of(toolCalls) }
+                    ?: JsonNull())
+                .build()
         }
 
         activator.params = activator.chatCompletionParams.toBuilder().apply {
-            if (message.content().getOrNull()?.isNotEmpty() == true || message.toolCalls().getOrNull()?.isNotEmpty() == true) {
+            if (!toolCallResults.isEmpty()) {
                 addMessage(message)
             }
             toolCallResults

@@ -1,6 +1,8 @@
 package com.justai.jaicf.activator.llm.agent
 
 class LLMAgentWithRole(
-    internal val agent: LLMAgentScenario,
+    agent: LLMAgent,
     val role: String,
-) : LLMAgentScenario by agent
+) : LLMAgent(agent)
+
+fun LLMAgent.withRole(role: String) = LLMAgentWithRole(this, role)

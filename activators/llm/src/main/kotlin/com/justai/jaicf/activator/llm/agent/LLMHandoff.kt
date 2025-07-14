@@ -23,11 +23,6 @@ private val HANDOFF_PROMPT_PREFIX = """
     Transfers between agents are handled seamlessly in the background; do not mention or draw attention to these transfers in your conversation with the user.
 """.trimIndent()
 
-class HandoffException(
-    val agentName: String,
-    val messages: List<ChatCompletionMessageParam>,
-) : Exception()
-
 @JsonTypeName("handoff_to_agent")
 @JsonClassDescription("Handoff conversation to another agent")
 data class Handoff(val agent: String)

@@ -15,6 +15,11 @@ val DefaultLLMProps: LLMPropsBuilder = {}
 
 fun createLLMProps(builder: LLMPropsBuilder) = builder
 
+fun LLMPropsBuilder.withProps(builder: LLMPropsBuilder): LLMPropsBuilder = {
+    this@withProps()
+    builder()
+}
+
 data class LLMProps(
     val model: String? = null,
     val temperature: Double? = null,

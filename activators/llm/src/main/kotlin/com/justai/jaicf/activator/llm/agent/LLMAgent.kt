@@ -20,16 +20,30 @@ import com.openai.core.JsonValue
 import kotlin.jvm.optionals.getOrNull
 
 
+private val DefaultAgentToolParams: LLMToolParameters = {
+    str("input", "Request text", true)
+}
+
 fun agentStateName(agentName: String) = "/Agent/$agentName"
+fun LLMAgent.withProps(builder: LLMPropsBuilder) = props.withProps(builder)
 
 open class LLMAgent(
-    override val name: String,
-    override val props: LLMPropsBuilder = DefaultLLMProps,
-    override val onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = DefaultLLMOnlyIf,
-    override val action: LLMActionBlock = DefaultLLMActionBlock,
-) : LLMAgentScenario {
+    open val name: String,
+    open val props: LLMPropsBuilder = DefaultLLMProps,
+    open val onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = DefaultLLMOnlyIf,
+    open val action: LLMActionBlock = DefaultLLMActionBlock,
+) : Scenario {
     var handoffs = listOf<LLMAgentWithRole>()
         private set
+
+    constructor(other: LLMAgent) : this(
+        name = other.name,
+        props = other.props,
+        onlyIf = other.onlyIf,
+        action = other.action,
+    ) {
+        this.handoffs = other.handoffs
+    }
 
     constructor(
         name: String,
@@ -65,14 +79,13 @@ open class LLMAgent(
         }
     )
 
-    override fun handoffs(vararg agents: LLMAgentWithRole) {
+    fun handoffs(vararg agents: LLMAgentWithRole) {
         handoffs += agents
     }
 
-    override fun withoutMemory() = LLMAgent(
+    fun withoutMemory() = LLMAgent(
         name = name, onlyIf = onlyIf, action = action,
-        props = {
-            props()
+        props = withProps {
             messages?.ifLLMMemory { messages = it.initial }
         },
     )
@@ -82,34 +95,23 @@ open class LLMAgent(
             llmState(
                 state = agentStateName(name),
                 onlyIf = onlyIf,
-                props = {
-                    props.invoke(this)
+                block = action,
+                props = withProps {
                     messages = messages ?: llmMemory(name)
                     setupHandoffProps(this@LLMAgent)
                 }
-            ) {
-                try {
-                    action(this)
-                } catch (e: HandoffException) {
-                    val state = agentStateName(e.agentName)
-                    scenario.states.keys.find { it.endsWith(state) }?.also { path ->
-                        reactions.handoff(path, e.messages)
-                    } ?: throw e
-                }
-            }
+            )
         }
     }
 
-    private fun appendTo(scenario: Scenario, appended: Set<String> = emptySet()): Scenario {
+    internal fun appendTo(scenario: Scenario, appended: Set<String> = emptySet()): Scenario {
         val state = agentStateName(name)
         return if (appended.contains(state)) {
             scenario
         } else {
             var next = scenario append this
             handoffs.forEach {
-                if (it.agent is LLMAgent) {
-                    next = it.agent.appendTo(next, appended + state)
-                }
+                next = it.appendTo(next, appended + state)
             }
             return next
         }
@@ -128,10 +130,10 @@ open class LLMAgent(
 
     val asTool by lazy { asTool() }
 
-    override fun asTool(
-        name: String,
-        description: String?,
-        parameters: LLMToolParameters
+    fun asTool(
+        name: String = this.name,
+        description: String? = (this as? LLMAgentWithRole)?.role,
+        parameters: LLMToolParameters = DefaultAgentToolParams,
     ): LLMTool<JsonValue> = llmTool<JsonValue>(name, description, parameters) {
         val args = call.arguments.asObject().get()
         var input = args["input"]?.asString()?.getOrNull()
@@ -141,11 +143,14 @@ open class LLMAgent(
         process(input)
     }
 
-    override fun <T> asTool(name: String, description: String?, parameters: Class<T>) =
-        LLMTool(LLMToolDefinition.FromClass(parameters, name, description), {
-            val input = LLMTool.ArgumentsMapper.writeValueAsString(call.arguments)
-            process(input)
-        })
+    fun <T> asTool(
+        name: String = this.name,
+        description: String? = (this as? LLMAgentWithRole)?.role,
+        parameters: Class<T>,
+    ) = LLMTool(LLMToolDefinition.FromClass(parameters, name, description), {
+        val input = LLMTool.ArgumentsMapper.writeValueAsString(call.arguments)
+        process(input)
+    })
 
     private fun LLMToolCallContext<*>.process(input: String) =
         QueryBotRequest(request.clientId, input).let {
