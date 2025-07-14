@@ -15,9 +15,7 @@ object LLMInputs {
         request.hasQuery().ifTrue {
             mutableListOf<ChatCompletionMessageParam>().apply {
                 addAll(imgRegex.findAll(request.input).map { it.value }.map(LLMMessage::image))
-                imgRegex.replace(request.input, "").trim().isNotBlank().ifTrue {
-                    add(LLMMessage.user(request.input))
-                }
+                add(LLMMessage.user(request.input))
             }.toList()
         }
     }
