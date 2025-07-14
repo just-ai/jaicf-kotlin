@@ -7,7 +7,6 @@ import com.justai.jaicf.activator.llm.agent.HandoffException
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
-import com.justai.jaicf.activator.llm.tool.toolName
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext

@@ -13,6 +13,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.StrictActivatorContext
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.core.JsonField
 import com.openai.core.http.StreamResponse
 import com.openai.helpers.ChatCompletionAccumulator
@@ -146,16 +147,12 @@ data class LLMActivatorContext(
         )
     }
 
-    fun callTools(): List<LLMToolResult> {
-        if (!hasToolCalls || props.tools.isNullOrEmpty()) {
-            return emptyList()
-        }
-        return api.callTools(this)
-    }
+    fun callTools() = hasToolCalls.ifTrue {
+        api.callTools(this)
+    } ?: emptyList()
 
-    fun submitToolResults(results: List<LLMToolResult> = emptyList()): List<LLMToolResult> {
-        return api.submitToolResults(this, results)
-    }
+    fun submitToolResults(results: List<LLMToolResult> = emptyList()) =
+        api.submitToolResults(this, results)
 
     fun withToolCalls(
         block: (LLMActivatorContext.(results: List<LLMToolResult>) -> Unit)? = null

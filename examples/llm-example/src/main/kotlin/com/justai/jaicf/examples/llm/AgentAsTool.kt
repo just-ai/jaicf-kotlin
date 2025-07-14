@@ -5,6 +5,7 @@ import com.justai.jaicf.activator.llm.tool.JsonType
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolParameters
 import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.tools.Calculator
 import com.openai.core.JsonValue
 
 /**
