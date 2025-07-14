@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCall
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
+import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
 import com.justai.jaicf.activator.llm.tool.LLMToolFunction
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
@@ -38,15 +38,14 @@ data class LLMActivatorContext(
     val api: LLMActivatorAPI,
     internal val botContext: BotContext,
     internal val request: BotRequest,
-    private var params: ChatCompletionCreateParams,
+    internal var params: ChatCompletionCreateParams,
     val props: LLMProps,
     val origin: ActivatorContext,
 ) : StrictActivatorContext() {
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
 
-    internal fun startStream(params: ChatCompletionCreateParams) {
-        this.params = params
+    internal fun startStream() {
         acc = ChatCompletionAccumulator.create()
         stream = api.createStreaming(params).let { response ->
             response.stream()
@@ -77,7 +76,7 @@ data class LLMActivatorContext(
 
     fun getStream(): Stream<ChatCompletionChunk> {
         if (!::stream.isInitialized) {
-            startStream(params)
+            startStream()
         }
         return stream
     }
@@ -141,6 +140,7 @@ data class LLMActivatorContext(
                         )
                     )
                 } catch (e: Exception) {
+                    if (e is LLMToolInterruptionException) throw e
                     "Error: ${e.message}"
                 }
             } ?: "Error: no tool found with name ${function.name()}"

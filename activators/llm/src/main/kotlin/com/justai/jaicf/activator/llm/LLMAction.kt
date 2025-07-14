@@ -1,5 +1,6 @@
 package com.justai.jaicf.activator.llm
 
+import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.builder.ScenarioDsl
 import com.justai.jaicf.builder.StateBuilder
@@ -19,9 +20,14 @@ private fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionContext<A, 
     props: LLMPropsBuilder,
     body: LLMActionBlock,
 ) {
-    val ac = LLMActivatorAPI.get
-        .createActivatorContext(context, request, activator, props)
-    body.invoke(ActionContext(scenario, context, ac, request, reactions))
+    val activator = LLMActivatorAPI.get.createActivatorContext(context, request, activator, props)
+    val context = ActionContext(scenario, context, activator, request, reactions)
+
+    try {
+        body.invoke(context)
+    } catch (e: LLMToolInterruptionException) {
+        e.callback.invoke(context)
+    }
 }
 
 fun <B : BotRequest, R : Reactions> StateBuilder<B, R>.llmAction(

@@ -81,4 +81,4 @@ inline fun <reified T> llmTool(
     description: String? = null,
     noinline parameters: LLMToolParameters,
     noinline function: LLMToolFunction<T>
-) = LLMTool(LLMToolDefinition.CustomSchema(name, description, T::class.java, parameters), function)
+) = LLMTool(LLMToolDefinition.CustomSchema(T::class.java, name, description, parameters), function)

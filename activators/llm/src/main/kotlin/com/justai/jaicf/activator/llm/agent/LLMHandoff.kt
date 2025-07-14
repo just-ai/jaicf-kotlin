@@ -1,9 +1,10 @@
 package com.justai.jaicf.activator.llm.agent
 
+import com.fasterxml.jackson.annotation.JsonClassDescription
+import com.fasterxml.jackson.annotation.JsonTypeName
 import com.justai.jaicf.activator.llm.LLMProps
-import com.justai.jaicf.activator.llm.MessagesTransform
+import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
-import com.justai.jaicf.activator.llm.transform
 import com.justai.jaicf.activator.llm.withSystemMessage
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.context.tempProperty
@@ -13,16 +14,22 @@ import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.openai.models.chat.completions.ChatCompletionMessageParam
 
-const val HANDOFF_TOOL_NAME = "handoff_to_agent"
 
-private const val HANDOFF_TOOL_DESCRIPTION = "Handoff conversation to another agent"
-private const val HANDOFF_PROMPT_PREFIX = "You are part of a multi-agent system, designed to make agent coordination and execution easy. Agents uses two primary abstractions: **Agents** and **Handoffs**. An agent encompasses instructions and tools and can hand off a conversation to another agent when appropriate. Handoffs are achieved by calling a `handoff` function. Transfers between agents are handled seamlessly in the background; do not mention or draw attention to these transfers in your conversation with the user."
+private val HANDOFF_PROMPT_PREFIX = """
+    You are part of a multi-agent system, designed to make agent coordination and execution easy. 
+    Agents uses two primary abstractions: **Agents** and **Handoffs**. 
+    An agent encompasses instructions and tools and can hand off a conversation to another agent when appropriate. 
+    Handoffs are achieved by calling a `handoff` function. 
+    Transfers between agents are handled seamlessly in the background; do not mention or draw attention to these transfers in your conversation with the user.
+""".trimIndent()
 
 class HandoffException(
     val agentName: String,
     val messages: List<ChatCompletionMessageParam>,
 ) : Exception()
 
+@JsonTypeName("handoff_to_agent")
+@JsonClassDescription("Handoff conversation to another agent")
 data class Handoff(val agent: String)
 
 internal var BotContext.handoffMessages
@@ -36,8 +43,6 @@ private val LLMAgent.handoffSystemMessage
 
 private val LLMAgent.handoffTool
     get() = llmTool<Handoff>(
-        name = HANDOFF_TOOL_NAME,
-        description = HANDOFF_TOOL_DESCRIPTION,
         parameters = {
             str(
                 name = "agent",
@@ -46,20 +51,19 @@ private val LLMAgent.handoffTool
                 required = true,
             )
         }
-    ) {}
-
-private val BotContext.handoffMessagesTransform: MessagesTransform
-    get() = { messages ->
-        messages.filter { it.isSystem() } + handoffMessages
+    ) {
+        interrupt {
+            val state = agentStateName(call.arguments.agent)
+            scenario.states.keys.find { it.endsWith(state) }?.also { path ->
+                reactions.handoff(path, activator.params.messages())
+            } ?: throw IllegalArgumentException("Agent not found [${call.arguments.agent}]")
+        }
     }
 
 internal fun LLMProps.Builder.setupHandoffProps(agent: LLMAgent) {
     agent.handoffs.isNotEmpty().ifTrue {
         tool(agent.handoffTool)
         messages = messages.withSystemMessage("Handoff", agent.handoffSystemMessage)
-    }
-    context.handoffMessages.isNotEmpty().ifTrue {
-        messages = messages.transform(context.handoffMessagesTransform)
     }
 }
 

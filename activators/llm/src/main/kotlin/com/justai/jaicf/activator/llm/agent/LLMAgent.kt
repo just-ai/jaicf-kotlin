@@ -4,11 +4,7 @@ import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.scenario.llmState
-import com.justai.jaicf.activator.llm.tool.LLMTool
-import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
-import com.justai.jaicf.activator.llm.tool.LLMToolDefinition
-import com.justai.jaicf.activator.llm.tool.LLMToolParameters
-import com.justai.jaicf.activator.llm.tool.llmTool
+import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.builder.append
@@ -24,7 +20,7 @@ import com.openai.core.JsonValue
 import kotlin.jvm.optionals.getOrNull
 
 
-private fun stateName(agentName: String) = "/Agent/$agentName"
+fun agentStateName(agentName: String) = "/Agent/$agentName"
 
 open class LLMAgent(
     override val name: String,
@@ -84,7 +80,7 @@ open class LLMAgent(
     override val model by lazy {
         createModel {
             llmState(
-                state = stateName(name),
+                state = agentStateName(name),
                 onlyIf = onlyIf,
                 props = {
                     props.invoke(this)
@@ -95,7 +91,7 @@ open class LLMAgent(
                 try {
                     action(this)
                 } catch (e: HandoffException) {
-                    val state = stateName(e.agentName)
+                    val state = agentStateName(e.agentName)
                     scenario.states.keys.find { it.endsWith(state) }?.also { path ->
                         reactions.handoff(path, e.messages)
                     } ?: throw e
@@ -105,7 +101,7 @@ open class LLMAgent(
     }
 
     private fun appendTo(scenario: Scenario, appended: Set<String> = emptySet()): Scenario {
-        val state = stateName(name)
+        val state = agentStateName(name)
         return if (appended.contains(state)) {
             scenario
         } else {

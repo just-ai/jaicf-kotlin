@@ -1,8 +1,6 @@
 package com.justai.jaicf.activator.llm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.justai.jaicf.activator.llm.agent.HANDOFF_TOOL_NAME
-import com.justai.jaicf.activator.llm.agent.Handoff
 import com.justai.jaicf.activator.llm.agent.HandoffException
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
@@ -68,6 +66,12 @@ class LLMActivatorAPI(
                 val builder = props.input ?: LLMInputs.TextOnly
                 builder.invoke(request)?.forEach(::addMessage)
                     ?: throw IllegalArgumentException("Request is not supported: $request")
+            } else {
+                messages(props.messages.orEmpty()
+                    .filter { it.isSystem() || it.isDeveloper() } +
+                    botContext.handoffMessages.filter { !it.isSystem() && !it.isDeveloper() }
+                )
+                botContext.handoffMessages = emptyList()
             }
         }.build(props)
 
@@ -77,7 +81,7 @@ class LLMActivatorAPI(
     internal fun callTools(activator: LLMActivatorContext) = runBlocking(toolsDispatcher) {
         activator.toolCalls.map { call ->
             async {
-                activator.callTool(call)
+                runCatching { activator.callTool(call) }
             }
         }.awaitAll()
     }
@@ -88,40 +92,40 @@ class LLMActivatorAPI(
         results: List<LLMToolResult>,
     ): List<LLMToolResult> {
         val toolCallResults = results.toMutableList()
+        val toolCallExceptions = mutableListOf<Throwable>()
+
         if (toolCallResults.isEmpty()) {
             if (!activator.hasToolCalls) {
                 return emptyList()
             }
-            toolCallResults.addAll(callTools(activator))
+            val results = callTools(activator)
+            toolCallResults.addAll(results.mapNotNull { it.getOrNull() })
+            toolCallExceptions.addAll(results.mapNotNull { it.exceptionOrNull() })
         }
 
         var message = activator.message
         message.toolCalls().ifPresent {
             message = activator.message.toBuilder().toolCalls(
-                activator.message.toolCalls().get().filter {
-                    it.function().name() != HANDOFF_TOOL_NAME
+                activator.message.toolCalls().get().filter { tc ->
+                    toolCallResults.any { it.callId == tc.id() }
                 }
             ).build()
         }
 
-        val params = activator.chatCompletionParams.toBuilder().apply {
+        activator.params = activator.chatCompletionParams.toBuilder().apply {
             if (message.content().getOrNull()?.isNotEmpty() == true || message.toolCalls().getOrNull()?.isNotEmpty() == true) {
                 addMessage(message)
             }
             toolCallResults
-                .filter { it.arguments !is Handoff }
                 .map(LLMMessage::tool)
                 .forEach(::addMessage)
         }.build()
 
-        toolCallResults.find { it.arguments is Handoff }?.also {
-            throw HandoffException(
-                it.arguments<Handoff>().agent,
-                params.messages().filter { msg ->!msg.isSystem() && !msg.isDeveloper() },
-            )
+        if (toolCallExceptions.isNotEmpty()) {
+            throw toolCallExceptions.first()
         }
 
-        activator.startStream(params)
+        activator.startStream()
         return toolCallResults
     }
 

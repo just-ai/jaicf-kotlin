@@ -12,7 +12,7 @@ import com.openai.core.JsonValue
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 private val agent = LLMAgent("agent", {
-    model = "gpt-4.1-nano"
+    model = "gpt-4.1-mini"
 
     // Define tool inline
     tool<Calculator> {
