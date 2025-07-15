@@ -2,6 +2,7 @@ package com.justai.jaicf.activator.llm.tool
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.openai.models.FunctionDefinition
 import com.openai.models.FunctionParameters
 import com.openai.models.chat.completions.ChatCompletionTool

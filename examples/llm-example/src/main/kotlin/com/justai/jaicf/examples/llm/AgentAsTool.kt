@@ -1,12 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.activator.llm.tool.JsonType
-import com.justai.jaicf.activator.llm.tool.LLMTool
-import com.justai.jaicf.activator.llm.tool.LLMToolParameters
 import com.justai.jaicf.channel.ConsoleChannel
-import com.justai.jaicf.examples.llm.tools.Calculator
-import com.openai.core.JsonValue
 
 /**
  * This example shows how an agent can be exposed as a tool to call it from anywhere instead of hand off an entire conversation to it.

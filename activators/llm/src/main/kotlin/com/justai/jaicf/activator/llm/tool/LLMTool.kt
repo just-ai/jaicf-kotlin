@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.activator.llm.LLMActivatorContext
+import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall

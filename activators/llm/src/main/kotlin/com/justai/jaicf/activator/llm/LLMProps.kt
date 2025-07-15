@@ -1,5 +1,6 @@
 package com.justai.jaicf.activator.llm
 
+import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
