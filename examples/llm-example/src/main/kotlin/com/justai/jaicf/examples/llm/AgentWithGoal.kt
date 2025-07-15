@@ -13,15 +13,20 @@ import java.util.Optional
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
 
-// Goal data description. Agent fills this structure achieving the goal.
+/**
+ * Goal data description.
+ * Agent fills this structure achieving the goal.
+ */
 private data class Goal(
     val userFirstName: String,
     val userLastName: String,
     val userAge: Optional<Int>,
 )
 
-// Use `withGoal()` extension to add goal to the agent.
-// IT just adds a tool and some special system message that instructs an agent to call this tool once the goal is achieved.
+/**
+ * Use `withGoal()` extension to add goal to the agent.
+ * IT just adds a tool and some special system message that instructs an agent to call this tool once the goal is achieved.
+ */
 private val agent = LLMAgent(
     name = "agent",
     model = "gpt-4.1-mini",
