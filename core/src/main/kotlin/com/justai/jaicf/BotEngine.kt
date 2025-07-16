@@ -10,6 +10,7 @@ import com.justai.jaicf.activator.selection.ActivationSelector
 import com.justai.jaicf.activator.strict.ButtonActivator
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotRequestController
 import com.justai.jaicf.api.routing.BotRequestRerouteException
 import com.justai.jaicf.api.routing.activators.TargetStateActivator
 import com.justai.jaicf.context.*
@@ -25,6 +26,13 @@ import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import com.justai.jaicf.slotfilling.*
+import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.job
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Default [BotApi] implementation.
@@ -63,10 +71,12 @@ open class BotEngine(
     private val activationSelector: ActivationSelector = ActivationSelector.default,
     private val slotReactor: SlotReactor? = null,
     private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger()),
+    requestExecutor: Executor = Executors.newCachedThreadPool(),
 ) : BotApi, WithLogger {
 
     val model = scenario.model.verify()
 
+    private val requestDispatcher = requestExecutor.asCoroutineDispatcher()
     private val activators = activators.map { it.create(model) }.addBuiltinActivators()
 
     private fun List<Activator>.addBuiltinActivators(): List<Activator> {
@@ -95,16 +105,24 @@ open class BotEngine(
         handler.actions.putAll(model.hooks.groupBy { it.klass }.mapValues { it.value.toMutableList() })
     }
 
+    internal fun createCoroutineContext(requestController: BotRequestController?): CoroutineContext {
+        val job = Job()
+        requestController?.setJob(job)
+        return job + requestDispatcher
+    }
+
     override fun process(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
         contextManager: BotContextManager?,
+        requestController: BotRequestController?,
     ) {
+        val coroutineContext = createCoroutineContext(requestController)
         try {
             val manager = contextManager ?: defaultContextManager
             val botContext = manager.loadContext(request, requestContext)
-            val executionContext = ExecutionContext(requestContext, null, botContext, request)
+            val executionContext = ExecutionContext(coroutineContext, requestContext, null, botContext, request)
             process(request, reactions, requestContext, botContext, executionContext)
             saveContext(manager, botContext, request, reactions, requestContext)
         } catch (e: BotRequestRerouteException) {
@@ -112,6 +130,8 @@ open class BotEngine(
         } catch (e: Exception) {
             logger.error("", e)
             throw e
+        } finally {
+            (coroutineContext.job as? CompletableJob)?.complete()
         }
     }
 

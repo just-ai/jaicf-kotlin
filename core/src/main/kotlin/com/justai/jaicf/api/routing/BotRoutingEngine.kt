@@ -2,6 +2,7 @@ package com.justai.jaicf.api.routing
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.api.BotRequestController
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.DialogContext
@@ -86,6 +87,7 @@ class BotRoutingEngine(
         reactions: Reactions,
         requestContext: RequestContext,
         contextManager: BotContextManager?,
+        requestController: BotRequestController?,
         botContext0: BotContext,
         routeRequest: RoutingRequest,
         executionContext0: ExecutionContext? = null,
@@ -108,7 +110,8 @@ class BotRoutingEngine(
             .withCurrentRoutingEngine(router, engineName)
             .withNewDialogContext(dialogContext)
 
-        val executionContext = executionContext0 ?: ExecutionContext(requestContext, null, botContext, request)
+        val executionContext = executionContext0 
+            ?: ExecutionContext(engine.createCoroutineContext(requestController), requestContext, null, botContext, request)
 
         try {
             engine.process(request, reactions, requestContext, botContext, executionContext)
@@ -121,6 +124,7 @@ class BotRoutingEngine(
                 contextManager = contextManager,
                 botContext0 = botContext,
                 routeRequest = e.rerouteRequest,
+                requestController = requestController,
                 executionContext0 = executionContext
             )
         } finally {
@@ -135,11 +139,12 @@ class BotRoutingEngine(
         reactions: Reactions,
         requestContext: RequestContext,
         contextManager: BotContextManager?,
+        requestController: BotRequestController?,
     ) {
         val botContext =
             (contextManager ?: routerDefaultEngine.defaultContextManager).loadContext(request, requestContext)
         val route = getCurrentRouting(botContext) ?: RoutingRequest(routerName, routerName)
-        processWithRouting(request, reactions, requestContext, contextManager, botContext, route)
+        processWithRouting(request, reactions, requestContext, contextManager, requestController,botContext, route)
     }
 
     private fun getCurrentRouting(ctx: BotContext): RoutingRequest? = ctx.routingContext.routingStack.peek()

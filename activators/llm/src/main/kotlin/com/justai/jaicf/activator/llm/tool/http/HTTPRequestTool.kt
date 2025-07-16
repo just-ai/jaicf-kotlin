@@ -1,19 +1,17 @@
 package com.justai.jaicf.activator.llm.tool.http
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.justai.jaicf.activator.llm.LLMActivatorAPI
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
 import com.justai.jaicf.activator.llm.tool.LLMToolFunction
 import io.ktor.client.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.sse.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import kotlinx.coroutines.runBlocking
-import java.lang.Thread.sleep
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.sequences.forEach
+import io.ktor.serialization.jackson.*
 
 
 typealias RequestBuilder<T> = HttpRequestBuilder.(context: LLMToolCallContext<T>) -> Unit
@@ -22,6 +20,16 @@ typealias ResponseBuilder<T> = suspend LLMToolCallContext<T>.(response: HttpResp
 internal operator fun <T> RequestBuilder<T>.plus(builder: RequestBuilder<T>): RequestBuilder<T> = {
     invoke(this, it)
     builder.invoke(this, it)
+}
+
+private val DefaultHttpClient = HttpClient {
+    install(SSE)
+    install(ContentNegotiation) {
+        jackson {
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+        }
+    }
 }
 
 private val DefaultRequestBuilder: RequestBuilder<*> = { ctx ->
@@ -66,12 +74,10 @@ fun <T> LLMToolCallContext<T>.httpRequest(
     requestBuilder: RequestBuilder<T>,
     responseBuilder: ResponseBuilder<T> = DefaultResponseBuilder
 ): LLMToolFunction<T> = {
-    runBlocking {
-        val response = client.request(url) {
-            DefaultRequestBuilder.plus(requestBuilder)(this@httpRequest)
-        }
-        responseBuilder.invoke(this@httpRequest, response)
+    val response = client.request(url) {
+        DefaultRequestBuilder.plus(requestBuilder)(this@httpRequest)
     }
+    responseBuilder.invoke(this@httpRequest, response)
 }
 
 fun <T> HttpClient.httpRequest(
@@ -86,4 +92,4 @@ fun <T> httpRequest(
     url: String,
     requestBuilder: RequestBuilder<T>,
     responseBuilder: ResponseBuilder<T> = DefaultResponseBuilder
-) = LLMActivatorAPI.get.httpClient.httpRequest(url, requestBuilder, responseBuilder)
+) = DefaultHttpClient.httpRequest(url, requestBuilder, responseBuilder)

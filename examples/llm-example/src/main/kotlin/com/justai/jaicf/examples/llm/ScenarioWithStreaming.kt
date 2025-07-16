@@ -31,12 +31,12 @@ private val scenario = Scenario {
                 }
 
                 // Streaming content chunks
-                contentStream.forEach(::print)
+                contentStream().forEach(::print)
                 println()
 
                 // Printing tool calls statuses
-                if (activator.hasToolCalls) {
-                    println("CALLING: ${activator.toolCalls.joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
+                if (activator.hasToolCalls()) {
+                    println("CALLING: ${activator.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
                 }
             }
         }

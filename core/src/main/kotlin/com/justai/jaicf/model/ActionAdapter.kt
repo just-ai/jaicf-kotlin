@@ -7,8 +7,9 @@ import com.justai.jaicf.context.ProcessContext
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.test.context.TestActionContext
 import com.justai.jaicf.test.context.TestRequestContext
+import kotlinx.coroutines.runBlocking
 
-class ActionAdapter(private val action: ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit) {
+class ActionAdapter(private val action: suspend ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit) {
 
     fun execute(context: ProcessContext) = with(context) {
         val actionContext = if (context.requestContext is TestRequestContext) {
@@ -17,7 +18,9 @@ class ActionAdapter(private val action: ActionContext<ActivatorContext, BotReque
             ActionContext(model, botContext, activationContext.activation.context, request, reactions)
         }
 
-        actionContext.action()
+        runBlocking(context.executionContext.coroutineContext) {
+            actionContext.action()
+        }
     }
 
 }

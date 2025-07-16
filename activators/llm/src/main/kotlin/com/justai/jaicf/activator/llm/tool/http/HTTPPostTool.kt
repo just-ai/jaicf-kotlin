@@ -1,6 +1,5 @@
 package com.justai.jaicf.activator.llm.tool.http
 
-import com.justai.jaicf.activator.llm.LLMActivatorAPI
 import io.ktor.client.*
 import io.ktor.http.*
 
@@ -19,4 +18,4 @@ fun <T> httpPost(
     url: String,
     requestBuilder: RequestBuilder<T> = {},
     responseBuilder: ResponseBuilder<T> = DefaultResponseBuilder
-) = LLMActivatorAPI.get.httpClient.httpPost(url, requestBuilder, responseBuilder)
+) = httpRequest(url, DefaultRequestBuilder + requestBuilder, responseBuilder)

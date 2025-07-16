@@ -1,6 +1,7 @@
 package com.justai.jaicf.hook
 
 import com.justai.jaicf.model.state.StatePath
+import kotlinx.coroutines.CancellationException
 import kotlin.reflect.KClass
 
 data class BotHookListener<T : BotHook>(
@@ -54,6 +55,7 @@ class BotHookHandler {
             } catch (e: BotHookException) {
                 throw e
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
             }
         }
     }

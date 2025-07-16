@@ -21,15 +21,19 @@ interface BotApi {
      * @param reactions abstraction that provides all channel-related API to build and send a response(s)
      * @param requestContext additional general request's data that can be used during the request processing
      * @param contextManager a [BotContextManager] that can override the default one configured for this [com.justai.jaicf.BotEngine]
+     * @param requestController contains methods to control and listen to request flow and can be used to cancel request
      *
      * @see BotRequest
      * @see Reactions
      * @see RequestContext
+     * @see BotContextManager
+     * @see BotRequestController
      */
     fun process(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
-        contextManager: BotContextManager? = null
+        contextManager: BotContextManager? = null,
+        requestController: BotRequestController? = null,
     )
 }

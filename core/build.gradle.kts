@@ -14,6 +14,7 @@ plugins {
 dependencies {
     api(slf4j("slf4j-api"))
 
+    implementation(`coroutines-core`())
     implementation(`tomcat-servlet`())
     implementation(ktor("ktor-server-core"))
     implementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })

@@ -4,16 +4,11 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.justai.jaicf.activator.llm.tool.LLMToolCall
-import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
-import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
-import com.justai.jaicf.activator.llm.tool.LLMToolFunction
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.StrictActivatorContext
-import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.core.JsonField
 import com.openai.core.http.StreamResponse
 import com.openai.helpers.ChatCompletionAccumulator
@@ -21,11 +16,15 @@ import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionChunk.Choice.FinishReason
 import com.openai.models.chat.completions.ChatCompletionCreateParams
-import com.openai.models.chat.completions.ChatCompletionMessageToolCall
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import java.util.stream.Stream
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
+
+typealias LLMWithToolCalls = suspend LLMActivatorContext.(results: List<LLMToolResult>) -> Unit
 
 val StructuredOutputMapper =
     JsonMapper.builder()
@@ -42,136 +41,141 @@ data class LLMActivatorContext(
     val props: LLMProps,
     val origin: ActivatorContext,
 ) : StrictActivatorContext() {
+    private lateinit var response: StreamResponse<ChatCompletionChunk>
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
 
-    internal fun startStream() {
-        acc = ChatCompletionAccumulator.create()
-        stream = api.createStreaming(params).let { response ->
-            response.stream()
-                .peek(acc::accumulate)
-                .peek({ c -> response.processFinalChunk(c) })
+    private suspend fun throwIfCancelled() {
+        try {
+            yield()
+        } catch (e: CancellationException) {
+            closeStream()
+            throw e
         }
     }
 
-    private fun StreamResponse<ChatCompletionChunk>.processFinalChunk(chunk: ChatCompletionChunk) {
-        chunk.choices().first().finishReason().ifPresent { reason ->
-            close()
-            if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
-                props.messages?.ifLLMMemory { memory ->
-                    val toolCalls = message.toolCalls()
-                        .getOrDefault(emptyList()).takeIf { it.isNotEmpty() }
-                    memory.set(
-                        // fix nullable tool calls in an assistant message
-                        params.toBuilder()
-                            .addMessage(message.toBuilder()
-                                .toolCalls(JsonField.ofNullable(toolCalls))
-                                .build()
-                            ).build().messages()
-                    )
+    private suspend fun <T> withActiveJob(block: suspend () -> T): T {
+        throwIfCancelled()
+        return block.invoke()
+    }
+
+    internal suspend fun startStream() = withActiveJob {
+        acc = ChatCompletionAccumulator.create()
+        response = api.createStreaming(params)
+        stream = response.stream()
+            .peek(acc::accumulate)
+            .peek(::processFinalChunk)
+        throwIfCancelled()
+    }
+
+    private fun processFinalChunk(chunk: ChatCompletionChunk) {
+        val reason = chunk.choices().first().finishReason().getOrNull()
+        if (reason != null) {
+            response.close()
+            runBlocking {
+                val message = message()
+                val toolCalls = toolCalls()
+                if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
+                    props.messages?.ifLLMMemory { memory ->
+                        memory.set(
+                            // fix nullable tool calls in an assistant message
+                            params.toBuilder()
+                                .addMessage(message.toBuilder()
+                                    .toolCalls(JsonField.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
+                                    .build()
+                                ).build().messages()
+                        )
+                    }
                 }
             }
         }
-    }
-
-    fun getStream(): Stream<ChatCompletionChunk> {
-        if (!::stream.isInitialized) {
-            startStream()
-        }
-        return stream
     }
 
     val chatCompletionParams
         get() = params
 
-    val chatCompletion: ChatCompletion
-        get() {
-            return try {
-                acc.chatCompletion()
-            } catch (e: Exception) {
-                getStream().count()
-                acc.chatCompletion()
-            }
+    fun closeStream() {
+        if (::response.isInitialized) {
+            response.close()
         }
-
-    val choice
-        get() = chatCompletion.choices().first()
-
-    val message
-        get() = choice.message()
-
-    val content
-        get() = message.content().getOrNull()
-
-    val toolCalls
-        get() = message.toolCalls().getOrDefault(emptyList())
-
-    val hasToolCalls
-        get() = toolCalls.isNotEmpty()
-
-    val deltaStream: Stream<ChatCompletionChunk.Choice.Delta>
-        get() = getStream()
-            .map { it.choices().first().delta() }
-
-    val contentStream: Stream<String>
-        get() = deltaStream
-            .map { it.content() }
-            .filter { it.isPresent }
-            .map { it.get() }
-
-    fun callTool(call: ChatCompletionMessageToolCall): LLMToolResult {
-        val function = call.function()
-        val tool = props.tools?.find { t -> t.definition.name == function.name() }
-        val args = tool?.arguments(call)
-
-        return LLMToolResult(
-            callId = call.id(),
-            name = function.name(),
-            arguments = args,
-            result = tool?.let { tool ->
-                try {
-                    @Suppress("UNCHECKED_CAST")
-                    (tool.function as LLMToolFunction<Any>).invoke(
-                        LLMToolCallContext(
-                            this,
-                            botContext,
-                            request,
-                            LLMToolCall(function.name(), call.id(), args!!, call)
-                        )
-                    )
-                } catch (e: Exception) {
-                    if (e is LLMToolInterruptionException) throw e
-                    "Error: ${e.message}"
-                }
-            } ?: "Error: no tool found with name ${function.name()}"
-        )
     }
 
-    fun callTools() = hasToolCalls.ifTrue {
-        api.callTools(this)
-    } ?: emptyList()
+    suspend fun getStream(): Stream<ChatCompletionChunk> = withActiveJob {
+        if (!::stream.isInitialized) {
+            startStream()
+        }
+        val channel = Channel<ChatCompletionChunk>(capacity = Channel.UNLIMITED)
+        val job = CoroutineScope(coroutineContext).launch {
+            try {
+                val iterator = stream.iterator()
+                while (iterator.hasNext()) {
+                    val chunk = iterator.next()
+                    channel.send(chunk)
+                    yield()
+                }
+            } finally {
+                channel.close()
+                closeStream()
+            }
+        }
+        Stream.generate {
+            runBlocking {
+                channel.receiveCatching().getOrNull()
+            }
+        }
+            .takeWhile { it != null }
+            .map { it!! }
+            .onClose {
+                job.cancel()
+            }
+    }
 
-    fun submitToolResults(results: List<LLMToolResult> = emptyList()) =
-        api.submitToolResults(this, results)
+    suspend fun awaitChatCompletion(): ChatCompletion {
+        return try {
+            acc.chatCompletion()
+        } catch (e: Exception) {
+            getStream().count()
+            acc.chatCompletion()
+        }
+    }
 
-    fun withToolCalls(
-        block: (LLMActivatorContext.(results: List<LLMToolResult>) -> Unit)? = null
+    suspend fun firstChoice() = awaitChatCompletion().choices().first()
+
+    suspend fun message() = firstChoice().message()
+
+    suspend fun content() = message().content().getOrNull()
+
+    suspend fun toolCalls() = message().toolCalls().getOrDefault(emptyList())
+
+    suspend fun hasToolCalls() = toolCalls().isNotEmpty()
+
+    suspend fun deltaStream() = getStream().map { it.choices().first().delta() }
+
+    suspend fun contentStream() = deltaStream()
+        .map { it.content() }
+        .filter { it.isPresent }
+        .map { it.get() }
+
+    suspend fun withToolCalls(
+        block: LLMWithToolCalls? = null
     ) = apply {
-        var toolCalls: Boolean
+        var toolCalls = false
         var results: List<LLMToolResult> = emptyList()
         do {
-            block?.invoke(this, results)
-            toolCalls = hasToolCalls
-            results = submitToolResults()
+            results = withActiveJob {
+                block?.invoke(this, results)
+                toolCalls = hasToolCalls()
+                api.run { submitToolResults() }
+            }
         } while (toolCalls)
     }
 
-    fun awaitFinalMessage() =
-        withToolCalls().message
+    suspend fun awaitFinalMessage() =
+        withToolCalls().message()
 
-    fun awaitFinalContent() =
+    suspend fun awaitFinalContent() =
         awaitFinalMessage().content().getOrNull()
 
-    inline fun <reified T> awaitStructuredContent(): T? =
+    suspend inline fun <reified T> awaitStructuredContent(): T? =
         awaitFinalContent().let { StructuredOutputMapper.readValue(it, T::class.java) }
 }

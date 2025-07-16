@@ -10,13 +10,14 @@ import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.reactions.Reactions
 
 
-typealias LLMActionBlock = ActionContext<LLMActivatorContext, *, *>.() -> Unit
+typealias LLMActionContext = ActionContext<LLMActivatorContext, *, *>
+typealias LLMActionBlock = suspend LLMActionContext.() -> Unit
 
 val DefaultLLMActionBlock: LLMActionBlock = {
     activator.awaitFinalContent()?.also(reactions::say)
 }
 
-private fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionContext<A, B, R>.llmAction(
+private suspend fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionContext<A, B, R>.llmAction(
     props: LLMPropsBuilder,
     body: LLMActionBlock,
 ) {

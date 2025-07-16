@@ -5,10 +5,12 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.Reaction
+import kotlin.coroutines.CoroutineContext
 
 /**
  * This class will accumulate all execution information obtained during processing request.
  *
+ * @param coroutineContext coroutine to start state's action on
  * @param requestContext current channel request's context
  * @param activationContext selected activation context
  * @param botContext current client's bot context
@@ -21,6 +23,7 @@ import com.justai.jaicf.logging.Reaction
  * @see Reaction
  * */
 data class ExecutionContext(
+    val coroutineContext: CoroutineContext,
     val requestContext: RequestContext,
     var activationContext: ActivationContext?,
     val botContext: BotContext,

@@ -27,13 +27,13 @@ private val mainAgent = LLMAgent("main", {
     activator.withToolCalls {
 
         // Show tool calls status
-        activator.toolCalls
+        activator.toolCalls()
             .joinToString { "${it.function().name()}(${it.function().arguments()})" }
             .takeIf { it.isNotEmpty() }
             ?.also { println("CALLING: $it") }
 
         // Show intermediate or final LLM response
-        activator.content?.also(::println)
+        activator.content()?.also(::println)
     }
 }
 

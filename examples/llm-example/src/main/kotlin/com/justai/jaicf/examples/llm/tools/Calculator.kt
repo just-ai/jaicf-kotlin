@@ -18,5 +18,5 @@ data class Calculator(
 
 // Calculator function
 val CalcTool = llmTool<Calculator> {
-    "ERROR" // returns error for tests
+    Math.random() // for testing
 }

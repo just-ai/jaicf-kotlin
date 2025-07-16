@@ -25,7 +25,12 @@ sealed class LLMToolWithConfirmation<T>(
         tool: LLMTool<T>,
         block: LLMToolConfirmationFunction<T>,
     ): LLMToolWithConfirmation<T>(tool, {
-        block().ifTrue { tool.function(this) } ?: throw Exception("user has declined this tool call")
+        block().ifTrue {
+            val context = this
+            suspend {
+                tool.function.invoke(context)
+            }
+        } ?: throw Exception("user has declined this tool call")
     })
 
     class WithLLMConfirmation<T>(
