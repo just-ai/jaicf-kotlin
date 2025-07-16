@@ -25,12 +25,12 @@ private val agent = LLMAgent(
         }
 
         // show assistant response if any
-        content?.also {
+        content()?.also {
             println("< $it")
         }
 
         // show tool calls if any
-        toolCalls.takeIf { it.isNotEmpty() }?.run {
+        toolCalls().takeIf { it.isNotEmpty() }?.run {
             println(joinToString(prefix = "CALL: ") { "${it.function().name()}(${it.function().arguments()})" })
         }
     }

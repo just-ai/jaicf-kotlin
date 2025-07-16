@@ -11,7 +11,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 
-typealias LLMToolFunction<T> = LLMToolCallContext<T>.() -> Any?
+typealias LLMToolFunction<T> = suspend LLMToolCallContext<T>.() -> Any?
 typealias LLMToolParameters = JsonSchemaBuilder.() -> Unit
 
 data class LLMToolCallContext<T>(

@@ -77,7 +77,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     @StateDeclaration
     fun fallback(
         @StateName name: String = "fallback",
-        @StateBody body: ActionContext<ActivatorContext, B, R>.() -> Unit,
+        @StateBody body: suspend ActionContext<ActivatorContext, B, R>.() -> Unit,
     ) = state(name, noContext = true) {
         activators { catchAll() }
         action(body)
@@ -101,7 +101,7 @@ sealed class ScenarioGraphBuilder<B : BotRequest, R : Reactions>(
     fun <B1 : B, R1 : R> fallback(
         channelToken: ChannelTypeToken<B1, R1>,
         @StateName name: String = "fallback",
-        @StateBody body: ActionContext<ActivatorContext, B1, R1>.() -> Unit,
+        @StateBody body: suspend ActionContext<ActivatorContext, B1, R1>.() -> Unit,
     ) = fallback(name) { channelToken.invoke(body) }
 
     /**
@@ -251,7 +251,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
     noContext: Boolean,
     modal: Boolean
 ) : WithLogger, ScenarioGraphBuilder<B, R>(scenarioModelBuilder, channelToken, parent.resolve(name), noContext, modal) {
-    private var action: (ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit)? = null
+    private var action: (suspend ActionContext<ActivatorContext, BotRequest, Reactions>.() -> Unit)? = null
 
     /**
      * Appends activators to this state. Means that this state can be activated from [fromState] by the rules specified.
@@ -280,7 +280,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      * An action that should be executed once this state was activated.
      * @param body a code block of the action
      */
-    fun action(body: @ScenarioDsl ActionContext<ActivatorContext, B, R>.() -> Unit) {
+    fun action(body: @ScenarioDsl suspend ActionContext<ActivatorContext, B, R>.() -> Unit) {
         check(action == null) { "Multiple actions are not available in a single state: $path" }
         action = { channelToken.invoke(body) }
     }
@@ -294,7 +294,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      */
     fun <A1 : ActivatorContext> action(
         activatorToken: ActivatorTypeToken<A1>,
-        body: @ScenarioDsl ActionContext<A1, B, R>.() -> Unit
+        body: @ScenarioDsl suspend ActionContext<A1, B, R>.() -> Unit
     ) = action { activatorToken.invoke(body) }
 
     /**
@@ -306,7 +306,7 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      */
     fun <B1 : B, R1 : R> action(
         channelToken: ChannelTypeToken<B1, R1>,
-        body: @ScenarioDsl ActionContext<ActivatorContext, B1, R1>.() -> Unit
+        body: @ScenarioDsl suspend ActionContext<ActivatorContext, B1, R1>.() -> Unit
     ) = action { channelToken.invoke(body) }
 
     /**
@@ -318,10 +318,10 @@ class StateBuilder<B : BotRequest, R : Reactions> internal constructor(
      */
     fun <A1 : ActivatorContext, B1 : B, R1 : R> action(
         contextToken: ContextTypeToken<A1, B1, R1>,
-        body: @ScenarioDsl ActionContext<A1, B1, R1>.() -> Unit
+        body: @ScenarioDsl suspend ActionContext<A1, B1, R1>.() -> Unit
     ) = action { contextToken.invoke(body) }
 
-    internal override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
+    override fun build(): State = verify().run { State(path, noContext, modal, action?.let(::ActionAdapter)) }
 
     private fun verify(): StateBuilder<B, R> {
         if (this.parent.isRoot && !name.matches(Regex("/?[^/]*")))

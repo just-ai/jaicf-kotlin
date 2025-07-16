@@ -152,7 +152,7 @@ open class LLMAgent(
         process(input)
     })
 
-    private fun LLMToolCallContext<*>.process(input: String) =
+    private suspend fun LLMToolCallContext<*>.process(input: String) =
         QueryBotRequest(request.clientId, input).let {
             activator.api
                 .createActivatorContext(botContext, it, activator, props)

@@ -91,14 +91,14 @@ open class ActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     }
 
 
-    operator fun <A1: A, T> ActivatorTypeToken<A1>.invoke(action: ActionContext<A1, B, R>.() -> T): T? =
-        safeCast(this)?.run(action)
+    operator suspend fun <A1: A, T> ActivatorTypeToken<A1>.invoke(action: suspend ActionContext<A1, B, R>.() -> T): T? =
+        safeCast(this)?.run { action() }
 
-    operator fun <B1: B, R1: R, T> ChannelTypeToken<B1, R1>.invoke(action: ActionContext<A, B1, R1>.() -> T): T? =
-        safeCast(this)?.run(action)
+    operator suspend fun <B1: B, R1: R, T> ChannelTypeToken<B1, R1>.invoke(action: suspend ActionContext<A, B1, R1>.() -> T): T? =
+        safeCast(this)?.run { action() }
 
-    operator fun <A1: A, B1: B, R1: R, T> ContextTypeToken<A1, B1, R1>.invoke(action: ActionContext<A1, B1, R1>.() -> T): T? =
-        safeCast(this)?.run(action)
+    operator suspend fun <A1: A, B1: B, R1: R, T> ContextTypeToken<A1, B1, R1>.invoke(action: suspend ActionContext<A1, B1, R1>.() -> T): T? =
+        safeCast(this)?.run { action() }
 }
 
 typealias DefaultActionContext = ActionContext<out ActivatorContext, out BotRequest, out Reactions>
