@@ -5,7 +5,7 @@ import com.justai.jaicf.activator.llm.LLMInputs
 import com.justai.jaicf.activator.llm.LLMMessage
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 
 /**
  * This scenario shows how a static messages list can be used instead of persistent memory.

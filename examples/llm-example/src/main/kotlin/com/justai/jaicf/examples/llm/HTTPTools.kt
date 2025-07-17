@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.tool.http.httpGet
 import com.justai.jaicf.activator.llm.tool.llmTool
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 
 
 /**
@@ -63,5 +63,6 @@ private val agent = LLMAgent(
 }
 
 fun main() {
-    ConsoleChannel(agent.asBot).run("List all recipes you have")
+    ConsoleChannel(agent.asBot)
+        .run("List all recipes you have")
 }

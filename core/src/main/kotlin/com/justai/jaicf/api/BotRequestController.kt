@@ -31,7 +31,7 @@ class BotRequestController(
     }
 
     val isActive
-        get() = job.isActive
+        get() = ::job.isInitialized && job.isActive
 
     suspend fun cancelAndJoin() {
         if (::job.isInitialized && !job.isCancelled && !job.isCompleted) {

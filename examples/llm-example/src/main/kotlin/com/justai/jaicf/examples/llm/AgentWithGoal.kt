@@ -3,7 +3,7 @@ package com.justai.jaicf.examples.llm
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.agent.withGoal
 import com.justai.jaicf.activator.llm.tool.interrupt
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import java.util.Optional
 
 /**

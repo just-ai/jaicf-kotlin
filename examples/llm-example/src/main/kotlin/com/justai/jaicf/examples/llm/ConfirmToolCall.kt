@@ -2,7 +2,7 @@ package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.tool.llmTool
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 
 /**
  * This agent asks user to confirm mail sending using tool SendMail.

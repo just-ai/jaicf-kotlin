@@ -4,7 +4,7 @@ import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.props.llmProps
 
 /**
@@ -27,16 +27,15 @@ private val scenario = Scenario {
             activator.withToolCalls { results ->
                 // Printing tool call results
                 results.forEach {
-                    println("\t${it.name}: ${it.result}")
+                    reactions.say("\t${it.name}: ${it.result}")
                 }
 
                 // Streaming content chunks
-                contentStream().forEach(::print)
-                println()
+                reactions.say(contentStream())
 
                 // Printing tool calls statuses
                 if (activator.hasToolCalls()) {
-                    println("CALLING: ${activator.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
+                    reactions.say("CALLING: ${activator.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
                 }
             }
         }

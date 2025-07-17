@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.CalcTool
 import java.util.*
 
@@ -34,6 +34,5 @@ private val scenario = Scenario {
 }
 
 fun main() {
-    val bot = BotEngine(scenario)
-    ConsoleChannel(bot).run()
+    ConsoleChannel(BotEngine(scenario)).run()
 }
