@@ -45,9 +45,10 @@ data class LLMActivatorContext(
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
 
-    private var chunks = mutableListOf<ChatCompletionChunk>()
-    var isStreamFinished = false
-        private set
+    private var completed: CompletableDeferred<List<ChatCompletionChunk>>? = null
+
+    val chatCompletionParams
+        get() = params
 
     private suspend fun throwIfCancelled() {
         try {
@@ -64,13 +65,12 @@ data class LLMActivatorContext(
     }
 
     internal suspend fun startStream() = withActiveJob {
+        completed = null
         acc = ChatCompletionAccumulator.create()
-        chunks = mutableListOf()
         response = api.createStreaming(params)
         stream = response.stream()
             .peek(acc::accumulate)
             .peek(::processFinalChunk)
-        isStreamFinished = false
         throwIfCancelled()
     }
 
@@ -97,65 +97,57 @@ data class LLMActivatorContext(
         }
     }
 
-    val chatCompletionParams
-        get() = params
-
     fun closeStream() {
         if (::response.isInitialized) {
             response.close()
         }
     }
 
-    suspend fun getStream(): Stream<ChatCompletionChunk> = withActiveJob {
+    suspend fun chunkStream(): Stream<ChatCompletionChunk> = withActiveJob {
         if (!::stream.isInitialized) {
             startStream()
         }
+        var start = false
         synchronized(this) {
-            if (isStreamFinished) {
-                chunks.stream()
-            } else {
-                val channel = Channel<ChatCompletionChunk>(capacity = Channel.UNLIMITED)
-                val job = CoroutineScope(coroutineContext).launch {
-                    try {
-                        val iterator = stream.iterator()
-                        while (iterator.hasNext()) {
-                            val chunk = iterator.next()
-                            chunks.add(chunk)
-                            channel.send(chunk)
-                            yield()
-                        }
-                    } finally {
-                        isStreamFinished = true
-                        channel.close()
-                        closeStream()
+            if (completed == null) {
+                start = true
+                completed = CompletableDeferred()
+            }
+        }
+
+        if (!start) {
+            completed!!.await().stream()
+        } else {
+            channelStream { channel ->
+                val chunks = mutableListOf<ChatCompletionChunk>()
+                try {
+                    val iterator = stream.iterator()
+                    while (iterator.hasNext()) {
+                        val chunk = iterator.next()
+                        chunks.add(chunk)
+                        channel.send(chunk)
+                        yield()
                     }
+                } finally {
+                    completed!!.complete(chunks)
+                    closeStream()
                 }
-                Stream.generate {
-                    runBlocking {
-                        channel.receiveCatching().getOrNull()
-                    }
-                }
-                    .takeWhile { it != null }
-                    .map { it!! }
-                    .onClose {
-                        job.cancel()
-                    }
             }
         }
     }
 
-    suspend fun awaitChatCompletion(): ChatCompletion {
+    suspend fun chatCompletion(): ChatCompletion {
         return try {
             acc.chatCompletion()
         } catch (e: Exception) {
-            getStream().count()
+            chunkStream().count()
             acc.chatCompletion()
         }
     }
 
-    suspend fun firstChoice() = awaitChatCompletion().choices().first()
+    suspend fun choice() = chatCompletion().choices().first()
 
-    suspend fun message() = firstChoice().message()
+    suspend fun message() = choice().message()
 
     suspend fun content() = message().content().getOrNull()
 
@@ -163,12 +155,55 @@ data class LLMActivatorContext(
 
     suspend fun hasToolCalls() = toolCalls().isNotEmpty()
 
-    suspend fun deltaStream() = getStream().map { it.choices().first().delta() }
+    suspend fun callAndSubmitTools() = api.run { submitToolResults() }
+
+    suspend fun deltaStream() = chunkStream().map { it.choices().first().delta() }
 
     suspend fun contentStream() = deltaStream()
         .map { it.content() }
         .filter { it.isPresent }
         .map { it.get() }
+
+    suspend fun eventStream(callTools: Boolean = true): Stream<LLMEvent> = channelStream { channel ->
+        suspend fun processChunks() {
+            channel.send(LLMEvent.Start())
+            var choice: ChatCompletionChunk.Choice? = null
+            for (chunk in chunkStream()) {
+                choice = chunk.choices().first()
+                val delta = choice.delta()
+                channel.send(LLMEvent.Chunk(chunk))
+                channel.send(LLMEvent.Delta(delta))
+                if (delta.content().isPresent) {
+                    channel.send(LLMEvent.ContentDelta(delta.content().get()))
+                }
+            }
+            val message = message()
+            if (message.content().isPresent) {
+                channel.send(LLMEvent.Content(message.content().get()))
+            }
+            if (message.toolCalls().isPresent) {
+                val toolCalls = message.toolCalls().get()
+                if (toolCalls.isNotEmpty()) {
+                    channel.send(LLMEvent.ToolCalls(toolCalls))
+                }
+            }
+            channel.send(LLMEvent.Message(message))
+            if (choice?.finishReason()?.isPresent == true) {
+                channel.send(LLMEvent.Finish(choice.finishReason().get().value()))
+            }
+        }
+
+        if (callTools) {
+            withToolCalls { results ->
+                if (results.isNotEmpty()) {
+                    channel.send(LLMEvent.ToolCallResults(results))
+                }
+                processChunks()
+            }
+        } else {
+            processChunks()
+        }
+    }
 
     suspend fun withToolCalls(
         block: LLMWithToolCalls? = null
@@ -192,4 +227,23 @@ data class LLMActivatorContext(
 
     suspend inline fun <reified T> awaitStructuredContent(): T? =
         awaitFinalContent().let { StructuredOutputMapper.readValue(it, T::class.java) }
+}
+
+private suspend inline fun <T> channelStream(
+    crossinline block: suspend (Channel<T>) -> Unit
+): Stream<T> {
+    val channel = Channel<T>(Channel.UNLIMITED)
+    val job = CoroutineScope(coroutineContext).launch {
+        try {
+            block(channel)
+        } finally {
+            channel.close()
+        }
+    }
+    return Stream.generate {
+        runBlocking { channel.receiveCatching().getOrNull() }
+    }
+        .takeWhile { it != null }
+        .map { it!! }
+        .onClose { job.cancel() }
 }
