@@ -4,10 +4,12 @@ import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.core.JsonSchemaLocalValidation
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
+import com.openai.models.chat.completions.ChatCompletionStreamOptions
 
 typealias LLMPropsBuilder = LLMProps.Builder.() -> Unit
 typealias LLMInputBuilder = (request: BotRequest) -> List<ChatCompletionMessageParam>?
@@ -29,6 +31,7 @@ data class LLMProps(
     val frequencyPenalty: Double? = null,
     val presencePenalty: Double? = null,
     val responseFormat: Class<*>? = null,
+    val withUsages: Boolean? = null,
     val client: OpenAIClient? = null,
     val messages: List<ChatCompletionMessageParam>? = null,
     val tools: List<LLMTool<*>>? = null,
@@ -44,6 +47,7 @@ data class LLMProps(
             frequencyPenalty = props.frequencyPenalty ?: frequencyPenalty,
             presencePenalty = props.presencePenalty ?: presencePenalty,
             responseFormat = props.responseFormat ?: responseFormat,
+            withUsages = props.withUsages ?: withUsages,
             client = props.client ?: client,
             messages = props.messages ?: messages,
             tools = props.tools ?: tools,
@@ -59,6 +63,7 @@ data class LLMProps(
             presencePenalty(presencePenalty)
             maxCompletionTokens(maxTokens)
             messages(messages.orEmpty())
+            withUsages?.ifTrue { streamOptions(ChatCompletionStreamOptions.builder().includeUsage(true).build()) }
             responseFormat?.let { responseFormat(it) }
             tools?.forEach {
                 when (it.definition) {
@@ -79,6 +84,7 @@ data class LLMProps(
         var frequencyPenalty: Double? = null
         var presencePenalty: Double? = null
         var responseFormat: Class<*>? = null
+        var withUsages: Boolean? = null
         var client: OpenAIClient? = null
         var messages: List<ChatCompletionMessageParam>? = null
         var tools: List<LLMTool<*>>? = null
@@ -91,6 +97,7 @@ data class LLMProps(
         fun setFrequencyPenalty(value: Double?) = apply { this.frequencyPenalty = value }
         fun setPresencePenalty(value: Double?) = apply { this.presencePenalty = value }
         fun setResponseFormat(value: Class<*>?) = apply { this.responseFormat = value }
+        fun setWithUsages(value: Boolean?) = apply { this.withUsages = value }
         fun setClient(value: OpenAIClient?) = apply { this.client = value }
         fun setMessages(value: List<ChatCompletionMessageParam>?) = apply { this.messages = value }
         fun setTools(value: List<LLMTool<*>>?) = apply { this.tools = value }
@@ -125,6 +132,7 @@ data class LLMProps(
             frequencyPenalty,
             presencePenalty,
             responseFormat,
+            withUsages,
             client,
             messages,
             tools,

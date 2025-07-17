@@ -4,6 +4,7 @@ import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionMessage
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
+import com.openai.models.completions.CompletionUsage
 
 sealed class LLMEvent(val type: Type) {
     enum class Type {
@@ -26,5 +27,5 @@ sealed class LLMEvent(val type: Type) {
     data class ToolCalls(val calls: List<ChatCompletionMessageToolCall>) : LLMEvent(Type.ToolCalls)
     data class ToolCallResults(val results: List<LLMToolResult>) : LLMEvent(Type.ToolCallResults)
     data class Message(val message: ChatCompletionMessage) : LLMEvent(Type.Message)
-    data class Finish(val reason: ChatCompletionChunk.Choice.FinishReason.Value) : LLMEvent(Type.Finish)
+    data class Finish(val reason: ChatCompletionChunk.Choice.FinishReason.Value, val usage: CompletionUsage?) : LLMEvent(Type.Finish)
 }

@@ -25,7 +25,10 @@ import kotlinx.coroutines.coroutineScope
 
 
 private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
-private val DefaultProps = LLMProps(client = DefaultOpenAIClient)
+private val DefaultProps = LLMProps(
+    client = DefaultOpenAIClient,
+    withUsages = true,
+)
 
 class LLMActivatorAPI(val defaultProps: LLMProps = DefaultProps) {
     fun createStreaming(

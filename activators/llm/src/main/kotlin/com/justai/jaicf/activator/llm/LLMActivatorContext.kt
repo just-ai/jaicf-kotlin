@@ -16,6 +16,7 @@ import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionChunk.Choice.FinishReason
 import com.openai.models.chat.completions.ChatCompletionCreateParams
+import com.openai.models.completions.CompletionUsage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import java.util.stream.Stream
@@ -69,32 +70,7 @@ data class LLMActivatorContext(
         acc = ChatCompletionAccumulator.create()
         response = api.createStreaming(params)
         stream = response.stream()
-            .peek(acc::accumulate)
-            .peek(::processFinalChunk)
         throwIfCancelled()
-    }
-
-    private fun processFinalChunk(chunk: ChatCompletionChunk) {
-        val reason = chunk.choices().first().finishReason().getOrNull()
-        if (reason != null) {
-            response.close()
-            runBlocking {
-                val message = message()
-                val toolCalls = toolCalls()
-                if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
-                    props.messages?.ifLLMMemory { memory ->
-                        memory.set(
-                            // fix nullable tool calls in an assistant message
-                            params.toBuilder()
-                                .addMessage(message.toBuilder()
-                                    .toolCalls(JsonField.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
-                                    .build()
-                                ).build().messages()
-                        )
-                    }
-                }
-            }
-        }
     }
 
     fun closeStream() {
@@ -119,14 +95,42 @@ data class LLMActivatorContext(
             completed!!.await().stream()
         } else {
             channelStream { channel ->
+                var finished = false
                 val chunks = mutableListOf<ChatCompletionChunk>()
                 try {
                     val iterator = stream.iterator()
                     while (iterator.hasNext()) {
                         val chunk = iterator.next()
+                        yield()
+
                         chunks.add(chunk)
                         channel.send(chunk)
-                        yield()
+
+                        val reason = chunk.choices().first().finishReason().getOrNull()
+                        if (reason != null) {
+                            finished = true
+                            acc.accumulate(chunk)
+
+                            val message = message()
+                            val toolCalls = toolCalls()
+                            if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
+                                props.messages?.ifLLMMemory { memory ->
+                                    memory.set(
+                                        // fix nullable tool calls in an assistant message
+                                        params.toBuilder()
+                                            .addMessage(message.toBuilder()
+                                                .toolCalls(JsonField.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
+                                                .build()
+                                            ).build().messages()
+                                    )
+                                }
+                            }
+                        } else if (finished && chunk.usage().isPresent) {
+                            acc.accumulate(chunk)
+                            break
+                        } else if (!finished) {
+                            acc.accumulate(chunk)
+                        }
                     }
                 } finally {
                     completed!!.complete(chunks)
@@ -167,9 +171,12 @@ data class LLMActivatorContext(
     suspend fun eventStream(callTools: Boolean = true): Stream<LLMEvent> = channelStream { channel ->
         suspend fun processChunks() {
             channel.send(LLMEvent.Start())
-            var choice: ChatCompletionChunk.Choice? = null
+            var reason: FinishReason? = null
+            var usage: CompletionUsage? = null
             for (chunk in chunkStream()) {
-                choice = chunk.choices().first()
+                val choice = chunk.choices().first()
+                reason = reason ?: choice.finishReason().getOrNull()
+                usage = usage ?: chunk.usage().getOrNull()
                 val delta = choice.delta()
                 channel.send(LLMEvent.Chunk(chunk))
                 channel.send(LLMEvent.Delta(delta))
@@ -188,8 +195,8 @@ data class LLMActivatorContext(
                 }
             }
             channel.send(LLMEvent.Message(message))
-            if (choice?.finishReason()?.isPresent == true) {
-                channel.send(LLMEvent.Finish(choice.finishReason().get().value()))
+            if (reason != null) {
+                channel.send(LLMEvent.Finish(reason.value(), usage))
             }
         }
 
