@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 
 /**
  * This example shows how an agent can be exposed as a tool to call it from anywhere instead of hand off an entire conversation to it.
@@ -30,10 +30,10 @@ private val mainAgent = LLMAgent("main", {
         activator.toolCalls()
             .joinToString { "${it.function().name()}(${it.function().arguments()})" }
             .takeIf { it.isNotEmpty() }
-            ?.also { println("CALLING: $it") }
+            ?.also { reactions.say("CALLING: $it") }
 
         // Show intermediate or final LLM response
-        activator.content()?.also(::println)
+        activator.contentStream()?.also(reactions::say)
     }
 }
 

@@ -45,6 +45,10 @@ data class LLMActivatorContext(
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
 
+    private var chunks = mutableListOf<ChatCompletionChunk>()
+    var isStreamFinished = false
+        private set
+
     private suspend fun throwIfCancelled() {
         try {
             yield()
@@ -61,10 +65,12 @@ data class LLMActivatorContext(
 
     internal suspend fun startStream() = withActiveJob {
         acc = ChatCompletionAccumulator.create()
+        chunks = mutableListOf()
         response = api.createStreaming(params)
         stream = response.stream()
             .peek(acc::accumulate)
             .peek(::processFinalChunk)
+        isStreamFinished = false
         throwIfCancelled()
     }
 
@@ -104,30 +110,38 @@ data class LLMActivatorContext(
         if (!::stream.isInitialized) {
             startStream()
         }
-        val channel = Channel<ChatCompletionChunk>(capacity = Channel.UNLIMITED)
-        val job = CoroutineScope(coroutineContext).launch {
-            try {
-                val iterator = stream.iterator()
-                while (iterator.hasNext()) {
-                    val chunk = iterator.next()
-                    channel.send(chunk)
-                    yield()
+        synchronized(this) {
+            if (isStreamFinished) {
+                chunks.stream()
+            } else {
+                val channel = Channel<ChatCompletionChunk>(capacity = Channel.UNLIMITED)
+                val job = CoroutineScope(coroutineContext).launch {
+                    try {
+                        val iterator = stream.iterator()
+                        while (iterator.hasNext()) {
+                            val chunk = iterator.next()
+                            chunks.add(chunk)
+                            channel.send(chunk)
+                            yield()
+                        }
+                    } finally {
+                        isStreamFinished = true
+                        channel.close()
+                        closeStream()
+                    }
                 }
-            } finally {
-                channel.close()
-                closeStream()
+                Stream.generate {
+                    runBlocking {
+                        channel.receiveCatching().getOrNull()
+                    }
+                }
+                    .takeWhile { it != null }
+                    .map { it!! }
+                    .onClose {
+                        job.cancel()
+                    }
             }
         }
-        Stream.generate {
-            runBlocking {
-                channel.receiveCatching().getOrNull()
-            }
-        }
-            .takeWhile { it != null }
-            .map { it!! }
-            .onClose {
-                job.cancel()
-            }
     }
 
     suspend fun awaitChatCompletion(): ChatCompletion {

@@ -1,9 +1,8 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.Calculator
-import com.justai.jaicf.hook.AnyErrorHook
 import com.openai.core.JsonValue
 
 /**
@@ -44,5 +43,6 @@ private val agent = LLMAgent("agent", {
 })
 
 fun main() {
-    ConsoleChannel(agent.asBot).run("write and send random message")
+    ConsoleChannel(agent.asBot)
+        .run("write and send random message")
 }

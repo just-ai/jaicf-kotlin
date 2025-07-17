@@ -4,7 +4,7 @@ import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.props.llmProps
 
 /**

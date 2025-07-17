@@ -3,7 +3,7 @@ package com.justai.jaicf.examples.llm
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 
 /**
  * With `onlyIf` prop agent can skip request if this predicate returns false.
@@ -34,5 +34,6 @@ private val scenario = Scenario {
 }
 
 fun main() {
-    ConsoleChannel(BotEngine(scenario)).run("Hello world")
+    ConsoleChannel(BotEngine(scenario))
+        .run("Hello world")
 }
