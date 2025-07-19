@@ -27,8 +27,7 @@ private val scenario = Scenario {
     }) {
         val output = activator.awaitStructuredContent<Output>()
         output?.also {
-            reactions.say(output.response)
-            output.toolNames?.ifPresent { reactions.say(it.joinToString(prefix = "\tTOOLS: ")) }
+            reactions.say(output.toString())
         }
     }
 }

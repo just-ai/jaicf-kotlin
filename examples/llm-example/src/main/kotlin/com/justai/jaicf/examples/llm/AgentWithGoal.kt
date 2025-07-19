@@ -33,8 +33,16 @@ private val agent = LLMAgent(
 ).withGoal<Goal>("Talk with user to find out their firstname, lastname and age") {
     // This callback is just a tool function that accepts a goal structure described above.
     // You can interrupt tool calling or return some instructions to the agent if the goal was not achieved.
-    interrupt {
-        reactions.say("GOAL IS ACHIEVED: ${call.arguments}")
+
+    if (call.arguments.userFirstName.isBlank()) {
+        "ERROR: goal is not achieved. Ask for user firstname"  // Instruct agent to ask firstname again if empty
+    } else if (call.arguments.userLastName.isBlank()) {
+        "ERROR: goal is not achieved. Ask for user lastname"  // Instruct agent to ask lastname again if empty
+    } else {
+        // Interrupt tool calling loop and execute custom scenario action
+        interrupt {
+            reactions.say("GOAL IS ACHIEVED: ${call.arguments}")
+        }
     }
 }
 

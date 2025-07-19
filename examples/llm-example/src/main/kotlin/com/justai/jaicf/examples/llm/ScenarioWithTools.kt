@@ -31,7 +31,7 @@ private val scenario = Scenario {
          *
          * ```
          * llmChat("chat", llmProps) {
-         *     activator.awaitFinalContent()?.also(reactions::say)
+         *     reactions.sayFinalContent(activator)
          * }
          * ```
          */

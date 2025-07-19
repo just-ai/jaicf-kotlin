@@ -1,6 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
+import com.justai.jaicf.activator.llm.streamOrSay
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
@@ -31,7 +32,7 @@ private val scenario = Scenario {
                 }
 
                 // Streaming content chunks
-                reactions.say(contentStream())
+                reactions.streamOrSay(activator)
 
                 // Printing tool calls statuses
                 if (activator.hasToolCalls()) {

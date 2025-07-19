@@ -26,10 +26,9 @@ import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
 import com.justai.jaicf.slotfilling.*
-import kotlinx.coroutines.CompletableJob
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
@@ -65,19 +64,19 @@ import kotlin.coroutines.CoroutineContext
  * @see ConversationLogger
  */
 open class BotEngine(
-    scenario: Scenario,
-    val defaultContextManager: BotContextManager = InMemoryBotContextManager,
-    activators: Array<ActivatorFactory> = emptyArray(),
-    private val activationSelector: ActivationSelector = ActivationSelector.default,
-    private val slotReactor: SlotReactor? = null,
-    private val conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger()),
-    requestExecutor: Executor = Executors.newCachedThreadPool(),
+    val scenario: Scenario,
+    val defaultContextManager: BotContextManager = DefaultContextManager,
+    val activators: Array<ActivatorFactory> = emptyArray(),
+    val activationSelector: ActivationSelector = DefaultActivationSelector,
+    val slotReactor: SlotReactor? = null,
+    val conversationLoggers: Array<ConversationLogger> = DefaultConversationLoggers,
+    val requestExecutor: Executor = DefaultRequestExecutor,
 ) : BotApi, WithLogger {
 
     val model = scenario.model.verify()
 
     private val requestDispatcher = requestExecutor.asCoroutineDispatcher()
-    private val activators = activators.map { it.create(model) }.addBuiltinActivators()
+    private val activatorsList = activators.map { it.create(model) }.addBuiltinActivators()
 
     private fun List<Activator>.addBuiltinActivators(): List<Activator> {
         fun MutableList<Activator>.removeIfPresent(a: Activator) = removeIf { it.name == a.name }
@@ -105,37 +104,38 @@ open class BotEngine(
         handler.actions.putAll(model.hooks.groupBy { it.klass }.mapValues { it.value.toMutableList() })
     }
 
-    internal fun createCoroutineContext(requestController: BotRequestController?): CoroutineContext {
-        val job = Job()
-        requestController?.setJob(job)
-        return job + requestDispatcher
-    }
-
     override fun process(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
         contextManager: BotContextManager?,
         requestController: BotRequestController?,
+    ) = runBlocking(requestDispatcher + Element(this)) {
+        requestController?.setJob(coroutineContext.job)
+        handleRequest(request, reactions, requestContext, contextManager)
+    }
+
+    open suspend fun handleRequest(
+        request: BotRequest,
+        reactions: Reactions,
+        requestContext: RequestContext,
+        contextManager: BotContextManager? = null,
     ) {
-        val coroutineContext = createCoroutineContext(requestController)
         try {
             val manager = contextManager ?: defaultContextManager
             val botContext = manager.loadContext(request, requestContext)
-            val executionContext = ExecutionContext(coroutineContext, requestContext, null, botContext, request)
-            process(request, reactions, requestContext, botContext, executionContext)
+            val executionContext = ExecutionContext(requestContext, null, botContext, request)
+            processRequest(request, reactions, requestContext, botContext, executionContext)
             saveContext(manager, botContext, request, reactions, requestContext)
         } catch (e: BotRequestRerouteException) {
             throw e
         } catch (e: Exception) {
             logger.error("", e)
             throw e
-        } finally {
-            (coroutineContext.job as? CompletableJob)?.complete()
         }
     }
 
-    internal fun process(
+    internal suspend fun processRequest(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
@@ -148,7 +148,7 @@ open class BotEngine(
         processContext(botContext, requestContext)
         try {
             withHook(BotRequestHook(botContext, request, reactions)) {
-                processRequest(botContext, request, requestContext, reactions, executionContext)
+                startProcess(request, reactions, requestContext, botContext, executionContext)
             }
         } catch (e: BotRequestRerouteException) {
             throw e
@@ -163,11 +163,11 @@ open class BotEngine(
         botContext.cleanTempData()
     }
 
-    private fun processRequest(
-        botContext: BotContext,
+    private suspend fun startProcess(
         request: BotRequest,
-        requestContext: RequestContext,
         reactions: Reactions,
+        requestContext: RequestContext,
+        botContext: BotContext,
         executionContext: ExecutionContext,
     ) {
         val slotFillingContext = if (isActiveSlotFilling(botContext)) {
@@ -190,7 +190,7 @@ open class BotEngine(
                 is SlotFillingInterrupted -> {
                     cancelSlotFilling(botContext)
                     if (res.shouldReprocess) {
-                        processRequest(botContext, request, requestContext, reactions, executionContext)
+                        startProcess(request, reactions, requestContext, botContext, executionContext)
                     }
                 }
                 is SlotFillingFinished -> {
@@ -212,7 +212,7 @@ open class BotEngine(
         }
     }
 
-    internal fun getActivatorForName(activatorName: String) = activators.find { it.name == activatorName }
+    internal fun getActivatorForName(activatorName: String) = activatorsList.find { it.name == activatorName }
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
         try {
@@ -242,7 +242,7 @@ open class BotEngine(
     }
 
     private fun selectActivation(botContext: BotContext, request: BotRequest): ActivationContext? {
-        activators.filter { it.canHandle(request) }.forEach { a ->
+        activatorsList.filter { it.canHandle(request) }.forEach { a ->
             val activation = try {
                 a.activate(botContext, request, activationSelector)
             } catch (e: Exception) {
@@ -256,7 +256,7 @@ open class BotEngine(
         return null
     }
 
-    private fun processStates(context: ProcessContext) = with(context) {
+    private suspend fun processStates(context: ProcessContext) = with(context) {
         val activator = activationContext.activation.context
         val dc = botContext.dialogContext
         dc.nextState = activationContext.activation.state
@@ -280,7 +280,7 @@ open class BotEngine(
         }
     }
 
-    private fun ProcessContext.executeAction(
+    private suspend fun ProcessContext.executeAction(
         state: State,
         dc: DialogContext,
         activator: ActivatorContext,
@@ -315,7 +315,22 @@ open class BotEngine(
         reactions: Reactions,
         requestContext: RequestContext,
     ) = cm.saveContext(botContext, request, (reactions as? ResponseReactions<*>)?.response, requestContext)
+
+    companion object Defaults {
+        val DefaultContextManager: BotContextManager = InMemoryBotContextManager
+        val DefaultActivationSelector: ActivationSelector = ActivationSelector.default
+        val DefaultConversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
+        val DefaultRequestExecutor: Executor = Executors.newCachedThreadPool()
+    }
 }
 
 private val BotContext.currentState: String
     get() = dialogContext.currentState
+
+private class Element(val engine: BotEngine) : CoroutineContext.Element {
+    object Key : CoroutineContext.Key<Element>
+    override val key = Key
+}
+
+val CoroutineContext.botEngine: BotEngine?
+    get() = get(Element.Key)?.engine

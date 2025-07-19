@@ -5,18 +5,25 @@ import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.*
+import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.QueryBotRequest
+import com.justai.jaicf.botEngine
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
+import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.logging.ConversationLogger
-import com.justai.jaicf.logging.Slf4jConversationLogger
+import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.Scenario
+import com.justai.jaicf.reactions.Reactions
 import com.openai.client.OpenAIClient
 import com.openai.core.JsonValue
+import java.util.concurrent.Executor
+import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -117,45 +124,65 @@ open class LLMAgent(
         }
     }
 
-    val asBot by lazy { asBot() }
+    val asBot
+        get() = asBot()
 
     fun asBot(
-        defaultContextManager: BotContextManager = InMemoryBotContextManager,
-        conversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger()),
+        defaultContextManager: BotContextManager = BotEngine.DefaultContextManager,
+        conversationLoggers: Array<ConversationLogger> = BotEngine.DefaultConversationLoggers,
+        requestExecutor: Executor = BotEngine.DefaultRequestExecutor,
     ) = BotEngine(
         scenario = appendTo(Scenario {}),
         defaultContextManager = defaultContextManager,
         conversationLoggers = conversationLoggers,
+        requestExecutor = requestExecutor,
     )
 
-    val asTool by lazy { asTool() }
+    val asTool
+        get() = asTool()
 
     fun asTool(
         name: String = this.name,
         description: String? = (this as? LLMAgentWithRole)?.role,
         parameters: LLMToolParameters = DefaultAgentToolParams,
+        withMemory: Boolean = false,
     ): LLMTool<JsonValue> = llmTool<JsonValue>(name, description, parameters) {
         val args = call.arguments.asObject().get()
         var input = args["input"]?.asString()?.getOrNull()
         if (args.size > 1 || input == null) {
             input = LLMTool.ArgumentsMapper.writeValueAsString(args)
         }
-        process(input)
+        processAsTool(input, withMemory)
     }
 
     fun <T> asTool(
         name: String = this.name,
         description: String? = (this as? LLMAgentWithRole)?.role,
         parameters: Class<T>,
+        withMemory: Boolean = false,
     ) = LLMTool(LLMToolDefinition.FromClass(parameters, name, description), {
         val input = LLMTool.ArgumentsMapper.writeValueAsString(call.arguments)
-        process(input)
+        processAsTool(input, withMemory)
     })
 
-    private suspend fun LLMToolCallContext<*>.process(input: String) =
-        QueryBotRequest(request.clientId, input).let {
-            activator.api
-                .createActivatorContext(botContext, it, activator, props)
-                .awaitFinalContent()
-        }
+    private val BotRequest.toolClientId
+        get() = "tool-${name.replace(" ", "")}-${clientId}"
+
+    private suspend fun LLMToolCallContext<*>.processAsTool(
+        input: String,
+        withMemory: Boolean,
+    ): String {
+        val engine = coroutineContext.botEngine
+        val request = QueryBotRequest(request.toolClientId, input)
+        val reactions = Reactions()
+
+        asBot(
+            defaultContextManager = withMemory.ifTrue { engine?.defaultContextManager ?: InMemoryBotContextManager } ?: InMemoryBotContextManager(),
+            conversationLoggers = engine?.conversationLoggers ?: BotEngine.DefaultConversationLoggers,
+        ).handleRequest(request, reactions, RequestContext.DEFAULT)
+
+        return reactions.executionContext.reactions
+            .filterIsInstance<SayReaction>()
+            .joinToString("\n") { it.text }
+    }
 }

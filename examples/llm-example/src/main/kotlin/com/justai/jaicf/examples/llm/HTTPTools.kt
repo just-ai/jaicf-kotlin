@@ -2,6 +2,7 @@ package com.justai.jaicf.examples.llm
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.justai.jaicf.activator.llm.agent.LLMAgent
+import com.justai.jaicf.activator.llm.streamOrSay
 import com.justai.jaicf.activator.llm.tool.http.httpGet
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
@@ -52,10 +53,10 @@ private val agent = LLMAgent(
 ) {
     // Custom action block just for tool calling progress output
     activator.withToolCalls {
-        activator.contentStream().forEach(::print)
+        reactions.streamOrSay(activator)
         if (activator.hasToolCalls()) {
             activator.toolCalls()
-                .joinToString(", ", "CALLING ", "...") {
+                .joinToString(", ", ">> CALLING ", "...") {
                     it.function().name()
                 }.also(::println)
         }
