@@ -28,7 +28,7 @@ private suspend fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionCon
     try {
         body.invoke(context)
     } catch (e: LLMToolInterruptionException) {
-        e.callback.invoke(context)
+        e.callback.invoke(this)
     }
 }
 

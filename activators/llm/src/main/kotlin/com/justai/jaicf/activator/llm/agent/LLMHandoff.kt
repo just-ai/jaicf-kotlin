@@ -32,6 +32,9 @@ data class Handoff(val agent: String)
 internal var BotContext.handoffMessages
     by tempProperty<List<ChatCompletionMessageParam>> { emptyList() }
 
+internal var BotContext.handoffChain
+    by tempProperty { mapOf<String, String>() }
+
 private val LLMAgent.handoffSystemMessage
     get() = HANDOFF_PROMPT_PREFIX +
         handoffs.joinToString("\n", "\nYou can handoff conversation to one of these agents:\n") {
@@ -49,15 +52,24 @@ private val LLMAgent.handoffTool
             )
         }
     ) {
-        val model = coroutineContext.botEngine?.model
-        if (model == null) {
-            throw IllegalStateException("Scenario model is not available in current context")
+        val agentName = call.arguments.agent
+        val messages = llm.params.messages().filter { !it.isSystem() && !it.isDeveloper() }
+        val snapshot = messages.toString()
+
+        if (context.handoffChain[agentName] == snapshot) {
+            throw IllegalArgumentException("You try to hand off the same conversation back in cycle")
         }
+
         interrupt {
-            val state = agentStateName(call.arguments.agent)
+            val state = agentStateName(agentName)
+            val model = coroutineContext.botEngine?.model
+            if (model == null) {
+                throw IllegalStateException("Scenario model is not available in current context")
+            }
             model.states.keys.find { it.endsWith(state) }?.also { path ->
-                reactions.handoff(path, llm.params.messages())
-            } ?: throw IllegalArgumentException("Agent not found [${call.arguments.agent}]")
+                context.handoffChain = context.handoffChain + (name to snapshot)
+                reactions.handoff(path, messages)
+            } ?: throw IllegalArgumentException("Agent not found [$agentName]")
         }
     }
 
