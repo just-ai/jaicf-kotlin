@@ -4,6 +4,8 @@ import com.justai.jaicf.activator.llm.DefaultLLMProps
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.LLMInputs
 import com.justai.jaicf.activator.llm.LLMMessage
+import com.justai.jaicf.activator.llm.LLMProps
+import com.justai.jaicf.activator.llm.LLMPropsBuilder
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.build
 import com.justai.jaicf.activator.llm.builder.build
@@ -25,12 +27,12 @@ import kotlinx.coroutines.coroutineScope
 
 
 private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
-private val DefaultProps = _root_ide_package_.com.justai.jaicf.activator.llm.LLMProps(
+private val DefaultProps = LLMProps(
     client = DefaultOpenAIClient,
     withUsages = true,
 )
 
-class LLMActionAPI(val defaultProps: com.justai.jaicf.activator.llm.LLMProps = DefaultProps) {
+class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
     fun createStreaming(
         params: ChatCompletionCreateParams,
         client: OpenAIClient? = null,
@@ -42,7 +44,7 @@ class LLMActionAPI(val defaultProps: com.justai.jaicf.activator.llm.LLMProps = D
     internal fun createContext(
         context: BotContext,
         request: BotRequest,
-        props: com.justai.jaicf.activator.llm.LLMPropsBuilder = DefaultLLMProps,
+        props: LLMPropsBuilder = DefaultLLMProps,
     ): LLMContext {
         val props = defaultProps.withOptions(props.build(context, request))
         val params = props.toChatCompletionCreateParams().apply {
@@ -141,7 +143,7 @@ class LLMActionAPI(val defaultProps: com.justai.jaicf.activator.llm.LLMProps = D
     companion object {
         private lateinit var instance: LLMActionAPI
 
-        fun init(defaultProps: com.justai.jaicf.activator.llm.LLMProps = DefaultProps): LLMActionAPI {
+        fun init(defaultProps: LLMProps = DefaultProps): LLMActionAPI {
             if (::instance.isInitialized) {
                 throw IllegalStateException("LLMActivatorAPI is initialized already")
             }
