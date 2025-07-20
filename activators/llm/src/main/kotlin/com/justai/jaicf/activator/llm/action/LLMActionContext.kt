@@ -46,9 +46,8 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 
     private var completed: CompletableDeferred<List<ChatCompletionChunk>>? = null
 
-    suspend fun Reactions.sayFinalContent() {
+    suspend fun Reactions.sayFinalContent() =
         llm.awaitFinalContent()?.let(::say)
-    }
 
     suspend fun Reactions.streamOrSay() =
         stream?.say(llm.contentStream()) ?: llm.content()?.let(::say)
