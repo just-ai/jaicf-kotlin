@@ -1,29 +1,15 @@
 package com.justai.jaicf.activator.llm.action
 
-import com.justai.jaicf.activator.llm.DefaultLLMProps
-import com.justai.jaicf.activator.llm.LLMContext
-import com.justai.jaicf.activator.llm.LLMInputs
-import com.justai.jaicf.activator.llm.LLMMessage
-import com.justai.jaicf.activator.llm.LLMProps
-import com.justai.jaicf.activator.llm.LLMPropsBuilder
+import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.agent.handoffMessages
-import com.justai.jaicf.activator.llm.build
 import com.justai.jaicf.activator.llm.builder.build
-import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
-import com.openai.core.JsonField
-import com.openai.core.JsonNull
 import com.openai.core.http.StreamResponse
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
-import com.openai.models.chat.completions.ChatCompletionMessageToolCall
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 
 
 private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
@@ -62,82 +48,6 @@ class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
         }.build(props)
 
         return LLMContext(this, context, request, params, props)
-    }
-
-    @Throws(LLMToolInterruptionException::class)
-    suspend fun LLMContext.callTool(call: ChatCompletionMessageToolCall): LLMToolResult {
-        val function = call.function()
-        val tool = props.tools?.find { t -> t.definition.name == function.name() }
-        val args = tool?.arguments(call)
-
-        return LLMToolResult(
-            callId = call.id(),
-            name = function.name(),
-            arguments = args,
-            result = tool?.let { tool ->
-                try {
-                    @Suppress("UNCHECKED_CAST")
-                    (tool.function as LLMToolFunction<Any>).invoke(
-                        LLMToolCallContext(
-                            context,
-                            request,
-                            this,
-                            LLMToolCall(function.name(), call.id(), args!!, call)
-                        )
-                    )
-                } catch (e: Exception) {
-                    if (e is LLMToolInterruptionException) throw e
-                    if (e is CancellationException) throw e
-                    "Error: ${e.message}"
-                }
-            } ?: "Error: no tool found with name ${function.name()}"
-        )
-    }
-
-    suspend fun LLMContext.callTools(): List<Result<LLMToolResult>> {
-        return coroutineScope {
-            toolCalls().map { call ->
-                async { runCatching { callTool(call) } }
-            }.awaitAll()
-        }
-    }
-
-    suspend fun LLMContext.submitToolResults(): List<LLMToolResult> {
-        if (!hasToolCalls()) {
-            return emptyList()
-        }
-
-        val results = callTools()
-        val toolCallResults = results.mapNotNull { it.getOrNull() }
-        val toolCallExceptions = results.mapNotNull { it.exceptionOrNull() }
-
-        var message = message()
-        message.toolCalls().ifPresent {
-            val toolCalls = message.toolCalls().get().filter { tc ->
-                toolCallResults.any { it.callId == tc.id() }
-            }
-            message = message.toBuilder()
-                .toolCalls(toolCalls.takeIf { it.isNotEmpty() }
-                    ?.let { JsonField.of(toolCalls) }
-                    ?: JsonNull())
-                .build()
-        }
-
-        params = chatCompletionParams.toBuilder().apply {
-            if (!toolCallResults.isEmpty()) {
-                addMessage(message)
-            }
-            toolCallResults
-                .map(LLMMessage::tool)
-                .forEach(::addMessage)
-        }.build()
-
-        if (toolCallExceptions.isNotEmpty()) {
-            throw toolCallExceptions.first()
-        }
-
-        startStream()
-        return toolCallResults
     }
 
     companion object {
