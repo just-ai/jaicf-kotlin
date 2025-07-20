@@ -7,7 +7,6 @@ import com.justai.jaicf.generic.ContextTypeToken
 import com.justai.jaicf.helpers.action.safeCast
 import com.justai.jaicf.helpers.action.smartRandom
 import com.justai.jaicf.logging.ButtonsReaction
-import com.justai.jaicf.model.scenario.ScenarioModel
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.reactions.Reactions
 import kotlin.random.Random
@@ -17,7 +16,6 @@ import kotlin.random.Random
  * Contains properties related to the user's data, activator's details, request's details and reactions API.
  * Also provides some helpful methods for response building.
  *
- * @property scenario a [ScenarioModel] instance that is used to process current request
  * @property context a [BotContext] instance that contains user-related and dialogue state data
  * @property activator a particular [ActivatorContext] of the activator that handled the user's request
  * @property request a particular channel-related [BotRequest] that contains request's details
@@ -29,7 +27,6 @@ import kotlin.random.Random
  * @see [Reactions]
  */
 open class ActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
-    open val scenario: ScenarioModel,
     open val context: BotContext,
     open val activator: A,
     open val request: B,

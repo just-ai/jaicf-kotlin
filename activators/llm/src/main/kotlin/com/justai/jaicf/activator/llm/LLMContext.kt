@@ -4,17 +4,15 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.justai.jaicf.activator.llm.action.LLMActionAPI
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
-import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.StrictActivatorContext
 import com.openai.core.JsonField
 import com.openai.core.http.StreamResponse
 import com.openai.helpers.ChatCompletionAccumulator
 import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionChunk
-import com.openai.models.chat.completions.ChatCompletionChunk.Choice.FinishReason
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.completions.CompletionUsage
 import kotlinx.coroutines.*
@@ -24,24 +22,15 @@ import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
+typealias LLMWithToolCalls = suspend LLMContext.(results: List<LLMToolResult>) -> Unit
 
-typealias LLMWithToolCalls = suspend LLMActivatorContext.(results: List<LLMToolResult>) -> Unit
-
-val StructuredOutputMapper =
-    JsonMapper.builder()
-        .addModule(kotlinModule())
-        .addModule(Jdk8Module())
-        .addModule(JavaTimeModule())
-        .build()
-
-data class LLMActivatorContext(
-    val api: LLMActivatorAPI,
-    internal val botContext: BotContext,
+class LLMContext(
+    val api: LLMActionAPI,
+    internal val context: BotContext,
     internal val request: BotRequest,
     internal var params: ChatCompletionCreateParams,
     val props: LLMProps,
-    val origin: ActivatorContext,
-) : StrictActivatorContext() {
+) {
     private lateinit var response: StreamResponse<ChatCompletionChunk>
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
@@ -67,7 +56,7 @@ data class LLMActivatorContext(
 
     internal suspend fun startStream() = withActiveJob {
         completed = null
-        acc = ChatCompletionAccumulator.create()
+        acc = ChatCompletionAccumulator.Companion.create()
         response = api.createStreaming(params)
         stream = response.stream()
         throwIfCancelled()
@@ -113,13 +102,13 @@ data class LLMActivatorContext(
 
                             val message = message()
                             val toolCalls = toolCalls()
-                            if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
+                            if (reason == ChatCompletionChunk.Choice.FinishReason.Companion.STOP || reason == ChatCompletionChunk.Choice.FinishReason.Companion.LENGTH) {
                                 props.messages?.ifLLMMemory { memory ->
                                     memory.set(
                                         // fix nullable tool calls in an assistant message
                                         params.toBuilder()
                                             .addMessage(message.toBuilder()
-                                                .toolCalls(JsonField.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
+                                                .toolCalls(JsonField.Companion.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
                                                 .build()
                                             ).build().messages()
                                     )
@@ -171,7 +160,7 @@ data class LLMActivatorContext(
     suspend fun eventStream(callTools: Boolean = true): Stream<LLMEvent> = channelStream { channel ->
         suspend fun processChunks() {
             channel.send(LLMEvent.Start())
-            var reason: FinishReason? = null
+            var reason: ChatCompletionChunk.Choice.FinishReason? = null
             var usage: CompletionUsage? = null
             for (chunk in chunkStream()) {
                 val choice = chunk.choices().first()
@@ -235,6 +224,13 @@ data class LLMActivatorContext(
     suspend inline fun <reified T> awaitStructuredContent(): T? =
         awaitFinalContent().let { StructuredOutputMapper.readValue(it, T::class.java) }
 }
+
+val StructuredOutputMapper =
+    JsonMapper.builder()
+        .addModule(kotlinModule())
+        .addModule(Jdk8Module())
+        .addModule(JavaTimeModule())
+        .build()
 
 private suspend inline fun <T> channelStream(
     crossinline block: suspend (Channel<T>) -> Unit

@@ -2,7 +2,6 @@ package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.scenario.llmState
-import com.justai.jaicf.activator.llm.streamOrSay
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
@@ -26,8 +25,8 @@ private val scenario = Scenario {
 
         llmState("chat", llmProps) {
             // Custom action block
-            activator.withToolCalls {
-                reactions.streamOrSay(activator)
+            llm.withToolCalls {
+                reactions.streamOrSay()
             }
         }
     }

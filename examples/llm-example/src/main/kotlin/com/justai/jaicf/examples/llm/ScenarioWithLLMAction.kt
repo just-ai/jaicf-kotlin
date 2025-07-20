@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.llmAction
+import com.justai.jaicf.activator.llm.action.llmAction
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel

@@ -1,7 +1,6 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.activator.llm.streamOrSay
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.CalcTool
 
@@ -19,14 +18,14 @@ private val agent = LLMAgent(
     instructions = "You're a helpful assistant",
     tools = listOf(CalcTool),
 ) {
-    activator.withToolCalls { results ->
+    llm.withToolCalls { results ->
         // show tool calls results if any
         results.takeIf { it.isNotEmpty() }?.run {
             reactions.say(joinToString(prefix = ">> RESULTS: ", postfix = "\n") { "${it.result}" })
         }
 
         // show assistant response if any
-        reactions.streamOrSay(activator)
+        reactions.streamOrSay()
 
         // show tool calls if any
         toolCalls().takeIf { it.isNotEmpty() }?.run {

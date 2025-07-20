@@ -1,7 +1,6 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.activator.llm.streamOrSay
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.Calculator
@@ -35,16 +34,16 @@ private val mainAgent = LLMAgent("main", {
     // You also can make this tool stateful using `withMemory` argument
     tool(calculatorAgent.asTool)
 }) {
-    activator.withToolCalls {
+    llm.withToolCalls {
 
         // Show tool calls status
-        activator.toolCalls()
+        llm.toolCalls()
             .joinToString { "${it.function().name()}(${it.function().arguments()})" }
             .takeIf { it.isNotEmpty() }
             ?.also { reactions.say(">> CALLING: $it") }
 
         // Show intermediate or final LLM response
-        reactions.streamOrSay(activator)
+        reactions.streamOrSay()
     }
 }
 

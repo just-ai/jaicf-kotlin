@@ -25,7 +25,7 @@ private val scenario = Scenario {
         responseFormat = Output::class.java
         tool(CalcTool)
     }) {
-        val output = activator.awaitStructuredContent<Output>()
+        val output = llm.awaitStructuredContent<Output>()
         output?.also {
             reactions.say(output.toString())
         }

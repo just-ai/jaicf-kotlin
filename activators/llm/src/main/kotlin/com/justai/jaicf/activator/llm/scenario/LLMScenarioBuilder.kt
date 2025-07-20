@@ -1,6 +1,9 @@
 package com.justai.jaicf.activator.llm.scenario
 
 import com.justai.jaicf.activator.llm.*
+import com.justai.jaicf.activator.llm.action.DefaultLLMActionBlock
+import com.justai.jaicf.activator.llm.action.LLMActionBlock
+import com.justai.jaicf.activator.llm.action.llmAction
 import com.justai.jaicf.builder.ScenarioDsl
 import com.justai.jaicf.builder.ScenarioGraphBuilder
 import com.justai.jaicf.model.activation.ActivationRule

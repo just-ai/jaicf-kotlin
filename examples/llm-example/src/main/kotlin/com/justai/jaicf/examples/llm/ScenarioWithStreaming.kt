@@ -1,7 +1,6 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.streamOrSay
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
@@ -25,18 +24,18 @@ private val scenario = Scenario {
         }
 
         llmState("chat", llmProps) {
-            activator.withToolCalls { results ->
+            llm.withToolCalls { results ->
                 // Printing tool call results
                 results.forEach {
                     reactions.say("\t${it.name}: ${it.result}")
                 }
 
                 // Streaming content chunks
-                reactions.streamOrSay(activator)
+                reactions.streamOrSay()
 
                 // Printing tool calls statuses
-                if (activator.hasToolCalls()) {
-                    reactions.say("CALLING: ${activator.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
+                if (llm.hasToolCalls()) {
+                    reactions.say("CALLING: ${llm.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
                 }
             }
         }

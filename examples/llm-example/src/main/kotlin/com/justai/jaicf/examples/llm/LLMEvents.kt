@@ -21,7 +21,7 @@ private val agent = LLMAgent(
     model = "gpt-4.1-nano",
     tools = listOf(CalcTool),
 ) {
-    activator.eventStream().forEach { event ->
+    llm.eventStream().forEach { event ->
         when (event) {
             is LLMEvent.Start -> println(">> STEP STARTED")
             is LLMEvent.ContentDelta -> print(event.delta)

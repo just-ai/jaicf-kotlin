@@ -2,6 +2,8 @@ package com.justai.jaicf.activator.llm.agent
 
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
+import com.justai.jaicf.activator.llm.action.DefaultLLMActionBlock
+import com.justai.jaicf.activator.llm.action.LLMActionBlock
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.*

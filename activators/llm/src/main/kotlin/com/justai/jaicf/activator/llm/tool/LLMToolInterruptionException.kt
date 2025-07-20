@@ -1,6 +1,6 @@
 package com.justai.jaicf.activator.llm.tool
 
-import com.justai.jaicf.activator.llm.LLMActionBlock
+import com.justai.jaicf.activator.llm.action.LLMActionBlock
 
 internal class LLMToolInterruptionException(
     val call: LLMToolCall<*>,

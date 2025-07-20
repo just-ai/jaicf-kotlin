@@ -6,6 +6,7 @@ import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.activator.llm.withSystemMessage
+import com.justai.jaicf.botEngine
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.context.tempProperty
 import com.justai.jaicf.helpers.kotlin.ifTrue
@@ -13,6 +14,7 @@ import com.justai.jaicf.logging.GoReaction
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.openai.models.chat.completions.ChatCompletionMessageParam
+import kotlin.coroutines.coroutineContext
 
 
 private val HANDOFF_PROMPT_PREFIX = """
@@ -47,10 +49,14 @@ private val LLMAgent.handoffTool
             )
         }
     ) {
+        val model = coroutineContext.botEngine?.model
+        if (model == null) {
+            throw IllegalStateException("Scenario model is not available in current context")
+        }
         interrupt {
             val state = agentStateName(call.arguments.agent)
-            scenario.states.keys.find { it.endsWith(state) }?.also { path ->
-                reactions.handoff(path, activator.params.messages())
+            model.states.keys.find { it.endsWith(state) }?.also { path ->
+                reactions.handoff(path, llm.params.messages())
             } ?: throw IllegalArgumentException("Agent not found [${call.arguments.agent}]")
         }
     }

@@ -2,7 +2,6 @@ package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.agent.withRole
-import com.justai.jaicf.activator.llm.sayFinalContent
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.CalcTool
 
@@ -24,7 +23,7 @@ private val mainAgent = LLMAgent(
     instructions = "Speak as a pirate with emojis"
 ) {
     println(">> Main agent is thinking...")
-    reactions.sayFinalContent(activator)
+    reactions.sayFinalContent()
 }
 
 /**
@@ -37,7 +36,7 @@ private val calculatorAgent = LLMAgent(
 ) {
     // Custom action block for LLM responses processing
     println(">> Calculator agent is thinking...")
-    reactions.sayFinalContent(activator)
+    reactions.sayFinalContent()
 }
     .withRole("Agent that makes math calculations well")  // Agent's role describes how other agents determine it
 
