@@ -148,7 +148,7 @@ open class BotEngine(
         processContext(botContext, requestContext)
         try {
             withHook(BotRequestHook(botContext, request, reactions)) {
-                startProcess(request, reactions, requestContext, botContext, executionContext)
+                doProcess(request, reactions, requestContext, botContext, executionContext)
             }
         } catch (e: BotRequestRerouteException) {
             throw e
@@ -163,7 +163,7 @@ open class BotEngine(
         botContext.cleanTempData()
     }
 
-    private suspend fun startProcess(
+    private suspend fun doProcess(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
@@ -190,7 +190,7 @@ open class BotEngine(
                 is SlotFillingInterrupted -> {
                     cancelSlotFilling(botContext)
                     if (res.shouldReprocess) {
-                        startProcess(request, reactions, requestContext, botContext, executionContext)
+                        doProcess(request, reactions, requestContext, botContext, executionContext)
                     }
                 }
                 is SlotFillingFinished -> {
