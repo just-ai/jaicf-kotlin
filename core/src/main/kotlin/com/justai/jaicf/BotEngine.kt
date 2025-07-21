@@ -32,6 +32,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * Default [BotApi] implementation.
@@ -112,10 +113,10 @@ open class BotEngine(
         requestController: BotRequestController?,
     ) = runBlocking(requestDispatcher + Element(this)) {
         requestController?.setJob(coroutineContext.job)
-        handleRequest(request, reactions, requestContext, contextManager)
+        handle(request, reactions, requestContext, contextManager)
     }
 
-    open suspend fun handleRequest(
+    open suspend fun handle(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
@@ -321,6 +322,9 @@ open class BotEngine(
         val DefaultActivationSelector: ActivationSelector = ActivationSelector.default
         val DefaultConversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
         val DefaultRequestExecutor: Executor = Executors.newCachedThreadPool()
+
+        suspend fun current() =
+            coroutineContext[Element.Key]?.engine
     }
 }
 
@@ -331,6 +335,3 @@ private class Element(val engine: BotEngine) : CoroutineContext.Element {
     object Key : CoroutineContext.Key<Element>
     override val key = Key
 }
-
-val CoroutineContext.botEngine: BotEngine?
-    get() = get(Element.Key)?.engine

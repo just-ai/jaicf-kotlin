@@ -2,11 +2,11 @@ package com.justai.jaicf.activator.llm.agent
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.activator.llm.withSystemMessage
-import com.justai.jaicf.botEngine
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.context.tempProperty
 import com.justai.jaicf.helpers.kotlin.ifTrue
@@ -62,7 +62,7 @@ private val LLMAgent.handoffTool
 
         interrupt {
             val state = agentStateName(agentName)
-            val model = coroutineContext.botEngine?.model
+            val model = BotEngine.current()?.model
             if (model == null) {
                 throw IllegalStateException("Scenario model is not available in current context")
             }

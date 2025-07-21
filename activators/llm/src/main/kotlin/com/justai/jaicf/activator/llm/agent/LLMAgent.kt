@@ -9,7 +9,6 @@ import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.QueryBotRequest
-import com.justai.jaicf.botEngine
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.builder.append
 import com.justai.jaicf.builder.createModel
@@ -25,7 +24,6 @@ import com.justai.jaicf.reactions.Reactions
 import com.openai.client.OpenAIClient
 import com.openai.core.JsonValue
 import java.util.concurrent.Executor
-import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -174,14 +172,14 @@ open class LLMAgent(
         input: String,
         withMemory: Boolean,
     ): String {
-        val engine = coroutineContext.botEngine
+        val engine = BotEngine.current()
         val request = QueryBotRequest(request.toolClientId, input)
         val reactions = Reactions()
 
         asBot(
             defaultContextManager = withMemory.ifTrue { engine?.defaultContextManager ?: InMemoryBotContextManager } ?: InMemoryBotContextManager(),
             conversationLoggers = engine?.conversationLoggers ?: BotEngine.DefaultConversationLoggers,
-        ).handleRequest(request, reactions, RequestContext.DEFAULT)
+        ).handle(request, reactions, RequestContext.DEFAULT)
 
         return reactions.executionContext.reactions
             .filterIsInstance<SayReaction>()

@@ -131,7 +131,7 @@ class BotRoutingEngine(
         }
     }
 
-    override suspend fun handleRequest(
+    override suspend fun handle(
         request: BotRequest,
         reactions: Reactions,
         requestContext: RequestContext,
