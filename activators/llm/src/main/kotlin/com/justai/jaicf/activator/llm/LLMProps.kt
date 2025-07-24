@@ -2,6 +2,9 @@ package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.justai.jaicf.activator.llm.tool.*
+import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStore
+import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStoreResponseBuilder
+import com.justai.jaicf.activator.llm.vectorstore.asTool
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.kotlin.ifTrue
@@ -123,6 +126,13 @@ data class LLMProps(
             noinline parameters: JsonSchemaBuilder.() -> Unit,
             noinline function: LLMToolFunction<T>
         ) = tool(llmTool(name, description, parameters, function))
+
+        fun vectorStore(
+            store: LLMVectorStore,
+            name: String,
+            description: String = "",
+            responseBuilder: LLMVectorStoreResponseBuilder = { it }
+        ) = tool(store.asTool(name, description, responseBuilder))
 
         fun build() = LLMProps(
             model,
