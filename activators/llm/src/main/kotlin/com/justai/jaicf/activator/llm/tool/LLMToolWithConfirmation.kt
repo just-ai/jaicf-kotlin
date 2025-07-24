@@ -41,8 +41,8 @@ sealed class LLMToolWithConfirmation<T>(
             .readValue(call.origin.function().arguments(), ObjectNode::class.java)
             .get(CONFIRM_FIELD)?.asText()
 
-        if (confirmId.isNullOrEmpty() || !botContext.confirmToolCalls.contains(confirmId)) {
-            botContext.confirmToolCalls += call.callId
+        if (confirmId.isNullOrEmpty() || !context.confirmToolCalls.contains(confirmId)) {
+            context.confirmToolCalls += call.callId
 
             "CONFIRMATION REQUIRED! " +
                 "Ask user to confirm this tool call ${message?.let { "using message like '$it'" }.orEmpty()}. " +
@@ -50,7 +50,7 @@ sealed class LLMToolWithConfirmation<T>(
         } else {
             tool.function(this).also {
                 synchronized(request.clientId) {
-                    botContext.confirmToolCalls = botContext.confirmToolCalls.filter {
+                    context.confirmToolCalls = context.confirmToolCalls.filter {
                         it != confirmId
                     }
                 }

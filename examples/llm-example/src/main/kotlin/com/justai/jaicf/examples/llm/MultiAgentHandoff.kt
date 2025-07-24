@@ -23,7 +23,7 @@ private val mainAgent = LLMAgent(
     instructions = "Speak as a pirate with emojis"
 ) {
     println(">> Main agent is thinking...")
-    activator.awaitFinalContent()?.also(reactions::say)
+    reactions.sayFinalContent()
 }
 
 /**
@@ -36,7 +36,7 @@ private val calculatorAgent = LLMAgent(
 ) {
     // Custom action block for LLM responses processing
     println(">> Calculator agent is thinking...")
-    activator.awaitFinalContent()?.also(reactions::say)
+    reactions.sayFinalContent()
 }
     .withRole("Agent that makes math calculations well")  // Agent's role describes how other agents determine it
 

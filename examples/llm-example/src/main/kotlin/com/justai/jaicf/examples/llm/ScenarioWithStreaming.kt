@@ -24,18 +24,18 @@ private val scenario = Scenario {
         }
 
         llmState("chat", llmProps) {
-            activator.withToolCalls { results ->
+            llm.withToolCalls { results ->
                 // Printing tool call results
                 results.forEach {
                     reactions.say("\t${it.name}: ${it.result}")
                 }
 
                 // Streaming content chunks
-                reactions.say(contentStream())
+                reactions.streamOrSay()
 
                 // Printing tool calls statuses
-                if (activator.hasToolCalls()) {
-                    reactions.say("CALLING: ${activator.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
+                if (llm.hasToolCalls()) {
+                    reactions.say("CALLING: ${llm.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
                 }
             }
         }

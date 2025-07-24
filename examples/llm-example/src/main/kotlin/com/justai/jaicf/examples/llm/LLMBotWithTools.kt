@@ -18,20 +18,18 @@ private val agent = LLMAgent(
     instructions = "You're a helpful assistant",
     tools = listOf(CalcTool),
 ) {
-    activator.withToolCalls { results ->
+    llm.withToolCalls { results ->
         // show tool calls results if any
         results.takeIf { it.isNotEmpty() }?.run {
-            println(joinToString(prefix = "RESULTS: ", postfix = "\n") { "${it.result}" })
+            reactions.say(joinToString(prefix = ">> RESULTS: ", postfix = "\n") { "${it.result}" })
         }
 
         // show assistant response if any
-        content()?.also {
-            println("< $it")
-        }
+        reactions.streamOrSay()
 
         // show tool calls if any
         toolCalls().takeIf { it.isNotEmpty() }?.run {
-            println(joinToString(prefix = "CALL: ") { "${it.function().name()}(${it.function().arguments()})" })
+            reactions.say(joinToString(prefix = ">> CALLING: ") { "${it.function().name()}(${it.function().arguments()})" })
         }
     }
 }

@@ -11,7 +11,7 @@ import com.justai.jaicf.context.RequestContext
  * Simple in-memory [BotContextManager] implementation.
  * Stores every [BotContext] to the internal mutable map with client id as a key.
  */
-object InMemoryBotContextManager : BotContextManager {
+open class InMemoryBotContextManager : BotContextManager {
     private val storage = mutableMapOf<String, BotContext>()
 
     /**
@@ -47,6 +47,8 @@ object InMemoryBotContextManager : BotContextManager {
             session.putAll(botContext.session)
         }
     }
+
+    companion object : InMemoryBotContextManager()
 }
 
 private fun DialogContext.clone(): DialogContext {

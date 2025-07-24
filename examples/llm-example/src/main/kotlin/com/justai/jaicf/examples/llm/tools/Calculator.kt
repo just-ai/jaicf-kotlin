@@ -2,7 +2,6 @@ package com.justai.jaicf.examples.llm.tools
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.fasterxml.jackson.annotation.JsonTypeName
 import com.justai.jaicf.activator.llm.tool.llmTool
 
 /**

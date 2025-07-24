@@ -25,8 +25,8 @@ private val scenario = Scenario {
 
         llmState("chat", llmProps) {
             // Custom action block
-            activator.withToolCalls {
-                content()?.also(::println)
+            llm.withToolCalls {
+                reactions.streamOrSay()
             }
         }
     }

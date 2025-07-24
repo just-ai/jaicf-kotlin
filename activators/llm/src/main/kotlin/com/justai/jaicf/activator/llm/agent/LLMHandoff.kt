@@ -2,6 +2,7 @@ package com.justai.jaicf.activator.llm.agent
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
@@ -13,6 +14,7 @@ import com.justai.jaicf.logging.GoReaction
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.openai.models.chat.completions.ChatCompletionMessageParam
+import kotlin.coroutines.coroutineContext
 
 
 private val HANDOFF_PROMPT_PREFIX = """
@@ -29,6 +31,9 @@ data class Handoff(val agent: String)
 
 internal var BotContext.handoffMessages
     by tempProperty<List<ChatCompletionMessageParam>> { emptyList() }
+
+internal var BotContext.handoffChain
+    by tempProperty { mapOf<String, String>() }
 
 private val LLMAgent.handoffSystemMessage
     get() = HANDOFF_PROMPT_PREFIX +
@@ -47,11 +52,24 @@ private val LLMAgent.handoffTool
             )
         }
     ) {
+        val agentName = call.arguments.agent
+        val messages = llm.params.messages().filter { !it.isSystem() && !it.isDeveloper() }
+        val snapshot = messages.toString()
+
+        if (context.handoffChain[agentName] == snapshot) {
+            throw IllegalArgumentException("You try to hand off the same conversation back in cycle")
+        }
+
         interrupt {
-            val state = agentStateName(call.arguments.agent)
-            scenario.states.keys.find { it.endsWith(state) }?.also { path ->
-                reactions.handoff(path, activator.params.messages())
-            } ?: throw IllegalArgumentException("Agent not found [${call.arguments.agent}]")
+            val state = agentStateName(agentName)
+            val model = BotEngine.current()?.model
+            if (model == null) {
+                throw IllegalStateException("Scenario model is not available in current context")
+            }
+            model.states.keys.find { it.endsWith(state) }?.also { path ->
+                context.handoffChain = context.handoffChain + (name to snapshot)
+                reactions.handoff(path, messages)
+            } ?: throw IllegalArgumentException("Agent not found [$agentName]")
         }
     }
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.justai.jaicf.activator.llm.LLMActivatorContext
+import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
@@ -15,9 +15,9 @@ typealias LLMToolFunction<T> = suspend LLMToolCallContext<T>.() -> Any?
 typealias LLMToolParameters = JsonSchemaBuilder.() -> Unit
 
 data class LLMToolCallContext<T>(
-    val activator: LLMActivatorContext,
-    val botContext: BotContext,
+    val context: BotContext,
     val request: BotRequest,
+    val llm: LLMContext,
     val call: LLMToolCall<T>,
 )
 

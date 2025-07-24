@@ -1,21 +1,27 @@
-package com.justai.jaicf.activator.llm
+package com.justai.jaicf.activator.llm.action
 
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.justai.jaicf.activator.llm.tool.LLMToolResult
+import com.justai.jaicf.activator.llm.LLMContext
+import com.justai.jaicf.activator.llm.LLMEvent
+import com.justai.jaicf.activator.llm.LLMMessage
+import com.justai.jaicf.activator.llm.ifLLMMemory
+import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.StrictActivatorContext
+import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.stream
 import com.openai.core.JsonField
+import com.openai.core.JsonNull
 import com.openai.core.http.StreamResponse
 import com.openai.helpers.ChatCompletionAccumulator
 import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionChunk
-import com.openai.models.chat.completions.ChatCompletionChunk.Choice.FinishReason
-import com.openai.models.chat.completions.ChatCompletionCreateParams
+import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 import com.openai.models.completions.CompletionUsage
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -25,31 +31,26 @@ import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 
-typealias LLMWithToolCalls = suspend LLMActivatorContext.(results: List<LLMToolResult>) -> Unit
+typealias LLMWithToolCalls = suspend LLMContext.(results: List<LLMToolResult>) -> Unit
 
-val StructuredOutputMapper =
-    JsonMapper.builder()
-        .addModule(kotlinModule())
-        .addModule(Jdk8Module())
-        .addModule(JavaTimeModule())
-        .build()
-
-data class LLMActivatorContext(
-    val api: LLMActivatorAPI,
-    internal val botContext: BotContext,
-    internal val request: BotRequest,
-    internal var params: ChatCompletionCreateParams,
-    val props: LLMProps,
-    val origin: ActivatorContext,
-) : StrictActivatorContext() {
+data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
+    override val context: BotContext,
+    override val activator: A,
+    override val request: B,
+    override val reactions: R,
+    val llm: LLMContext,
+) : ActionContext<A, B, R>(context, activator, request, reactions) {
     private lateinit var response: StreamResponse<ChatCompletionChunk>
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
 
     private var completed: CompletableDeferred<List<ChatCompletionChunk>>? = null
 
-    val chatCompletionParams
-        get() = params
+    suspend fun Reactions.sayFinalContent() =
+        llm.awaitFinalContent()?.let(::say)
+
+    suspend fun Reactions.streamOrSay() =
+        stream?.say(llm.contentStream()) ?: llm.content()?.let(::say)
 
     private suspend fun throwIfCancelled() {
         try {
@@ -65,21 +66,21 @@ data class LLMActivatorContext(
         return block.invoke()
     }
 
-    internal suspend fun startStream() = withActiveJob {
+    internal suspend fun LLMContext.startStream() = withActiveJob {
         completed = null
-        acc = ChatCompletionAccumulator.create()
+        acc = ChatCompletionAccumulator.Companion.create()
         response = api.createStreaming(params)
         stream = response.stream()
         throwIfCancelled()
     }
 
-    fun closeStream() {
+    private fun closeStream() {
         if (::response.isInitialized) {
             response.close()
         }
     }
 
-    suspend fun chunkStream(): Stream<ChatCompletionChunk> = withActiveJob {
+    suspend fun LLMContext.chunkStream(): Stream<ChatCompletionChunk> = withActiveJob {
         if (!::stream.isInitialized) {
             startStream()
         }
@@ -113,13 +114,13 @@ data class LLMActivatorContext(
 
                             val message = message()
                             val toolCalls = toolCalls()
-                            if (reason == FinishReason.STOP || reason == FinishReason.LENGTH) {
+                            if (reason == ChatCompletionChunk.Choice.FinishReason.Companion.STOP || reason == ChatCompletionChunk.Choice.FinishReason.Companion.LENGTH) {
                                 props.messages?.ifLLMMemory { memory ->
                                     memory.set(
                                         // fix nullable tool calls in an assistant message
                                         params.toBuilder()
                                             .addMessage(message.toBuilder()
-                                                .toolCalls(JsonField.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
+                                                .toolCalls(JsonField.Companion.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
                                                 .build()
                                             ).build().messages()
                                     )
@@ -140,7 +141,7 @@ data class LLMActivatorContext(
         }
     }
 
-    suspend fun chatCompletion(): ChatCompletion {
+    suspend fun LLMContext.chatCompletion(): ChatCompletion {
         return try {
             acc.chatCompletion()
         } catch (e: Exception) {
@@ -149,29 +150,30 @@ data class LLMActivatorContext(
         }
     }
 
-    suspend fun choice() = chatCompletion().choices().first()
+    suspend fun LLMContext.choice() = chatCompletion().choices().first()
 
-    suspend fun message() = choice().message()
+    suspend fun LLMContext.usage() = chatCompletion().usage()
 
-    suspend fun content() = message().content().getOrNull()
+    suspend fun LLMContext.message() = choice().message()
 
-    suspend fun toolCalls() = message().toolCalls().getOrDefault(emptyList())
+    suspend fun LLMContext.content() = message().content().getOrNull()
 
-    suspend fun hasToolCalls() = toolCalls().isNotEmpty()
+    suspend fun LLMContext.toolCalls() = message().toolCalls().getOrDefault(emptyList())
 
-    suspend fun callAndSubmitTools() = api.run { submitToolResults() }
+    suspend fun LLMContext.hasToolCalls() = toolCalls().isNotEmpty()
 
-    suspend fun deltaStream() = chunkStream().map { it.choices().first().delta() }
+    suspend fun LLMContext.deltaStream(): Stream<ChatCompletionChunk.Choice.Delta> =
+        chunkStream().map { it.choices().first().delta() }
 
-    suspend fun contentStream() = deltaStream()
+    suspend fun LLMContext.contentStream(): Stream<String> = deltaStream()
         .map { it.content() }
         .filter { it.isPresent }
         .map { it.get() }
 
-    suspend fun eventStream(callTools: Boolean = true): Stream<LLMEvent> = channelStream { channel ->
+    suspend fun LLMContext.eventStream(callTools: Boolean = true): Stream<LLMEvent> = channelStream { channel ->
         suspend fun processChunks() {
             channel.send(LLMEvent.Start())
-            var reason: FinishReason? = null
+            var reason: ChatCompletionChunk.Choice.FinishReason? = null
             var usage: CompletionUsage? = null
             for (chunk in chunkStream()) {
                 val choice = chunk.choices().first()
@@ -212,7 +214,83 @@ data class LLMActivatorContext(
         }
     }
 
-    suspend fun withToolCalls(
+    suspend fun LLMContext.callTools(): List<Result<LLMToolResult>> {
+        return coroutineScope {
+            toolCalls().map { call ->
+                async { runCatching { callTool(call) } }
+            }.awaitAll()
+        }
+    }
+
+    @Throws(LLMToolInterruptionException::class)
+    suspend fun LLMContext.callTool(call: ChatCompletionMessageToolCall): LLMToolResult {
+        val function = call.function()
+        val tool = props.tools?.find { t -> t.definition.name == function.name() }
+        val args = tool?.arguments(call)
+
+        return LLMToolResult(
+            callId = call.id(),
+            name = function.name(),
+            arguments = args,
+            result = tool?.let { tool ->
+                try {
+                    @Suppress("UNCHECKED_CAST")
+                    (tool.function as LLMToolFunction<Any>).invoke(
+                        LLMToolCallContext(
+                            context,
+                            request,
+                            this,
+                            LLMToolCall(function.name(), call.id(), args!!, call)
+                        )
+                    )
+                } catch (e: Exception) {
+                    if (e is LLMToolInterruptionException) throw e
+                    if (e is CancellationException) throw e
+                    "Error: ${e.message}"
+                }
+            } ?: "Error: no tool found with name ${function.name()}"
+        )
+    }
+
+    suspend fun LLMContext.submitToolResults(): List<LLMToolResult> {
+        if (!hasToolCalls()) {
+            return emptyList()
+        }
+
+        val results = callTools()
+        val toolCallResults = results.mapNotNull { it.getOrNull() }
+        val toolCallExceptions = results.mapNotNull { it.exceptionOrNull() }
+
+        var message = message()
+        message.toolCalls().ifPresent {
+            val toolCalls = message.toolCalls().get().filter { tc ->
+                toolCallResults.any { it.callId == tc.id() }
+            }
+            message = message.toBuilder()
+                .toolCalls(toolCalls.takeIf { it.isNotEmpty() }
+                    ?.let { JsonField.of(toolCalls) }
+                    ?: JsonNull())
+                .build()
+        }
+
+        params = chatCompletionParams.toBuilder().apply {
+            if (!toolCallResults.isEmpty()) {
+                addMessage(message)
+            }
+            toolCallResults
+                .map(LLMMessage::tool)
+                .forEach(::addMessage)
+        }.build()
+
+        if (toolCallExceptions.isNotEmpty()) {
+            throw toolCallExceptions.first()
+        }
+
+        startStream()
+        return toolCallResults
+    }
+
+    suspend fun LLMContext.withToolCalls(
         block: LLMWithToolCalls? = null
     ) = apply {
         var toolCalls = false
@@ -226,14 +304,26 @@ data class LLMActivatorContext(
         } while (toolCalls)
     }
 
-    suspend fun awaitFinalMessage() =
+    suspend fun LLMContext.awaitFinalMessage() =
         withToolCalls().message()
 
-    suspend fun awaitFinalContent() =
+    suspend fun LLMContext.awaitFinalContent() =
         awaitFinalMessage().content().getOrNull()
 
-    suspend inline fun <reified T> awaitStructuredContent(): T? =
-        awaitFinalContent().let { StructuredOutputMapper.readValue(it, T::class.java) }
+    suspend inline fun <reified T> LLMContext.awaitStructuredContent(): T? =
+        props.responseFormat?.let { format ->
+            awaitFinalContent().let { StructuredOutputMapper.readValue(it, format) as T }
+        } ?: throw IllegalArgumentException("Response format is not defined in props")
+
+    companion object {
+        val StructuredOutputMapper: JsonMapper =
+            JsonMapper.builder()
+                .addModule(kotlinModule())
+                .addModule(Jdk8Module())
+                .addModule(JavaTimeModule())
+                .build()
+
+    }
 }
 
 private suspend inline fun <T> channelStream(

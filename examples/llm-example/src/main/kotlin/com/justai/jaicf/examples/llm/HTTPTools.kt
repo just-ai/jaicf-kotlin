@@ -51,11 +51,11 @@ private val agent = LLMAgent(
     )
 ) {
     // Custom action block just for tool calling progress output
-    activator.withToolCalls {
-        activator.contentStream().forEach(::print)
-        if (activator.hasToolCalls()) {
-            activator.toolCalls()
-                .joinToString(", ", "CALLING ", "...") {
+    llm.withToolCalls {
+        reactions.streamOrSay()
+        if (llm.hasToolCalls()) {
+            llm.toolCalls()
+                .joinToString(", ", ">> CALLING ", "...") {
                     it.function().name()
                 }.also(::println)
         }

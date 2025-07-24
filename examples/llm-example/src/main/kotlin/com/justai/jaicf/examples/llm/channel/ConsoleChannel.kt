@@ -7,6 +7,7 @@ import com.justai.jaicf.channel.BotChannel
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.StreamReactions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
@@ -81,7 +82,7 @@ class ConsoleChannel(
 
 class ConsoleReactions(
     private val terminal: Terminal
-) : Reactions() {
+) : StreamReactions, Reactions() {
     override fun say(text: String) = SayReaction.create(text).also {
         terminal.writer().println(text)
         terminal.writer().flush()

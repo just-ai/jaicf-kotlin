@@ -39,7 +39,7 @@ import java.util.stream.Stream
  * @see ResponseReactions
  * @see Reaction
  */
-abstract class Reactions : ReactionRegistrar {
+open class Reactions : RequiredReactions, ReactionRegistrar {
 
     override lateinit var botContext: BotContext
 
@@ -117,16 +117,7 @@ abstract class Reactions : ReactionRegistrar {
      *
      * @param text a raw text to append to the response
      */
-    abstract fun say(text: String): SayReaction
-
-    /**
-     * Appends a stream of texts to the response.
-     * By default, collects a stream elements to a resulting text and appends it to the response.
-     * This behavior can be overwritten in custom reactions if needed.
-     *
-     * @param stream a stream of texts to append to the response
-     */
-    open fun say(stream: Stream<String>) = say(stream.toList().joinToString(""))
+    override fun say(text: String): SayReaction = SayReaction.create(text)
 
     /**
      * Appends image to the response.

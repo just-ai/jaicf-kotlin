@@ -25,10 +25,9 @@ private val scenario = Scenario {
         responseFormat = Output::class.java
         tool(CalcTool)
     }) {
-        val output = activator.awaitStructuredContent<Output>()
+        val output: Output? = llm.awaitStructuredContent()
         output?.also {
-            reactions.say(output.response)
-            output.toolNames?.ifPresent { reactions.say(it.joinToString(prefix = "\tTOOLS: ")) }
+            reactions.say(output.toString())
         }
     }
 }

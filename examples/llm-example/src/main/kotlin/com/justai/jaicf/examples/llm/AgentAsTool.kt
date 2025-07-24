@@ -1,7 +1,10 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
+import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
+import com.justai.jaicf.examples.llm.tools.Calculator
+import kotlinx.coroutines.delay
 
 /**
  * This example shows how an agent can be exposed as a tool to call it from anywhere instead of hand off an entire conversation to it.
@@ -13,31 +16,38 @@ import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 private val calculatorAgent = LLMAgent(
     name = "calculator",
     model = "gpt-4.1-mini",
-    instructions = "Calculate math expressions. Return result in form of step-by-step math calculations without any additional text or comments.",
+    instructions = "Calculate math expressions with calculator tool. Answer strictly with tool output without any change.",
+    tools = listOf(
+        llmTool<Calculator> {
+            println(">> CALCULATING ${call.arguments.expression}")
+            delay(2000)
+            Math.random()
+        }
+    )
 )
-    .withoutMemory()  // Make this agent stateless because LLMAgent has memory by default
 
 private val mainAgent = LLMAgent("main", {
     model = "gpt-4.1-nano"
 
     // Add calculator agent as a tool to main agent
     // You can also define custom "name", "description" and "parameters" of the created tool using `asTool()`
+    // You also can make this tool stateful using `withMemory` argument
     tool(calculatorAgent.asTool)
 }) {
-    activator.withToolCalls {
+    llm.withToolCalls {
 
         // Show tool calls status
-        activator.toolCalls()
+        llm.toolCalls()
             .joinToString { "${it.function().name()}(${it.function().arguments()})" }
             .takeIf { it.isNotEmpty() }
-            ?.also { reactions.say("CALLING: $it") }
+            ?.also { reactions.say(">> CALLING: $it") }
 
         // Show intermediate or final LLM response
-        activator.contentStream()?.also(reactions::say)
+        reactions.streamOrSay()
     }
 }
 
 fun main() {
     ConsoleChannel(mainAgent.asBot)
-        .run("Calculate any random math expression")
+        .run("Calculate some single random math expression")
 }

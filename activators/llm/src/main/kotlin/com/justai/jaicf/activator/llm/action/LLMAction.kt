@@ -1,5 +1,7 @@
-package com.justai.jaicf.activator.llm
+package com.justai.jaicf.activator.llm.action
 
+import com.justai.jaicf.activator.llm.DefaultLLMProps
+import com.justai.jaicf.activator.llm.LLMPropsBuilder
 import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.builder.ScenarioDsl
@@ -10,24 +12,23 @@ import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.reactions.Reactions
 
 
-typealias LLMActionContext = ActionContext<LLMActivatorContext, *, *>
-typealias LLMActionBlock = suspend LLMActionContext.() -> Unit
+typealias LLMActionBlock = suspend LLMActionContext<out ActivatorContext, out BotRequest, out Reactions>.() -> Unit
 
 val DefaultLLMActionBlock: LLMActionBlock = {
-    activator.awaitFinalContent()?.also(reactions::say)
+    reactions.sayFinalContent()
 }
 
 private suspend fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionContext<A, B, R>.llmAction(
     props: LLMPropsBuilder,
     body: LLMActionBlock,
 ) {
-    val activator = LLMActivatorAPI.get.createActivatorContext(context, request, activator, props)
-    val context = ActionContext(scenario, context, activator, request, reactions)
+    val llm = LLMActionAPI.get.createContext(context, request, props)
+    val context = LLMActionContext(context, activator, request, reactions, llm)
 
     try {
         body.invoke(context)
     } catch (e: LLMToolInterruptionException) {
-        e.callback.invoke(context)
+        e.callback.invoke(this)
     }
 }
 
