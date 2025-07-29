@@ -11,7 +11,6 @@ import kotlin.reflect.KClass
 open class LLMScenarioTest(scenario: Scenario) : ScenarioTest(scenario) {
     init {
         bot.hooks.addHookAction<LLMToolCallsHook> {
-            toolCallResults.forEach { println(it.name) }
             reactions.executionContext.reactions.addAll(
                 LLMToolCallReaction.fromHook(this)
             )
