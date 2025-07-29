@@ -17,8 +17,8 @@ dependencies {
     implementation("org.slf4j:slf4j-log4j12" version {slf4j})
     implementation("org.jline:jline:3.30.4")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testImplementation("org.junit.jupiter:junit-jupiter" version {jUnit})
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {

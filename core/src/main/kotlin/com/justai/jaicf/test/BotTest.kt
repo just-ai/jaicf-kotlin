@@ -39,7 +39,7 @@ import java.util.*
  * @see TestRequestContext
  * @see com.justai.jaicf.test.context.TestActionContext
  */
-open class BotTest(private val bot: BotEngine) {
+open class BotTest(open val bot: BotEngine) {
 
     internal lateinit var botContext: BotContext
     internal lateinit var reactions: Reactions
