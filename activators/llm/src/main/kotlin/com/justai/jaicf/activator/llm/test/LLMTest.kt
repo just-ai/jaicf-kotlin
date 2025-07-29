@@ -46,13 +46,10 @@ class LLMTestRequestContext(
 class LLMTest(testAgent: LLMAgent) {
     private val testEngine = testAgent.asBot(InMemoryBotContextManager())
 
-    fun BotTest.chat(user: String, agent: String): ProcessResult {
+    private fun BotTest.process(input: String): ProcessResult {
         val reactions = TestReactions()
         val context = LLMTestRequestContext()
-        val request = QueryBotRequest(clientId, """
-            Create and send to agent a request that satisfies these instructions: "$user"
-            Agent must respond with reply that satisfies next: "$agent"
-        """.trimIndent())
+        val request = QueryBotRequest(clientId, input)
 
         testEngine.process(request, reactions, context)
         assertTrue(
@@ -61,6 +58,20 @@ class LLMTest(testAgent: LLMAgent) {
         )
         return context.processResult
     }
+
+    fun BotTest.chat(user: String, agent: String) = process(
+        """
+            Create and send to agent a request that satisfies these instructions: "$user"
+            Agent must respond with reply that satisfies next: "$agent"
+        """.trimIndent()
+    )
+
+    fun BotTest.send(user: String, agent: String) = process(
+        """
+            Send to agent a message "$user"
+            Agent must respond with reply that satisfies next: "$agent"
+        """.trimIndent()
+    )
 }
 
 fun BotTest.testWithLLM(props: LLMPropsBuilder? = null, block: LLMTest.() -> Unit) {
