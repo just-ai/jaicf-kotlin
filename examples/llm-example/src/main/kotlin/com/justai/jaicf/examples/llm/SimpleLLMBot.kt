@@ -10,12 +10,12 @@ import com.justai.jaicf.examples.llm.channel.ConsoleChannel
  *
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
-private val agent = LLMAgent(
+val SimpleLLMAgent = LLMAgent(
     name = "agent",
     model = "gpt-4.1-nano",
     instructions = "You're a helpful assistant"
 )
 
 fun main() {
-    ConsoleChannel(agent.asBot).run()
+    ConsoleChannel(SimpleLLMAgent.asBot).run()
 }

@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.justai.jaicf.activator.llm.LLMContext
-import com.justai.jaicf.activator.llm.LLMEvent
-import com.justai.jaicf.activator.llm.LLMMessage
-import com.justai.jaicf.activator.llm.ifLLMMemory
+import com.justai.jaicf.BotEngine
+import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
@@ -249,7 +247,16 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                     "Error: ${e.message}"
                 }
             } ?: "Error: no tool found with name ${function.name()}"
-        )
+        ).also { result ->
+            BotEngine.current()?.run {
+                hooks.triggerHook(
+                    LLMToolCallHook(
+                        model.states[context.dialogContext.currentState]!!,
+                        context, request, reactions, activator, result
+                    )
+                )
+            }
+        }
     }
 
     suspend fun LLMContext.submitToolResults(): List<LLMToolResult> {
@@ -282,6 +289,15 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 .forEach(::addMessage)
         }.build()
 
+        BotEngine.current()?.run {
+            hooks.triggerHook(
+                LLMToolCallsHook(
+                    model.states[context.dialogContext.currentState]!!,
+                    context, request, reactions, activator, toolCallResults
+                )
+            )
+        }
+
         if (toolCallExceptions.isNotEmpty()) {
             throw toolCallExceptions.first()
         }
@@ -310,7 +326,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     suspend fun LLMContext.awaitFinalContent() =
         awaitFinalMessage().content().getOrNull()
 
-    suspend inline fun <reified T> LLMContext.awaitStructuredContent(): T? =
+    suspend inline fun <reified T> LLMContext.awaitStructuredContent(): T =
         props.responseFormat?.let { format ->
             awaitFinalContent().let { StructuredOutputMapper.readValue(it, format) as T }
         } ?: throw IllegalArgumentException("Response format is not defined in props")

@@ -25,8 +25,8 @@ dependencies {
     implementation(project(":activators:dialogflow"))
     implementation(project(":activators:lex"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testImplementation("org.junit.jupiter:junit-jupiter" version {jUnit})
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {
