@@ -4,7 +4,7 @@ import com.justai.jaicf.activator.llm.test.LLMScenarioTest
 import com.justai.jaicf.examples.llm.tools.Calculator
 import org.junit.jupiter.api.Test
 
-class AgentWithToolsTest: LLMScenarioTest(AgentWithTools) {
+class AgentWithToolsTest : LLMScenarioTest(AgentWithTools) {
 
     @Test
     fun `uses calculator tool`() {

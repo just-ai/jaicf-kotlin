@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 
 class SimpleLLMAgentTest: ScenarioTest(SimpleLLMAgent) {
     private val props = createLLMProps {
-        model = "gpt-4.1-mini"
+        model = "gpt-4o-mini"
         temperature = 1.0
     }
 

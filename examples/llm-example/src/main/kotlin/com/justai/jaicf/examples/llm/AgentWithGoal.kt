@@ -17,7 +17,7 @@ import java.util.Optional
  * Goal data description.
  * Agent fills this structure achieving the goal.
  */
-private data class Goal(
+data class Goal(
     val userFirstName: String,
     val userLastName: String,
     val userAge: Optional<Int>,
@@ -27,7 +27,7 @@ private data class Goal(
  * Use `withGoal()` extension to add goal to the agent.
  * IT just adds a tool and some special system message that instructs an agent to call this tool once the goal is achieved.
  */
-private val agent = LLMAgent(
+val AgentWithGoal = LLMAgent(
     name = "agent",
     model = "gpt-4.1-mini",
 ).withGoal<Goal>("Talk with user to find out their firstname, lastname and age") {
@@ -41,11 +41,13 @@ private val agent = LLMAgent(
     } else {
         // Interrupt tool calling loop and execute custom scenario action
         interrupt {
+            // Just set result to provide the next scenario state with user data
+            context.result = call.arguments
             reactions.say("GOAL IS ACHIEVED: ${call.arguments}")
         }
     }
 }
 
 fun main() {
-    ConsoleChannel(agent.asBot).run("hello")
+    ConsoleChannel(AgentWithGoal.asBot).run("hello")
 }
