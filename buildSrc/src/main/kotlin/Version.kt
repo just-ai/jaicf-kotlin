@@ -15,7 +15,8 @@ object Version {
     const val coroutinesCore = "1.4.2"
     const val tomcatServletApi = "6.0.53"
     const val logbackGelfAppender = "1.5"
-    const val mockk = "1.10.2"
+    const val logback = "1.5.13"
+    const val mockk = "1.13.8"
     const val okHttp = "4.12.0"
 }
 

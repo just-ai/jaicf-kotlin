@@ -14,8 +14,9 @@ import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.test.BotTest
 import com.justai.jaicf.test.model.ProcessResult
 import com.justai.jaicf.test.reactions.TestReactions
+import com.openai.models.ChatModel
 import org.junit.jupiter.api.Assertions.assertTrue
-import java.util.*
+import java.util.Optional
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -74,7 +75,10 @@ class LLMTest(testAgent: LLMAgent) {
     )
 }
 
-fun BotTest.testWithLLM(props: LLMPropsBuilder? = null, block: LLMTest.() -> Unit) {
+fun BotTest.testWithLLM(
+    props: LLMPropsBuilder? = { model = ChatModel.GPT_4O_MINI.asString() },
+    block: LLMTest.() -> Unit
+) {
     var result: ProcessResult?
 
     val testAgent = LLMAgent("testAgent", {
