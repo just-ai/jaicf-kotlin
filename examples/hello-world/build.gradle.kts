@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    `jaicf-junit`
 }
 
 repositories {

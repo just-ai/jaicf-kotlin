@@ -105,7 +105,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                         chunks.add(chunk)
                         channel.send(chunk)
 
-                        val reason = chunk.choices().first().finishReason().getOrNull()
+                        val reason = chunk.choices().firstOrNull()?.finishReason()?.getOrNull()
                         if (reason != null) {
                             finished = true
                             acc.accumulate(chunk)

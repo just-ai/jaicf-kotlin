@@ -17,6 +17,7 @@ class JaicfJUnit(project: Project) : PluginAdapter(project) {
             "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit" version { kotlin })
             "testImplementation"("org.junit.jupiter:junit-jupiter-api" version { jUnit })
             "testImplementation"("org.junit.jupiter:junit-jupiter-params" version { jUnit })
+            "testImplementation"("org.junit.platform:junit-platform-launcher" version { "1.13.3" })
             "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
         }
         tasks.named<Test>("test") { useJUnitPlatform() }
