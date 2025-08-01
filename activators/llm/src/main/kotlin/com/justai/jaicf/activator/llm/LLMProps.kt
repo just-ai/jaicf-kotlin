@@ -10,6 +10,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.core.JsonSchemaLocalValidation
+import com.openai.models.ChatModel
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
 import com.openai.models.chat.completions.ChatCompletionStreamOptions
@@ -17,7 +18,7 @@ import com.openai.models.chat.completions.ChatCompletionStreamOptions
 typealias LLMPropsBuilder = LLMProps.Builder.() -> Unit
 typealias LLMInputBuilder = (request: BotRequest) -> List<ChatCompletionMessageParam>?
 
-val DefaultLLMProps: LLMPropsBuilder = {}
+val DefaultLLMProps: LLMPropsBuilder = { model = ChatModel.GPT_4O_MINI.asString() }
 
 fun createLLMProps(builder: LLMPropsBuilder) = builder
 

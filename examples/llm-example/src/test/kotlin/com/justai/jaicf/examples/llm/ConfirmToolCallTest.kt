@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.test.LLMScenarioTest
-import com.justai.jaicf.activator.llm.test.OpenAITest
+import com.justai.jaicf.activator.llm.test.openai.OpenAITest
 import com.justai.jaicf.activator.llm.test.testWithLLM
 import org.junit.jupiter.api.Test
 
@@ -15,6 +15,7 @@ class ConfirmToolCallTest: LLMScenarioTest(AgentWithConfirmation) {
             user = "Send mail with text: '${sendMail.message}'",
             agent = "Asks user to confirm sending the message"
         ) callsTool sendMail
+
         send(user = "Yes", agent = "Mail sent successfully") callsTool sendMail
     }
 }
