@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    `jaicf-junit`
 }
 
 repositories {
@@ -16,9 +16,6 @@ dependencies {
     implementation("org.slf4j:slf4j-simple" version {slf4j})
     implementation("org.slf4j:slf4j-log4j12" version {slf4j})
     implementation("org.jline:jline:3.30.4")
-
-    testImplementation("org.junit.jupiter:junit-jupiter" version {jUnit})
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {
@@ -27,11 +24,5 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "17"
-    }
-    test {
-        useJUnitPlatform()
-    }
-    build {
-        dependsOn(shadowJar)
     }
 }

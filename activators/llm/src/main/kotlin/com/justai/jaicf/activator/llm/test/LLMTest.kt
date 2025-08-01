@@ -3,9 +3,11 @@ package com.justai.jaicf.activator.llm.test
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.justai.jaicf.activator.llm.DefaultLLMProps
 import com.justai.jaicf.activator.llm.LLMPropsBuilder
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.llmMemory
+import com.justai.jaicf.activator.llm.withProps
 import com.justai.jaicf.activator.llm.withSystemMessage
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.context.RequestContext
@@ -14,9 +16,8 @@ import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.justai.jaicf.test.BotTest
 import com.justai.jaicf.test.model.ProcessResult
 import com.justai.jaicf.test.reactions.TestReactions
-import com.openai.models.ChatModel
 import org.junit.jupiter.api.Assertions.assertTrue
-import java.util.Optional
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -76,14 +77,12 @@ class LLMTest(testAgent: LLMAgent) {
 }
 
 fun BotTest.testWithLLM(
-    props: LLMPropsBuilder? = { model = ChatModel.GPT_4O_MINI.asString() },
+    props: LLMPropsBuilder = DefaultLLMProps,
     block: LLMTest.() -> Unit
 ) {
     var result: ProcessResult?
 
-    val testAgent = LLMAgent("testAgent", {
-        props?.invoke(this)
-
+    val testAgent = LLMAgent("testAgent", props.withProps {
         setParallelToolCalls(false)
         setResponseFormat(LLMTestResult::class.java)
 

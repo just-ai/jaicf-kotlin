@@ -25,9 +25,6 @@ dependencies {
 
     implementation(project(":activators:dialogflow"))
     implementation(project(":activators:lex"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter" version {jUnit})
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {
@@ -36,8 +33,5 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "17"
-    }
-    test {
-        useJUnitPlatform()
     }
 }

@@ -1,4 +1,4 @@
-package com.justai.jaicf.activator.llm.test
+package com.justai.jaicf.activator.llm.test.openai
 
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.InvocationInterceptor
