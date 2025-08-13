@@ -1,0 +1,109 @@
+[versions]
+kotlin = "2.0.20"
+github = "2.5.2"
+dokka-gradle = "2.0.0"
+
+jackson = "2.18.2"
+slf4j = "2.0.17"
+jUnit = "5.13.4"
+
+ktor = "3.2.1"
+coroutinesCore = "1.10.2"
+tomcatServletApi = "11.0.9"
+logbackGelfAppender = "1.5"
+mockk = "1.14.5"
+okHttp = "5.1.0"
+mongoDbDriverSync = "5.5.1"
+embedMongo = "4.20.1"
+mapDb = "3.1.0"
+eclipseCollections = "13.0.0"
+logbackClassic = "1.5.18"
+jline = "3.30.4"
+#kotlinTelegram = "6.3.0"
+kotlinTelegram = "6.0.4"
+slack = "1.45.3"
+googleActions = "1.8.0"
+alexa = "2.86.0"
+messenger4j = "1.1.0"
+openai = "2.17.0"
+modelcontextprotocol = "0.5.0"
+lexruntimev2 = "2.32.4"
+grpc-okhttp = "1.73.0"
+google-dialogflow = "4.74.0"
+
+[libraries]
+gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+github-release = { module = "com.github.breadmoirai:github-release", version.ref = "github" }
+dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka-gradle" }
+
+kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutinesCore" }
+kotlinx-coroutines-slf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j", version.ref = "coroutinesCore" }
+
+ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-cio-jvm = { module = "io.ktor:ktor-client-cio-jvm", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization-jvm", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging-jvm", version.ref = "ktor" }
+ktor-client-json = { module = "io.ktor:ktor-client-json-jvm", version.ref = "ktor" }
+ktor-client = { module = "io.ktor:ktor-client", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
+ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
+ktor-kotlinx-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+okhttp = { module = "com.squareup.okhttp3:okhttp", version = { strictly = "4.12.0" } }
+okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version = { strictly = "4.12.0" } }
+#okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okHttp" }
+#okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okHttp" }
+
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+tomcat-servlet-api = { module = "org.apache.tomcat:tomcat-servlet-api", version.ref = "tomcatServletApi" }
+
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+slf4j-log4j12 = { module = "org.slf4j:slf4j-log4j12", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
+logback-gelf-appender = { module = "de.appelgriepsch.logback:logback-gelf-appender", version.ref = "logbackGelfAppender" }
+
+mongodb-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongoDbDriverSync" }
+embed-mongo = { module = "de.flapdoodle.embed:de.flapdoodle.embed.mongo", version.ref = "embedMongo" }
+map-db = { module = "org.mapdb:mapdb", version.ref = "mapDb" }
+
+eclipse-collections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
+
+jline = { module = "org.jline:jline", version.ref = "jline" }
+kotlin-telegram-bot = { module = "com.github.kotlin-telegram-bot:kotlin-telegram-bot", version.ref = "kotlinTelegram"}
+slack = { module = "com.slack.api:bolt", version.ref = "slack" }
+actions-on-google = { module = "com.google.actions:actions-on-google", version.ref = "googleActions"}
+amazon-alexa = { module = "com.amazon.alexa:ask-sdk", version.ref = "alexa" }
+messenger4j = { module = "com.github.messenger4j:messenger4j", version.ref = "messenger4j"}
+openai-java = { module = "com.openai:openai-java", version.ref = "openai"}
+jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8", version.ref = "jackson"}
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
+modelcontextprotocol = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "modelcontextprotocol"}
+lexruntimev2 = { module = "software.amazon.awssdk:lexruntimev2", version.ref = "lexruntimev2"}
+google-dialogflow = { module = "com.google.cloud:google-cloud-dialogflow", version.ref = "google-dialogflow"}
+grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpc-okhttp"}
+
+
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk"}
+ktor-mockk = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+
+[plugins]
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+[bundles]
+junit = ["kotlin-test-junit", "junit-jupiter-api", "junit-jupiter-params", "junit-jupiter-engine", "junit-platform" ]
