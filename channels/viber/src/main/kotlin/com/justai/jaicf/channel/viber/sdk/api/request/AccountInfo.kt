@@ -10,7 +10,7 @@ data class AccountInfoResponse(
     override val status: Int,
     override val statusMessage: String,
     val id: String,
-    val chatHostname: String,
+    val chatHostname: String?,
     val name: String,
     val uri: String?,
     val icon: String?,
