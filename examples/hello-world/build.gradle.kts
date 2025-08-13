@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    `jaicf-junit`
 }
 
 repositories {
@@ -24,9 +25,6 @@ dependencies {
 
     implementation(project(":activators:dialogflow"))
     implementation(project(":activators:lex"))
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
 }
 
 tasks {
@@ -35,8 +33,5 @@ tasks {
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "17"
-    }
-    test {
-        useJUnitPlatform()
     }
 }

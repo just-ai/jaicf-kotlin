@@ -31,4 +31,6 @@ dependencies {
 
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(ktor("ktor-client-mock"))
+
+    implementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
 }

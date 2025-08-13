@@ -10,6 +10,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.kotlin.ifTrue
 import com.openai.client.OpenAIClient
 import com.openai.core.JsonSchemaLocalValidation
+import com.openai.models.ChatModel
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 import com.openai.models.chat.completions.ChatCompletionMessageParam
 import com.openai.models.chat.completions.ChatCompletionStreamOptions
@@ -17,7 +18,7 @@ import com.openai.models.chat.completions.ChatCompletionStreamOptions
 typealias LLMPropsBuilder = LLMProps.Builder.() -> Unit
 typealias LLMInputBuilder = (request: BotRequest) -> List<ChatCompletionMessageParam>?
 
-val DefaultLLMProps: LLMPropsBuilder = {}
+val DefaultLLMProps: LLMPropsBuilder = { model = ChatModel.GPT_4O_MINI.asString() }
 
 fun createLLMProps(builder: LLMPropsBuilder) = builder
 
@@ -35,6 +36,7 @@ data class LLMProps(
     val presencePenalty: Double? = null,
     val responseFormat: Class<*>? = null,
     val withUsages: Boolean? = null,
+    val parallelToolCalls: Boolean? = null,
     val client: OpenAIClient? = null,
     val messages: List<ChatCompletionMessageParam>? = null,
     val tools: List<LLMTool<*>>? = null,
@@ -51,6 +53,7 @@ data class LLMProps(
             presencePenalty = props.presencePenalty ?: presencePenalty,
             responseFormat = props.responseFormat ?: responseFormat,
             withUsages = props.withUsages ?: withUsages,
+            parallelToolCalls = props.parallelToolCalls ?: parallelToolCalls,
             client = props.client ?: client,
             messages = props.messages ?: messages,
             tools = props.tools ?: tools,
@@ -66,6 +69,7 @@ data class LLMProps(
             presencePenalty(presencePenalty)
             maxCompletionTokens(maxTokens)
             messages(messages.orEmpty())
+            parallelToolCalls?.also { parallelToolCalls(it) }
             withUsages?.ifTrue { streamOptions(ChatCompletionStreamOptions.builder().includeUsage(true).build()) }
             responseFormat?.let { responseFormat(it) }
             tools?.forEach {
@@ -88,6 +92,7 @@ data class LLMProps(
         var presencePenalty: Double? = null
         var responseFormat: Class<*>? = null
         var withUsages: Boolean? = null
+        var parallelToolCalls: Boolean? = null
         var client: OpenAIClient? = null
         var messages: List<ChatCompletionMessageParam>? = null
         var tools: List<LLMTool<*>>? = null
@@ -101,6 +106,7 @@ data class LLMProps(
         fun setPresencePenalty(value: Double?) = apply { this.presencePenalty = value }
         fun setResponseFormat(value: Class<*>?) = apply { this.responseFormat = value }
         fun setWithUsages(value: Boolean?) = apply { this.withUsages = value }
+        fun setParallelToolCalls(value: Boolean?) = apply { this.parallelToolCalls = value }
         fun setClient(value: OpenAIClient?) = apply { this.client = value }
         fun setMessages(value: List<ChatCompletionMessageParam>?) = apply { this.messages = value }
         fun setTools(value: List<LLMTool<*>>?) = apply { this.tools = value }
@@ -143,6 +149,7 @@ data class LLMProps(
             presencePenalty,
             responseFormat,
             withUsages,
+            parallelToolCalls,
             client,
             messages,
             tools,

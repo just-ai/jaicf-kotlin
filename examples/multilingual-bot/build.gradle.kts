@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    `jaicf-junit`
 }
 
 dependencies {
@@ -10,18 +11,14 @@ dependencies {
     implementation(project(":activators:caila"))
     implementation(ktor("ktor-client-jackson"))
     implementation("ch.qos.logback:logback-classic:1.2.3")
-
-    testImplementation(kotlin("test-junit"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
 }
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "17"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "17"
     }
     test {
         useJUnitPlatform()
