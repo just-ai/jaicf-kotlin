@@ -1,4 +1,4 @@
-package com.justai.jaicf.activator.llm.test
+package com.justai.jaicf.activator.llm
 
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription

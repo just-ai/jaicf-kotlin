@@ -8,7 +8,7 @@ plugins {
     `jaicf-kotlin`
     `jaicf-kotlin-serialization`
     `jaicf-publish`
-    `jaicf-junit`
+    `java-test-fixtures`
 }
 
 dependencies {
@@ -32,5 +32,6 @@ dependencies {
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(ktor("ktor-client-mock"))
 
-    implementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
+    testFixturesImplementation(project(":core"))
+    testFixturesImplementation(libs.bundles.junit)
 }

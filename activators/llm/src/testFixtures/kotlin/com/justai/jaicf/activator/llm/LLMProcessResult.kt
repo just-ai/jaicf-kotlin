@@ -1,4 +1,4 @@
-package com.justai.jaicf.activator.llm.test
+package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.agent.agentStateName

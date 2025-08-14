@@ -1,4 +1,4 @@
-package com.justai.jaicf.activator.llm.test
+package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.activator.llm.LLMToolCallsHook
 import com.justai.jaicf.activator.llm.tool.LLMToolResult

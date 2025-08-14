@@ -13,14 +13,18 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":activators:llm"))
 
-    implementation("org.slf4j:slf4j-simple" version {slf4j})
-    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
-    implementation("org.jline:jline:3.30.4")
+    implementation(libs.slf4j.simple)
+    implementation(libs.slf4j.log4j12)
+    implementation(libs.jline)
+
+    testImplementation(testFixtures(project(":activators:llm")))
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
+    test {
+        useJUnitPlatform()
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "17"

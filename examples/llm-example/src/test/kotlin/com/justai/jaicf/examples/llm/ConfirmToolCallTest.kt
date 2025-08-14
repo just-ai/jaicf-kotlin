@@ -1,8 +1,9 @@
 package com.justai.jaicf.examples.llm
 
-import com.justai.jaicf.activator.llm.test.LLMScenarioTest
-import com.justai.jaicf.activator.llm.test.openai.OpenAITest
-import com.justai.jaicf.activator.llm.test.testWithLLM
+
+import com.justai.jaicf.activator.llm.LLMScenarioTest
+import com.justai.jaicf.activator.llm.openai.OpenAITest
+import com.justai.jaicf.activator.llm.testWithLLM
 import org.junit.jupiter.api.Test
 
 @OpenAITest

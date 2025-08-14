@@ -1,4 +1,4 @@
-package com.justai.jaicf.activator.llm.test.openai
+package com.justai.jaicf.activator.llm.openai
 
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
