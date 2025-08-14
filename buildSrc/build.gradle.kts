@@ -11,14 +11,11 @@ repositories {
     mavenCentral()
 }
 
-val kotlinVersion = "2.0.20"
-val reflectVersion = "2.0.20"
-
 dependencies {
-    implementation(kotlin("gradle-plugin", kotlinVersion))
-    implementation(kotlin("serialization", kotlinVersion))
-    implementation(kotlin("reflect", reflectVersion))
-    implementation("com.github.breadmoirai:github-release:2.2.12")
-    implementation("org.jetbrains.dokka:dokka-gradle-plugin:1.4.32")
+    compileOnly(libs.kotlin.serialization)
+
+    implementation(libs.github.release)
+    implementation(libs.dokka.gradle.plugin)
+    implementation(libs.kotlin.reflect)
     implementation(gradleApi())
 }
