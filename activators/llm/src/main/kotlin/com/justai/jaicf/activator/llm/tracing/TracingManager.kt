@@ -151,16 +151,61 @@ class TracingManager private constructor() {
     }
     
     fun endChainRun(
-        chainRunIds: Map<String, String>,
+        runIds: Map<String, String>,
         outputs: Map<String, Any>
     ) {
-        chainRunIds.forEach { (tracerName, runId) ->
+        runIds.forEach { (tracerName, runId) ->
             val tracer = tracers.find { it.name == tracerName }
             if (tracer != null && tracer.isEnabled) {
                 try {
                     tracer.endChainRun(runId, outputs)
                 } catch (e: Exception) {
                     logger.warn("Failed to end chain run with tracer $tracerName: ${e.message}")
+                }
+            }
+        }
+    }
+
+    /**
+     * Start a test chain run that will contain all LLM calls in a test
+     */
+    fun startTestChainRun(
+        context: com.justai.jaicf.context.BotContext,
+        request: com.justai.jaicf.api.BotRequest,
+        testName: String
+    ): Map<String, String> {
+        val runIds = mutableMapOf<String, String>()
+        
+        tracers.forEach { tracer ->
+            if (tracer.isEnabled) {
+                try {
+                    val runId = tracer.startTestChainRun(context, request, testName)
+                    if (runId.isNotEmpty()) {
+                        runIds[tracer.name] = runId
+                    }
+                } catch (e: Exception) {
+                    logger.warn("Failed to start test chain run with tracer ${tracer.name}: ${e.message}")
+                }
+            }
+        }
+        
+        return runIds
+    }
+
+    /**
+     * End a test chain run
+     */
+    fun endTestChainRun(
+        runIds: Map<String, String>,
+        outputs: Map<String, Any>
+    ) {
+        runIds.forEach { (tracerName, runId) ->
+            val tracer = tracers.find { it.name == tracerName }
+            if (tracer != null && tracer.isEnabled) {
+                try {
+                    tracer.endTestChainRun(runId, outputs)
+                } catch (e: Exception) {
+                    logger.warn("Failed to end test chain run with tracer $tracerName: ${e.message}")
                 }
             }
         }

@@ -75,4 +75,21 @@ interface Tracer {
         runId: String,
         outputs: Map<String, Any>
     )
+
+    /**
+     * Start tracing a test chain that contains multiple LLM calls
+     */
+    fun startTestChainRun(
+        context: BotContext,
+        request: BotRequest,
+        testName: String
+    ): String
+
+    /**
+     * End tracing a test chain
+     */
+    fun endTestChainRun(
+        runId: String,
+        outputs: Map<String, Any>
+    )
 }

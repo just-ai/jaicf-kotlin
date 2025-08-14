@@ -184,4 +184,46 @@ class OpenTelemetryTracer(
         logger.info("OpenTelemetry: Ended chain run $runId")
         logger.debug("OpenTelemetry: Chain run outputs: $outputs")
     }
+
+    override fun startTestChainRun(
+        context: BotContext,
+        request: BotRequest,
+        testName: String
+    ): String {
+        if (!isEnabled) return ""
+        
+        val runId = "otel_test_chain_${System.currentTimeMillis()}_${context.clientId}"
+        
+        val attributes = mapOf(
+            "test_name" to testName,
+            "bot_context_id" to context.clientId,
+            "request_id" to request.toString(),
+            "channel" to request.javaClass.simpleName,
+            "session_id" to context.clientId,
+            "client_id" to context.clientId,
+            "test_type" to "LLM Test Chain"
+        )
+        
+        val span = client.startChainSpan("Test Chain: $testName", attributes)
+        activeSpans[runId] = span
+        
+        logger.info("OpenTelemetry: Started test chain run $runId: $testName")
+        
+        return runId
+    }
+
+    override fun endTestChainRun(
+        runId: String,
+        outputs: Map<String, Any>
+    ) {
+        if (!isEnabled || runId.isEmpty()) return
+        
+        val span = activeSpans.remove(runId) ?: return
+        
+        client.addEvent(span, "test_chain.completed", outputs)
+        client.endSpan(span)
+        
+        logger.info("OpenTelemetry: Ended test chain run $runId")
+        logger.debug("OpenTelemetry: Test chain run outputs: $outputs")
+    }
 }

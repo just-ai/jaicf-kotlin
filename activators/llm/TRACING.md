@@ -1,280 +1,193 @@
-# LLM Tracing System
-
-Система трейсинга для LLM активатора JAICF, поддерживающая интеграцию с LangSmith и OpenTelemetry.
+# LLM Tracing в JAICF
 
 ## Обзор
 
-Система трейсинга позволяет отслеживать и анализировать:
-- LLM вызовы (запросы и ответы)
-- Вызовы инструментов (tools)
-- Цепочки операций (chains)
-- Использование токенов и метаданные
+JAICF поддерживает трассировку LLM вызовов через несколько систем:
+- **LangSmith** - для мониторинга и анализа LLM вызовов
+- **OpenTelemetry** - для интеграции с системами observability
 
-## Поддерживаемые системы трейсинга
+## Проблема множественных LLM Call'ов
 
-### 1. LangSmith
+При запуске тестов с трассировкой LangSmith может создаваться множество отдельных LLM Call'ов вместо одного логического run'а. Это происходит потому, что каждый вызов `send()` или `query()` в тесте создает отдельный LLM call.
 
-LangSmith - это платформа для отслеживания, отладки и оценки LLM приложений.
+### Пример проблемы
 
-#### Настройка
-
-Установите переменные окружения:
-
-```bash
-# Основной API ключ LangSmith
-export LANGCHAIN_API_KEY="your-api-key-here"
-
-# Опционально: проект для группировки трейсов
-export LANGCHAIN_PROJECT="your-project-name"
+```kotlin
+@Test
+fun `agent achieves goal`() = testWithLLM {
+    send(user = "Hello", agent = "Greets and asks firstname")  // LLM Call #1
+    send(user = "John", agent = "Asks the lastname")           // LLM Call #2
+    send(user = "Doe", agent = "Asks for age")                // LLM Call #3
+    query("Thirty") returnsResult Goal("John", "Doe", Optional.of(30)) // LLM Call #4
+}
 ```
 
-#### Что отслеживается
+Результат: 4 отдельных LLM Call'а в LangSmith вместо одного логического run'а.
 
-- **LLM вызовы**: модель, параметры, входные сообщения, ответы, использование токенов
-- **Вызовы инструментов**: название инструмента, аргументы, результаты
-- **Цепочки**: последовательности операций с метаданными
+## Решение: Test Chain Tracing
 
-### 2. OpenTelemetry
+Мы реализовали **Test Chain Tracing**, который создает один chain run для всего теста, а все LLM calls становятся дочерними от него.
 
-OpenTelemetry - стандарт для телеметрии в распределенных системах.
+### Как это работает
 
-#### Настройка
+1. **Создание Test Chain Run**: В начале теста создается один chain run
+2. **Дочерние LLM Calls**: Все последующие LLM calls создаются как дочерние от test chain run
+3. **Завершение**: В конце теста test chain run завершается
 
-Установите переменные окружения:
+### Архитектура
 
-```bash
-# Включить OpenTelemetry
-export OTEL_TRACES_ENABLED="true"
+```
+Test Chain Run (Chain)
+├── LLM Call #1 (LLM)
+├── LLM Call #2 (LLM)
+├── LLM Call #3 (LLM)
+└── LLM Call #4 (LLM)
+```
 
-# Endpoint для отправки трейсов (опционально)
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4317"
+### Реализация
 
-# Или использовать ADK
-export ADK_TELEMETRY="otel"
+#### 1. TracingManager
+
+```kotlin
+fun startTestChainRun(
+    context: BotContext,
+    request: BotRequest,
+    testName: String
+): Map<String, String>
+
+fun endTestChainRun(
+    runIds: Map<String, String>,
+    outputs: Map<String, Any>
+)
+```
+
+#### 2. LangSmithTracer
+
+```kotlin
+override fun startTestChainRun(
+    context: BotContext,
+    request: BotRequest,
+    testName: String
+): String {
+    // Создает chain run в LangSmith
+    return client.createRun(
+        runId = runId,
+        name = "Test Chain: $testName",
+        runType = "chain",
+        inputs = inputs,
+        startTime = startTime
+    )
+}
+```
+
+#### 3. Модификация LLM Calls
+
+```kotlin
+override fun startLLMRun(
+    context: BotContext,
+    request: BotRequest,
+    props: LLMProps,
+    messages: List<Map<String, Any>>
+): String {
+    // Проверяем, есть ли test chain run ID
+    val testChainRunId = context.temp["tracing.test_chain_run_id"] as? String
+    
+    val success = if (testChainRunId != null) {
+        // Создаем дочерний run под test chain
+        client.createChildRun(
+            runId = runId,
+            parentRunId = testChainRunId,
+            name = "LLM Call",
+            runType = "llm",
+            inputs = inputs,
+            startTime = startTime
+        )
+    } else {
+        // Создаем standalone run
+        client.createRun(...)
+    }
+}
+```
+
+#### 4. LLMTest
+
+```kotlin
+class LLMTest(testAgent: LLMAgent) {
+    private var testChainRunIds: Map<String, String>? = null
+
+    private fun BotTest.process(input: String): ProcessResult {
+        // Создаем test chain run при первом вызове
+        if (testChainRunIds == null) {
+            val tracingManager = TracingManager.get()
+            testChainRunIds = tracingManager.startTestChainRun(
+                context.botContext, 
+                request, 
+                "LLM Test: ${this::class.java.simpleName}"
+            )
+            
+            // Устанавливаем test chain run ID в контекст
+            testChainRunIds?.let { runIds ->
+                val firstRunId = runIds.values.firstOrNull()
+                if (firstRunId != null) {
+                    context.botContext.temp["tracing.test_chain_run_id"] = firstRunId
+                }
+            }
+        }
+        
+        // ... остальная логика
+    }
+}
 ```
 
 ## Использование
 
-### Автоматическое включение
+### 1. Включение трассировки
 
-Трейсинг автоматически включается при наличии соответствующих переменных окружения.
+Установите переменные окружения:
 
-### Ручное управление
-
-```kotlin
-import com.justai.jaicf.activator.llm.tracing.*
-
-// Создание конфигурации
-val langSmithConfig = LangSmithConfig.create(
-    apiKey = "your-api-key",
-    project = "your-project"
-)
-
-val oTelConfig = OpenTelemetryConfig(
-    enabled = true,
-    endpoint = "http://localhost:4317"
-)
-
-// Инициализация трассировщиков
-val langSmithTracer = LangSmithTracer(langSmithConfig)
-val oTelTracer = OpenTelemetryTracer(oTelConfig)
-
-// Добавление в менеджер
-val manager = TracingManager.get()
-manager.addTracer(langSmithTracer)
-manager.addTracer(oTelTracer)
+```bash
+export LANGSMITH_API_KEY="your_api_key"
+export LANGSMITH_PROJECT="your_project"
+export LANGSMITH_TRACING="true"
 ```
 
-### Интеграция с LLM контекстом
+### 2. Запуск тестов
 
-Трейсинг автоматически интегрируется в следующие методы:
-
-- `LLMContext.chatCompletion()` - отслеживание LLM вызовов
-- `LLMContext.callTool()` - отслеживание вызовов инструментов
-- `LLMContext.withToolCalls()` - отслеживание цепочек инструментов
-
-## Структура трейсов
-
-### LLM Run
-
-```json
-{
-  "id": "langsmith_timestamp_clientId",
-  "name": "LLM Call",
-  "run_type": "llm",
-  "inputs": {
-    "model": "gpt-3.5-turbo",
-    "temperature": 0.7,
-    "messages": [...],
-    "bot_context_id": "...",
-    "request_id": "..."
-  },
-  "outputs": {
-    "content": "LLM response content",
-    "finish_reason": "stop",
-    "choices_count": 1,
-    "model": "gpt-3.5-turbo"
-  }
+```kotlin
+@Test
+fun `test with tracing`() = testWithLLM {
+    send(user = "Hello", agent = "Greets user")
+    send(user = "How are you?", agent = "Asks about well-being")
 }
 ```
 
-### Tool Run
+### 3. Результат в LangSmith
 
-```json
-{
-  "id": "langsmith_tool_timestamp_toolId",
-  "name": "Tool Call: tool_name",
-  "run_type": "tool",
-  "inputs": {
-    "tool_name": "get_weather",
-    "arguments": {...}
-  },
-  "outputs": {
-    "tool_name": "get_weather",
-    "tool_result": "Weather data",
-    "success": true
-  }
-}
-```
-
-### Chain Run
-
-```json
-{
-  "id": "langsmith_chain_timestamp_clientId",
-  "name": "Chain: Tool Calls Chain",
-  "run_type": "chain",
-  "inputs": {
-    "chain_name": "Tool Calls Chain",
-    "bot_context_id": "..."
-  },
-  "outputs": {
-    "tool_calls_count": 2,
-    "tool_names": ["get_weather", "format_response"],
-    "success": true
-  }
-}
-```
-
-## Мониторинг и отладка
-
-### Логи
-
-Система трейсинга выводит подробные логи:
+Вместо множественных LLM Call'ов вы увидите:
 
 ```
-LangSmith: Started LLM run langsmith_1234567890_client123
-LangSmith: LLM run inputs - model: gpt-3.5-turbo, messages: [...]
-LangSmith: Ended LLM run langsmith_1234567890_client123
+Test Chain: AgentWithGoalTest (Chain)
+├── LLM Call (LLM) - "Hello"
+├── LLM Call (LLM) - "How are you?"
+└── Test completed
 ```
 
-### Ошибки
+## Преимущества
 
-При ошибках трейсинга система продолжает работать, логируя проблемы:
+1. **Логическая группировка**: Все LLM calls в тесте группируются в один chain
+2. **Лучшая аналитика**: Можно анализировать производительность всего теста
+3. **Структурированность**: Четкая иерархия runs в LangSmith
+4. **Обратная совместимость**: Существующие тесты работают без изменений
 
-```
-LangSmith: Failed to create run runId, status: 401, body: Unauthorized
-LangSmith: Error creating run runId: java.net.ConnectException
-```
+## Ограничения
 
-## Производительность
+1. **Только для тестов**: Test Chain Tracing работает только в контексте `testWithLLM`
+2. **LangSmith**: Требует настройки LangSmith API
+3. **OpenTelemetry**: Поддерживается, но с ограниченной функциональностью
 
-- Трейсинг выполняется асинхронно и не блокирует основной поток
-- HTTP клиенты используют пулы соединений
-- Настраиваемые таймауты для предотвращения блокировки
-- Graceful degradation при недоступности сервисов трейсинга
+## Будущие улучшения
 
-## Конфигурация
-
-### LangSmith
-
-```kotlin
-data class LangSmithConfig(
-    val enabled: Boolean = false,
-    val apiKey: String? = null,
-    val project: String? = null,
-    val endpoint: String = "https://api.smith.langchain.com",
-    val timeout: Long = 30000L
-)
-```
-
-### OpenTelemetry
-
-```kotlin
-data class OpenTelemetryConfig(
-    val enabled: Boolean = false,
-    val endpoint: String? = null,
-    val serviceName: String = "jaicf-llm"
-)
-```
-
-## Примеры использования
-
-### Простой бот с трейсингом
-
-```kotlin
-val bot = Bot(
-    model = "gpt-3.5-turbo",
-    temperature = 0.7
-) {
-    // Трейсинг автоматически включится при наличии LANGCHAIN_API_KEY
-    // или OTEL_TRACES_ENABLED
-}
-```
-
-### Кастомная конфигурация трейсинга
-
-```kotlin
-val langSmithConfig = LangSmithConfig.create(
-    apiKey = "custom-key",
-    project = "custom-project"
-)
-
-val oTelConfig = OpenTelemetryConfig(
-    enabled = true,
-    endpoint = "http://custom-otel-endpoint:4317"
-)
-
-// Инициализация трассировщиков
-val manager = TracingManager.get()
-manager.addTracer(LangSmithTracer(langSmithConfig))
-manager.addTracer(OpenTelemetryTracer(oTelConfig))
-```
-
-## Устранение неполадок
-
-### LangSmith не работает
-
-1. Проверьте переменную `LANGCHAIN_API_KEY`
-2. Убедитесь, что API ключ действителен
-3. Проверьте доступность `https://api.smith.langchain.com`
-
-### OpenTelemetry не работает
-
-1. Проверьте переменную `OTEL_TRACES_ENABLED`
-2. Убедитесь, что endpoint доступен
-3. Проверьте логи на наличие ошибок подключения
-
-### Общие проблемы
-
-- **Трейсинг не включается**: проверьте переменные окружения
-- **Ошибки сети**: проверьте таймауты и доступность сервисов
-- **Высокое потребление памяти**: настройте размеры пулов соединений
-
-## Разработка
-
-### Добавление нового трассировщика
-
-1. Реализуйте интерфейс `Tracer`
-2. Добавьте конфигурацию в `TracingConstants`
-3. Интегрируйте в `TracingManager`
-
-### Расширение существующих трассировщиков
-
-- Добавьте новые атрибуты в `TracingConstants`
-- Расширьте методы трейсинга в `LLMContextTracing`
-- Обновите тесты в `TracingTest`
-
-## Лицензия
-
-Система трейсинга является частью JAICF и распространяется под той же лицензией.
+1. **Автоматическое определение тестов**: Автоматическое создание test chain runs
+2. **Метрики тестов**: Добавление метрик производительности тестов
+3. **Интеграция с CI/CD**: Автоматическая трассировка в CI/CD pipeline
+4. **Кастомные теги**: Возможность добавления кастомных тегов к test chain runs

@@ -55,17 +55,31 @@ class LangSmithTracer(
             "client_id" to context.clientId
         )
         
-        // Create run in LangSmith
-        val success = client.createRun(
-            runId = runId,
-            name = "LLM Call",
-            runType = "llm",
-            inputs = inputs,
-            startTime = startTime
-        )
+        // Check if we're in a test context and should create a child run
+        val testChainRunId = context.temp["tracing.test_chain_run_id"] as? String
+        
+        val success = if (testChainRunId != null) {
+            client.createChildRun(
+                runId = runId,
+                parentRunId = testChainRunId,
+                name = "LLM Call",
+                runType = "llm",
+                inputs = inputs,
+                startTime = startTime
+            )
+        } else {
+            // Create standalone run
+            client.createRun(
+                runId = runId,
+                name = "LLM Call",
+                runType = "llm",
+                inputs = inputs,
+                startTime = startTime
+            )
+        }
         
         if (success) {
-            logger.info("LangSmith: Started LLM run $runId")
+            logger.info("LangSmith: Started LLM run $runId${if (testChainRunId != null) " under test chain $testChainRunId" else ""}")
             logger.debug("LangSmith: LLM run inputs - model: ${props.model}, messages: $messages")
         } else {
             logger.warn("LangSmith: Failed to create LLM run $runId")
@@ -225,6 +239,64 @@ class LangSmithTracer(
             logger.debug("LangSmith: Chain run outputs: $outputs")
         } else {
             logger.warn("LangSmith: Failed to update chain run $runId")
+        }
+    }
+
+    override fun startTestChainRun(
+        context: BotContext,
+        request: BotRequest,
+        testName: String
+    ): String {
+        if (!isEnabled) return ""
+
+        val runId = UUID.randomUUID().toString()
+        val startTime = System.currentTimeMillis()
+        
+        val inputs = mapOf(
+            "test_name" to testName,
+            "bot_context_id" to context.clientId,
+            "request_id" to request.toString(),
+            "channel" to (request.javaClass.simpleName),
+            "session_id" to context.clientId,
+            "client_id" to context.clientId,
+            "test_type" to "LLM Test Chain"
+        )
+        
+        // Create test chain run in LangSmith
+        val success = client.createRun(
+            runId = runId,
+            name = "Test Chain: $testName",
+            runType = "chain",
+            inputs = inputs,
+            startTime = startTime
+        )
+        
+        if (success) {
+            logger.info("LangSmith: Started test chain run $runId: $testName")
+        } else {
+            logger.warn("LangSmith: Failed to create test chain run $runId")
+        }
+        
+        return runId
+    }
+
+    override fun endTestChainRun(
+        runId: String,
+        outputs: Map<String, Any>
+    ) {
+        if (!isEnabled || runId.isEmpty()) return
+        
+        // Update test chain run in LangSmith
+        val success = client.updateRun(
+            runId = runId,
+            outputs = outputs
+        )
+        
+        if (success) {
+            logger.info("LangSmith: Ended test chain run $runId")
+            logger.debug("LangSmith: Test chain run outputs: $outputs")
+        } else {
+            logger.warn("LangSmith: Failed to update test chain run $runId")
         }
     }
 }
