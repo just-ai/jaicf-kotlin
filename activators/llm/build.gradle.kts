@@ -11,6 +11,10 @@ plugins {
     `jaicf-junit`
 }
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     core()
     api(okHttp("okhttp"))

@@ -22,8 +22,7 @@ class TracingManager private constructor() {
             val manager = get()
             
             // Initialize LangSmith tracer if enabled
-            if (System.getenv("LANGSMITH_TRACING") == "true" &&
-                System.getenv("LANGSMITH_API_KEY") != null) {
+            if (System.getenv("LANGSMITH_API_KEY") != null) {
                 val langSmithTracer = LangSmithTracer.init()
                 manager.addTracer(langSmithTracer)
                 logger.info("LangSmith tracer initialized")

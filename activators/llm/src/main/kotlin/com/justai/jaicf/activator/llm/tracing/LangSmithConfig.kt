@@ -23,9 +23,10 @@ data class LangSmithConfig(
 ) {
     companion object {
         fun fromEnvironment(): LangSmithConfig {
-            val apiKey = System.getenv(TracingConstants.ENV_API_KEY)
-            val project = System.getenv(TracingConstants.ENV_PROJECT) ?: "pr-puzzled-surround-4"
-            val enabled = System.getenv(TracingConstants.ENV_LANGSMITH_TRACING) == "true" && apiKey != null
+            // Use official LangSmith environment variables
+            val apiKey = System.getenv("LANGCHAIN_API_KEY") ?: System.getenv("LANGSMITH_API_KEY")
+            val project = System.getenv("LANGCHAIN_PROJECT") ?: System.getenv("LANGSMITH_PROJECT") ?: "pr-puzzled-surround-4"
+            val enabled = apiKey != null
 
             return LangSmithConfig(
                 enabled = enabled,
