@@ -2,6 +2,7 @@
 kotlin = "2.2.0"
 github = "2.5.2"
 dokka-gradle = "2.0.0"
+kotlinxSerialization = "1.9.0"
 
 jackson = "2.18.2"
 slf4j = "2.0.17"
@@ -12,14 +13,12 @@ coroutinesCore = "1.10.2"
 tomcatServletApi = "11.0.9"
 logbackGelfAppender = "1.5"
 mockk = "1.14.5"
-okHttp = "5.1.0"
-mongoDbDriverSync = "5.5.1"
-embedMongo = "4.20.1"
+mongoDbDriverSync = "4.1.1"
+embedMongo = "3.0.0"
 mapDb = "3.1.0"
 eclipseCollections = "13.0.0"
 logbackClassic = "1.5.18"
 jline = "3.30.4"
-#kotlinTelegram = "6.3.0"
 kotlinTelegram = "6.0.4"
 slack = "1.45.3"
 googleActions = "1.8.0"
@@ -32,7 +31,6 @@ grpc-okhttp = "1.73.0"
 google-dialogflow = "4.74.0"
 
 [libraries]
-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 github-release = { module = "com.github.breadmoirai:github-release", version.ref = "github" }
 dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka-gradle" }
 
@@ -41,28 +39,23 @@ kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref =
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutinesCore" }
 kotlinx-coroutines-slf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j", version.ref = "coroutinesCore" }
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
-ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
-ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-cio-jvm = { module = "io.ktor:ktor-client-cio-jvm", version.ref = "ktor" }
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization-jvm", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging-jvm", version.ref = "ktor" }
 ktor-client-json = { module = "io.ktor:ktor-client-json-jvm", version.ref = "ktor" }
 ktor-client = { module = "io.ktor:ktor-client", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
 ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
 ktor-kotlinx-serialization = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version = { strictly = "4.12.0" } }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version = { strictly = "4.12.0" } }
-#okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okHttp" }
-#okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okHttp" }
 
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 tomcat-servlet-api = { module = "org.apache.tomcat:tomcat-servlet-api", version.ref = "tomcatServletApi" }
@@ -103,6 +96,7 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk"}
 ktor-mockk = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
 [plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [bundles]
