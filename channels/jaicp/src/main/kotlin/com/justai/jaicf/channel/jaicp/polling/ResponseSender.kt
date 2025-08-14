@@ -26,8 +26,8 @@ internal class ResponseSender(private val client: HttpClient) : WithLogger {
     }
 
     private suspend fun send(url: String, response: JaicpBotResponse) {
-        client.post<String>("$url/sendMessage".toUrl()) {
-            body = response
+        client.post("$url/sendMessage".toUrl()) {
+            setBody(response)
             contentType(ContentType.Application.Json)
         }
     }

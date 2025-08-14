@@ -1,10 +1,10 @@
 package com.justai.jaicf.channel.invocationapi
 
-import io.ktor.application.*
-import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.request.receiveText
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.post
+import io.ktor.server.routing.get
 
 typealias RouteToInvocableChannel = Pair<String, InvocableBotChannel>
 

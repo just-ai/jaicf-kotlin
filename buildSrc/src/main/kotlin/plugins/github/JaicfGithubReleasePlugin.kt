@@ -34,11 +34,11 @@ class JaicfGithubRelease(project: Project) : PluginAdapter(project) {
     override fun Project.afterEvaluated() {
         configure<GithubReleaseExtension> {
             setToken(githubToken)
-            setOwner(githubOwner)
-            setRepo(githubRepo)
-            setTagName(githubTagName)
-            setReleaseName(githubReleaseName)
-            setOverwrite(true)
+            owner.set(githubOwner)
+            repo.set(githubRepo)
+            tagName.set(githubTagName)
+            releaseName.set(githubReleaseName)
+            overwrite.set(true)
         }
     }
 }

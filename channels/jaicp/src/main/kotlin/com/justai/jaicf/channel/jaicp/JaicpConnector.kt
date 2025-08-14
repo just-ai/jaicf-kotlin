@@ -10,6 +10,7 @@ import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
+import java.util.Locale
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -106,10 +107,10 @@ abstract class JaicpConnector(
     abstract fun getRunningChannels(): Map<String, JaicpBotChannel>
 
     protected fun getChannelProxyUrl(config: ChannelConfig) =
-        "$proxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
+        "$proxyUrl/${config.channel}/${config.channelType.lowercase(Locale.getDefault())}".toUrl()
 
     private fun getApiProxyUrl(config: ChannelConfig) =
-        "$apiProxyUrl/${config.channel}/${config.channelType.toLowerCase()}".toUrl()
+        "$apiProxyUrl/${config.channel}/${config.channelType.lowercase(Locale.getDefault())}".toUrl()
 
     protected open fun processJaicpRequest(request: JaicpBotRequest, channel: JaicpBotChannel): JaicpResponse =
         jaicpExecutor.executeSync(request, channel)

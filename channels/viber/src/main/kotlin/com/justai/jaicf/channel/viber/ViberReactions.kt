@@ -40,7 +40,7 @@ import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
 import io.ktor.client.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -198,7 +198,11 @@ private fun List<CarouselElement>.toCarouselReactionElements() = map {
 private fun ViberButton.toReactionButtonsList() = listOf(CarouselReaction.Button(text, redirectUrl))
 
 private val client = HttpClient {
-    HttpTimeout(2000, 2000, 2000)
+    install(HttpTimeout) {
+        requestTimeoutMillis = 2000
+        connectTimeoutMillis = 2000
+        socketTimeoutMillis = 2000
+    }
 }
 
 private fun getFileSize(url: String): Int {

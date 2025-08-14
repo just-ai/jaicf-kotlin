@@ -17,7 +17,7 @@ import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.ConversationLogObfuscator
 import com.justai.jaicf.logging.ConversationLogger
 import io.ktor.client.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.logging.LogLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

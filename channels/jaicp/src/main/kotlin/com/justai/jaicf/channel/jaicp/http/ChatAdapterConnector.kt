@@ -9,7 +9,8 @@ import com.justai.jaicf.channel.jaicp.livechat.exceptions.NoOperatorChannelConfi
 import com.justai.jaicf.channel.jaicp.livechat.exceptions.NoOperatorsOnlineException
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
-import io.ktor.client.features.*
+import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
@@ -24,7 +25,7 @@ internal class ChatAdapterConnector(
 
     fun listChannels(): List<ChannelConfig> = runBlocking {
         try {
-            httpClient.get("$baseUrl/channels")
+            httpClient.get("$baseUrl/channels").body()
         } catch (e: ClientRequestException) {
             throw error("Invalid access token: $e")
         }
@@ -32,9 +33,9 @@ internal class ChatAdapterConnector(
 
     suspend fun sendLogAsync(logModel: JaicpLogModel) {
         try {
-            httpClient.post<String>("$baseUrl/processLogs") {
+            httpClient.post("$baseUrl/processLogs") {
                 contentType(ContentType.Application.Json)
-                body = logModel
+                setBody(logModel)
             }
         } catch (e: Exception) {
             logger.debug("Failed to produce logs to JAICP", e)
@@ -44,8 +45,8 @@ internal class ChatAdapterConnector(
     fun initLiveChat(liveChatInitRequest: LiveChatInitRequest) {
         try {
             runBlocking {
-                httpClient.post<String>("$baseUrl/initLiveChatSwitch") {
-                    body = liveChatInitRequest
+                httpClient.post("$baseUrl/initLiveChatSwitch") {
+                    setBody(liveChatInitRequest)
                     contentType(ContentType.Application.Json)
                 }
             }

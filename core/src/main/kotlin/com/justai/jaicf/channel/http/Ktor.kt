@@ -1,11 +1,11 @@
 package com.justai.jaicf.channel.http
 
-import io.ktor.application.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.request.receiveStream
+import io.ktor.server.response.respondOutputStream
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.post
 import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

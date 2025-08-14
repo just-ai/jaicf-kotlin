@@ -3,9 +3,9 @@ package com.justai.jaicf.examples.helloworld.channel
 import com.justai.jaicf.channel.aimybox.AimyboxChannel
 import com.justai.jaicf.channel.http.httpBotRouting
 import com.justai.jaicf.examples.helloworld.helloWorldBot
-import io.ktor.routing.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.server.routing.routing
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 
 fun main() {
     embeddedServer(Netty, 7000) {

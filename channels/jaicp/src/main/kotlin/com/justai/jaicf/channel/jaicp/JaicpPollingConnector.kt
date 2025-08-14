@@ -7,7 +7,7 @@ import com.justai.jaicf.channel.jaicp.http.HttpClientFactory
 import com.justai.jaicf.channel.jaicp.polling.Dispatcher
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.logging.LogLevel
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 

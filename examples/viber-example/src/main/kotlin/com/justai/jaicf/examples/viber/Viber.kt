@@ -4,9 +4,9 @@ import com.justai.jaicf.channel.http.httpBotRouting
 import com.justai.jaicf.channel.viber.ViberBotConfig
 import com.justai.jaicf.channel.viber.ViberChannel
 import com.justai.jaicf.channel.viber.ViberChannelConfig
-import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.routing.routing
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -29,7 +29,7 @@ suspend fun main() {
     )
 
     val server = GlobalScope.async {
-        val server: NettyApplicationEngine = embeddedServer(Netty, 8000) {
+        val server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration> = embeddedServer(Netty, 8000) {
             routing {
                 httpBotRouting("/" to viber)
             }

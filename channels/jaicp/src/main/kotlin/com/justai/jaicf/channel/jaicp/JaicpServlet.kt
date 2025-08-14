@@ -5,8 +5,8 @@ import com.justai.jaicf.channel.http.HttpBotChannelServlet
 import com.justai.jaicf.channel.jaicp.endpoints.CHANNEL_CHECK_URL
 import com.justai.jaicf.channel.jaicp.endpoints.HEALTH_CHECK_URL
 import com.justai.jaicf.channel.jaicp.endpoints.RELOAD_CONFIGS_URL
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 
 /**
  * HttpServlet implementation that processes POST through the [HttpBotChannel] and creates service endpoints for JAICP.
@@ -37,13 +37,13 @@ open class JaicpServlet(private val connector: JaicpWebhookConnector) : HttpBotC
     }
 
     private fun HttpServletResponse.ok() {
-        setStatus(HttpServletResponse.SC_OK)
+        status = HttpServletResponse.SC_OK
         writer.write("OK")
         writer.flush()
     }
 
     private fun HttpServletResponse.notFound(message: String) {
-        setStatus(HttpServletResponse.SC_NOT_FOUND)
+        status = HttpServletResponse.SC_NOT_FOUND
         writer.write(message)
         writer.flush()
     }

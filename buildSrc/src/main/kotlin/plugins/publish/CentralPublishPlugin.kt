@@ -43,7 +43,7 @@ private const val MAVEN_CENTRAL = "MavenCentral"
 
 class CentralPublishPlugin : Plugin<Project> by apply<CentralPublish>()
 
-@Suppress("DuplicatedCode", "UnstableApiUsage")
+@Suppress("DuplicatedCode")
 class CentralPublish(project: Project) : PluginAdapter(project) {
     private val properties by lazy { loadLocalProperties() }
     private val secKey by lazy { properties.getProperty(SIGNING_KEY) }
@@ -62,7 +62,7 @@ class CentralPublish(project: Project) : PluginAdapter(project) {
             val dokkaJavadoc = tasks.getByName("dokkaJavadoc", DokkaTask::class) {
                 dokkaSourceSets {
                     configureEach {
-                        outputDirectory.set(File("$buildDir/javadoc"))
+                        outputDirectory.set(File("${layout.buildDirectory.get()}/javadoc"))
                         noStdlibLink.set(true)
                         noJdkLink.set(true)
                     }
@@ -139,7 +139,7 @@ private val Project.isMavenCentralPublication: Boolean
 private fun Project.extraProperty(name: String) =
     project.extra.properties[name] as? String ?: error("No $name defined")
 
-@Suppress("UnstableApiUsage", "DuplicatedCode")
+@Suppress("DuplicatedCode")
 private fun MavenPublication.configurePom(
     pomName: String,
     pomDescription: String

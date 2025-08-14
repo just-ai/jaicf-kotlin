@@ -1,7 +1,7 @@
 package com.justai.jaicf.channel.viber.sdk.api
 
 import io.ktor.client.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.utils.io.jvm.javaio.*
@@ -11,7 +11,9 @@ import kotlinx.coroutines.runBlocking
 class ViberKtorClient(private val logLevel: LogLevel = LogLevel.INFO) : ViberHttpClient {
 
     private val httpClient = HttpClient {
-        Logging(Logger.DEFAULT, logLevel)
+        install(Logging) {
+            level = logLevel
+        }
     }
 
     override fun post(url: String, requestBody: String, headers: Map<String, String>) =
@@ -27,9 +29,9 @@ class ViberKtorClient(private val logLevel: LogLevel = LogLevel.INFO) : ViberHtt
 
         val response: HttpResponse = httpClient.post(url) {
             headers.forEach { header(it.key, it.value) }
-            body = requestBody
+            setBody(requestBody)
         }
 
-        return response.content.toInputStream().bufferedReader().use { it.readText() }
+        return response.bodyAsChannel().toInputStream().bufferedReader().use { it.readText() }
     }
 }

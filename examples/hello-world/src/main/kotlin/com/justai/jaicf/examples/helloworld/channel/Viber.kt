@@ -4,17 +4,16 @@ import com.justai.jaicf.channel.http.httpBotRouting
 import com.justai.jaicf.channel.viber.ViberBotConfig
 import com.justai.jaicf.channel.viber.ViberChannel
 import com.justai.jaicf.examples.helloworld.helloWorldBot
-import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import io.ktor.server.routing.*
+import kotlinx.coroutines.awaitCancellation
 
 suspend fun main() {
     val authToken =
         System.getenv("VIBER_AUTH_TOKEN")
-            ?: print("Enter your Viber auth token: ").run { readLine() }
-            ?: throw IllegalArgumentException()
+            ?: print("Enter your Viber auth token: ").run { readlnOrNull() }
+            ?: error("Viber auth token is required")
 
     val viber = ViberChannel(
         helloWorldBot,
@@ -24,15 +23,16 @@ suspend fun main() {
         )
     )
 
-    val server = GlobalScope.async {
-        val server: NettyApplicationEngine = embeddedServer(Netty, 8000) {
-            routing {
-                httpBotRouting("/" to viber)
-            }
+    val engine = embeddedServer(Netty, port = 8000) {
+        routing {
+            httpBotRouting("/" to viber)
         }
-        server.start(wait = true)
     }
 
+    engine.start(wait = false)
+
+
     viber.initWebhook("https://8d0c89a12176.ngrok.io") // Enter your url
-    server.await()
+
+    awaitCancellation()
 }
