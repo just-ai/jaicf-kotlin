@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.tool.*
+import com.justai.jaicf.activator.llm.tracing.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
@@ -43,6 +44,13 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     private lateinit var acc: ChatCompletionAccumulator
 
     private var completed: CompletableDeferred<List<ChatCompletionChunk>>? = null
+    
+    // Initialize tracing manager
+    init {
+        if (llm.props.isTracingEnabled) {
+            TracingManager.initFromEnvironment()
+        }
+    }
 
     suspend fun Reactions.sayFinalContent() =
         llm.awaitFinalContent()?.let(::say)
@@ -140,16 +148,30 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     }
 
     suspend fun LLMContext.chatCompletion(): ChatCompletion {
+        // Start tracing if enabled
+        val runIds = startTracing(params, props)
+        
         return try {
-            acc.chatCompletion()
+            val completion = acc.chatCompletion()
+            
+            // End tracing with completion data WITHOUT calling usage() (avoid recursion)
+            endTracing(completion, completion.usage().orElse(null))
+            
+            completion
         } catch (e: Exception) {
             chunkStream().count()
-            acc.chatCompletion()
+            val completion = acc.chatCompletion()
+            
+            // End tracing even on error, again use usage from the completion directly
+            endTracing(completion, completion.usage().orElse(null))
+            
+            completion
         }
     }
 
     suspend fun LLMContext.choice() = chatCompletion().choices().first()
 
+    // Keep this as-is if needed elsewhere, but note it will trigger chatCompletion() if not computed yet.
     suspend fun LLMContext.usage() = chatCompletion().usage()
 
     suspend fun LLMContext.message() = choice().message()
@@ -222,11 +244,14 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 
     @Throws(LLMToolInterruptionException::class)
     suspend fun LLMContext.callTool(call: ChatCompletionMessageToolCall): LLMToolResult {
+        // Start tool tracing
+        val toolRunIds = startToolTracing(call, null)
+        
         val function = call.function()
         val tool = props.tools?.find { t -> t.definition.name == function.name() }
         val args = tool?.arguments(call)
 
-        return LLMToolResult(
+        val result = LLMToolResult(
             callId = call.id(),
             name = function.name(),
             arguments = args,
@@ -257,6 +282,11 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 )
             }
         }
+        
+        // End tool tracing
+        endToolTracing(toolRunIds, result)
+        
+        return result
     }
 
     suspend fun LLMContext.submitToolResults(): List<LLMToolResult> {
@@ -309,6 +339,9 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     suspend fun LLMContext.withToolCalls(
         block: LLMWithToolCalls? = null
     ) = apply {
+        // Start chain tracing
+        val chainRunIds = startChainTracing("Tool Calls Chain")
+        
         var toolCalls = false
         var results: List<LLMToolResult> = emptyList()
         do {
@@ -318,6 +351,14 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 api.run { submitToolResults() }
             }
         } while (toolCalls)
+        
+        // End chain tracing with results
+        val outputs = mapOf(
+            "tool_calls_count" to results.size,
+            "tool_names" to results.map { it.name },
+            "success" to results.all { it.result !is String || !it.result.toString().startsWith("Error:") }
+        )
+        endChainTracing(chainRunIds, outputs)
     }
 
     suspend fun LLMContext.awaitFinalMessage() =

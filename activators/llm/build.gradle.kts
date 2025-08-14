@@ -29,6 +29,17 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:3.0.2")
     implementation("io.ktor:ktor-serialization-jackson:3.0.2")
 
+    // LangSmith tracing dependencies
+    implementation("dev.langchain4j:langchain4j:1.0.0")
+    implementation("dev.langchain4j:langchain4j-open-ai:1.0.0")
+    implementation("dev.langchain4j:langchain4j-core:1.0.0")
+    
+    // OpenTelemetry tracing dependencies
+    implementation("io.opentelemetry:opentelemetry-api:1.30.1")
+    implementation("io.opentelemetry:opentelemetry-sdk:1.30.1")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.30.1")
+    implementation("io.opentelemetry:opentelemetry-semconv:1.30.1-alpha")
+
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(ktor("ktor-client-mock"))
 

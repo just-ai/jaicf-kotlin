@@ -41,8 +41,8 @@ data class LLMTestResult(
 class LLMTestRequestContext(
     override val newSession: Boolean = false,
 ) : RequestContext(newSession, null) {
-    lateinit var testResult: LLMTestResult
-    lateinit var processResult: ProcessResult
+    var testResult: LLMTestResult? = null
+    var processResult: ProcessResult? = null
 }
 
 class LLMTest(testAgent: LLMAgent) {
@@ -54,11 +54,23 @@ class LLMTest(testAgent: LLMAgent) {
         val request = QueryBotRequest(clientId, input)
 
         testEngine.process(request, reactions, context)
+        
+        val testResult = context.testResult
+        if (testResult == null) {
+            throw IllegalStateException("Test result was not set. This indicates a problem with the test setup.")
+        }
+        
         assertTrue(
-            context.testResult.passed,
-            context.testResult.error.getOrNull() ?: "LLM test failed"
+            testResult.passed,
+            testResult.error.getOrNull() ?: "LLM test failed"
         )
-        return context.processResult
+        
+        val processResult = context.processResult
+        if (processResult == null) {
+            throw IllegalStateException("Process result was not set. This indicates a problem with the test setup.")
+        }
+        
+        return processResult
     }
 
     fun BotTest.chat(user: String, agent: String) = process(
