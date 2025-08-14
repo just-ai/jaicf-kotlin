@@ -5,17 +5,24 @@ ext[POM_NAME] = "JAICF-Kotlin RASA Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin RASA Activator Adapter. Provides intent recognition and named entity extraction."
 
 plugins {
-    `jaicf-kotlin`
-    `jaicf-kotlin-serialization`
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     `jaicf-publish`
-    `jaicf-junit`
 }
 
 dependencies {
     core()
-    api(ktor("ktor-client-cio"))
-    api(ktor("ktor-client-serialization-jvm"))
-    api(ktor("ktor-client-logging-jvm"))
-    testImplementation(ktor("ktor-client-mock"))
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit" version { kotlin })
+    api(libs.ktor.client.cio)
+    api(libs.ktor.client.logging)
+    api(libs.ktor.client.serialization)
+    api(libs.ktor.kotlinx.serialization)
+    api(libs.ktor.client.content.negotiation)
+
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlin.stdlib)
+
+    testImplementation(libs.ktor.mockk)
+    testImplementation(libs.bundles.junit)
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }

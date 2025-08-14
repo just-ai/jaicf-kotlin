@@ -5,19 +5,20 @@ ext[POM_NAME] = "JAICF-Kotlin MapDB Bot Context Manager"
 ext[POM_DESCRIPTION] = "MapDB BotContextManager implementation to store your JAICF bot's context"
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
-    `jaicf-junit`
 }
 
 dependencies {
     core()
-    api(jackson())
-    api("org.mapdb:mapdb:3.0.8") {
-        exclude("org.eclipse.collections")
-    }
+    api(libs.jackson.module.kotlin)
+    api(libs.map.db)
 
-    implementation("org.eclipse.collections", "eclipse-collections", "11.1.0")
+    implementation(libs.eclipse.collections)
+    implementation(libs.kotlin.stdlib)
 
+    testImplementation(libs.bundles.junit)
     testImplementation(testFixtures(project(":core")))
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }

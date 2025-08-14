@@ -5,12 +5,14 @@ ext[POM_NAME] = "JAICF-Kotlin Slack Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Aimybox Slack implementation. Enables JAICF-Kotlin integration with Slack"
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api(`coroutines-core`())
-    api("com.slack.api:bolt:1.6.1")
+    api(libs.kotlinx.coroutines.core)
+    api(libs.slack)
+
+    implementation(libs.kotlin.stdlib)
 }

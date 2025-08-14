@@ -1,22 +1,13 @@
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
 }
 
 dependencies {
-    implementation(kotlin("stdlib", Version.stdLib))
+    implementation(libs.kotlin.stdlib)
 
-    implementation(project(":core"))
+    core()
     implementation(project(":channels:jaicp"))
     implementation(project(":activators:caila"))
 
-    implementation("ch.qos.logback:logback-classic:${Version.logback}")
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
+    implementation(libs.logback.classic)
 }

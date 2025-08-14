@@ -5,33 +5,38 @@ ext[POM_NAME] = "JAICF-Kotlin LLM Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin LLM Activator Adapter."
 
 plugins {
-    `jaicf-kotlin`
-    `jaicf-kotlin-serialization`
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     `jaicf-publish`
     `java-test-fixtures`
 }
 
 dependencies {
     core()
-    api(okHttp("okhttp"))
-    api(okHttp("logging-interceptor"))
-    api(`coroutines-core`())
-    api("com.openai:openai-java:2.11.0") {
+    api(libs.okhttp)
+    api(libs.okhttp.logging.interceptor)
+    api(libs.kotlinx.coroutines.core)
+    api(libs.openai.java) {
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("com.squareup.okhttp3", "logging-interceptor")
     }
-    implementation(jackson())
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${Version.jackson}")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.jackson}")
-    implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.jackson.datatype.jsr310)
+    implementation(libs.modelcontextprotocol)
 
-    api("io.ktor:ktor-client:3.0.2")
-    implementation("io.ktor:ktor-client-content-negotiation:3.0.2")
-    implementation("io.ktor:ktor-serialization-jackson:3.0.2")
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlin.stdlib)
 
-    testImplementation("io.mockk:mockk" version { mockk })
-    testImplementation(ktor("ktor-client-mock"))
+    api(libs.ktor.client)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.jackson)
+
+    testImplementation(libs.ktor.mockk)
+    testImplementation(libs.bundles.junit)
 
     testFixturesImplementation(project(":core"))
     testFixturesImplementation(libs.bundles.junit)
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }

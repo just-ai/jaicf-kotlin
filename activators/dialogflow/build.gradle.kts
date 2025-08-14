@@ -5,12 +5,14 @@ ext[POM_NAME] = "JAICF-Kotlin Dialogflow Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Dialogflow Activator Adapter. Provides intent recognition and named entity extraction."
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api("com.google.cloud:google-cloud-dialogflow:0.109.0-alpha")
-    api("io.grpc:grpc-okhttp:1.24.0")
+    api(libs.google.dialogflow)
+    api(libs.grpc.okhttp)
+
+    implementation(libs.kotlin.stdlib)
 }

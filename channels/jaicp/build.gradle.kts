@@ -5,28 +5,35 @@ ext[POM_NAME] = "JAICF-Kotlin JAICP Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin JAICP Channel implementation. Enables JAICF-Kotlin integration with JAICP infrastructure and channels"
 
 plugins {
-    `jaicf-kotlin`
-    `jaicf-kotlin-serialization`
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     `jaicf-publish`
-    `jaicf-junit`
 }
 
 dependencies {
     core()
 
-    implementation(`tomcat-servlet`())
+    implementation(libs.tomcat.servlet.api)
 
-    api("de.appelgriepsch.logback:logback-gelf-appender" version { logbackGelfAppender })
-    api(kotlinx("kotlinx-coroutines-slf4j") version { coroutinesCore })
-    api(`coroutines-core`())
+    api(libs.kotlinx.coroutines.slf4j)
+    api(libs.logback.gelf.appender)
+    api(libs.kotlinx.coroutines.core)
 
-    api(ktor("ktor-client-cio-jvm"))
-    api(ktor("ktor-client-logging-jvm"))
-    api(ktor("ktor-client-json-jvm"))
-    api(ktor("ktor-client-serialization-jvm"))
-    api(ktor("ktor-server-netty"))
+    api(libs.ktor.client.cio.jvm)
+    api(libs.ktor.client.logging)
+    api(libs.ktor.client.json)
+    api(libs.ktor.client.serialization)
+    api(libs.ktor.kotlinx.serialization)
+    api(libs.ktor.client.content.negotiation)
+    api(libs.ktor.server.netty)
+    implementation(platform(libs.ktor.bom))
 
-    testImplementation("io.mockk:mockk" version { mockk })
-    testImplementation("io.ktor:ktor-client-mock" version { ktor })
-    testImplementation(kotlin("test-junit"))
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlin.stdlib)
+
+    testImplementation(libs.mockk)
+    testImplementation(libs.ktor.mockk)
+    testImplementation(libs.bundles.junit)
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }

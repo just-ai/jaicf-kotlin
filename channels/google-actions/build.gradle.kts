@@ -5,16 +5,17 @@ ext[POM_NAME] = "JAICF-Kotlin Google Actions Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Google Actions Channel implementation. Enables JAICF-Kotlin integration with Google Actions SDK and Dialogflow"
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api(jackson())
-    api("com.google.actions:actions-on-google:1.8.0") {
+    api(libs.jackson.module.kotlin)
+    api(libs.actions.on.google) {
         exclude("org.jetbrains.kotlin")
     }
 
-    implementation(kotlin("reflect", Version.reflect))
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlin.reflect)
 }

@@ -5,15 +5,19 @@ ext[POM_NAME] = "JAICF-Kotlin Lex Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Lex Activator Adapter. Provides intent recognition and named entity extraction."
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
-    `jaicf-junit`
 }
 
 dependencies {
     core()
-    api(jackson())
-    api("software.amazon.awssdk:lexruntimev2:2.15.69")
+    api(libs.jackson.module.kotlin)
+    api(libs.lexruntimev2)
 
-    testImplementation("io.mockk:mockk" version { mockk })
+    implementation(libs.kotlin.stdlib)
+
+    testImplementation(libs.mockk)
+    testImplementation(libs.bundles.junit)
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }

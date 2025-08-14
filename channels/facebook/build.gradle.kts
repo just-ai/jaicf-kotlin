@@ -5,14 +5,16 @@ ext[POM_NAME] = "JAICF-Kotlin Facebook Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Facebook Channel implementation. Enables JAICF-Kotlin integration with Facebook."
 
 plugins {
-    `jaicf-kotlin`
-    `jaicf-kotlin-serialization`
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api("com.github.messenger4j:messenger4j:1.1.0") {
+    api(libs.messenger4j) {
         exclude("org.jetbrains.kotlin")
     }
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlin.stdlib)
 }

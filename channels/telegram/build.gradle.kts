@@ -5,18 +5,20 @@ ext[POM_NAME] = "JAICF-Kotlin Telegram Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Telegram Channel implementation. Enables JAICF-Kotlin integration with Telegram"
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.4") {
+    api(libs.kotlin.telegram.bot) {
         exclude("com.github.kotlin-telegram-bot.kotlin-telegram-bot", "webhook")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("com.squareup.okhttp3", "logging-interceptor")
     }
-    api(okHttp("okhttp"))
-    api(okHttp("logging-interceptor"))
+    api(libs.okhttp)
+    api(libs.okhttp.logging.interceptor)
+
+    implementation(libs.kotlin.stdlib)
 }

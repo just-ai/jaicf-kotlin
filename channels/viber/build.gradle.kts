@@ -5,14 +5,16 @@ ext[POM_NAME] = "JAICF-Kotlin Viber Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Viber Channel implementation. Enables JAICF-Kotlin integration with Viber"
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api(`coroutines-core`())
-    api(ktor("ktor-client-cio"))
-    api(ktor("ktor-client-logging-jvm"))
-    api(jackson())
+    api(libs.kotlinx.coroutines.core)
+    api(libs.ktor.client.cio)
+    api(libs.ktor.client.logging)
+    api(libs.jackson.module.kotlin)
+
+    implementation(libs.kotlin.stdlib)
 }

@@ -1,6 +1,6 @@
 plugins {
-    kotlin("jvm")
-    `jaicf-junit`
+    alias(libs.plugins.kotlin.jvm)
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -8,9 +8,9 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib", Version.stdLib))
+    implementation(libs.kotlin.stdlib)
 
-    implementation(project(":core"))
+    core()
     implementation(project(":activators:llm"))
 
     implementation(libs.slf4j.simple)
@@ -26,7 +26,7 @@ tasks {
     test {
         useJUnitPlatform()
     }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "17"
+    build {
+        dependsOn(shadowJar)
     }
 }

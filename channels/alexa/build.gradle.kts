@@ -5,13 +5,14 @@ ext[POM_NAME] = "JAICF-Kotlin Alexa Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Alexa Channel implementation. Enables JAICF-Kotlin integration with Amazon Alexa."
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api(jackson())
-    api("com.amazon.alexa:ask-sdk:2.37.1")
-    implementation(kotlin("reflect", Version.reflect))
+    api(libs.jackson.module.kotlin)
+    api(libs.amazon.alexa)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlin.stdlib)
 }

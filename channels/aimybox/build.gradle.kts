@@ -5,11 +5,13 @@ ext[POM_NAME] = "JAICF-Kotlin Aimybox Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Aimybox Channel implementation. Enables JAICF-Kotlin integration with Aimybox"
 
 plugins {
-    `jaicf-kotlin`
-    `jaicf-kotlin-serialization`
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     `jaicf-publish`
 }
 
 dependencies {
     core()
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlin.stdlib)
 }

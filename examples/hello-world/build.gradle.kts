@@ -1,6 +1,5 @@
 plugins {
-    kotlin("jvm")
-    `jaicf-junit`
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -8,15 +7,19 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib", Version.stdLib))
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.core)
 
-    implementation(project(":core"))
-    implementation("org.slf4j:slf4j-simple" version {slf4j})
-    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
-    implementation("io.ktor:ktor-server-netty" version {ktor})
+    core()
+    implementation(libs.slf4j.log4j12)
+    implementation(libs.slf4j.simple)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
 
     implementation(project(":channels:jaicp"))
-    implementation(project(":channels:telegram"))
+    implementation(project(":channels:telegram")) {
+        exclude(group = "io.ktor")
+    }
     implementation(project(":channels:alexa"))
     implementation(project(":channels:google-actions"))
     implementation(project(":channels:facebook"))
@@ -25,13 +28,13 @@ dependencies {
 
     implementation(project(":activators:dialogflow"))
     implementation(project(":activators:lex"))
+
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "17"
+    test {
+        useJUnitPlatform()
     }
 }

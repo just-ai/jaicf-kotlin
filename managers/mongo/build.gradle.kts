@@ -5,17 +5,20 @@ ext[POM_NAME] = "JAICF-Kotlin MongoDB Bot Context Manager"
 ext[POM_DESCRIPTION] = "MongoDB BotContextManager implementation to store your JAICF bot's context"
 
 plugins {
-    `jaicf-kotlin`
-    `jaicf-junit`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
 }
 
 dependencies {
     core()
-    api(jackson())
-    api("org.mongodb:mongodb-driver-sync:4.1.1")
-    implementation(kotlin("reflect", Version.reflect))
+    api(libs.jackson.module.kotlin)
+    api(libs.mongodb.driver.sync)
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlin.stdlib)
 
-    testImplementation("de.flapdoodle.embed:de.flapdoodle.embed.mongo:3.0.0")
+    testImplementation(libs.embed.mongo)
+    testImplementation(libs.bundles.junit)
     testImplementation(testFixtures(project(":core")))
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }

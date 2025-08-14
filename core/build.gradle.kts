@@ -5,25 +5,25 @@ ext[POM_NAME] = "JAICF-Kotlin Core component"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Core component. Provides DSL, Tests API and multiple implementable interfaces."
 
 plugins {
-    `jaicf-kotlin`
+    alias(libs.plugins.kotlin.jvm)
     `jaicf-publish`
-    `jaicf-junit`
     `java-test-fixtures`
 }
 
 dependencies {
-    api(slf4j("slf4j-api"))
+    api(libs.slf4j.api)
 
-    implementation(`coroutines-core`())
-    implementation(`tomcat-servlet`())
-    implementation(ktor("ktor-server-core"))
-    implementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    implementation("org.junit.jupiter:junit-jupiter-params" version { jUnit })
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.tomcat.servlet.api)
+    implementation(libs.ktor.server.core)
+    implementation(libs.bundles.junit)
+    implementation(libs.kotlin.stdlib)
 
-    testImplementation(kotlin("test-junit"))
-    testImplementation("ch.qos.logback:logback-classic:1.2.3")
+    testImplementation(libs.bundles.junit)
+    testImplementation(libs.logback.classic)
 
-    testFixturesApi("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    testFixturesApi(kotlin("test-junit"))
-    testFixturesApi("ch.qos.logback:logback-classic:1.2.3")
+    testFixturesApi(libs.bundles.junit)
+    testFixturesApi(libs.logback.classic)
 }
+
+tasks.named<Test>("test") { useJUnitPlatform() }
