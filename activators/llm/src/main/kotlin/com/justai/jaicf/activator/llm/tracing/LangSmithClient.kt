@@ -1,18 +1,16 @@
 package com.justai.jaicf.activator.llm.tracing
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.util.concurrent.TimeUnit
 
-/**
- * Client for LangSmith API integration
- * Note: Using custom HTTP client since official SDK is not available in Maven Central
- */
 class LangSmithClient(
     private val config: LangSmithConfig
 ) {
@@ -22,15 +20,16 @@ class LangSmithClient(
         private val objectMapper = ObjectMapper()
     }
 
-
     private val httpClient = OkHttpClient.Builder()
         .connectTimeout(config.timeout, TimeUnit.MILLISECONDS)
         .readTimeout(config.timeout, TimeUnit.MILLISECONDS)
         .writeTimeout(config.timeout, TimeUnit.MILLISECONDS)
         .build()
 
+    private fun isoTime(ms: Long) = Instant.ofEpochMilli(ms).toString()
+
     /**
-     * Create a new run in LangSmith
+     * Create a new run
      */
     fun createRun(
         runId: String,
@@ -39,46 +38,30 @@ class LangSmithClient(
         inputs: Map<String, Any>,
         startTime: Long = System.currentTimeMillis()
     ): Boolean {
-        if (!config.enabled || config.apiKey == null) return false
+        if (!config.enabled || config.apiKey.isNullOrBlank()) return false
 
         try {
             val runData = ObjectNode(objectMapper.nodeFactory).apply {
                 put("id", runId)
                 put("name", name)
                 put("run_type", runType)
-                put("start_time", startTime)
-                put("inputs", objectMapper.writeValueAsString(inputs))
-                put("project_name", config.project ?: "jaicf-llm")
-                put("session_name", "jaicf-session")
-                put(
-                    "extra", objectMapper.writeValueAsString(
+                put("start_time", isoTime(startTime))
+                set<JsonNode>("inputs", objectMapper.valueToTree(inputs))
+                put("session_name", config.project ?: "pr-puzzled-surround-4")
+                set<JsonNode>(
+                    "extra",
+                    objectMapper.valueToTree(
                         mapOf(
-                            "framework" to "JAICF",
-                            "version" to "1.0.0"
+                            "metadata" to mapOf(
+                                "framework" to "JAICF",
+                                "version" to "1.0.0"
+                            )
                         )
                     )
                 )
             }
 
-            val request = Request.Builder()
-                .url("${config.endpoint}/runs")
-                .addHeader("Authorization", "Bearer ${config.apiKey}")
-                .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(JSON_MEDIA_TYPE, runData.toString()))
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            val success = response.isSuccessful
-
-            if (success) {
-                logger.debug("LangSmith: Successfully created run $runId")
-            } else {
-                logger.warn("LangSmith: Failed to create run $runId, status: ${response.code}, body: ${response.body?.string()}")
-            }
-
-            response.close()
-            return success
-
+            return sendPost("${config.endpoint}/runs", runData, "create run $runId")
         } catch (e: Exception) {
             logger.error("LangSmith: Error creating run $runId", e)
             return false
@@ -86,7 +69,7 @@ class LangSmithClient(
     }
 
     /**
-     * Update a run in LangSmith with outputs and end time
+     * Update an existing run (add outputs and end time)
      */
     fun updateRun(
         runId: String,
@@ -94,36 +77,16 @@ class LangSmithClient(
         endTime: Long = System.currentTimeMillis(),
         error: String? = null
     ): Boolean {
-        if (!config.enabled || config.apiKey == null) return false
+        if (!config.enabled || config.apiKey.isNullOrBlank()) return false
 
         try {
             val updateData = ObjectNode(objectMapper.nodeFactory).apply {
-                put("end_time", endTime)
-                put("outputs", objectMapper.writeValueAsString(outputs))
-                if (error != null) {
-                    put("error", error)
-                }
+                put("end_time", isoTime(endTime))
+                set<JsonNode>("outputs", objectMapper.valueToTree(outputs))
+                if (error != null) put("error", error)
             }
 
-            val request = Request.Builder()
-                .url("${config.endpoint}/runs/$runId")
-                .addHeader("Authorization", "Bearer ${config.apiKey}")
-                .addHeader("Content-Type", "application/json")
-                .patch(RequestBody.create(JSON_MEDIA_TYPE, updateData.toString()))
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            val success = response.isSuccessful
-
-            if (success) {
-                logger.debug("LangSmith: Successfully updated run $runId")
-            } else {
-                logger.warn("LangSmith: Failed to update run $runId, status: ${response.code}, body: ${response.body?.string()}")
-            }
-
-            response.close()
-            return success
-
+            return sendPatch("${config.endpoint}/runs/$runId", updateData, "update run $runId")
         } catch (e: Exception) {
             logger.error("LangSmith: Error updating run $runId", e)
             return false
@@ -131,7 +94,7 @@ class LangSmithClient(
     }
 
     /**
-     * Create a child run (for tools, chains, etc.)
+     * Create a child run
      */
     fun createChildRun(
         runId: String,
@@ -141,50 +104,79 @@ class LangSmithClient(
         inputs: Map<String, Any>,
         startTime: Long = System.currentTimeMillis()
     ): Boolean {
-        if (!config.enabled || config.apiKey == null) return false
+        if (!config.enabled || config.apiKey.isNullOrBlank()) return false
 
         try {
             val runData = ObjectNode(objectMapper.nodeFactory).apply {
                 put("id", runId)
                 put("name", name)
                 put("run_type", runType)
-                put("start_time", startTime)
-                put("inputs", objectMapper.writeValueAsString(inputs))
+                put("start_time", isoTime(startTime))
+                set<JsonNode>("inputs", objectMapper.valueToTree(inputs))
                 put("parent_run_id", parentRunId)
-                put("project_name", config.project ?: "jaicf-llm")
-                put("session_name", "jaicf-session")
-                put(
-                    "extra", objectMapper.writeValueAsString(
+                put("session_name", config.project ?: "pr-puzzled-surround-4")
+                set<JsonNode>(
+                    "extra",
+                    objectMapper.valueToTree(
                         mapOf(
-                            "framework" to "JAICF",
-                            "version" to "1.0.0"
+                            "metadata" to mapOf(
+                                "framework" to "JAICF",
+                                "version" to "1.0.0"
+                            )
                         )
                     )
                 )
             }
 
-            val request = Request.Builder()
-                .url("${config.endpoint}/runs")
-                .addHeader("Authorization", "Bearer ${config.apiKey}")
-                .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(JSON_MEDIA_TYPE, runData.toString()))
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            val success = response.isSuccessful
-
-            if (success) {
-                logger.debug("LangSmith: Successfully created child run $runId")
-            } else {
-                logger.warn("LangSmith: Failed to create child run $runId, status: ${response.code}, body: ${response.body?.string()}")
-            }
-
-            response.close()
-            return success
-
+            return sendPost("${config.endpoint}/runs", runData, "create child run $runId")
         } catch (e: Exception) {
             logger.error("LangSmith: Error creating child run $runId", e)
             return false
+        }
+    }
+
+    // Helper to send POST
+    private fun sendPost(url: String, body: ObjectNode, action: String): Boolean {
+        val jsonBody = body.toString()
+        logger.debug("LangSmith: Request body for $action: $jsonBody")
+
+        val requestBody = jsonBody.toRequestBody(JSON_MEDIA_TYPE)
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("x-api-key", config.apiKey!!)
+            .addHeader("Content-Type", "application/json")
+            .post(requestBody)
+            .build()
+
+        return executeRequest(request, action)
+    }
+
+    // Helper to send PATCH
+    private fun sendPatch(url: String, body: ObjectNode, action: String): Boolean {
+        val jsonBody = body.toString()
+        logger.debug("LangSmith: Request body for $action: $jsonBody")
+
+        val requestBody = jsonBody.toRequestBody(JSON_MEDIA_TYPE)
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("x-api-key", config.apiKey!!)
+            .addHeader("Content-Type", "application/json")
+            .patch(requestBody)
+            .build()
+
+        return executeRequest(request, action)
+    }
+
+    private fun executeRequest(request: Request, action: String): Boolean {
+        httpClient.newCall(request).execute().use { response ->
+            return if (response.isSuccessful) {
+                logger.debug("LangSmith: Successfully completed $action")
+                true
+            } else {
+                val responseBody = response.body?.string() ?: "No response body"
+                logger.warn("LangSmith: Failed to $action, status: ${response.code}, body: $responseBody")
+                false
+            }
         }
     }
 }

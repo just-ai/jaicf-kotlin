@@ -8,6 +8,7 @@ import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 import com.openai.models.completions.CompletionUsage
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -38,8 +39,7 @@ class LangSmithTracer(
         messages: List<Map<String, Any>>
     ): String {
         if (!isEnabled) return ""
-        
-        val runId = "langsmith_${System.currentTimeMillis()}_${context.clientId}"
+        val runId = UUID.randomUUID().toString()
         val startTime = System.currentTimeMillis()
         
         val inputs = mapOf(
@@ -69,6 +69,7 @@ class LangSmithTracer(
             logger.debug("LangSmith: LLM run inputs - model: ${props.model}, messages: $messages")
         } else {
             logger.warn("LangSmith: Failed to create LLM run $runId")
+            logger.debug("LangSmith: Failed inputs - model: ${props.model}, messages_count: ${messages.size}")
         }
         
         return runId
@@ -176,8 +177,8 @@ class LangSmithTracer(
         name: String
     ): String {
         if (!isEnabled) return ""
-        
-        val runId = "langsmith_chain_${System.currentTimeMillis()}_${context.clientId}"
+
+        val runId = UUID.randomUUID().toString()
         val startTime = System.currentTimeMillis()
         
         val inputs = mapOf(

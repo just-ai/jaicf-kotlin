@@ -27,6 +27,13 @@ data class LangSmithConfig(
             val apiKey = System.getenv("LANGCHAIN_API_KEY") ?: System.getenv("LANGSMITH_API_KEY")
             val project = System.getenv("LANGCHAIN_PROJECT") ?: System.getenv("LANGSMITH_PROJECT") ?: "pr-puzzled-surround-4"
             val enabled = apiKey != null
+            
+            // Log configuration for debugging
+            val logger = org.slf4j.LoggerFactory.getLogger(LangSmithConfig::class.java)
+            logger.info("LangSmith config - enabled: $enabled, project: $project, hasApiKey: ${apiKey != null}")
+            if (enabled) {
+                logger.debug("LangSmith API key: ${apiKey?.take(10)}...")
+            }
 
             return LangSmithConfig(
                 enabled = enabled,

@@ -38,9 +38,9 @@ class TracingTest {
     
     @Test
     fun `test tracing constants`() {
-        assertEquals("LANGCHAIN_API_KEY", TracingConstants.ENV_LANGSMITH_TRACING)
-        assertEquals("LANGCHAIN_API_KEY", TracingConstants.ENV_API_KEY)
-        assertEquals("LANGCHAIN_PROJECT", TracingConstants.ENV_PROJECT)
+        assertEquals("LANGSMITH_TRACING", TracingConstants.ENV_LANGSMITH_TRACING)
+        assertEquals("LANGSMITH_API_KEY", TracingConstants.ENV_API_KEY)
+        assertEquals("LANGSMITH_PROJECT", TracingConstants.ENV_PROJECT)
         assertEquals("OTEL_TRACES_ENABLED", TracingConstants.ENV_OTEL_TRACES_ENABLED)
         assertEquals("langsmith", TracingConstants.TRACER_LANGSMITH)
         assertEquals("opentelemetry", TracingConstants.TRACER_OPENTELEMETRY)
