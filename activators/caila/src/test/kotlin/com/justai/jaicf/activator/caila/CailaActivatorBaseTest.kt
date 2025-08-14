@@ -25,6 +25,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import java.util.*
+import java.util.Locale.getDefault
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -161,5 +162,5 @@ abstract class CailaActivatorBaseTest {
     fun ScenarioGraphBuilder<*, *>.entity(@StateName name: String) = state(name) { activators { cailaEntity(name) } }
 
     private fun getCailaResponse(query: String, method: String) =
-        javaClass.getResourceAsStream("/caila_responses/$method/${query.replace(" ", "_").toLowerCase()}.json")!!
+        javaClass.getResourceAsStream("/caila_responses/$method/${query.replace(" ", "_").lowercase(getDefault())}.json")!!
 }

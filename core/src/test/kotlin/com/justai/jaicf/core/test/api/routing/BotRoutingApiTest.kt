@@ -113,7 +113,7 @@ private val router = BotRoutingEngine(
     mapOf("sc1" to createEngine(sc1), "sc2" to createEngine(sc2))
 )
 
-@TestMethodOrder(MethodOrderer.Alphanumeric::class)
+@TestMethodOrder(MethodOrderer.MethodName::class)
 class BotRoutingApiTest : BotTest(router) {
 
     @Test
