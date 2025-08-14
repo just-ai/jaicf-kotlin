@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin Alexa Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Alexa Channel implementation. Enables JAICF-Kotlin integration with Amazon Alexa."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
 }
 

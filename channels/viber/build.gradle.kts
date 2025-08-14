@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin Viber Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Viber Channel implementation. Enables JAICF-Kotlin integration with Viber"
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
 }
 

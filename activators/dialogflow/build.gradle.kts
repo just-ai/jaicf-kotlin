@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin Dialogflow Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Dialogflow Activator Adapter. Provides intent recognition and named entity extraction."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
 }
 

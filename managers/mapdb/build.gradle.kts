@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin MapDB Bot Context Manager"
 ext[POM_DESCRIPTION] = "MapDB BotContextManager implementation to store your JAICF bot's context"
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
 }
 

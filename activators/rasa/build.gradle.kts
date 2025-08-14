@@ -5,8 +5,8 @@ ext[POM_NAME] = "JAICF-Kotlin RASA Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin RASA Activator Adapter. Provides intent recognition and named entity extraction."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
     `jaicf-publish`
 }
 

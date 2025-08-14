@@ -5,8 +5,8 @@ ext[POM_NAME] = "JAICF-Kotlin LLM Activator Adapter"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin LLM Activator Adapter."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
     `jaicf-publish`
     `java-test-fixtures`
 }

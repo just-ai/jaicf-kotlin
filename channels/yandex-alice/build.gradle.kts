@@ -5,8 +5,8 @@ ext[POM_NAME] = "JAICF-Kotlin Yandex Alice Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Yandex Alice Channel implementation. Enables JAICF-Kotlin integration with Alice."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
     `jaicf-publish`
 }
 

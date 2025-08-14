@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin Core component"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Core component. Provides DSL, Tests API and multiple implementable interfaces."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
     `java-test-fixtures`
 }

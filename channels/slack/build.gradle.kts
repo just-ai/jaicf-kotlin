@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin Slack Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Aimybox Slack implementation. Enables JAICF-Kotlin integration with Slack"
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
 }
 

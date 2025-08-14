@@ -5,8 +5,8 @@ ext[POM_NAME] = "JAICF-Kotlin Facebook Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Facebook Channel implementation. Enables JAICF-Kotlin integration with Facebook."
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.serialization)
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.kotlin.plugin.serialization")
     `jaicf-publish`
 }
 

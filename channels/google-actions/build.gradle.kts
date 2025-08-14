@@ -5,7 +5,7 @@ ext[POM_NAME] = "JAICF-Kotlin Google Actions Channel"
 ext[POM_DESCRIPTION] = "JAICF-Kotlin Google Actions Channel implementation. Enables JAICF-Kotlin integration with Google Actions SDK and Dialogflow"
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
+    id("org.jetbrains.kotlin.jvm")
     `jaicf-publish`
 }
 
