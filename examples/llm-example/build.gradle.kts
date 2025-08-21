@@ -12,9 +12,6 @@ dependencies {
 
     core()
     implementation(project(":activators:llm"))
-
-    implementation(libs.slf4j.simple)
-    implementation(libs.slf4j.log4j12)
     implementation(libs.jline)
 
     testImplementation(testFixtures(project(":activators:llm")))
