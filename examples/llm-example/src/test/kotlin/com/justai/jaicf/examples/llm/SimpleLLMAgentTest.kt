@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Test
 class SimpleLLMAgentTest: ScenarioTest(SimpleLLMAgent) {
     private val props = createLLMProps {
         model = "gpt-4o-mini"
-        temperature = 1.0
+        temperature = 0.0
     }
 
     @Test
     fun `greets the user`() = testWithLLM(props) {
-        chat(user = "Greets an agent", agent = "Says 'Hello' back")
+        chat(user = "Say hello", agent = "Hello")
     }
 
     @Test

@@ -25,6 +25,9 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Version.jackson}")
     implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
 
+    implementation("org.slf4j:slf4j-api:2.0.13")
+    runtimeOnly("ch.qos.logback:logback-classic:1.5.6")
+
     api("io.ktor:ktor-client:3.0.2")
     implementation("io.ktor:ktor-client-content-negotiation:3.0.2")
     implementation("io.ktor:ktor-serialization-jackson:3.0.2")

@@ -5,10 +5,10 @@ import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStore
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStoreResponseBuilder
 import com.justai.jaicf.activator.llm.vectorstore.asTool
+import com.justai.jaicf.activator.llm.wrapper.ProcessingOpenAIClient
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.kotlin.ifTrue
-import com.openai.client.OpenAIClient
 import com.openai.core.JsonSchemaLocalValidation
 import com.openai.models.ChatModel
 import com.openai.models.chat.completions.ChatCompletionCreateParams
@@ -37,7 +37,7 @@ data class LLMProps(
     val responseFormat: Class<*>? = null,
     val withUsages: Boolean? = null,
     val parallelToolCalls: Boolean? = null,
-    val client: OpenAIClient? = null,
+    val client: ProcessingOpenAIClient? = null,
     val messages: List<ChatCompletionMessageParam>? = null,
     val tools: List<LLMTool<*>>? = null,
     val input: LLMInputBuilder? = null,
@@ -93,7 +93,7 @@ data class LLMProps(
         var responseFormat: Class<*>? = null
         var withUsages: Boolean? = null
         var parallelToolCalls: Boolean? = null
-        var client: OpenAIClient? = null
+        var client: ProcessingOpenAIClient? = null
         var messages: List<ChatCompletionMessageParam>? = null
         var tools: List<LLMTool<*>>? = null
         var input: LLMInputBuilder? = null
@@ -107,7 +107,7 @@ data class LLMProps(
         fun setResponseFormat(value: Class<*>?) = apply { this.responseFormat = value }
         fun setWithUsages(value: Boolean?) = apply { this.withUsages = value }
         fun setParallelToolCalls(value: Boolean?) = apply { this.parallelToolCalls = value }
-        fun setClient(value: OpenAIClient?) = apply { this.client = value }
+        fun setClient(value: ProcessingOpenAIClient?) = apply { this.client = value }
         fun setMessages(value: List<ChatCompletionMessageParam>?) = apply { this.messages = value }
         fun setTools(value: List<LLMTool<*>>?) = apply { this.tools = value }
         fun setInput(value: LLMInputBuilder?) = apply { this.input = value }

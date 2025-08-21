@@ -1,7 +1,10 @@
 package com.justai.jaicf.examples.llm
 
+import com.justai.jaicf.activator.llm.LLMProps
+import com.justai.jaicf.activator.llm.wrapper.OpenAIClientBuilder
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
+import com.openai.client.okhttp.OpenAIOkHttpClient
 
 /**
  * Simple LLM chatbot with default reactions.
@@ -13,7 +16,14 @@ import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 val SimpleLLMAgent = LLMAgent(
     name = "agent",
     model = "gpt-4.1-nano",
-    instructions = "You're a helpful assistant"
+    instructions = "You're a helpful assistant",
+    client = OpenAIClientBuilder(
+        openAIClient = OpenAIOkHttpClient.fromEnv(),
+        props = LLMProps(
+            withUsages = true,
+        ),
+        interceptors = mutableListOf()
+    ).build()
 )
 
 fun main() {

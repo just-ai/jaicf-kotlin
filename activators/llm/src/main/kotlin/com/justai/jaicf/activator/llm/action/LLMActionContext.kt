@@ -328,7 +328,8 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 
     suspend inline fun <reified T> LLMContext.awaitStructuredContent(): T =
         props.responseFormat?.let { format ->
-            awaitFinalContent().let { StructuredOutputMapper.readValue(it, format) as T }
+            val awaitFinalContent = awaitFinalContent()
+            awaitFinalContent.let { StructuredOutputMapper.readValue(it, format) as T }
         } ?: throw IllegalArgumentException("Response format is not defined in props")
 
     companion object {

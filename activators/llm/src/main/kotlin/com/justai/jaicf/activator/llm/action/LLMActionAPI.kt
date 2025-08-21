@@ -3,28 +3,35 @@ package com.justai.jaicf.activator.llm.action
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
+import com.justai.jaicf.activator.llm.wrapper.OpenAIClientBuilder
+import com.justai.jaicf.activator.llm.wrapper.ProcessingOpenAIClient
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
-import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
 import com.openai.core.http.StreamResponse
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 
 
-private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
+private val DefaultProcessingOpenAIClient by lazy {
+    val baseClient = OpenAIOkHttpClient.fromEnv()
+    val props = LLMProps(client = null, withUsages = true)
+    OpenAIClientBuilder(baseClient, props).build()
+}
+
 private val DefaultProps = LLMProps(
-    client = DefaultOpenAIClient,
+    client = DefaultProcessingOpenAIClient,
     withUsages = true,
 )
 
 class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
     fun createStreaming(
         params: ChatCompletionCreateParams,
-        client: OpenAIClient? = null,
+        client: ProcessingOpenAIClient? = null,
     ): StreamResponse<ChatCompletionChunk> {
-        val client = client ?: defaultProps.client ?: DefaultOpenAIClient
-        return client.chat().completions().createStreaming(params)
+        val client = client ?: defaultProps.client ?: DefaultProcessingOpenAIClient
+        val result = client.chat().completions().createStreaming(params)
+        return result;
     }
 
     internal fun createContext(

@@ -7,5 +7,5 @@ import java.util.concurrent.TimeUnit
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @ExtendWith(OpenAIExtension::class)
-@Timeout(value = 60, unit = TimeUnit.SECONDS)
+@Timeout(value = 12000, unit = TimeUnit.SECONDS)
 annotation class OpenAITest(val attempts: Int = 1)

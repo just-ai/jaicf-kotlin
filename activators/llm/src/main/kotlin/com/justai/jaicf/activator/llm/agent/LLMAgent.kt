@@ -7,6 +7,7 @@ import com.justai.jaicf.activator.llm.action.LLMActionBlock
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.*
+import com.justai.jaicf.activator.llm.wrapper.ProcessingOpenAIClient
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.builder.Scenario
@@ -21,7 +22,6 @@ import com.justai.jaicf.logging.SayReaction
 import com.justai.jaicf.model.activation.ActivationRule
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.reactions.Reactions
-import com.openai.client.OpenAIClient
 import com.openai.core.JsonValue
 import java.util.concurrent.Executor
 import kotlin.jvm.optionals.getOrNull
@@ -63,7 +63,7 @@ open class LLMAgent(
         responseFormat: Class<*>? = null,
         instructions: String? = null,
         tools: List<LLMTool<*>>? = null,
-        client: OpenAIClient? = null,
+        client: ProcessingOpenAIClient? = null,
         onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = DefaultLLMOnlyIf,
         action: LLMActionBlock = DefaultLLMActionBlock,
     ) : this(
