@@ -1,6 +1,5 @@
-package com.justai.jaicf.activator.llm.wrapper
+package com.justai.jaicf.activator.llm
 
-import com.justai.jaicf.activator.llm.LLMProps
 import com.justai.jaicf.activator.llm.interceptor.Interceptor
 import com.justai.jaicf.activator.llm.interceptor.InterceptorConfigLoader
 import com.openai.client.OpenAIClient

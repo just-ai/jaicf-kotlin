@@ -3,8 +3,6 @@ package com.justai.jaicf.activator.llm.action
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
-import com.justai.jaicf.activator.llm.wrapper.OpenAIClientBuilder
-import com.justai.jaicf.activator.llm.wrapper.ProcessingOpenAIClient
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.client.okhttp.OpenAIOkHttpClient

@@ -1,11 +1,14 @@
 package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
-import com.justai.jaicf.activator.llm.tool.*
+import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolConfirmationFunction
+import com.justai.jaicf.activator.llm.tool.LLMToolDefinition
+import com.justai.jaicf.activator.llm.tool.LLMToolFunction
+import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStore
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStoreResponseBuilder
 import com.justai.jaicf.activator.llm.vectorstore.asTool
-import com.justai.jaicf.activator.llm.wrapper.ProcessingOpenAIClient
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.helpers.kotlin.ifTrue

@@ -1,6 +1,6 @@
 package com.justai.jaicf.activator.llm.interceptor
 
-import com.justai.jaicf.activator.llm.wrapper.CallContext
+import com.justai.jaicf.activator.llm.CallContext
 import com.justai.jaicf.helpers.logging.WithLogger
 
 private const val TRACING_ENABLE = "TRACING_ENABLE"

@@ -1,6 +1,6 @@
 package com.justai.jaicf.activator.llm.interceptor
 
-import com.justai.jaicf.activator.llm.wrapper.CallContext
+import com.justai.jaicf.activator.llm.CallContext
 
 interface Interceptor {
     val configName: String

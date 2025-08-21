@@ -1,7 +1,7 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.LLMProps
-import com.justai.jaicf.activator.llm.wrapper.OpenAIClientBuilder
+import com.justai.jaicf.activator.llm.OpenAIClientBuilder
 import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.openai.client.okhttp.OpenAIOkHttpClient
