@@ -1,7 +1,7 @@
 package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
-import com.justai.jaicf.activator.llm.mcp.McpServiceImpl
+import com.justai.jaicf.activator.llm.mcp.McpService
 import com.justai.jaicf.activator.llm.mcp.McpServiceResponseBuilder
 import com.justai.jaicf.activator.llm.mcp.asTools
 import com.justai.jaicf.activator.llm.mcp.getTool
@@ -136,11 +136,11 @@ data class LLMProps(
         ) = tool(llmTool(name, description, parameters, function))
 
         inline fun <reified T> tool(
-            service: McpServiceImpl,
+            mcp: McpService,
             toolName: String,
             description: String? = null,
             noinline responseBuilder: McpServiceResponseBuilder = { it }
-        ) = tool(service.getTool(toolName, description, responseBuilder))
+        ) = tool(mcp.getTool(toolName, description, responseBuilder))
 
         fun vectorStore(
             store: LLMVectorStore,
@@ -150,7 +150,7 @@ data class LLMProps(
         ) = tool(store.asTool(name, description, responseBuilder))
 
         fun mcp(
-            service: McpServiceImpl,
+            service: McpService,
             tools: List<String> = emptyList(),
             responseBuilder: McpServiceResponseBuilder = { it }
         ) = service.asTools(tools, responseBuilder).map { mcpTool -> tool(mcpTool) }

@@ -23,7 +23,7 @@ import kotlin.time.Duration
 
 typealias McpServiceResponseBuilder = suspend LLMToolCallContext<Map<String, Any>>.(response: Any) -> Any
 
-class McpServiceImpl() : AutoCloseable {
+class McpService() : AutoCloseable {
 
     private val mcp: Client = Client(clientInfo = Implementation(name = "mcp-client-jaicf", version = "1.0.0"))
 
@@ -67,28 +67,28 @@ class McpServiceImpl() : AutoCloseable {
     override fun close() {
         runBlocking { mcp.close() }
     }
+
+    companion object {
+        fun stdio(
+            command: List<String>
+        ) = McpService().apply { runBlocking { connectStdio(command) } }
+
+        fun sse(
+            urlString: String,
+            client: HttpClient = HttpClient { install(SSE) },
+            reconnectionTime: Duration? = null,
+            requestBuilder: HttpRequestBuilder.() -> Unit = {}
+        ) = McpService().apply { runBlocking { connectSse(urlString, client, reconnectionTime) { requestBuilder() } } }
+
+        fun websocket(
+            urlString: String,
+            client: HttpClient = HttpClient { install(WebSockets) },
+            requestBuilder: HttpRequestBuilder.() -> Unit = {}
+        ) = McpService().apply { runBlocking { connectWebSocket(urlString, client, requestBuilder) } }
+    }
 }
 
-class McpServiceImplFactory {
-    fun stdio(
-        command: List<String>
-    ) = McpServiceImpl().apply { runBlocking { connectStdio(command) } }
-
-    fun sse(
-        urlString: String,
-        client: HttpClient = HttpClient { install(SSE) },
-        reconnectionTime: Duration? = null,
-        requestBuilder: HttpRequestBuilder.() -> Unit = {}
-    ) = McpServiceImpl().apply { runBlocking { connectSse(urlString, client, reconnectionTime) { requestBuilder() } } }
-
-    fun websocket(
-        urlString: String,
-        client: HttpClient = HttpClient { install(WebSockets) },
-        requestBuilder: HttpRequestBuilder.() -> Unit = {}
-    ) = McpServiceImpl().apply { runBlocking { connectWebSocket(urlString, client, requestBuilder) } }
-}
-
-fun McpServiceImpl.asTools(
+fun McpService.asTools(
     tools: List<String> = emptyList(),
     responseBuilder: McpServiceResponseBuilder = { it }
 ): List<LLMTool<Map<String, Any>>> {
@@ -98,9 +98,9 @@ fun McpServiceImpl.asTools(
         .map { getLlmTool(it, null, responseBuilder) }
 }
 
-fun McpServiceImpl.getTool(
+fun McpService.getTool(
     toolName: String,
-    description: String?,
+    description: String? = null,
     responseBuilder: McpServiceResponseBuilder = { it }
 ): LLMTool<Map<String, Any>> {
 
@@ -111,7 +111,7 @@ fun McpServiceImpl.getTool(
     return getLlmTool(tool, description, responseBuilder)
 }
 
-private fun McpServiceImpl.getLlmTool(
+private fun McpService.getLlmTool(
     tool: Tool,
     description: String?,
     responseBuilder: McpServiceResponseBuilder
