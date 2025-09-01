@@ -9,6 +9,6 @@ data class UserDetailsRequest(
 data class UserDetailsResponse(
     override val status: Int,
     override val statusMessage: String,
-    val chatHostname: String,
+    val chatHostname: String?,
     val user: UserProfile
 ) : ApiResponse(status, statusMessage)
