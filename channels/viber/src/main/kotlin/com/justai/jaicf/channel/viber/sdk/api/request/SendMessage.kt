@@ -17,5 +17,5 @@ data class SendMessageResponse(
     override val status: Int,
     override val statusMessage: String,
     val messageToken: String,
-    val chatHostname: String
+    val chatHostname: String?
 ) : ApiResponse(status, statusMessage)
