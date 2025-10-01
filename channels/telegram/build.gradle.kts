@@ -23,5 +23,8 @@ dependencies {
     api(libs.okhttp)
     api(libs.okhttp.logging.interceptor)
 
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.datatype.jdk8)
+    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.kotlin.stdlib)
 }
