@@ -16,6 +16,9 @@ dependencies {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib")
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("com.squareup.okhttp3", "logging-interceptor")
+        exclude("com.squareup.retrofit2", "retrofit")
+        exclude("com.squareup.retrofit2", "converter-gson")
+        exclude("com.squareup.okio", "okio")
     }
     api(libs.okhttp)
     api(libs.okhttp.logging.interceptor)
