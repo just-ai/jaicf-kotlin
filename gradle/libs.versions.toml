@@ -92,6 +92,7 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "jUnit" }
 junit-platform = { module = "org.junit.platform:junit-platform-launcher" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesCore" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk"}
 ktor-mockk = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 
