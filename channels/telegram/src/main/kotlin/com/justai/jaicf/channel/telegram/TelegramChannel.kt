@@ -23,6 +23,16 @@ package com.justai.jaicf.channel.telegram
  *         CustomStreamProcessor(api, chatId, debounceMs, dispatcher)
  *     }
  * )
+ *
+ * Example usage with message aggregation (for handling long messages split by Telegram):
+ *
+ * val channel = TelegramChannel(
+ *     botApi = botEngine,
+ *     telegramBotToken = "YOUR_TOKEN",
+ *     requestDispatcher = Dispatchers.IO,
+ *     aggregateUserMessages = true,  // Enable message aggregation
+ *     aggregationWaitTimeMs = 500L   // Wait 500ms for additional messages
+ * )
  */
 
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -40,6 +50,7 @@ import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.logging.LogLevel
 import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
 import com.justai.jaicf.api.BotApi
+import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
@@ -53,6 +64,8 @@ import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.justai.jaicf.helpers.kotlin.WithDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import java.util.*
@@ -66,6 +79,8 @@ class TelegramChannel(
     private val telegramLogLevel: LogLevel = LogLevel.None,
     override val requestDispatcher: CoroutineDispatcher,
     private val streamProcessorFactory: TelegramStreamProcessorFactory? = null,
+    private val aggregateUserMessages: Boolean = true,
+    private val aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
     val mapper: JsonMapper = JsonMapper.builder()
@@ -77,6 +92,10 @@ class TelegramChannel(
         .build()
 
     private var liveChatProvider: JaicpLiveChatProvider? = null
+
+    private val messageAggregator: UserMessageAggregator? = if (aggregateUserMessages) {
+        UserMessageAggregator(aggregationWaitTimeMs, CoroutineScope(requestDispatcher + SupervisorJob()))
+    } else null
 
     private val bot: Bot = bot {
         apiUrl = telegramApiUrl.withTrailingSlash()
@@ -93,7 +112,34 @@ class TelegramChannel(
             }
 
             text {
-                process(TelegramTextRequest(update, message))
+                val textRequest = TelegramTextRequest(update, message)
+
+                if (messageAggregator != null && message.text != null) {
+                    // Aggregate consecutive messages from the same user
+                    messageAggregator.addMessage(
+                        chatId = message.chat.id,
+                        messageText = message.text!!
+                    ) { combinedText ->
+                        // Create a new request with combined text
+                        val aggregatedRequest = TelegramTextRequest(
+                            update = update,
+                            message = message
+                        ).let { req ->
+                            // We need to override the input with combined text
+                            object : TelegramBotRequest, QueryBotRequest(
+                                clientId = req.clientId,
+                                input = combinedText
+                            ) {
+                                override val update = req.update
+                                override val message = req.message
+                            }
+                        }
+                        process(aggregatedRequest)
+                    }
+                } else {
+                    // Process immediately without aggregation
+                    process(textRequest)
+                }
             }
 
             callbackQuery {
