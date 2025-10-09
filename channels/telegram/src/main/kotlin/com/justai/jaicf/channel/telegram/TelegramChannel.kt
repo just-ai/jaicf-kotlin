@@ -1,5 +1,30 @@
 package com.justai.jaicf.channel.telegram
 
+/*
+ * Example usage with custom TelegramStreamProcessor:
+ *
+ * class CustomStreamProcessor(
+ *     api: Bot,
+ *     chatId: ChatId,
+ *     debounceMs: Long,
+ *     dispatcher: CoroutineDispatcher
+ * ) : TelegramStreamProcessor(api, chatId, debounceMs, dispatcher) {
+ *     override fun shouldSplitMessage(state: MessageState): Boolean {
+ *         // Custom splitting logic
+ *         return state.text.length > 2000
+ *     }
+ * }
+ *
+ * val channel = TelegramChannel(
+ *     botApi = botEngine,
+ *     telegramBotToken = "YOUR_TOKEN",
+ *     requestDispatcher = Dispatchers.IO,
+ *     streamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher ->
+ *         CustomStreamProcessor(api, chatId, debounceMs, dispatcher)
+ *     }
+ * )
+ */
+
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -40,6 +65,7 @@ class TelegramChannel(
     private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: LogLevel = LogLevel.None,
     override val requestDispatcher: CoroutineDispatcher,
+    private val streamProcessorFactory: TelegramStreamProcessorFactory? = null,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
     val mapper: JsonMapper = JsonMapper.builder()
@@ -61,7 +87,7 @@ class TelegramChannel(
             fun process(request: TelegramBotRequest) {
                 botApi.process(
                     request,
-                    TelegramReactions(bot, request, liveChatProvider, requestDispatcher),
+                    TelegramReactions(bot, request, liveChatProvider, requestDispatcher, streamProcessorFactory),
                     RequestContext.fromHttp(request.update.httpBotRequest)
                 )
             }
@@ -151,7 +177,7 @@ class TelegramChannel(
         val update = mapper.readValue<Update?>(generatedRequest) ?: return
         val message = update.message ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, requestDispatcher), requestContext)
+        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, requestDispatcher, streamProcessorFactory), requestContext)
     }
 
     fun run() {

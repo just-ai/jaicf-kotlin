@@ -36,6 +36,7 @@ val Reactions.telegram
  * @property request the current bot request
  * @property liveChatProvider optional JAICP live chat provider for asynchronous operations
  * @property requestDispatcher the coroutine dispatcher for executing reactions
+ * @property streamProcessorFactory optional factory for creating custom stream processors
  */
 @Suppress("MemberVisibilityCanBePrivate")
 open class TelegramReactions(
@@ -43,6 +44,7 @@ open class TelegramReactions(
     val request: TelegramBotRequest,
     override val liveChatProvider: JaicpLiveChatProvider?,
     val requestDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.IO,
+    private val streamProcessorFactory: TelegramStreamProcessorFactory? = null,
 ) : StreamReactions, Reactions(), JaicpCompatibleAsyncReactions {
 
     val chatId = ChatId.fromId(request.chatId)
@@ -50,13 +52,15 @@ open class TelegramReactions(
 
     /**
      * Creates a stream processor for handling streaming text messages.
+     * Uses the provided streamProcessorFactory if available, otherwise creates a default TelegramStreamProcessor.
      * Can be overridden to provide custom streaming behavior.
      *
      * @param debounceMs the debounce delay in milliseconds
      * @return a TelegramStreamProcessor instance
      */
     protected open fun createStreamProcessor(debounceMs: Long = DEFAULT_DEBOUNCE_MS): TelegramStreamProcessor {
-        return TelegramStreamProcessor(api, chatId, debounceMs, requestDispatcher)
+        return streamProcessorFactory?.create(api, chatId, debounceMs, requestDispatcher)
+            ?: TelegramStreamProcessor(api, chatId, debounceMs, requestDispatcher)
     }
 
     private fun addResponse(res: TelegramBotResult<Message>) {
