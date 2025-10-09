@@ -11,9 +11,9 @@ import com.justai.jaicf.channel.jaicp.http.ChatAdapterConnector
 import com.justai.jaicf.model.scenario.Scenario
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.content.*
+import io.ktor.serialization.kotlinx.json.json
 
 class JaicpTestChannel(
     override val botApi: BotApi,
@@ -27,7 +27,9 @@ class JaicpTestChannel(
     var mockHttpRequestBody: String? = null
 
     private fun getMockHttp() = HttpClient(MockEngine) {
-        install(JsonFeature) { serializer = KotlinxSerializer(JSON) }
+        install(ContentNegotiation) {
+            json(JSON)
+        }
         engine {
             addHandler { request ->
                 mockHttpRequestBody = (request.body as TextContent).text

@@ -12,7 +12,7 @@ import com.justai.jaicf.examples.llm.tools.CalcTool
  *
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
-private val agent = LLMAgent(
+val AgentWithTools = LLMAgent(
     name = "chat",
     model = "gpt-4.1-nano",
     instructions = "You're a helpful assistant",
@@ -35,6 +35,6 @@ private val agent = LLMAgent(
 }
 
 fun main() {
-    ConsoleChannel(agent.asBot)
+    ConsoleChannel(AgentWithTools.asBot)
         .run("Calculate any random math expression many times")
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.justai.jaicf.examples.multilingual.mainAccessToken
 import com.justai.jaicf.examples.multilingual.util.HttpClient
 import com.justai.jaicf.examples.multilingual.util.Jackson
+import io.ktor.client.call.body
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
@@ -13,10 +14,10 @@ object LanguageDetectService {
 
     fun detectLanguage(input: String): SupportedLanguage? = runBlocking {
         try {
-            val body = HttpClient.post<String>(endpoint) {
-                body = input.toDetectLanguageRequest().stringify()
+            val body: String = HttpClient.post(endpoint) {
+                setBody(input.toDetectLanguageRequest().stringify())
                 contentType(ContentType.parse("application/json"))
-            }
+            }.body()
             SupportedLanguage.valueOf(Jackson.readValue(body, jacksonTypeRef<List<String>>()).first())
         } catch (e: Exception) {
             null

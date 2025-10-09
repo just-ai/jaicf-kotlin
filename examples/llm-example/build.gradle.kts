@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm")
+    id("org.jetbrains.kotlin.jvm")
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -8,26 +8,18 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib", Version.stdLib))
+    implementation(libs.kotlin.stdlib)
 
-    implementation(project(":core"))
+    core()
     implementation(project(":activators:llm"))
+    implementation(libs.jline)
 
-    implementation("org.slf4j:slf4j-simple" version {slf4j})
-    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
-    implementation("org.jline:jline:3.30.4")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testImplementation(testFixtures(project(":activators:llm")))
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
     test {
         useJUnitPlatform()
     }

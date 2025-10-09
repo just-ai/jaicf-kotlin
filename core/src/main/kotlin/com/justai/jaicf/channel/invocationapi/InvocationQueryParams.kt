@@ -1,8 +1,8 @@
 package com.justai.jaicf.channel.invocationapi
 
-import io.ktor.request.*
+import io.ktor.server.request.ApplicationRequest
 import io.ktor.util.*
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 
 /**

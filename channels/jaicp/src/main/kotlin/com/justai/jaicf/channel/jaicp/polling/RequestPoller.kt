@@ -4,6 +4,7 @@ import com.justai.jaicf.channel.jaicp.dto.JaicpBotRequest
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.request.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +24,7 @@ internal class RequestPoller(
 ) : WithLogger {
 
     private var since: Long = runBlocking {
-        client.get<JsonObject>("$url/getTimestamp")["timestamp"]?.jsonPrimitive?.long
+        client.get("$url/getTimestamp").body<JsonObject>()["timestamp"]?.jsonPrimitive?.long
             ?: error("Failed to get last message timestamp")
     }
 
@@ -40,13 +41,15 @@ internal class RequestPoller(
         }
     }.flowOn(executorContext)
 
-    private suspend fun doPoll() = client.get<List<JaicpBotRequest>>("$url/getUpdates".toUrl()) {
+    private suspend fun doPoll() = client.get("$url/getUpdates".toUrl()) {
         parameter("ts", since)
         parameter("unprocessed", unprocessed)
-    }.also {
-        updateSince(it)
-        unprocessed = true
     }
+        .body<List<JaicpBotRequest>>()
+        .also {
+            updateSince(it)
+            unprocessed = true
+        }
 
     fun stopPolling() {
         isActive.set(false)

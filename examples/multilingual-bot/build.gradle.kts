@@ -1,28 +1,29 @@
 plugins {
-    kotlin("jvm")
+    id("org.jetbrains.kotlin.jvm")
 }
 
 dependencies {
-    implementation(kotlin("stdlib", Version.stdLib))
-    implementation(project(":core"))
-    implementation(project(":channels:jaicp"))
-    implementation(project(":channels:telegram"))
-    implementation(project(":activators:caila"))
-    implementation(ktor("ktor-client-jackson"))
-    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlin.reflect)
 
-    testImplementation(kotlin("test-junit"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version { jUnit })
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version { jUnit })
+    core()
+    implementation(project(":channels:jaicp"))
+    implementation(project(":channels:telegram")) {
+        exclude(group = "io.ktor")
+    }
+    implementation(project(":activators:caila"))
+
+    implementation(platform(libs.ktor.bom))
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.logback.classic)
+
+    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "11"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "11"
-    }
     test {
         useJUnitPlatform()
     }

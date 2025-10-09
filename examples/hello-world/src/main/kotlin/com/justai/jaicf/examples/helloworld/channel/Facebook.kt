@@ -4,11 +4,11 @@ import com.justai.jaicf.channel.facebook.FacebookChannel
 import com.justai.jaicf.channel.facebook.FacebookPageConfig
 import com.justai.jaicf.channel.http.httpBotRouting
 import com.justai.jaicf.examples.helloworld.helloWorldBot
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 
 fun main() {
     val channel = FacebookChannel(

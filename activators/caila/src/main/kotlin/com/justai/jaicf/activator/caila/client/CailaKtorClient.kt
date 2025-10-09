@@ -5,11 +5,15 @@ import com.justai.jaicf.activator.caila.JSON
 import com.justai.jaicf.activator.caila.dto.*
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
@@ -30,8 +34,8 @@ class CailaKtorClient(
             logger = Logger.DEFAULT
             level = logLevel
         }
-        install(JsonFeature) {
-            serializer = KotlinxSerializer()
+        install(ContentNegotiation) {
+            json(JSON)
         }
     }
 
@@ -45,9 +49,9 @@ class CailaKtorClient(
     }
 
     private suspend fun simpleInferenceAsync(query: String): CailaInferenceResultData? {
-        val response = client.get<String>(inferenceUrl) {
+        val response: String = client.get(inferenceUrl) {
             parameter("query", query)
-        }
+        }.body()
         logger.info(response)
         JSON.parseToJsonElement(response).jsonObject["intent"] ?: return null
         return JSON.decodeFromString(CailaInferenceResultData.serializer(), response)
@@ -63,10 +67,10 @@ class CailaKtorClient(
     }
 
     private suspend fun entitiesLookupAsync(query: String, showAll: Boolean = true): CailaEntitiesLookupResults {
-        val response = client.get<String>(entitiesLookupUrl) {
+        val response: String = client.get(entitiesLookupUrl) {
             parameter("query", query)
             parameter("showAll", showAll)
-        }
+        }.body()
         logger.info(response)
         return JSON.decodeFromString(CailaEntitiesLookupResults.serializer(), response)
     }
@@ -91,10 +95,10 @@ class CailaKtorClient(
     }
 
     private suspend fun analyzeAsync(requestData: CailaAnalyzeRequestData): CailaAnalyzeResponseData {
-        val response = client.post<String>(analyzeUrl) {
+        val response: String = client.post(analyzeUrl) {
             contentType(ContentType.Application.Json)
-            body = requestData
-        }
+            setBody(requestData)
+        }.body()
         logger.info(response)
         return JSON.decodeFromString(CailaAnalyzeResponseData.serializer(), response)
     }

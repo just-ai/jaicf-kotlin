@@ -1,7 +1,7 @@
 import com.gradle.publish.PluginBundleExtension
 
 plugins {
-    kotlin("jvm") version "1.3.61" apply false
+    kotlin("jvm") version "2.2.0" apply false
     id("com.gradle.plugin-publish") version "0.12.0" apply false
 }
 

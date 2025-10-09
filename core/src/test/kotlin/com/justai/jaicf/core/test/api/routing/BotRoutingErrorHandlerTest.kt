@@ -33,7 +33,7 @@ private val t1 = BotRoutingEngine(
     )
 )
 
-@TestMethodOrder(MethodOrderer.Alphanumeric::class)
+@TestMethodOrder(MethodOrderer.MethodName::class)
 class BotRoutingErrorHandlingTest : BotTest(t1) {
 
     @Test

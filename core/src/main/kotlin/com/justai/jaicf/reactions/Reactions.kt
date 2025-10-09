@@ -14,7 +14,7 @@ import com.justai.jaicf.logging.currentState
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.plugin.UsesReaction
-import java.util.stream.Stream
+import java.util.Locale.getDefault
 
 /**
  * A base abstraction for channel-related reactions.
@@ -167,7 +167,7 @@ fun Reactions.buttons(vararg buttons: Pair<String, String>) =
 @UsesReaction("buttons")
 fun Reactions.buttons(vararg buttons: ButtonToState): ButtonsReaction {
     buttons.forEach { (text, transition) ->
-        botContext.dialogContext.transitions[text.toLowerCase()] =
+        botContext.dialogContext.transitions[text.lowercase(getDefault())] =
             StatePath.parse(botContext.dialogContext.currentState).resolve(transition).toString()
     }
     return buttons(*buttons.map { it.title }.toTypedArray())

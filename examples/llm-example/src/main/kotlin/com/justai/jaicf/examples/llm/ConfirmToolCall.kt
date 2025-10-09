@@ -12,7 +12,7 @@ import com.justai.jaicf.examples.llm.channel.ConsoleChannel
  */
 
 // SendMail tool arguments class
-private data class SendMail(
+data class SendMail(
     val message: String
 )
 
@@ -23,7 +23,7 @@ private val SendMailTool = llmTool<SendMail> {
     "Mail was sent successfully"
 }
 
-private val agent = LLMAgent(
+val AgentWithConfirmation = LLMAgent(
     name = "agent",
     model = "gpt-4.1-nano",
     tools = listOf(
@@ -44,6 +44,6 @@ private val agent = LLMAgent(
 )
 
 fun main() {
-    ConsoleChannel(agent.asBot)
+    ConsoleChannel(AgentWithConfirmation.asBot)
         .run("send mail with random text")
 }

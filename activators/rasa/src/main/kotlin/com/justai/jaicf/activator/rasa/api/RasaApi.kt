@@ -3,14 +3,17 @@ package com.justai.jaicf.activator.rasa.api
 import com.justai.jaicf.helpers.http.toUrl
 import com.justai.jaicf.helpers.logging.WithLogger
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 
@@ -25,8 +28,8 @@ class RasaApi(
     private val client = HttpClient(httpClient) {
         expectSuccess = true
 
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(Json)
+        install(ContentNegotiation) {
+            json(Json)
         }
 
         install(Logging) {
@@ -36,10 +39,10 @@ class RasaApi(
 
     fun parseMessage(request: RasaParseMessageRequest): String? = runBlocking {
         try {
-            client.post<String>("$uri/model/parse".toUrl()) {
+            client.post("$uri/model/parse".toUrl()) {
                 contentType(ContentType.Application.Json)
-                body = request
-            }
+                setBody(request)
+            }.body()
         } catch (e: Exception) {
             logger.error("Cannot parse $request", e)
             null

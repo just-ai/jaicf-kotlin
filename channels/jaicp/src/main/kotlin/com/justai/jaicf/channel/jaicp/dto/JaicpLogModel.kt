@@ -22,6 +22,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
+import java.util.Locale
 
 
 @Suppress("DataClassPrivateConstructor")
@@ -88,7 +89,7 @@ internal data class JaicpLogModel private constructor(
                 req: JaicpBotRequest,
                 input: String
             ) = Request(
-                type = req.type.toString().toLowerCase(),
+                type = req.type.toString().lowercase(Locale.getDefault()),
                 query = input,
                 requestData = req.data?.jsonObject ?: buildJsonObject { },
                 data = req.data?.jsonObject ?: buildJsonObject { }

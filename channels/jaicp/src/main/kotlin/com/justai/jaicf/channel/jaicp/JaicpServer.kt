@@ -6,9 +6,9 @@ import com.justai.jaicf.channel.jaicp.channels.JaicpNativeBotChannel
 import com.justai.jaicf.channel.jaicp.endpoints.ktor.channelCheckEndpoint
 import com.justai.jaicf.channel.jaicp.endpoints.ktor.healthCheckEndpoint
 import com.justai.jaicf.channel.jaicp.endpoints.ktor.reloadConfigEndpoint
-import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.routing.routing
 
 
 /**

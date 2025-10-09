@@ -5,10 +5,11 @@ import com.justai.jaicf.channel.jaicp.JaicpWebhookConnector
 import com.justai.jaicf.channel.jaicp.endpoints.CHANNEL_CHECK_URL
 import com.justai.jaicf.channel.jaicp.endpoints.HEALTH_CHECK_URL
 import com.justai.jaicf.channel.jaicp.endpoints.RELOAD_CONFIGS_URL
-import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
+import io.ktor.server.routing.put
 
 /**
  * Provides endpoint for JAICP to check if JAICF bot is able to process incoming [HttpBotRequest].

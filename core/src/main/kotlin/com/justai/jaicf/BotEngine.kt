@@ -298,6 +298,7 @@ open class BotEngine(
             logger.trace("Changing executable bot engine to: ${e.rerouteRequest}")
             throw e
         } catch (e: Exception) {
+            logger.trace("Error execute action message: ${e.message}")
             val exception = ActionException(e, state.toString())
             val hook = ActionErrorHook(botContext, request, reactions, activator, state, exception)
             try {

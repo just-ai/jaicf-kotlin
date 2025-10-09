@@ -9,6 +9,7 @@ import com.justai.jaicf.helpers.action.smartRandom
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.model.state.StatePath
 import com.justai.jaicf.reactions.Reactions
+import java.util.Locale.getDefault
 import kotlin.random.Random
 
 /**
@@ -82,7 +83,7 @@ open class ActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 
     infix fun ButtonsReaction?.toStates(states: List<String>) {
         this?.buttons?.zip(states)?.forEach { (text, state) ->
-            context.dialogContext.transitions[text.toLowerCase()] =
+            context.dialogContext.transitions[text.lowercase(getDefault())] =
                 StatePath.parse(context.dialogContext.currentState).resolve(state).toString()
         }
     }

@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm")
+    id("org.jetbrains.kotlin.jvm")
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -8,29 +8,23 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib", Version.stdLib))
+    implementation(libs.kotlin.stdlib)
 
-    implementation(project(":core"))
+    core()
     implementation(project(":channels:jaicp"))
     implementation(project(":channels:alexa"))
     implementation(project(":channels:google-actions"))
 
-    implementation("io.ktor:ktor-server-netty" version {ktor})
+    implementation(libs.ktor.server.netty)
 
-    implementation("org.slf4j:slf4j-simple" version {slf4j})
-    implementation("org.slf4j:slf4j-log4j12" version {slf4j})
+    implementation(libs.slf4j.log4j12)
+    implementation(libs.slf4j.simple)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api" version {jUnit})
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine" version {jUnit})
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.engine)
 }
 
 tasks {
-    compileKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "17"
-    }
     test {
         useJUnitPlatform()
     }

@@ -1,8 +1,5 @@
 package com.justai.jaicf.context.manager.test
 
-import com.justai.jaicf.api.EventBotRequest
-import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.mongo.MongoBotContextManager
 import com.justai.jaicf.core.test.managers.BotContextManagerBaseTest
@@ -14,10 +11,7 @@ import de.flapdoodle.embed.mongo.config.Net
 import de.flapdoodle.embed.mongo.distribution.Version
 import de.flapdoodle.embed.process.runtime.Network
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 

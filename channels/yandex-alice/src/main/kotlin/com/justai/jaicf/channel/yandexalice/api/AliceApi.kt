@@ -6,12 +6,14 @@ import com.justai.jaicf.channel.yandexalice.api.storage.Images
 import com.justai.jaicf.channel.yandexalice.api.storage.UploadedImage
 import com.justai.jaicf.helpers.http.withTrailingSlash
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -19,9 +21,10 @@ import kotlinx.serialization.json.JsonPrimitive
 private val client = HttpClient(CIO) {
     expectSuccess = true
 
-    install(JsonFeature) {
-        serializer = KotlinxSerializer(JSON)
+    install(ContentNegotiation) {
+        json(JSON)
     }
+
     install(Logging) {
         level = LogLevel.INFO
     }
@@ -53,18 +56,18 @@ class AliceApi(
     internal fun getImageUrl(id: String) = images.entries.find { id == it.value }?.key
 
     fun uploadImage(url: String): Image = runBlocking {
-        client.post<UploadedImage>("$apiUrl/skills/$skillId/images") {
+        client.post("$apiUrl/skills/$skillId/images") {
             contentType(ContentType.Application.Json)
             header("Authorization", "OAuth $oauthToken")
-            body = JsonObject(mapOf("url" to JsonPrimitive(url)))
-        }.image
+            setBody(JsonObject(mapOf("url" to JsonPrimitive(url))))
+        }.body<UploadedImage>().image
     }.also { image ->
         imageStorage[skillId]?.put(image.origUrl, image.id)
     }
 
     fun listImages(): List<Image> = runBlocking {
-        client.get<Images>("$apiUrl/skills/$skillId/images") {
+        client.get("$apiUrl/skills/$skillId/images") {
             header("Authorization", "OAuth $oauthToken")
-        }.images
+        }.body<Images>().images
     }
 }

@@ -1,8 +1,6 @@
 package com.justai.jaicf.core.test.activators
 
 import com.justai.jaicf.builder.Scenario
-import com.justai.jaicf.model.scenario.Scenario
-import com.justai.jaicf.reactions.buttons
 import com.justai.jaicf.test.ScenarioTest
 import org.junit.jupiter.api.Test
 
@@ -12,7 +10,7 @@ private val strictActivationScenario = Scenario {
             regex("activate")
         }
         action {
-            reactions.buttons("test" to "/test")
+            reactions.buttons("test").toStates(listOf("/test"))
         }
     }
 
