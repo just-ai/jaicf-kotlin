@@ -5,6 +5,7 @@ import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
 import com.justai.jaicf.activator.llm.tool.llmTool
 import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.sse.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.*
@@ -14,6 +15,7 @@ import io.modelcontextprotocol.kotlin.sdk.Tool
 import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.client.SseClientTransport
 import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
+import io.modelcontextprotocol.kotlin.sdk.client.StreamableHttpClientTransport
 import io.modelcontextprotocol.kotlin.sdk.client.WebSocketClientTransport
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
@@ -26,16 +28,19 @@ typealias McpServiceResponseBuilder = suspend LLMToolCallContext<Map<String, Any
 class McpService() : AutoCloseable {
 
     private val mcp: Client = Client(clientInfo = Implementation(name = "mcp-client-jaicf", version = "1.0.0"))
+    private var process: Process? = null
 
     suspend fun connectStdio(command: List<String>) {
-        val process = ProcessBuilder(command).start()
+        process = runCatching { ProcessBuilder(command).start() }
+            .getOrElse { throw IllegalStateException("Failed to start MCP process with command: $command", it) }
 
-        val transport = StdioClientTransport(
-            input = process.inputStream.asSource().buffered(),
-            output = process.outputStream.asSink().buffered()
-        )
-
-        mcp.connect(transport)
+        process?.let { proc ->
+            val transport = StdioClientTransport(
+                input = proc.inputStream.asSource().buffered(),
+                output = proc.outputStream.asSink().buffered()
+            )
+            mcp.connect(transport)
+        }
     }
 
     suspend fun connectSse(
@@ -57,6 +62,15 @@ class McpService() : AutoCloseable {
         mcp.connect(transport)
     }
 
+    suspend fun connectStreamableHttp(
+        urlString: String,
+        client: HttpClient,
+        requestBuilder: HttpRequestBuilder.() -> Unit
+    ) {
+        val transport = StreamableHttpClientTransport(client, urlString, null, requestBuilder)
+        mcp.connect(transport)
+    }
+
     suspend fun getTools(): List<Tool> = mcp.listTools()?.tools ?: emptyList()
 
     suspend fun callTool(name: String, arguments: Map<String, Any?>): CallToolResultBase {
@@ -66,6 +80,7 @@ class McpService() : AutoCloseable {
 
     override fun close() {
         runBlocking { mcp.close() }
+        process?.destroy()
     }
 
     companion object {
@@ -85,6 +100,12 @@ class McpService() : AutoCloseable {
             client: HttpClient = HttpClient { install(WebSockets) },
             requestBuilder: HttpRequestBuilder.() -> Unit = {}
         ) = McpService().apply { runBlocking { connectWebSocket(urlString, client, requestBuilder) } }
+
+        fun streamableHttp(
+            urlString: String,
+            client: HttpClient = HttpClient(CIO) { install(SSE) },
+            requestBuilder: HttpRequestBuilder.() -> Unit = {}
+        ) = McpService().apply { runBlocking { connectStreamableHttp(urlString, client, requestBuilder) } }
     }
 }
 
