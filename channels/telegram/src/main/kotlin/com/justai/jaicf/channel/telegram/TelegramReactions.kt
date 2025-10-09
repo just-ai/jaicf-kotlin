@@ -10,11 +10,10 @@ import com.github.kotlintelegrambot.entities.TelegramFile
 import com.github.kotlintelegrambot.entities.inputmedia.MediaGroup
 import com.github.kotlintelegrambot.entities.keyboard.InlineKeyboardButton
 import com.github.kotlintelegrambot.entities.payments.PaymentInvoiceInfo
-import com.github.kotlintelegrambot.network.Response
 import com.github.kotlintelegrambot.types.TelegramBotResult
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.telegram.helpers.downloadFileByUrl
-import com.justai.jaicf.channel.telegram.helpers.findOptimalSplitPoint
+import com.justai.jaicf.channel.telegram.streaming.TelegramStreamProcessor
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
 import com.justai.jaicf.logging.ImageReaction
@@ -23,43 +22,61 @@ import com.justai.jaicf.logging.VideoReaction
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.StreamReactions
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.util.stream.Stream
 
 val Reactions.telegram
     get() = this as? TelegramReactions
 
+/**
+ * Telegram channel-specific reactions implementation.
+ * Provides methods for sending messages, media, buttons, and other Telegram-specific features.
+ *
+ * @property api the Telegram Bot API instance
+ * @property request the current bot request
+ * @property liveChatProvider optional JAICP live chat provider for asynchronous operations
+ * @property requestDispatcher the coroutine dispatcher for executing reactions
+ */
 @Suppress("MemberVisibilityCanBePrivate")
-class TelegramReactions(
+open class TelegramReactions(
     val api: Bot,
     val request: TelegramBotRequest,
-    override val liveChatProvider: JaicpLiveChatProvider?
+    override val liveChatProvider: JaicpLiveChatProvider?,
+    val requestDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.IO,
 ) : StreamReactions, Reactions(), JaicpCompatibleAsyncReactions {
 
     val chatId = ChatId.fromId(request.chatId)
     private val messages = mutableListOf<Message?>()
 
-    private fun addResponse(pair: Pair<retrofit2.Response<Response<Message>?>?, Exception?>) {
-        pair.first?.body()?.result?.let { message ->
-            when (val index = messages.indexOfFirst { it?.messageId == message.messageId }) {
-                -1 -> messages.add(message)
-                else -> messages.set(index, message)
+    /**
+     * Creates a stream processor for handling streaming text messages.
+     * Can be overridden to provide custom streaming behavior.
+     *
+     * @param debounceMs the debounce delay in milliseconds
+     * @return a TelegramStreamProcessor instance
+     */
+    protected open fun createStreamProcessor(debounceMs: Long = DEFAULT_DEBOUNCE_MS): TelegramStreamProcessor {
+        return TelegramStreamProcessor(api, chatId, debounceMs, requestDispatcher)
+    }
+
+    private fun addResponse(res: TelegramBotResult<Message>) {
+        res.getOrNull()?.let { message ->
+            val index = messages.indexOfFirst { it?.messageId == message.messageId }
+            if (index == -1) {
+                messages.add(message)
+            } else {
+                messages[index] = message
             }
         }
     }
 
-    private fun addResponse(res: TelegramBotResult<Message>) {
-        res.let { message ->
-            when (val index = messages.indexOfFirst { it?.messageId == message.getOrNull()?.messageId }) {
-                -1 -> messages.add(message.getOrNull())
-                else -> messages.set(index, message.getOrNull())
+    private fun addResponse(pair: Pair<retrofit2.Response<com.github.kotlintelegrambot.network.Response<Message>?>?, Exception?>) {
+        pair.first?.body()?.result?.let { message ->
+            val index = messages.indexOfFirst { it?.messageId == message.messageId }
+            if (index == -1) {
+                messages.add(message)
+            } else {
+                messages[index] = message
             }
         }
     }
@@ -68,62 +85,30 @@ class TelegramReactions(
         return sendMessage(text)
     }
 
+    /**
+     * Processes a stream of text chunks with default debouncing.
+     * Uses the stream processor created by [createStreamProcessor].
+     *
+     * @param stream the stream of text chunks to process
+     * @return SayReaction containing the full accumulated text
+     */
     override fun say(stream: Stream<String>): SayReaction {
         return say(stream, DEFAULT_DEBOUNCE_MS)
     }
 
-    fun say(stream: Stream<String>, debounceMs: Long = DEFAULT_DEBOUNCE_MS): SayReaction {
-        val fullText = StringBuilder()
-        val messageStates = mutableListOf<MessageState>()
-        var currentMessageState: MessageState? = null
-
-        val debouncer = MessageDebouncer(debounceMs, debounceScope)
-
-        stream.forEach { chunk ->
-            fullText.append(chunk)
-
-            if (currentMessageState == null) {
-                currentMessageState = MessageState(
-                    text = StringBuilder(chunk),
-                    messageId = null,
-                    debouncer = debouncer
-                )
-                    .also(messageStates::add)
-            } else {
-                currentMessageState?.text?.append(chunk)
-            }
-
-            currentMessageState?.let {
-                if (it.text.length > SAFE_MESSAGE_LIMIT) {
-                    val textToProcess = it.text.toString()
-                    val splitPoint = findOptimalSplitPoint(textToProcess, SAFE_MESSAGE_LIMIT)
-
-                    val messageToSend = textToProcess.take(splitPoint).trim()
-                    val remainder = textToProcess.substring(splitPoint).trim()
-
-                    it.text.clear().append(messageToSend)
-                    scheduleMessageUpdate(it)
-
-                    currentMessageState = if (remainder.isNotEmpty()) {
-                        MessageState(
-                            text = StringBuilder(remainder),
-                            messageId = null,
-                            debouncer = debouncer
-                        ).also(messageStates::add)
-                    } else {
-                        null
-                    }
-                } else {
-                    currentMessageState?.let { messageState -> scheduleMessageUpdate(messageState) }
-                }
-            }
-        }
-
-        runBlocking(debounceScope.coroutineContext) {
-            messageStates.forEach { it.debouncer.flush() }
-        }
-
-        return SayReaction.create(fullText.toString())
+    /**
+     * Processes a stream of text chunks with custom debouncing.
+     * This method can be overridden to provide custom streaming behavior,
+     * or you can override [createStreamProcessor] to customize the processor.
+     *
+     * @param stream the stream of text chunks to process
+     * @param debounceMs the debounce delay in milliseconds
+     * @return SayReaction containing the full accumulated text
+     */
+    open fun say(stream: Stream<String>, debounceMs: Long = DEFAULT_DEBOUNCE_MS): SayReaction {
+        val processor = createStreamProcessor(debounceMs)
+        val fullText = processor.processStream(stream)
+        return SayReaction.create(fullText)
     }
 
     override fun buttons(vararg buttons: String): ButtonsReaction {
@@ -131,26 +116,28 @@ class TelegramReactions(
             val keyboard = message.replyMarkup?.inlineKeyboard?.toMutableList() ?: mutableListOf()
             keyboard.addAll(buttons.map { listOf(InlineKeyboardButton.CallbackData(it, callbackData = it)) })
 
-            api.editMessageReplyMarkup(
+            addResponse(api.editMessageReplyMarkup(
                 chatId,
                 message.messageId,
                 replyMarkup = InlineKeyboardMarkup.create(keyboard)
-            ).also { addResponse(it) }
+            ))
         }
 
         return ButtonsReaction.create(buttons.asList())
     }
 
-    fun say(text: String, inlineButtons: List<String>) = api.sendMessage(
-        chatId,
-        text,
-        replyMarkup = InlineKeyboardMarkup.create(
-            listOf(inlineButtons.map { InlineKeyboardButton.CallbackData(it, callbackData = it) })
-        ).also {
-            SayReaction.create(text)
-            ButtonsReaction.create(inlineButtons)
-        }
-    )
+    fun say(text: String, inlineButtons: List<String>): TelegramBotResult<Message> {
+        val result = api.sendMessage(
+            chatId,
+            text,
+            replyMarkup = InlineKeyboardMarkup.create(
+                listOf(inlineButtons.map { InlineKeyboardButton.CallbackData(it, callbackData = it) })
+            )
+        )
+        SayReaction.create(text)
+        ButtonsReaction.create(inlineButtons)
+        return result
+    }
 
     fun say(
         text: String,
@@ -185,8 +172,7 @@ class TelegramReactions(
         replyMarkup: ReplyMarkup? = null,
         messageThreadId: Long? = null,
     ): SayReaction {
-
-        api.sendMessage(
+        addResponse(api.sendMessage(
             chatId,
             text,
             parseMode,
@@ -197,8 +183,7 @@ class TelegramReactions(
             allowSendingWithoutReply,
             replyMarkup,
             messageThreadId,
-        )
-            .also { addResponse(it) }
+        ))
 
         return SayReaction.create(text)
     }
@@ -237,7 +222,7 @@ class TelegramReactions(
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
     ): ImageReaction {
-        api.sendPhoto(
+        addResponse(api.sendPhoto(
             chatId,
             TelegramFile.ByUrl(url),
             caption,
@@ -247,8 +232,7 @@ class TelegramReactions(
             replyToMessageId,
             allowSendingWithoutReply,
             replyMarkup,
-        )
-            .also { addResponse(it) }
+        ))
 
         return ImageReaction.create(url)
     }
@@ -265,7 +249,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVideo(
+    ) = addResponse(api.sendVideo(
         chatId,
         TelegramFile.ByUrl(url),
         duration,
@@ -278,7 +262,7 @@ class TelegramReactions(
         replyToMessageId,
         allowSendingWithoutReply,
         replyMarkup
-    ).also { addResponse(it) }
+    ))
 
     fun sendVoice(
         url: String,
@@ -289,7 +273,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVoice(
+    ) = addResponse(api.sendVoice(
         chatId,
         TelegramFile.ByUrl(url),
         duration = duration,
@@ -299,7 +283,7 @@ class TelegramReactions(
         replyToMessageId = replyToMessageId,
         allowSendingWithoutReply = allowSendingWithoutReply,
         replyMarkup = replyMarkup,
-    ).also { addResponse(it) }
+    ))
 
     override fun audio(url: String): AudioReaction {
         return sendAudio(url)
@@ -316,7 +300,7 @@ class TelegramReactions(
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
     ): AudioReaction {
-        api.sendAudio(
+        addResponse(api.sendAudio(
             chatId,
             TelegramFile.ByUrl(url),
             duration,
@@ -327,7 +311,7 @@ class TelegramReactions(
             replyToMessageId,
             allowSendingWithoutReply,
             replyMarkup
-        ).also { addResponse(it) }
+        ))
 
         return AudioReaction.create(url)
     }
@@ -343,7 +327,7 @@ class TelegramReactions(
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null,
         mimeType: String? = null,
-    ) = api.sendDocument(
+    ) = addResponse(api.sendDocument(
         chatId,
         TelegramFile.ByUrl(url),
         caption,
@@ -355,7 +339,7 @@ class TelegramReactions(
         allowSendingWithoutReply,
         replyMarkup,
         mimeType,
-    ).also { addResponse(it) }
+    ))
 
     fun sendVenue(
         latitude: Float,
@@ -371,7 +355,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVenue(
+    ) = addResponse(api.sendVenue(
         chatId,
         latitude,
         longitude,
@@ -386,7 +370,7 @@ class TelegramReactions(
         replyToMessageId,
         allowSendingWithoutReply,
         replyMarkup
-    ).also { addResponse(it) }
+    ))
 
     fun sendContact(
         phoneNumber: String,
@@ -397,7 +381,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendContact(
+    ) = addResponse(api.sendContact(
         chatId,
         phoneNumber,
         firstName,
@@ -407,7 +391,7 @@ class TelegramReactions(
         replyToMessageId,
         allowSendingWithoutReply,
         replyMarkup
-    ).also { addResponse(it) }
+    ))
 
     fun sendLocation(
         latitude: Float,
@@ -418,7 +402,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendLocation(
+    ) = addResponse(api.sendLocation(
         chatId,
         latitude,
         longitude,
@@ -428,7 +412,7 @@ class TelegramReactions(
         replyToMessageId,
         allowSendingWithoutReply,
         replyMarkup
-    ).also { addResponse(it) }
+    ))
 
     fun sendMediaGroup(
         mediaGroup: MediaGroup,
@@ -455,8 +439,7 @@ class TelegramReactions(
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
     ): VideoReaction {
-
-        api.sendVideoNote(
+        addResponse(api.sendVideoNote(
             chatId,
             TelegramFile.ByFile(downloadFileByUrl(url)),
             duration,
@@ -466,7 +449,7 @@ class TelegramReactions(
             replyToMessageId,
             allowSendingWithoutReply,
             replyMarkup
-        ).also { addResponse(it) }
+        ))
 
         return VideoReaction.create(url)
     }
@@ -480,7 +463,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = api.sendVideoNote(
+    ) = addResponse(api.sendVideoNote(
         chatId,
         TelegramFile.ByFile(file),
         duration,
@@ -490,7 +473,7 @@ class TelegramReactions(
         replyToMessageId,
         allowSendingWithoutReply,
         replyMarkup
-    ).also { addResponse(it) }
+    ))
 
     fun sendInvoice(
         paymentInvoiceInfo: PaymentInvoiceInfo,
@@ -499,7 +482,7 @@ class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         inlineKeyboardMarkup: InlineKeyboardMarkup? = null
-    ) = api.sendInvoice(
+    ) = addResponse(api.sendInvoice(
         chatId,
         paymentInvoiceInfo,
         disableNotification,
@@ -507,57 +490,12 @@ class TelegramReactions(
         replyToMessageId,
         allowSendingWithoutReply,
         inlineKeyboardMarkup
-    ).also { addResponse(it) }
+    ))
 
     fun answerPreCheckoutQuery(preCheckoutQueryId: String, ok: Boolean, errorMessage: String? = null) =
         api.answerPreCheckoutQuery(preCheckoutQueryId, ok, errorMessage)
 
     companion object {
-        private const val TELEGRAM_MESSAGE_LIMIT = 4096
-        private const val SAFE_MESSAGE_LIMIT = 3900
-        private const val DEFAULT_DEBOUNCE_MS = 100L
-    }
-
-    private val debounceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private class MessageDebouncer(
-        private val debounceMs: Long,
-        private val scope: CoroutineScope
-    ) {
-        private var pendingJob: Job? = null
-
-        fun debounce(action: suspend () -> Unit) {
-            pendingJob?.cancel()
-            pendingJob = scope.launch {
-                delay(debounceMs)
-                action()
-            }
-        }
-
-        suspend fun flush() {
-            pendingJob?.join()
-        }
-    }
-
-    private data class MessageState(
-        val text: StringBuilder,
-        var messageId: Long?,
-        val debouncer: MessageDebouncer
-    )
-
-    private fun scheduleMessageUpdate(messageState: MessageState) {
-        messageState.debouncer.debounce {
-            val textToSend = messageState.text.toString()
-
-            if (messageState.messageId == null) {
-                val result = api.sendMessage(chatId, textToSend).getOrNull()
-                messageState.messageId = result?.messageId
-                result?.let { addResponse(TelegramBotResult.Success(it)) }
-            } else {
-                val result =
-                    api.editMessageText(chatId, messageState.messageId, text = textToSend).first?.body()?.result
-                result?.let { addResponse(TelegramBotResult.Success(it)) }
-            }
-        }
+        const val DEFAULT_DEBOUNCE_MS = 100L
     }
 }

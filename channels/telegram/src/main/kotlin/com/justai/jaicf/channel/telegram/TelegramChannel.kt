@@ -39,7 +39,7 @@ class TelegramChannel(
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: LogLevel = LogLevel.None,
-    override val requestDispatcher: CoroutineDispatcher = if (botApi is WithDispatcher) botApi.requestDispatcher else DefaultRequestExecutor.asCoroutineDispatcher(),
+    override val requestDispatcher: CoroutineDispatcher,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
     val mapper: JsonMapper = JsonMapper.builder()
@@ -61,7 +61,7 @@ class TelegramChannel(
             fun process(request: TelegramBotRequest) {
                 botApi.process(
                     request,
-                    TelegramReactions(bot, request, liveChatProvider),
+                    TelegramReactions(bot, request, liveChatProvider, requestDispatcher),
                     RequestContext.fromHttp(request.update.httpBotRequest)
                 )
             }
@@ -151,7 +151,7 @@ class TelegramChannel(
         val update = mapper.readValue<Update?>(generatedRequest) ?: return
         val message = update.message ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider), requestContext)
+        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, requestDispatcher), requestContext)
     }
 
     fun run() {
