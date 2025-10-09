@@ -165,6 +165,12 @@ open class TelegramReactions(
         messageThreadId,
     )
 
+    /**
+     * Safely sends a message with fallback strategies if Telegram rejects it.
+     * First tries with the provided parseMode, then without parseMode if it fails.
+     *
+     * @return SayReaction with the sent text
+     */
     fun sendMessage(
         text: String,
         parseMode: ParseMode? = null,
@@ -176,7 +182,7 @@ open class TelegramReactions(
         replyMarkup: ReplyMarkup? = null,
         messageThreadId: Long? = null,
     ): SayReaction {
-        addResponse(api.sendMessage(
+        val result = api.sendMessage(
             chatId,
             text,
             parseMode,
@@ -187,7 +193,31 @@ open class TelegramReactions(
             allowSendingWithoutReply,
             replyMarkup,
             messageThreadId,
-        ))
+        )
+
+        // If sending failed and we had a parseMode, retry without it
+        // Check if the result failed by attempting to extract the value
+        when {
+            result.getOrNull() == null && parseMode != null -> {
+                // Retry without parseMode
+                val fallbackResult = api.sendMessage(
+                    chatId,
+                    text,
+                    parseMode = null, // Remove parseMode for safer delivery
+                    disableWebPagePreview,
+                    disableNotification,
+                    protectContent,
+                    replyToMessageId,
+                    allowSendingWithoutReply,
+                    replyMarkup,
+                    messageThreadId,
+                )
+                addResponse(fallbackResult)
+            }
+            else -> {
+                addResponse(result)
+            }
+        }
 
         return SayReaction.create(text)
     }
@@ -216,6 +246,12 @@ open class TelegramReactions(
         replyMarkup
     )
 
+    /**
+     * Safely sends a photo with caption, with fallback if Telegram rejects it.
+     * First tries with the provided parseMode, then without parseMode if it fails.
+     *
+     * @return ImageReaction with the URL
+     */
     fun sendPhoto(
         url: String,
         caption: String? = null,
@@ -226,7 +262,7 @@ open class TelegramReactions(
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
     ): ImageReaction {
-        addResponse(api.sendPhoto(
+        val result = api.sendPhoto(
             chatId,
             TelegramFile.ByUrl(url),
             caption,
@@ -236,11 +272,38 @@ open class TelegramReactions(
             replyToMessageId,
             allowSendingWithoutReply,
             replyMarkup,
-        ))
+        )
+
+        // If sending failed and we had a parseMode, retry without it
+        // For sendPhoto, the result is a Pair (not TelegramBotResult)
+        when {
+            (result.first == null || result.second != null) && parseMode != null -> {
+                // Retry without parseMode
+                val fallbackResult = api.sendPhoto(
+                    chatId,
+                    TelegramFile.ByUrl(url),
+                    caption,
+                    parseMode = null, // Remove parseMode for safer delivery
+                    disableNotification,
+                    protectContent,
+                    replyToMessageId,
+                    allowSendingWithoutReply,
+                    replyMarkup,
+                )
+                addResponse(fallbackResult)
+            }
+            else -> {
+                addResponse(result)
+            }
+        }
 
         return ImageReaction.create(url)
     }
 
+    /**
+     * Safely sends a video with caption, with fallback if Telegram rejects it.
+     * First tries with the provided parseMode, then without parseMode if it fails.
+     */
     fun sendVideo(
         url: String,
         duration: Int? = null,
@@ -253,21 +316,52 @@ open class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = addResponse(api.sendVideo(
-        chatId,
-        TelegramFile.ByUrl(url),
-        duration,
-        width,
-        height,
-        caption,
-        parseMode,
-        disableNotification,
-        protectContent,
-        replyToMessageId,
-        allowSendingWithoutReply,
-        replyMarkup
-    ))
+    ) {
+        val result = api.sendVideo(
+            chatId,
+            TelegramFile.ByUrl(url),
+            duration,
+            width,
+            height,
+            caption,
+            parseMode,
+            disableNotification,
+            protectContent,
+            replyToMessageId,
+            allowSendingWithoutReply,
+            replyMarkup
+        )
 
+        // If sending failed and we had a parseMode, retry without it
+        when {
+            (result.first == null || result.second != null) && parseMode != null -> {
+                // Retry without parseMode
+                val fallbackResult = api.sendVideo(
+                    chatId,
+                    TelegramFile.ByUrl(url),
+                    duration,
+                    width,
+                    height,
+                    caption,
+                    parseMode = null, // Remove parseMode for safer delivery
+                    disableNotification,
+                    protectContent,
+                    replyToMessageId,
+                    allowSendingWithoutReply,
+                    replyMarkup
+                )
+                addResponse(fallbackResult)
+            }
+            else -> {
+                addResponse(result)
+            }
+        }
+    }
+
+    /**
+     * Safely sends a voice message, with fallback if Telegram rejects it.
+     * First tries with the provided parseMode, then without parseMode if it fails.
+     */
     fun sendVoice(
         url: String,
         duration: Int? = null,
@@ -277,22 +371,52 @@ open class TelegramReactions(
         replyToMessageId: Long? = null,
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null
-    ) = addResponse(api.sendVoice(
-        chatId,
-        TelegramFile.ByUrl(url),
-        duration = duration,
-        parseMode = parseMode,
-        disableNotification = disableNotification,
-        protectContent = protectContent,
-        replyToMessageId = replyToMessageId,
-        allowSendingWithoutReply = allowSendingWithoutReply,
-        replyMarkup = replyMarkup,
-    ))
+    ) {
+        val result = api.sendVoice(
+            chatId,
+            TelegramFile.ByUrl(url),
+            duration = duration,
+            parseMode = parseMode,
+            disableNotification = disableNotification,
+            protectContent = protectContent,
+            replyToMessageId = replyToMessageId,
+            allowSendingWithoutReply = allowSendingWithoutReply,
+            replyMarkup = replyMarkup,
+        )
+
+        // If sending failed and we had a parseMode, retry without it
+        when {
+            (result.first == null || result.second != null) && parseMode != null -> {
+                // Retry without parseMode
+                val fallbackResult = api.sendVoice(
+                    chatId,
+                    TelegramFile.ByUrl(url),
+                    duration = duration,
+                    parseMode = null, // Remove parseMode for safer delivery
+                    disableNotification = disableNotification,
+                    protectContent = protectContent,
+                    replyToMessageId = replyToMessageId,
+                    allowSendingWithoutReply = allowSendingWithoutReply,
+                    replyMarkup = replyMarkup,
+                )
+                addResponse(fallbackResult)
+            }
+            else -> {
+                addResponse(result)
+            }
+        }
+    }
 
     override fun audio(url: String): AudioReaction {
         return sendAudio(url)
     }
 
+    /**
+     * Safely sends an audio file.
+     * Note: sendAudio doesn't support parseMode in Telegram API, so no fallback is needed.
+     *
+     * @return AudioReaction with the URL
+     */
     fun sendAudio(
         url: String,
         duration: Int? = null,
@@ -320,6 +444,10 @@ open class TelegramReactions(
         return AudioReaction.create(url)
     }
 
+    /**
+     * Safely sends a document with caption, with fallback if Telegram rejects it.
+     * First tries with the provided parseMode, then without parseMode if it fails.
+     */
     fun sendDocument(
         url: String,
         caption: String? = null,
@@ -331,19 +459,45 @@ open class TelegramReactions(
         allowSendingWithoutReply: Boolean? = null,
         replyMarkup: ReplyMarkup? = null,
         mimeType: String? = null,
-    ) = addResponse(api.sendDocument(
-        chatId,
-        TelegramFile.ByUrl(url),
-        caption,
-        parseMode,
-        disableContentTypeDetection,
-        disableNotification,
-        protectContent,
-        replyToMessageId,
-        allowSendingWithoutReply,
-        replyMarkup,
-        mimeType,
-    ))
+    ) {
+        val result = api.sendDocument(
+            chatId,
+            TelegramFile.ByUrl(url),
+            caption,
+            parseMode,
+            disableContentTypeDetection,
+            disableNotification,
+            protectContent,
+            replyToMessageId,
+            allowSendingWithoutReply,
+            replyMarkup,
+            mimeType,
+        )
+
+        // If sending failed and we had a parseMode, retry without it
+        when {
+            (result.first == null || result.second != null) && parseMode != null -> {
+                // Retry without parseMode
+                val fallbackResult = api.sendDocument(
+                    chatId,
+                    TelegramFile.ByUrl(url),
+                    caption,
+                    parseMode = null, // Remove parseMode for safer delivery
+                    disableContentTypeDetection,
+                    disableNotification,
+                    protectContent,
+                    replyToMessageId,
+                    allowSendingWithoutReply,
+                    replyMarkup,
+                    mimeType,
+                )
+                addResponse(fallbackResult)
+            }
+            else -> {
+                addResponse(result)
+            }
+        }
+    }
 
     fun sendVenue(
         latitude: Float,
