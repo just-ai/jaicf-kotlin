@@ -12,11 +12,7 @@ import io.ktor.client.request.*
 import io.modelcontextprotocol.kotlin.sdk.CallToolResultBase
 import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.Tool
-import io.modelcontextprotocol.kotlin.sdk.client.Client
-import io.modelcontextprotocol.kotlin.sdk.client.SseClientTransport
-import io.modelcontextprotocol.kotlin.sdk.client.StdioClientTransport
-import io.modelcontextprotocol.kotlin.sdk.client.StreamableHttpClientTransport
-import io.modelcontextprotocol.kotlin.sdk.client.WebSocketClientTransport
+import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
 import kotlinx.io.asSource
@@ -65,9 +61,10 @@ class McpService() : AutoCloseable {
     suspend fun connectStreamableHttp(
         urlString: String,
         client: HttpClient,
+        reconnectionTime: Duration?,
         requestBuilder: HttpRequestBuilder.() -> Unit
     ) {
-        val transport = StreamableHttpClientTransport(client, urlString, null, requestBuilder)
+        val transport = StreamableHttpClientTransport(client, urlString, reconnectionTime, requestBuilder)
         mcp.connect(transport)
     }
 
@@ -104,8 +101,18 @@ class McpService() : AutoCloseable {
         fun streamableHttp(
             urlString: String,
             client: HttpClient = HttpClient(CIO) { install(SSE) },
+            reconnectionTime: Duration? = null,
             requestBuilder: HttpRequestBuilder.() -> Unit = {}
-        ) = McpService().apply { runBlocking { connectStreamableHttp(urlString, client, requestBuilder) } }
+        ) = McpService().apply {
+            runBlocking {
+                connectStreamableHttp(
+                    urlString,
+                    client,
+                    reconnectionTime,
+                    requestBuilder
+                )
+            }
+        }
     }
 }
 
@@ -173,15 +180,18 @@ private fun JsonSchemaBuilder.convertInputSchemaToBuilder(inputSchema: Map<Strin
                                 else -> value.content
                             }
                         }
+
                         is kotlinx.serialization.json.JsonArray -> {
                             value.map {
                                 if (it is kotlinx.serialization.json.JsonPrimitive) it.content else it.toString()
                             }
                         }
+
                         else -> value.toString()
                     }
                 }
             }
+
             is Map<*, *> -> propDef as? Map<String, Any>
             else -> null
         } ?: return@forEach
@@ -195,12 +205,15 @@ private fun JsonSchemaBuilder.convertInputSchemaToBuilder(inputSchema: Map<Strin
                 val enumValues = (propMap["enum"] as? List<*>)?.mapNotNull { it as? String }
                 str(propName, description, isRequired, enumValues)
             }
+
             "integer" -> {
                 int(propName, description, isRequired)
             }
+
             "number" -> {
                 num(propName, description, isRequired)
             }
+
             "boolean" -> {
                 bool(propName, description, isRequired)
             }
