@@ -100,7 +100,7 @@ private val scenario = Scenario {
         tool<JsonValue>(
             mcp = mcpServiceSse,
             toolName = "search",
-            description = "Search the web using DuckDuckGo when user asks to find information online"
+            description = "Search the web when user asks to find information online"
         )
 
         // You can also handle tool call result before sending it back to LLM
