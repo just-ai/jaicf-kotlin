@@ -79,8 +79,8 @@ class TelegramChannel(
     private val telegramLogLevel: LogLevel = LogLevel.None,
     override val requestDispatcher: CoroutineDispatcher,
     private val streamProcessorFactory: TelegramStreamProcessorFactory? = null,
-    private val aggregateUserMessages: Boolean = true,
-    private val aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
+    aggregateUserMessages: Boolean = true,
+    aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
     val mapper: JsonMapper = JsonMapper.builder()
