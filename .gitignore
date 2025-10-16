@@ -7,3 +7,4 @@ build/
 managers/mapdb/.mapdb
 /docs/.sass-cache/
 /docs/_site/
+*out*
