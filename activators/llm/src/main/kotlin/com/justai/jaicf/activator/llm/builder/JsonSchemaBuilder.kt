@@ -97,3 +97,64 @@ class JsonSchemaBuilder {
         }
     }.toMap()
 }
+
+fun JsonSchemaBuilder.inputSchemaToBuilder(inputSchema: Map<String, Any>?) {
+    inputSchema ?: return
+
+    val properties = inputSchema["properties"] as? Map<String, Any> ?: return
+    val required = inputSchema["required"] as? List<String> ?: emptyList()
+
+    properties.forEach { (propName, propDef) ->
+        val propMap = when (propDef) {
+            is kotlinx.serialization.json.JsonObject -> {
+                propDef.entries.associate { (key, value) ->
+                    key to when (value) {
+                        is kotlinx.serialization.json.JsonPrimitive -> {
+                            when {
+                                value.isString -> value.content
+                                value.content == "true" || value.content == "false" -> value.content.toBoolean()
+                                value.content.toIntOrNull() != null -> value.content.toInt()
+                                value.content.toDoubleOrNull() != null -> value.content.toDouble()
+                                else -> value.content
+                            }
+                        }
+
+                        is kotlinx.serialization.json.JsonArray -> {
+                            value.map {
+                                if (it is kotlinx.serialization.json.JsonPrimitive) it.content else it.toString()
+                            }
+                        }
+
+                        else -> value.toString()
+                    }
+                }
+            }
+
+            is Map<*, *> -> propDef as? Map<String, Any>
+            else -> null
+        } ?: return@forEach
+
+        val type = propMap["type"] as? String ?: return@forEach
+        val description = propMap["description"] as? String
+        val isRequired = propName in required
+
+        when (type) {
+            "string" -> {
+                val enumValues = (propMap["enum"] as? List<*>)?.mapNotNull { it as? String }
+                str(propName, description, isRequired, enumValues)
+            }
+
+            "integer" -> {
+                int(propName, description, isRequired)
+            }
+
+            "number" -> {
+                num(propName, description, isRequired)
+            }
+
+            "boolean" -> {
+                bool(propName, description, isRequired)
+            }
+        }
+    }
+}
