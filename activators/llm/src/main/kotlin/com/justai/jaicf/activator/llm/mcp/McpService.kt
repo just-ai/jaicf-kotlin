@@ -1,6 +1,6 @@
 package com.justai.jaicf.activator.llm.mcp
 
-import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
+import com.justai.jaicf.activator.llm.builder.inputSchemaToBuilder
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
 import com.justai.jaicf.activator.llm.tool.llmTool
@@ -26,7 +26,7 @@ class McpService() : AutoCloseable {
     private val mcp: Client = Client(clientInfo = Implementation(name = "mcp-client-jaicf", version = "1.0.0"))
     private var process: Process? = null
 
-    suspend fun connectStdio(command: List<String>) {
+    private suspend fun connectStdio(command: List<String>) {
         process = runCatching { ProcessBuilder(command).start() }
             .getOrElse { throw IllegalStateException("Failed to start MCP process with command: $command", it) }
 
@@ -39,7 +39,7 @@ class McpService() : AutoCloseable {
         }
     }
 
-    suspend fun connectSse(
+    private suspend fun connectSse(
         urlString: String,
         client: HttpClient,
         reconnectionTime: Duration?,
@@ -49,7 +49,7 @@ class McpService() : AutoCloseable {
         mcp.connect(transport)
     }
 
-    suspend fun connectWebSocket(
+    private suspend fun connectWebSocket(
         urlString: String,
         client: HttpClient,
         requestBuilder: HttpRequestBuilder.() -> Unit
@@ -58,7 +58,7 @@ class McpService() : AutoCloseable {
         mcp.connect(transport)
     }
 
-    suspend fun connectStreamableHttp(
+    private suspend fun connectStreamableHttp(
         urlString: String,
         client: HttpClient,
         reconnectionTime: Duration?,
@@ -68,7 +68,51 @@ class McpService() : AutoCloseable {
         mcp.connect(transport)
     }
 
-    suspend fun getTools(): List<Tool> = mcp.listTools()?.tools ?: emptyList()
+    private suspend fun getTools(): List<Tool> = mcp.listTools()?.tools ?: emptyList()
+
+    private fun asTool(
+        tool: Tool,
+        description: String?,
+        responseBuilder: McpServiceResponseBuilder
+    ): LLMTool<Map<String, Any>> {
+        return llmTool<Map<String, Any>>(
+            name = tool.name,
+            description = description ?: tool.description ?: "",
+            parameters = {
+                val inputSchemaMap = mapOf(
+                    "type" to tool.inputSchema.type,
+                    "properties" to tool.inputSchema.properties,
+                    "required" to (tool.inputSchema.required ?: emptyList())
+                )
+                inputSchemaToBuilder(inputSchemaMap)
+            }
+        ) {
+            responseBuilder(callTool(tool.name, call.arguments))
+        }
+    }
+
+    fun tools(
+        toolNames: List<String> = emptyList(),
+        responseBuilder: McpServiceResponseBuilder = { it }
+    ): List<LLMTool<Map<String, Any>>> {
+        val availableTools = runBlocking { getTools() }
+        return availableTools
+            .filter { toolNames.isEmpty() || it.name in toolNames }
+            .map { asTool(it, null, responseBuilder) }
+    }
+
+    fun tool(
+        toolName: String,
+        description: String? = null,
+        responseBuilder: McpServiceResponseBuilder = { it }
+    ): LLMTool<Map<String, Any>> {
+
+        val availableTools = runBlocking { getTools() }
+        val tool = availableTools.find { it.name == toolName }
+            ?: throw IllegalArgumentException("Unknown tool $toolName")
+
+        return asTool(tool, description, responseBuilder)
+    }
 
     suspend fun callTool(name: String, arguments: Map<String, Any?>): CallToolResultBase {
         return mcp.callTool(name, arguments)
@@ -86,11 +130,11 @@ class McpService() : AutoCloseable {
         ) = McpService().apply { runBlocking { connectStdio(command) } }
 
         fun sse(
-            urlString: String,
+            url: String,
             client: HttpClient = HttpClient { install(SSE) },
             reconnectionTime: Duration? = null,
             requestBuilder: HttpRequestBuilder.() -> Unit = {}
-        ) = McpService().apply { runBlocking { connectSse(urlString, client, reconnectionTime) { requestBuilder() } } }
+        ) = McpService().apply { runBlocking { connectSse(url, client, reconnectionTime) { requestBuilder() } } }
 
         fun websocket(
             urlString: String,
@@ -111,111 +155,6 @@ class McpService() : AutoCloseable {
                     reconnectionTime,
                     requestBuilder
                 )
-            }
-        }
-    }
-}
-
-fun McpService.asTools(
-    tools: List<String> = emptyList(),
-    responseBuilder: McpServiceResponseBuilder = { it }
-): List<LLMTool<Map<String, Any>>> {
-    val availableTools = runBlocking { getTools() }
-    return availableTools
-        .filter { tools.isEmpty() || it.name in tools }
-        .map { getLlmTool(it, null, responseBuilder) }
-}
-
-fun McpService.getTool(
-    toolName: String,
-    description: String? = null,
-    responseBuilder: McpServiceResponseBuilder = { it }
-): LLMTool<Map<String, Any>> {
-
-    val availableTools = runBlocking { getTools() }
-    val tool = availableTools.find { it.name == toolName }
-        ?: throw IllegalArgumentException("Unknown tool $toolName")
-
-    return getLlmTool(tool, description, responseBuilder)
-}
-
-private fun McpService.getLlmTool(
-    tool: Tool,
-    description: String?,
-    responseBuilder: McpServiceResponseBuilder
-): LLMTool<Map<String, Any>> {
-    return llmTool<Map<String, Any>>(
-        name = tool.name,
-        description = description ?: tool.description ?: "",
-        parameters = {
-            val inputSchemaMap = mapOf(
-                "type" to tool.inputSchema.type,
-                "properties" to tool.inputSchema.properties,
-                "required" to (tool.inputSchema.required ?: emptyList())
-            )
-            this.convertInputSchemaToBuilder(inputSchemaMap)
-        }
-    ) {
-        responseBuilder(callTool(tool.name, call.arguments))
-    }
-}
-
-private fun JsonSchemaBuilder.convertInputSchemaToBuilder(inputSchema: Map<String, Any>?) {
-    inputSchema ?: return
-
-    val properties = inputSchema["properties"] as? Map<String, Any> ?: return
-    val required = inputSchema["required"] as? List<String> ?: emptyList()
-
-    properties.forEach { (propName, propDef) ->
-        val propMap = when (propDef) {
-            is kotlinx.serialization.json.JsonObject -> {
-                propDef.entries.associate { (key, value) ->
-                    key to when (value) {
-                        is kotlinx.serialization.json.JsonPrimitive -> {
-                            when {
-                                value.isString -> value.content
-                                value.content == "true" || value.content == "false" -> value.content.toBoolean()
-                                value.content.toIntOrNull() != null -> value.content.toInt()
-                                value.content.toDoubleOrNull() != null -> value.content.toDouble()
-                                else -> value.content
-                            }
-                        }
-
-                        is kotlinx.serialization.json.JsonArray -> {
-                            value.map {
-                                if (it is kotlinx.serialization.json.JsonPrimitive) it.content else it.toString()
-                            }
-                        }
-
-                        else -> value.toString()
-                    }
-                }
-            }
-
-            is Map<*, *> -> propDef as? Map<String, Any>
-            else -> null
-        } ?: return@forEach
-
-        val type = propMap["type"] as? String ?: return@forEach
-        val description = propMap["description"] as? String
-        val isRequired = propName in required
-
-        when (type) {
-            "string" -> {
-                val enumValues = (propMap["enum"] as? List<*>)?.mapNotNull { it as? String }
-                str(propName, description, isRequired, enumValues)
-            }
-
-            "integer" -> {
-                int(propName, description, isRequired)
-            }
-
-            "number" -> {
-                num(propName, description, isRequired)
-            }
-
-            "boolean" -> {
-                bool(propName, description, isRequired)
             }
         }
     }

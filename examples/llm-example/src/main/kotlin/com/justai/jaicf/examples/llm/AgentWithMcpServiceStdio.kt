@@ -1,12 +1,8 @@
 package com.justai.jaicf.examples.llm
 
-import com.justai.jaicf.BotEngine
+import com.justai.jaicf.activator.llm.agent.LLMAgent
 import com.justai.jaicf.activator.llm.mcp.McpService
-import com.justai.jaicf.activator.llm.mcp.getTool
-import com.justai.jaicf.activator.llm.scenario.llmState
-import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
-import com.openai.core.JsonValue
 
 /**
  * This example demonstrates using MCP services via STDIO transport.
@@ -26,7 +22,7 @@ import com.openai.core.JsonValue
  *
  * For SSE, StreamableHttp transport examples, see ScenarioWithMcpServiceSSE.kt
  */
-val mcpService = McpService.stdio(
+private val mcpService = McpService.stdio(
     listOf(
         "npx",
         "-y",
@@ -43,12 +39,13 @@ val mcpService = McpService.stdio(
  *
  * IMPORTANT! Set up your OPENAI_API_KEY and OPENAI_BASE_URL env before running
  */
-private val scenario = Scenario {
-    llmState("main", {
+private val agent = LLMAgent(
+    name = "amazon-agent",
+    props = {
         model = "gpt-4.1-nano"
 
         // The most simple way to add a tool. Provide a tool name via `toolName` parameter.
-        tool(mcpService.getTool("find_products_to_buy"))
+        tool(mcpService.tool("find_products_to_buy"))
 
         /**
          * You can also use other options for your scenario:
@@ -86,14 +83,9 @@ private val scenario = Scenario {
          * }
          * ```
          */
-    }) {
-        llm.withToolCalls {
-            reactions.streamOrSay()
-        }
     }
-}
+)
 
 fun main() {
-    ConsoleChannel(BotEngine(scenario))
-        .run("Hi")
+    ConsoleChannel(agent.asBot).run("What tools you have?")
 }
