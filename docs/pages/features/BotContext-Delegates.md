@@ -1,8 +1,5 @@
 ---
-layout: default
 title: BotContext delegates
-permalink: BotContext-Delegates
-parent: Features
 ---
 
 [BotContext](context) allows to store data associated with user in a form of key-value pairs either on `client`, `session` or `temp` levels.

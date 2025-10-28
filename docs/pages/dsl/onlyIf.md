@@ -1,8 +1,5 @@
 ---
-layout: default
 title: onlyIf
-permalink: onlyIf
-parent: Scenario DSL
 ---
 
 An `onlyIf` clause is used for fine customization of [activation rules](activators). An `onlyIf` clause

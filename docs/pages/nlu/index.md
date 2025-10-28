@@ -1,12 +1,8 @@
 ---
-layout: default
 title: Natural Language Understanding
-nav_order: 7
-permalink: Natural-Language-Understanding
-has_children: true
 ---
 
-![NLU](/assets/images/nlu.png)
+![NLU](../../assets/images/nlu.png)
 
 # Introduction to NLU
 

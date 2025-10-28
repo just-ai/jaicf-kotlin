@@ -1,8 +1,5 @@
 ---
-layout: default
 title: action
-permalink: action
-parent: Scenario DSL
 ---
 
 An action block of the state contains a Kotlin code that will be executed once the state is activated. Each action block

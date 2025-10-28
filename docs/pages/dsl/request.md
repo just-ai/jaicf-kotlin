@@ -1,8 +1,5 @@
 ---
-layout: default
 title: request
-permalink: request
-parent: Scenario DSL
 ---
 
 [BotRequest](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/api/BotRequest.kt) contains a channel-related request data and available through `request` variable in the action block of the dialogue state.

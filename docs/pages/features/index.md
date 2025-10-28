@@ -1,9 +1,5 @@
 ---
-layout: default
 title: Features
-nav_order: 10
-permalink: Features
-has_children: true
 ---
 
 # JAICF Features

@@ -1,9 +1,5 @@
 ---
-layout: default
 title: anyEvent
-permalink: anyEvent
-parent: activators
-grand_parent: Scenario DSL
 ---
 
 Activates state if your bot has received any event.

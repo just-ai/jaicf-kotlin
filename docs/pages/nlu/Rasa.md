@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Rasa
-permalink: Rasa
-parent: Natural Language Understanding
 ---
 
 <p align="center">
-    <img src="/assets/images/nlu/rasa.svg" width="200"/>
+    <img src="../../assets/images/nlu/rasa.svg" width="200"/>
 </p>
 
 <h1 align="center">Rasa NLU activator</h1>

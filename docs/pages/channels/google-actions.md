@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Google Actions
-permalink: Google-Actions
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/actions.png" width="128" height="128"/>
+    <img src="../../assets/images/channels/actions.png" width="128" height="128"/>
 </p>
 
 <h1 align="center">Google Actions channel</h1>

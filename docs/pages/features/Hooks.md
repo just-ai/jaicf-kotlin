@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Hooks
-permalink: Hooks
-parent: Features
 ---
 
 Hooks can be used to intercept any phase of each request processing.

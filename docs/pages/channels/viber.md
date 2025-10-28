@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Viber
-permalink: Viber
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channel/viber.png" width="128" height="128" alt="logo"/>
+    <img src="../../assets/images/channels/viber.png" width="128" height="128" alt="logo"/>
 </p>
 
 <h1 align="center">Viber messenger channel</h1>

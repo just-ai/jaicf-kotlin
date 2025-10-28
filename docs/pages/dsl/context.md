@@ -1,8 +1,5 @@
 ---
-layout: default
 title: context
-permalink: context
-parent: Scenario DSL
 ---
 
 [BotContext](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/context/BotContext.kt) instance is available through `context` in the action block.

@@ -1,9 +1,5 @@
 ---
-layout: default
 title: regex
-permalink: regex
-parent: activators
-grand_parent: Scenario DSL
 ---
 
 Activates state if the user's query matches with the given regular expression.

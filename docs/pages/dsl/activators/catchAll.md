@@ -1,9 +1,5 @@
 ---
-layout: default
 title: catchAll
-permalink: catchAll
-parent: activators
-grand_parent: Scenario DSL
 ---
 
 [CatchAllActivator](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/activator/catchall/CatchAllActivator.kt) can be used in JAICF project to handle any user's query request that wasn't handled by any other activator.

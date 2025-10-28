@@ -1,3 +1,7 @@
+---
+title: Quick Start with Dialogflow
+---
+
 In this quick start guide, you will create a JAICF project from an existing template and then we'll go briefly through its sources.
 
 ## 1. Create a new project
@@ -123,7 +127,7 @@ When the user says something that is not handled by other states (fallback), you
 
 Here you can see how it is easy to create conversational scenarios that can work simultaneously via different channels but has logic forks for some of them.
 
-> Learn more about channels [here](Channels).
+> Learn more about channels [here](channels/).
 
 ## Bot configuration
 
@@ -142,7 +146,7 @@ val templateBot = BotEngine(
 
 Here is a `templateBot` configuration that holds the `MainScenario` and configures desired activators - `ActionsDialogflowActivator` and `CatchAllActivator`.
 
-> Learn more about different activators [here](Natural-Language-Understanding).
+> Learn more about different activators [here](nlu/).
 
 ## HTTP Server
 
@@ -169,9 +173,9 @@ In this quick start guide, you've learned how to create a new JAICF project and 
 
 Of course, JAICF enables you to create much more powerful and flexible things like 
 
-* [cross-platform support](Channels)
-* [managing a dialogue state](Scenario-DSL)
-* [automatic testing](Testing)
+* [cross-platform support](channels/)
+* [managing a dialogue state](dsl/)
+* [automatic testing](features/Testing)
 * and much more
 
 To dive into the JAICF, we recommend going next through the [Introduction section](Introduction) and check for [some JAICF project examples](https://github.com/just-ai/jaicf-kotlin/tree/master/examples).

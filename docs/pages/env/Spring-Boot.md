@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Spring Boot
-permalink: Spring-Boot
-parent: Environments
 ---
 
-![](/assets/images/env/spring-boot.png)
+![](../../assets/images/env/spring-boot.png)
 
 [Spring Boot](https://spring.io/projects/spring-boot) makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
 

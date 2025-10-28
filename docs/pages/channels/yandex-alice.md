@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Yandex Alice
-permalink: Yandex-Alice
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/yandex-alice.png" width="128" height="128"/>
+    <img src="../../assets/images/channels/yandex-alice.png" width="128" height="128"/>
 </p>
 
 <h1 align="center">Яндекс Алиса</h1>

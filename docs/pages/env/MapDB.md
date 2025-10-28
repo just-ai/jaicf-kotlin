@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Map DB
-permalink: Map-DB
-parent: Environments
 ---
 
 # MapDB embedded database

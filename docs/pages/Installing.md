@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Installing
-nav_order: 4
-permalink: Installing
 ---
 
 Here you can find how to install JAICF using different building tools like Gradle and Maven.
@@ -13,14 +10,14 @@ In all examples below you have to replace `$jaicfVersion` with the latest versio
 
 ## Components
 
-Each JAICF component like [channel](Channels) or [NLU connector](Natural-Language-Understanding) should be added to the build configuration directly using separate library.
+Each JAICF component like [channel](channels/) or [NLU connector](nlu/) should be added to the build configuration directly using separate library.
 The version of component's library is the same as for `core` component that should be present in your build configuration for each JAICF project.
 
 For example, to make your project ready for [Amazon Alexa](https://github.com/just-ai/jaicf-kotlin/tree/master/channels/alexa) you have to provide its library in dependencies section of your _build.gradle_:
 
 `implementation("com.just-ai.jaicf:alexa:$jaicfVersion")`
 
-If you'd like to use [CAILA NLU](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/caila) to recognise users' requests and build your scenario using [intents](activators#intent), you have to provide:
+If you'd like to use [CAILA NLU](https://github.com/just-ai/jaicf-kotlin/tree/master/activators/caila) to recognise users' requests and build your scenario using [intents](dsl/activators/intent), you have to provide:
 
 `implementation("com.just-ai.jaicf:caila:$jaicfVersion")`
 

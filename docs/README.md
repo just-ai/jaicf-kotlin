@@ -1,5 +1,41 @@
-# JAICF documentation
+# JAICF Documentation
 
-JAICF documentation uses [Github pages with Jekyll](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll) with [Just Docs](https://pmarsceill.github.io/just-the-docs/) template.
+JAICF documentation uses [VitePress](https://vitepress.dev/).
 
-To start and edit locally please follow [this instructions](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/testing-your-github-pages-site-locally-with-jekyll).
+## Prerequisites
+
+- Node.js 18 or higher
+
+## Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+## Development
+
+Start the development server:
+
+```bash
+npm run docs:dev
+```
+
+The documentation will be available at http://localhost:5173/
+
+## Build
+
+Build the documentation for production:
+
+```bash
+npm run docs:build
+```
+
+## Preview Production Build
+
+Preview the production build locally:
+
+```bash
+npm run docs:preview
+```

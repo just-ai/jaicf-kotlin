@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Mongo DB
-permalink: Mongo-DB
-parent: Environments
 ---
 
-![](/assets/images/env/mongodb.png)
+![](../../assets/images/env/mongodb.png)
 
 Allows to use [Mongo database](https://www.mongodb.com/) to persist [BotContext](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/context/BotContext.kt) instances.
 

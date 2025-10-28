@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Alexa
-permalink: Alexa
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/alexa.png" width="200" height="200"/>
+    <img src="../../assets/images/channels/alexa.png" width="200" height="200"/>
 </p>
 
 <h1 align="center">Amazon Alexa channel</h1>
@@ -245,6 +242,6 @@ It's also possible to use a built-in [DynamoDB](https://aws.amazon.com/dynamodb)
 > For most developers, the [Lambda free tier](http://aws.amazon.com/lambda/pricing/) is sufficient for the function supporting an Alexa skill.
 
 _JAICF powered Alexa skills are ready to be deployed to AWS Lambda with DynamoDB support.
-Please [learn how to use AWS Lambda and DynamoDB](AWS-Lambda) with your JAICF projects here._
+Please [learn how to use AWS Lambda and DynamoDB](../env/AWS-Lambda) with your JAICF projects here._
 
 > It's also a [ready to use example](https://github.com/just-ai/jaicf-kotlin/tree/master/examples/game-clock) that shows the complete project that can be deployed to AWS Lambda.
