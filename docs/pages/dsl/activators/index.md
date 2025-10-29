@@ -1,9 +1,5 @@
 ---
-layout: default
 title: activators
-permalink: activators
-parent: Scenario DSL
-has_children: true
 ---
 
 Each scenario's state can be _activated_ by any of configured activator - a rule that tries to handle the user's request and find an appropriate state of scenario to execute it's action block. 

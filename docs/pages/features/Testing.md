@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Testing
-permalink: Testing
-parent: Features
 ---
 
 JAICF provides a [JUnit-based](https://junit.org/junit5/) test suite that can be used to test your scenarios and agents automatically on each build.

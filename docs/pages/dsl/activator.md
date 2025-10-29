@@ -1,8 +1,5 @@
 ---
-layout: default
 title: activator
-permalink: activator
-parent: Scenario DSL
 ---
 
 [ActivatorContext](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/context/ActivatorContext.kt) contains an [activator](activators)-related details of every request and is available through `activator` variable in action block.

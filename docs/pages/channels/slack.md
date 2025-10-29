@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Slack
-permalink: Slack
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/slack.png" width="128" height="128"/>
+    <img src="../../assets/images/channels/slack.png" width="128" height="128"/>
 </p>
 
 <h1 align="center">Slack channel</h1>

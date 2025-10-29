@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Introduction
-nav_order: 5
-permalink: Introduction
 ---
 
-![JAICF Components](/assets/images/jaicf-components.png)
+![JAICF Components](../assets/images/jaicf-components.png)
 
 JAICF is a Kotlin framework for conversational context-aware chatbot and voice assistant development.
 
@@ -47,11 +44,11 @@ val MainScenario = Scenario {
 
 Each JAICF conversational agent (chatbot or voice assistant skill) contains at least one scenario that implements a dialogue logic in terms of _states_, _activators_, _action_, _reactions_ and other components.
 
-> Learn more about JAICF DSL [here](Scenario-DSL).
+> Learn more about JAICF DSL [here](dsl/).
 
 # JAICF components
 
-![JAICF components](/assets/images/jaicf-components-2.png)
+![JAICF components](../assets/images/jaicf-components-2.png)
 
 JAICF is a modular framework that contains multiple components.
 All these components are used by JAICF to glue scenarios with persistent layers, channels, and NLU engines transparently for the developer.
@@ -65,7 +62,7 @@ In fact _every activator tries to handle a user's request_ to your JAICF agent a
 
 _Dialogflow, Rasa, and Just AI CAILA - are examples of NLU activators in JAICF._
 
-> Learn more about NLU [here](Natural-Language-Understanding).
+> Learn more about NLU [here](nlu/).
 
 ## Channels
 
@@ -75,7 +72,7 @@ _Amazon Alexa, Google Actions, Facebook Messenger, and Slack - are examples of c
 
 JAICF is a multi-channel (or multi-platform) framework meaning that a single agent can work simultaneously in many channels.
 
-> Learn more about channels [here](Channels).
+> Learn more about channels [here](channels/).
 
 ## Managers
 
@@ -86,7 +83,7 @@ JAICF provides a persistence layer that loads and stores data transparently for 
 
 _MapDB, Mongo DB - are examples of managers in JAICF._
 
-> Learn more about managers [here](Environments).
+> Learn more about managers [here](env/).
 
 ## Servers
 
@@ -106,7 +103,7 @@ fun main() {
 }
 ```
 
-> Learn more about different servers [here](Environments).
+> Learn more about different servers [here](env/).
 
 # Where to go next
 

@@ -1,8 +1,5 @@
 ---
-layout: default
 title: F.A.Q.
-nav_order: 3
-permalink: FAQ
 ---
 
 These answers on frequently asking questions may help you with JAICF applications development.

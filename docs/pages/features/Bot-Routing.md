@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Bot Routing
-permalink: Bot-Routing
-parent: Features
 ---
 
 **Bot Routing** feature enables developers to use many bots inside one channel. One logical scenario can be separated

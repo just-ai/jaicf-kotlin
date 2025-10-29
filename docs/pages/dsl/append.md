@@ -1,8 +1,5 @@
 ---
-layout: default
 title: append
-permalink: append
-parent: Scenario DSL
 ---
 
 It's often useful to decompose a scenario on several small sub-scenarios or predefine some common scenario logic to share across different scenarios. 

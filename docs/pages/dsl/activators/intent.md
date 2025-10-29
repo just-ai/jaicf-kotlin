@@ -1,9 +1,5 @@
 ---
-layout: default
 title: intent
-permalink: intent
-parent: activators
-grand_parent: Scenario DSL
 ---
 
 This activator builder appends intent name to the list of state activators:

@@ -1,9 +1,5 @@
 ---
-layout: default
 title: Scenario DSL
-nav_order: 8
-permalink: Scenario-DSL
-has_children: true
 ---
 
 JAICF enables developer to create conversational dialogues in a declarative manner using a proprietary DSL.

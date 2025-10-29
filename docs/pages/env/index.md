@@ -1,9 +1,5 @@
 ---
-layout: default
 title: Environments
-nav_order: 9
-permalink: Environments
-has_children: true
 ---
 
 Once you've implemented your JAICF-based conversational agent, you have to deploy it somewhere to process users' requests.

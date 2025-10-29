@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Quick Start
-nav_order: 2
-permalink: Quick-Start
 ---
 
 This tutorial shows how it's easy to create your first JAICF bot with JAICP and CAILA NLU.
@@ -18,7 +15,7 @@ Log in to [JAICP Application Panel](https://app.jaicp.com/register?utm_source=gi
 This is a great channel for testing and moreover it also can be customised and installed to any website.
 Go to the **Channels** from the left menu bar and create new **Chat Widget** channel in the _Incoming channels_ section.
 
-![Create JAICF project in JAICP](assets/gifs/create-jaicf-project.gif)
+![Create JAICF project in JAICP](../assets/gifs/create-jaicf-project.gif)
 
 ## 3. Create a new project from source codes
 
@@ -34,7 +31,7 @@ You have to **Fork** it, or create your own Github repo using this template (cli
 Once you've forked a template, create a new project from your Github repo.
 Click on _Create from Github_ in your IntelliJ IDEA and provide your Github repo _URL_. Click _Clone_ then.
 
-![Create IntelliJ IDEA project](assets/gifs/create-idea-project.gif)
+![Create IntelliJ IDEA project](../assets/gifs/create-idea-project.gif)
 
 After few moments a new project will be cloned and configured automatically.
 
@@ -44,7 +41,7 @@ Once the project has been cloned, you have to provide an _access token of your J
 
 Go to your project in [JAICP Application Panel](https://app.jaicp.com/register?utm_source=github&utm_medium=article&utm_campaign=quickstart), open _Project properties_ and copy **API token** from _Location_ tab. Then return to the IntelliJ IDEA and paste this token to the _jaicp.properties_ file.
 
-![Copy API token](assets/gifs/copy-api-token.gif)
+![Copy API token](../assets/gifs/copy-api-token.gif)
 
 ## 4. Run it!
 
@@ -56,14 +53,14 @@ Just run `JaicpPoller.kt` file from your IntelliJ IDEA. Once it's ran, go back t
 This opens your chat widget and automatically sends the first request to your local machine.
 Try to type some messages to see how your bot responds.
 
-![Run](assets/gifs/run-project.gif)
+![Run](../assets/gifs/run-project.gif)
 
 ## 5. Import CAILA NLU model
 
 By default, every new JAICP project creates a simple NLU model that contains only a _Hello_ and _Bye_ intents.
 This means that your bot can't react on any other messages yet.
 
-> Learn more about intents [here](Natural-Language-Understanding)
+> Learn more about intents [here](nlu/)
 
 You may add more intents to your NLU model using CAILA tab in the [JAICP Application Panel](https://app.jaicp.com/register?utm_source=github&utm_medium=article&utm_campaign=quickstart).
 But template project already contains a ready to use model for CAILA NLU.
@@ -76,7 +73,7 @@ Select _caila_import.json_ file from your disk and click on **Save** button.
 This appends one more intent named _Smalltalk_ to your NLU model.
 And now your bot can handle some new messages like _"How are you"_. Try it in the web widget.
 
-![Import CAILA NLU model](assets/gifs/import-caila-model.gif)
+![Import CAILA NLU model](../assets/gifs/import-caila-model.gif)
 
 ### Dive into the code
 
@@ -94,7 +91,7 @@ For example, you can change reactions of your states, or add more intents to the
 
 Till now you have been running your chatbot on your local PC.
 But when you're ready to make it public for users, you have to deploy it to any cloud hosting.
-JAICP provides a [ready to use cloud environment](JAICP-Cloud) that can serve your JAICF projects.
+JAICP provides a [ready to use cloud environment](env/JAICP-Cloud) that can serve your JAICF projects.
 
 To deploy your project just go to your Github repository with your fork of template and click on **Deploy to JAICP** button.
 This automatically redirects you to the JAICP and you have only to enter the name for a new JAICF project.
@@ -110,14 +107,14 @@ Once the project is built and deployed, you can open the web widget and type som
 
 Once you're ready with your local changes in the source code, you just have to commit and push it to your Github repo - JAICP automatically triggers a new deployment and your new chatbot's version runs in the JAICP Cloud shortly.
 
-> [Learn more](JAICP-Cloud) about JAICP Cloud
+> [Learn more](env/JAICP-Cloud) about JAICP Cloud
 
 # Where to go next
 
 In this quick start guide you've learned how to create a new JAICF project with JAICP integration and simple dialogue scenario, there are so many things to learn about framework itself, like:
-* [cross-platform support](Channels)
-* [managing a dialogue state](Scenario-DSL)
-* [automatic testing](Testing)
+* [cross-platform support](channels/)
+* [managing a dialogue state](dsl/)
+* [automatic testing](features/Testing)
 * and much more
 
 You may also would like to learn [another version of this Quick start](Quick-Start-with-Dialogflow) if you're familiar with Google Dialogflow tool. It covers the same steps but with Dialogflow usage.

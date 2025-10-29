@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Aimybox
-permalink: Aimybox
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/aimybox.png" width="128" height="134"/>
+    <img src="../../assets/images/channels/aimybox.png" width="128" height="134"/>
 </p>
 
 <h1 align="center">Aimybox channel</h1>

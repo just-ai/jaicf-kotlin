@@ -1,8 +1,5 @@
 ---
-layout: default
 title: fallback
-permalink: fallback
-parent: Scenario DSL
 ---
 
 Each time the user sends a request that can't be handled by any state of the scenario, a _fallback_ state will be activated without a changing the current dialogue's context.

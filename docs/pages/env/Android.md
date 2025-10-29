@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Android
-permalink: Android
-parent: Environments
 ---
 
-![Android](/assets/images/env/android.png)
+![Android](../../assets/images/env/android.png)
 
 JAICF is compatible with [Android](https://developer.android.com/studio) enabling you to run your dialogue scenarios right on the Android device instead of serving it in the cloud like [Heroku](Heroku).
 

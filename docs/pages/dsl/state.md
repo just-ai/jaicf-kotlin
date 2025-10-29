@@ -1,8 +1,5 @@
 ---
-layout: default
 title: state
-permalink: state
-parent: Scenario DSL
 ---
 
 State is a main builder function of [ScenarioBuilder](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/builder/ScenarioBuilder.kt) that is a superclass for each dialogue scenario in JAICF.

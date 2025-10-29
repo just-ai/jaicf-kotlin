@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Chat Widget
-permalink: Chat-Widget
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/jaicp.svg" width="128" height="134"/>
+    <img src="../../assets/images/channels/jaicp.svg" width="128" height="134"/>
 </p>
 
 <h1 align="center">JAICP Chat Widget Channel</h1>
