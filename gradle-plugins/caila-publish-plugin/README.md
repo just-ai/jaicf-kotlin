@@ -10,39 +10,38 @@ This plugin automates the process of building Docker images and deploying JAICF 
 
 - **Two deployment workflows**: Build Docker images automatically or use pre-built images
 - **Type-safe DSL** for configuration
-- **Comprehensive model settings**: HTTP access, resource limits, auto-scaling, caching, and more
-- **Public URL generation** for deployed models with HTTP access enabled
+- **Model settings**: HTTP access, resource limits, auto-scaling, caching, and more
 - **Integration** with `com.bmuschko.docker-java-application` plugin
 
 ## Project Structure
 
 ```
-caila-publish-plugin/
-├── caila-publish-plugin/          # Gradle plugin module
-│   └── src/main/kotlin/com/justai/jaicf/plugins/caila/publish/
-│       ├── CailaPublishPlugin.kt           # Plugin entry point
-│       ├── extension/
-│       │   ├── CailaPublishExtension.kt    # Root DSL extension
-│       │   ├── CailaImageSpec.kt           # Image configuration
-│       │   └── CailaModelSpec.kt           # Model configuration
-│       ├── task/
-│       │   ├── PublishCailaImageFromDockerTask.kt
-│       │   ├── PublishCailaImageFromRegistryTask.kt
-│       │   └── CailaModelTask.kt
-│       ├── internal/
-│       │   ├── client/CailaApiClient.kt    # HTTP client for CAILA API
-│       │   └── http/HttpClientFactory.kt
-│       └── model/                          # DTOs for API requests/responses
-│
-└── examples/
-    └── simple-spring/                      # Example Spring Boot application
-        └── build.gradle.kts                # Example plugin usage
+src/main/kotlin/com/justai/jaicf/plugins/caila/publish/
+├── CailaPublishPlugin.kt           # Plugin entry point
+├── extension/
+│   ├── CailaPublishExtension.kt    # Root DSL extension
+│   ├── CailaImageSpec.kt           # Image configuration
+│   └── CailaModelSpec.kt           # Model configuration
+├── task/
+│   ├── AbstractPublishCailaImageTask.kt    # Base class for image publishing
+│   ├── PublishCailaImageFromDockerTask.kt  # Publish from Docker Extension
+│   ├── PublishCailaImageFromRegistryTask.kt # Publish from registry
+│   └── CailaModelTask.kt           # Model publishing task
+├── internal/
+│   ├── client/
+│   │   └── CailaApiClient.kt       # HTTP client for CAILA API
+│   └── http/
+│       └── HttpClientFactory.kt    # Ktor client factory
+└── model/                          # DTOs for API requests/responses
+    ├── PublishImageRequestDto.kt
+    ├── PublishModelRequestDto.kt
+    └── ...
 ```
 
 ## Requirements
 
-- Gradle 7.0+
-- Kotlin 1.9.25
+- Gradle 9.0+
+- Kotlin 2.2.0
 - Java 17+
 - Docker (for automatic image builds)
 - CAILA account with API access
@@ -53,7 +52,7 @@ Add the plugin to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("com.justai.jaicf.caila-publish-plugin") version "1.0.3-v4-SNAPSHOT"
+    id("com.justai.jaicf.caila-publish-plugin") version "1.0.0"
 }
 ```
 
