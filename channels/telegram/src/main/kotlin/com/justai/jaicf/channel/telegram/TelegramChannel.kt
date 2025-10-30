@@ -63,6 +63,7 @@ import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.justai.jaicf.helpers.kotlin.WithDispatcher
+import com.justai.jaicf.channel.telegram.streaming.TelegramStreamProcessor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -78,7 +79,7 @@ class TelegramChannel(
     private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: LogLevel = LogLevel.None,
     override val requestDispatcher: CoroutineDispatcher = DefaultRequestExecutor.asCoroutineDispatcher(),
-    private val streamProcessorFactory: TelegramStreamProcessorFactory? = null,
+    private val streamProcessorFactory: TelegramStreamProcessorFactory = DefaultStreamProcessorFactory,
     aggregateUserMessages: Boolean = true,
     aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
@@ -231,6 +232,15 @@ class TelegramChannel(
     }
 
     companion object : JaicpCompatibleAsyncChannelFactory {
+        /**
+         * Default factory for creating TelegramStreamProcessor instances.
+         * This factory creates the standard processor with default debouncing (100ms)
+         * and automatic message splitting at 3900 characters.
+         */
+        val DefaultStreamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher ->
+            TelegramStreamProcessor(api, chatId, debounceMs, dispatcher)
+        }
+
         override val channelType = "telegram"
         override fun create(
             botApi: BotApi,
