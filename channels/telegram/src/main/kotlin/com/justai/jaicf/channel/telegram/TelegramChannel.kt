@@ -77,7 +77,7 @@ class TelegramChannel(
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: LogLevel = LogLevel.None,
-    override val requestDispatcher: CoroutineDispatcher,
+    override val requestDispatcher: CoroutineDispatcher = DefaultRequestExecutor.asCoroutineDispatcher(),
     private val streamProcessorFactory: TelegramStreamProcessorFactory? = null,
     aggregateUserMessages: Boolean = true,
     aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
