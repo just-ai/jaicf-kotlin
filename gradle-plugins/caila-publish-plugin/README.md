@@ -83,6 +83,13 @@ Configure the plugin to build and push Docker images automatically:
 
 ```kotlin
 cailaPublish {
+    httpClient {
+        logLevel.set("INFO")
+        connectTimeoutMs.set(10_000)
+        requestTimeoutMs.set(35_000)
+        keepAliveTimeMs.set(35_000)
+    }
+
     docker {
         registryCredentials {
             url.set("https://index.docker.io/v1/")
@@ -101,17 +108,17 @@ cailaPublish {
     }
     
     image {
-        name.set("my-caila-image")              // Required - image name on CAILA
+        name.set("my-caila-image")              // Required
         accessMode.set(AccessMode.PRIVATE.mode)
     }
     
     model {
-        modelName.set("my-model")               // Required - model name on CALIA
+        modelName.set("my-model")               // Required
         taskType.set(TaskType.CUSTOM.tag)
         
         httpSettings {
-            httpPort.set(8080)                  // Required when httpSettings used - port that the application web server listens on
-            mainPageEndpoint.set("/health")     // Required when httpSettings used - path for availability check (healthcheck endpoint)
+            httpPort.set(8080)                  // Required when httpSettings used
+            mainPageEndpoint.set("/health")     // Required when httpSettings used
         }
         
         publicSettings {
@@ -167,6 +174,19 @@ cailaPublish {
 ```
 
 ## Configuration Reference
+
+### HTTP Client Configuration
+
+Configure HTTP client settings for CAILA API requests:
+
+```kotlin
+httpClient {
+    logLevel.set("INFO")           // HTTP log level: ALL, HEADERS, BODY, INFO, NONE. Default: ALL
+    connectTimeoutMs.set(10_000)   // Connection timeout in milliseconds. Default: 10000
+    requestTimeoutMs.set(35_000)   // Request timeout in milliseconds. Default: 35000
+    keepAliveTimeMs.set(35_000)    // Keep-alive time in milliseconds. Default: 35000
+}
+```
 
 ### Image Configuration
 

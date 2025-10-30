@@ -1,6 +1,5 @@
 package com.justai.jaicf.plugins.caila.publish.internal.client
 
-import com.justai.jaicf.plugins.caila.publish.internal.http.HttpClientFactory
 import com.justai.jaicf.plugins.caila.publish.model.GetImageResponse
 import com.justai.jaicf.plugins.caila.publish.model.GetModelResponse
 import com.justai.jaicf.plugins.caila.publish.model.PublishImageRequestDto
@@ -8,7 +7,6 @@ import com.justai.jaicf.plugins.caila.publish.model.PublishImageResponseDto
 import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -23,7 +21,7 @@ import kotlinx.coroutines.runBlocking
 class CailaApiClient(
     private val accessToken: String,
     val baseUrl: String,
-    val httpClient: HttpClient = HttpClientFactory.create(LogLevel.ALL),
+    val httpClient: HttpClient,
 ) {
     suspend fun publishImage(accountId: Int, body: PublishImageRequestDto): PublishImageResponseDto {
         return httpClient.post("$baseUrl/account/$accountId/image") {

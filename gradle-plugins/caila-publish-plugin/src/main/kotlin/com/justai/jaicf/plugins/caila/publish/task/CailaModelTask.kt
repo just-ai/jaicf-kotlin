@@ -2,9 +2,11 @@ package com.justai.jaicf.plugins.caila.publish.task
 
 import com.justai.jaicf.plugins.caila.publish.extension.CAILA_BASE_URL
 import com.justai.jaicf.plugins.caila.publish.extension.CailaModelSpec
+import com.justai.jaicf.plugins.caila.publish.extension.HttpClientSpec
 import com.justai.jaicf.plugins.caila.publish.internal.client.CailaApiClient
+import com.justai.jaicf.plugins.caila.publish.internal.http.HttpClientFactory
 import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
-import kotlinx.coroutines.runBlocking
+import io.ktor.client.plugins.logging.LogLevel
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -17,6 +19,9 @@ abstract class CailaModelTask : DefaultTask() {
 
     @get:Nested
     abstract val spec: Property<CailaModelSpec>
+
+    @get:Nested
+    abstract val httpClientSpec: Property<HttpClientSpec>
 
     @get:Input
     abstract val imageId: Property<Int>
@@ -60,7 +65,14 @@ abstract class CailaModelTask : DefaultTask() {
         logger.lifecycle("Image ID: $image")
 
         try {
-            val client = CailaApiClient(token, baseUrl)
+            val httpSpec = httpClientSpec.get()
+            val httpClient = HttpClientFactory.create(
+                logLevel = LogLevel.valueOf(httpSpec.logLevel.get()),
+                connectTimeoutMs = httpSpec.connectTimeoutMs.get(),
+                requestTimeoutMs = httpSpec.requestTimeoutMs.get(),
+                keepAliveTimeMs = httpSpec.keepAliveTimeMs.get(),
+            )
+            val client = CailaApiClient(token, baseUrl, httpClient)
             val request = PublishModelRequestDto(
                 imageId = image,
                 imageAccountId = accountId,

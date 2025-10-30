@@ -29,6 +29,7 @@ class CailaPublishPlugin : Plugin<Project> {
 
         val imageFromDockerTask = project.tasks.register("publishCailaImageFromDocker", PublishCailaImageFromDockerTask::class.java) {
             spec.set(extension.image)
+            httpClientSpec.set(extension.httpClient)
 
             dockerImageName.convention(
                 project.provider {
@@ -43,11 +44,13 @@ class CailaPublishPlugin : Plugin<Project> {
 
         val imageFromRegistryTask = project.tasks.register("publishCailaImageFromRegistry", PublishCailaImageFromRegistryTask::class.java) {
             spec.set(extension.image)
+            httpClientSpec.set(extension.httpClient)
             cailaBaseUrl.convention(extension.url)
         }
 
         val modelFromDockerTask = project.tasks.register("publishCailaModelFromDocker", CailaModelTask::class.java) {
             spec.set(extension.model)
+            httpClientSpec.set(extension.httpClient)
             imageId.set(imageFromDockerTask.flatMap { it.publishedImageId })
             cailaBaseUrl.convention(extension.url)
             dependsOn(imageFromDockerTask)
@@ -55,6 +58,7 @@ class CailaPublishPlugin : Plugin<Project> {
 
         val modelFromRegistryTask = project.tasks.register("publishCailaModelFromRegistry", CailaModelTask::class.java) {
             spec.set(extension.model)
+            httpClientSpec.set(extension.httpClient)
             imageId.set(imageFromRegistryTask.flatMap { it.publishedImageId })
             cailaBaseUrl.convention(extension.url)
             dependsOn(imageFromRegistryTask)

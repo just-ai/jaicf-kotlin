@@ -16,16 +16,16 @@ open class CailaPublishExtension @Inject constructor(
 ) {
     val url: Property<String> = objectFactory.property<String>().convention(CAILA_BASE_URL)
 
-    val httpLogLevel: Property<String> = objectFactory.property<String>().convention("ALL")
-    val connectTimeoutMs: Property<Int> = objectFactory.property<Int>().convention(10_000)
-    val requestTimeoutMs: Property<Int> = objectFactory.property<Int>().convention(35_000)
-    val keepAliveTimeMs: Property<Int> = objectFactory.property<Int>().convention(35_000)
-
+    val httpClient: HttpClientSpec = objectFactory.newInstance(HttpClientSpec::class.java)
     val image: CailaImageSpec = objectFactory.newInstance(CailaImageSpec::class.java)
     val model: CailaModelSpec = objectFactory.newInstance(CailaModelSpec::class.java)
 
     fun docker(configuration: DockerExtension.() -> Unit) {
         project.extensions.configure(DockerExtension::class.java, configuration)
+    }
+
+    fun httpClient(action: Action<HttpClientSpec>) {
+        action.execute(httpClient)
     }
 
     fun image(action: Action<CailaImageSpec>) {
