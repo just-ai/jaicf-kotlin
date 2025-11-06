@@ -7,8 +7,9 @@ package com.justai.jaicf.channel.telegram
  *     api: Bot,
  *     chatId: ChatId,
  *     debounceMs: Long,
- *     dispatcher: CoroutineDispatcher
- * ) : TelegramStreamProcessor(api, chatId, debounceMs, dispatcher) {
+ *     dispatcher: CoroutineDispatcher,
+ *     parseMode: ParseMode?
+ * ) : TelegramStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode) {
  *     override fun shouldSplitMessage(state: MessageState): Boolean {
  *         // Custom splitting logic
  *         return state.text.length > 2000
@@ -19,8 +20,8 @@ package com.justai.jaicf.channel.telegram
  *     botApi = botEngine,
  *     telegramBotToken = "YOUR_TOKEN",
  *     requestDispatcher = Dispatchers.IO,
- *     streamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher ->
- *         CustomStreamProcessor(api, chatId, debounceMs, dispatcher)
+ *     streamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher, parseMode ->
+ *         CustomStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode)
  *     }
  * )
  *
@@ -32,6 +33,14 @@ package com.justai.jaicf.channel.telegram
  *     requestDispatcher = Dispatchers.IO,
  *     aggregateUserMessages = true,  // Enable message aggregation
  *     aggregationWaitTimeMs = 500L   // Wait 500ms for additional messages
+ * )
+ *
+ * Example usage with custom parse mode:
+ *
+ * val channel = TelegramChannel(
+ *     botApi = botEngine,
+ *     telegramBotToken = "YOUR_TOKEN",
+ *     defaultParseMode = ParseMode.MARKDOWN_V2  // Use Markdown v2 instead of default v1
  * )
  */
 
@@ -46,6 +55,7 @@ import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
 import com.github.kotlintelegrambot.dispatcher.*
+import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.logging.LogLevel
 import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
@@ -82,6 +92,7 @@ class TelegramChannel(
     private val streamProcessorFactory: TelegramStreamProcessorFactory = DefaultStreamProcessorFactory,
     aggregateUserMessages: Boolean = true,
     aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
+    private val defaultParseMode: ParseMode = ParseMode.MARKDOWN,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
     val mapper: JsonMapper = JsonMapper.builder()
@@ -107,7 +118,7 @@ class TelegramChannel(
             fun process(request: TelegramBotRequest) {
                 botApi.process(
                     request,
-                    TelegramReactions(bot, request, liveChatProvider, requestDispatcher, streamProcessorFactory),
+                    TelegramReactions(bot, request, liveChatProvider, requestDispatcher, streamProcessorFactory, defaultParseMode),
                     RequestContext.fromHttp(request.update.httpBotRequest)
                 )
             }
@@ -224,7 +235,7 @@ class TelegramChannel(
         val update = mapper.readValue<Update?>(generatedRequest) ?: return
         val message = update.message ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, requestDispatcher, streamProcessorFactory), requestContext)
+        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, requestDispatcher, streamProcessorFactory, defaultParseMode), requestContext)
     }
 
     fun run() {
@@ -237,8 +248,8 @@ class TelegramChannel(
          * This factory creates the standard processor with default debouncing (100ms)
          * and automatic message splitting at 3900 characters.
          */
-        val DefaultStreamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher ->
-            TelegramStreamProcessor(api, chatId, debounceMs, dispatcher)
+        val DefaultStreamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher, parseMode ->
+            TelegramStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode)
         }
 
         override val channelType = "telegram"

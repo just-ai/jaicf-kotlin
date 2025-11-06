@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.telegram.streaming
 
 import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.ChatId
+import com.github.kotlintelegrambot.entities.ParseMode
 import com.justai.jaicf.channel.telegram.helpers.findOptimalSplitPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineDispatcher
@@ -18,7 +19,8 @@ open class TelegramStreamProcessor(
     protected val api: Bot,
     protected val chatId: ChatId,
     protected val debounceMs: Long = DEFAULT_DEBOUNCE_MS,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    protected val parseMode: ParseMode? = null
 ) {
     protected val debounceScope = CoroutineScope(dispatcher + SupervisorJob())
 
@@ -121,10 +123,10 @@ open class TelegramStreamProcessor(
             val textToSend = messageState.text.toString()
 
             if (messageState.messageId == null) {
-                val result = api.sendMessage(chatId, textToSend).getOrNull()
+                val result = api.sendMessage(chatId, textToSend, parseMode).getOrNull()
                 messageState.messageId = result?.messageId
             } else {
-                api.editMessageText(chatId, messageState.messageId, text = textToSend)
+                api.editMessageText(chatId, messageState.messageId, text = textToSend, parseMode = parseMode)
             }
         }
     }

@@ -37,6 +37,7 @@ val Reactions.telegram
  * @property liveChatProvider optional JAICP live chat provider for asynchronous operations
  * @property requestDispatcher the coroutine dispatcher for executing reactions
  * @property streamProcessorFactory factory for creating custom stream processors
+ * @property defaultParseMode default parse mode for messages (Markdown by default)
  */
 @Suppress("MemberVisibilityCanBePrivate")
 open class TelegramReactions(
@@ -45,6 +46,7 @@ open class TelegramReactions(
     override val liveChatProvider: JaicpLiveChatProvider?,
     val requestDispatcher: kotlinx.coroutines.CoroutineDispatcher = kotlinx.coroutines.Dispatchers.IO,
     private val streamProcessorFactory: TelegramStreamProcessorFactory = TelegramChannel.DefaultStreamProcessorFactory,
+    private val defaultParseMode: ParseMode = ParseMode.MARKDOWN,
 ) : StreamReactions, Reactions(), JaicpCompatibleAsyncReactions {
 
     val chatId = ChatId.fromId(request.chatId)
@@ -59,7 +61,7 @@ open class TelegramReactions(
      * @return a TelegramStreamProcessor instance
      */
     protected open fun createStreamProcessor(debounceMs: Long = DEFAULT_DEBOUNCE_MS): TelegramStreamProcessor {
-        return streamProcessorFactory.create(api, chatId, debounceMs, requestDispatcher)
+        return streamProcessorFactory.create(api, chatId, debounceMs, requestDispatcher, defaultParseMode)
     }
 
     private fun addResponse(res: TelegramBotResult<Message>) {
@@ -85,7 +87,7 @@ open class TelegramReactions(
     }
 
     override fun say(text: String): SayReaction {
-        return sendMessage(text)
+        return sendMessage(text, parseMode = defaultParseMode)
     }
 
     /**
