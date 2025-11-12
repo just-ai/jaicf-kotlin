@@ -41,6 +41,7 @@ val TelegramBotRequest.videoNote get() = this as? TelegramVideoNoteRequest
 val TelegramBotRequest.voice get() = this as? TelegramVoiceRequest
 val TelegramBotRequest.preCheckout get() = this as? TelegramPreCheckoutRequest
 val TelegramBotRequest.successfulPayment get() = this as? TelegramSuccessfulPaymentRequest
+val TelegramBotRequest.composite get() = this as? TelegramCompositeRequest
 
 internal val Message.clientId get() = chat.id.toString()
 
@@ -171,3 +172,217 @@ data class TelegramInvocationQueryRequest(
     override val input: String,
     override val requestData: String
 ) : TelegramInvocationRequest, InvocationQueryRequest(clientId, input, requestData)
+
+/**
+ * Sealed class representing individual message items in a composite request.
+ * Each item preserves its original Update and Message for full context access.
+ */
+sealed class MessageItem {
+    abstract val update: Update
+    abstract val message: Message
+
+    data class Text(
+        val text: String,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Photos(
+        val photos: List<PhotoSize>,
+        val caption: String?,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Video(
+        val video: com.github.kotlintelegrambot.entities.files.Video,
+        val caption: String?,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Document(
+        val document: com.github.kotlintelegrambot.entities.files.Document,
+        val caption: String?,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Audio(
+        val audio: com.github.kotlintelegrambot.entities.files.Audio,
+        val caption: String?,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Voice(
+        val voice: com.github.kotlintelegrambot.entities.files.Voice,
+        val caption: String?,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class VideoNote(
+        val videoNote: com.github.kotlintelegrambot.entities.files.VideoNote,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Sticker(
+        val sticker: com.github.kotlintelegrambot.entities.stickers.Sticker,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Animation(
+        val animation: com.github.kotlintelegrambot.entities.files.Animation,
+        val caption: String?,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Location(
+        val location: com.github.kotlintelegrambot.entities.Location,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Contact(
+        val contact: com.github.kotlintelegrambot.entities.Contact,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+
+    data class Game(
+        val game: com.github.kotlintelegrambot.entities.Game,
+        override val update: Update,
+        override val message: Message
+    ) : MessageItem()
+}
+
+/**
+ * Extension function to convert TelegramBotRequest to MessageItem
+ */
+fun TelegramBotRequest.toMessageItem(): MessageItem = when (this) {
+    is TelegramTextRequest -> MessageItem.Text(
+        text = message.text.orEmpty(),
+        update = update,
+        message = message
+    )
+    is TelegramPhotosRequest -> MessageItem.Photos(
+        photos = photos,
+        caption = message.caption,
+        update = update,
+        message = message
+    )
+    is TelegramVideoRequest -> MessageItem.Video(
+        video = video,
+        caption = message.caption,
+        update = update,
+        message = message
+    )
+    is TelegramDocumentRequest -> MessageItem.Document(
+        document = document,
+        caption = message.caption,
+        update = update,
+        message = message
+    )
+    is TelegramAudioRequest -> MessageItem.Audio(
+        audio = audio,
+        caption = message.caption,
+        update = update,
+        message = message
+    )
+    is TelegramVoiceRequest -> MessageItem.Voice(
+        voice = voice,
+        caption = message.caption,
+        update = update,
+        message = message
+    )
+    is TelegramVideoNoteRequest -> MessageItem.VideoNote(
+        videoNote = videoNote,
+        update = update,
+        message = message
+    )
+    is TelegramStickerRequest -> MessageItem.Sticker(
+        sticker = sticker,
+        update = update,
+        message = message
+    )
+    is TelegramAnimationRequest -> MessageItem.Animation(
+        animation = animation,
+        caption = message.caption,
+        update = update,
+        message = message
+    )
+    is TelegramLocationRequest -> MessageItem.Location(
+        location = location,
+        update = update,
+        message = message
+    )
+    is TelegramContactRequest -> MessageItem.Contact(
+        contact = contact,
+        update = update,
+        message = message
+    )
+    is TelegramGameRequest -> MessageItem.Game(
+        game = game,
+        update = update,
+        message = message
+    )
+    else -> throw IllegalArgumentException("Cannot convert ${this::class.simpleName} to MessageItem")
+}
+
+/**
+ * Helper function to combine MessageItems into a single text representation.
+ * Used for simple access via request.input
+ */
+fun List<MessageItem>.combineToText(): String = mapNotNull { item ->
+    when (item) {
+        is MessageItem.Text -> item.text
+        is MessageItem.Photos -> item.caption ?: "[${item.photos.size} photos]"
+        is MessageItem.Video -> item.caption ?: "[video]"
+        is MessageItem.Document -> item.caption ?: "[document: ${item.document.fileName}]"
+        is MessageItem.Audio -> item.caption ?: "[audio]"
+        is MessageItem.Voice -> "[voice message]"
+        is MessageItem.VideoNote -> "[video note]"
+        is MessageItem.Sticker -> "[sticker: ${item.sticker.emoji ?: ""}]"
+        is MessageItem.Animation -> item.caption ?: "[animation]"
+        is MessageItem.Location -> "[location]"
+        is MessageItem.Contact -> "[contact: ${item.contact.firstName}]"
+        is MessageItem.Game -> "[game: ${item.game.title}]"
+    }
+}.joinToString("\n")
+
+/**
+ * Composite request containing multiple aggregated messages.
+ * Provides both simple access via `input` and detailed access via `items`.
+ *
+ * Extends QueryBotRequest to ensure compatibility with text-based activators (like LLM activators).
+ * The `input` property contains the combined text representation of all items.
+ */
+data class TelegramCompositeRequest(
+    override val update: Update,
+    override val message: Message,
+    val items: List<MessageItem>,
+    val mediaGroupId: String? = null
+) : TelegramBotRequest, QueryBotRequest(
+    clientId = message.clientId,
+    input = items.combineToText()
+) {
+    /**
+     * Combined text representation of all items for simple access.
+     * Same as `input` property from QueryBotRequest.
+     */
+    val combinedText: String get() = input
+
+    /**
+     * Check if this composite contains only text items
+     */
+    val isTextOnly: Boolean get() = items.all { it is MessageItem.Text }
+
+    /**
+     * Check if this composite contains any media items
+     */
+    val hasMedia: Boolean get() = items.any { it !is MessageItem.Text }
+}

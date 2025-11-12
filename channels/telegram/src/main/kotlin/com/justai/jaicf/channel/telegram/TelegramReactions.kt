@@ -658,3 +658,56 @@ open class TelegramReactions(
         const val DEFAULT_DEBOUNCE_MS = 100L
     }
 }
+
+// Extension properties for convenient access to composite requests
+
+/**
+ * Extension property to access TelegramCompositeRequest from BotRequest.
+ * Returns null if the request is not a composite request.
+ */
+val com.justai.jaicf.api.BotRequest.telegramComposite: TelegramCompositeRequest?
+    get() = this as? TelegramCompositeRequest
+
+/**
+ * Extension property to get all text items from a composite request.
+ * Returns an empty list if there are no text items.
+ */
+val TelegramCompositeRequest.texts: List<String>
+    get() = items.filterIsInstance<MessageItem.Text>().map { it.text }
+
+/**
+ * Extension property to get all photo items from a composite request.
+ * Returns a flat list of all PhotoSize objects from all photo items.
+ */
+val TelegramCompositeRequest.allPhotos: List<com.github.kotlintelegrambot.entities.files.PhotoSize>
+    get() = items.filterIsInstance<MessageItem.Photos>().flatMap { it.photos }
+
+/**
+ * Extension property to get all video items from a composite request.
+ */
+val TelegramCompositeRequest.videos: List<com.github.kotlintelegrambot.entities.files.Video>
+    get() = items.filterIsInstance<MessageItem.Video>().map { it.video }
+
+/**
+ * Extension property to get all document items from a composite request.
+ */
+val TelegramCompositeRequest.documents: List<com.github.kotlintelegrambot.entities.files.Document>
+    get() = items.filterIsInstance<MessageItem.Document>().map { it.document }
+
+/**
+ * Extension property to get all audio items from a composite request.
+ */
+val TelegramCompositeRequest.audios: List<com.github.kotlintelegrambot.entities.files.Audio>
+    get() = items.filterIsInstance<MessageItem.Audio>().map { it.audio }
+
+/**
+ * Extension property to get all voice items from a composite request.
+ */
+val TelegramCompositeRequest.voiceMessages: List<com.github.kotlintelegrambot.entities.files.Voice>
+    get() = items.filterIsInstance<MessageItem.Voice>().map { it.voice }
+
+/**
+ * Extension property to get the number of items in the composite request.
+ */
+val TelegramCompositeRequest.itemCount: Int
+    get() = items.size

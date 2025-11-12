@@ -25,14 +25,18 @@ package com.justai.jaicf.channel.telegram
  *     }
  * )
  *
- * Example usage with message aggregation (for handling long messages split by Telegram):
+ * Example usage with message aggregation (for handling long messages and media groups):
  *
  * val channel = TelegramChannel(
  *     botApi = botEngine,
  *     telegramBotToken = "YOUR_TOKEN",
  *     requestDispatcher = Dispatchers.IO,
- *     aggregateUserMessages = true,  // Enable message aggregation
- *     aggregationWaitTimeMs = 500L   // Wait 500ms for additional messages
+ *     aggregation = AggregationConfig(
+ *         enabled = true,
+ *         waitTimeMs = 500L,
+ *         useMediaGroupId = true,
+ *         strategy = DefaultAggregationStrategy()
+ *     )
  * )
  *
  * Example usage with custom parse mode:
@@ -83,6 +87,23 @@ import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
+/**
+ * Configuration for message aggregation in Telegram channel.
+ *
+ * @param enabled Enable message aggregation (default: true)
+ * @param waitTimeMs Debounce delay in milliseconds (default: 500ms)
+ * @param useMediaGroupId Use Telegram's mediaGroupId for instant media group detection (default: true)
+ * @param strategy Custom aggregation strategy (default: DefaultAggregationStrategy)
+ * @param maxItems Maximum number of items to aggregate (default: 20)
+ */
+data class AggregationConfig(
+    val enabled: Boolean = true,
+    val waitTimeMs: Long = 500L,
+    val useMediaGroupId: Boolean = true,
+    val strategy: AggregationStrategy = DefaultAggregationStrategy(),
+    val maxItems: Int = 20
+)
+
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
@@ -90,8 +111,7 @@ class TelegramChannel(
     private val telegramLogLevel: LogLevel = LogLevel.None,
     override val requestDispatcher: CoroutineDispatcher = DefaultRequestExecutor.asCoroutineDispatcher(),
     private val streamProcessorFactory: TelegramStreamProcessorFactory = DefaultStreamProcessorFactory,
-    aggregateUserMessages: Boolean = true,
-    aggregationWaitTimeMs: Long = UserMessageAggregator.DEFAULT_WAIT_TIME_MS,
+    aggregation: AggregationConfig = AggregationConfig(),
     private val defaultParseMode: ParseMode = ParseMode.MARKDOWN,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
@@ -105,8 +125,14 @@ class TelegramChannel(
 
     private var liveChatProvider: JaicpLiveChatProvider? = null
 
-    private val messageAggregator: UserMessageAggregator? = if (aggregateUserMessages) {
-        UserMessageAggregator(aggregationWaitTimeMs, CoroutineScope(requestDispatcher + SupervisorJob()))
+    private val requestAggregator: TelegramRequestAggregator? = if (aggregation.enabled) {
+        TelegramRequestAggregator(
+            waitTimeMs = aggregation.waitTimeMs,
+            scope = CoroutineScope(requestDispatcher + SupervisorJob()),
+            strategy = aggregation.strategy,
+            maxItems = aggregation.maxItems,
+            useMediaGroupId = aggregation.useMediaGroupId
+        )
     } else null
 
     private val bot: Bot = bot {
@@ -126,81 +152,142 @@ class TelegramChannel(
             text {
                 val textRequest = TelegramTextRequest(update, message)
 
-                if (messageAggregator != null && message.text != null) {
-                    // Aggregate consecutive messages from the same user
-                    messageAggregator.addMessage(
-                        chatId = message.chat.id,
-                        messageText = message.text!!
-                    ) { combinedText ->
-                        // Create a new request with combined text
-                        val aggregatedRequest = TelegramTextRequest(
-                            update = update,
-                            message = message
-                        ).let { req ->
-                            // We need to override the input with combined text
-                            object : TelegramBotRequest, QueryBotRequest(
-                                clientId = req.clientId,
-                                input = combinedText
-                            ) {
-                                override val update = req.update
-                                override val message = req.message
-                            }
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(textRequest) { aggregated ->
+                            process(aggregated)
                         }
-                        process(aggregatedRequest)
+                    } else {
+                        process(textRequest)
                     }
-                } else {
-                    // Process immediately without aggregation
-                    process(textRequest)
                 }
             }
 
             callbackQuery {
                 val message = callbackQuery.message ?: return@callbackQuery
+                // Callback queries are not aggregated - process immediately
                 process(TelegramQueryRequest(update, message, callbackQuery.data))
             }
 
             location {
-                process(TelegramLocationRequest(update, message, location))
+                val request = TelegramLocationRequest(update, message, location)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             contact {
-                process(TelegramContactRequest(update, message, contact))
+                val request = TelegramContactRequest(update, message, contact)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             audio {
-                process(TelegramAudioRequest(update, message, media))
+                val request = TelegramAudioRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             document {
-                process(TelegramDocumentRequest(update, message, media))
+                val request = TelegramDocumentRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             animation {
-                process(TelegramAnimationRequest(update, message, media))
+                val request = TelegramAnimationRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             game {
-                process(TelegramGameRequest(update, message, media))
+                val request = TelegramGameRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             photos {
-                process(TelegramPhotosRequest(update, message, media))
+                val request = TelegramPhotosRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             sticker {
-                process(TelegramStickerRequest(update, message, media))
+                val request = TelegramStickerRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             video {
-                process(TelegramVideoRequest(update, message, media))
+                val request = TelegramVideoRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             videoNote {
-                process(TelegramVideoNoteRequest(update, message, media))
+                val request = TelegramVideoNoteRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             voice {
-                process(TelegramVoiceRequest(update, message, media))
+                val request = TelegramVoiceRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             preCheckoutQuery {
