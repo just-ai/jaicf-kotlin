@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Dialogflow
-permalink: Dialogflow
-parent: Natural Language Understanding
 ---
 
 <p align="center">
-    <img src="/assets/images/nlu/dialogflow.png" height="128" alt="Dialogflow ES logo"/>
+    <img src="../../assets/images/nlu/dialogflow.png" height="128" alt="Dialogflow ES logo"/>
 </p>
 
 <h1 align="center">Dialogflow ES NLU activator</h1>

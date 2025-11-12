@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Facebook Messenger
-permalink: Facebook-Messenger
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/facebook.svg" width="128" height="128"/>
+    <img src="../../assets/images/channels/facebook.svg" width="128" height="128"/>
 </p>
 
 <h1 align="center">Facebook Messenger channel</h1>

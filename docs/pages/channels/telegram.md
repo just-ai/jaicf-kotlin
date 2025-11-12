@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Telegram
-permalink: Telegram
-parent: Channels
 ---
 
 <p align="center">
-    <img src="/assets/images/channels/telegram.png" width="128" height="128"/>
+    <img src="../../assets/images/channels/telegram.png" width="128" height="128"/>
 </p>
 
 <h1 align="center">Telegram messenger channel</h1>

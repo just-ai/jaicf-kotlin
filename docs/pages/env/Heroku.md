@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Heroku
-permalink: Heroku
-parent: Environments
 ---
 
-![](/assets/images/env/heroku.png)
+![](../../assets/images/env/heroku.png)
 
 [Heroku](https://heroku.com) is a cloud platform that can host your JAICF server running with [Ktor](Ktor), [Spring Boot](Spring-Boot) or any other HTTP server.
 

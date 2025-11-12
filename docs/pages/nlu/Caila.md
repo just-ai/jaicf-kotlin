@@ -1,12 +1,9 @@
 ---
-layout: default
 title: CAILA
-permalink: Caila
-parent: Natural Language Understanding
 ---
 
 <p align="center">
-    <img src="/assets/images/nlu/caila.svg" height="128" width="128"/>
+    <img src="../../assets/images/nlu/caila.svg" height="128" width="128"/>
 </p>
 
 <h1 align="center">CAILA NLU activator</h1>

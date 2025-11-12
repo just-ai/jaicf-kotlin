@@ -1,12 +1,9 @@
 ---
-layout: default
 title: Lex
-permalink: Lex
-parent: Natural Language Understanding
 ---
 
 <p style="text-align: center">
-    <img src="/assets/images/nlu/lex.png" height="128" width="128" alt="Lex logo"/>
+    <img src="../../assets/images/nlu/lex.png" height="128" width="128" alt="Lex logo"/>
 </p>
 
 <h1 style="text-align: center">Amazon Lex NLU activator</h1>

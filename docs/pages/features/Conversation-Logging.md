@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Conversation Logging
-permalink: Conversation-Logging
-parent: Features
 ---
 
 Conversation Logging feature enables you to register interactions between user and conversational agent (bot), bringing option to obfuscate sensitive data (both input and output).

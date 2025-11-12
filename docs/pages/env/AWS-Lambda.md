@@ -1,11 +1,8 @@
 ---
-layout: default
 title: AWS Lambda
-permalink: AWS-Lambda
-parent: Environments
 ---
 
-![AWS Lambda](/assets/images/env/aws-lambda.png)
+![AWS Lambda](../../assets/images/env/aws-lambda.png)
 
 [AWS Lambda](https://developer.amazon.com/en-US/docs/alexa/custom-skills/host-a-custom-skill-as-an-aws-lambda-function.html) enables developers to host their Alexa voice skills on the Amazon's serverless cloud.
 

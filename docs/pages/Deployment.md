@@ -1,8 +1,5 @@
 ---
-layout: default
 title: Deployment
-nav_order: 4
-permalink: Deployment
 ---
 
 Here you can learn how to deploy your JAICF project into production-ready environments using multiple tools and approaches.
@@ -24,7 +21,7 @@ It utilises
 
 ## Spring Boot
 
-We recommend to use [Spring Boot](Spring-Boot) to pack your JAICF into a self-hosted Spring application.
+We recommend to use [Spring Boot](env/Spring-Boot) to pack your JAICF into a self-hosted Spring application.
 Spring enables you to separate configurations between development, test and production profiles, as well as re-use Spring components like Spring Data, caches, transactions and others.
 
 #### Spring Actuator
@@ -34,7 +31,7 @@ This module can be easily appended you any JAICF project to allow you to monitor
 
 ## Docker
 
-[Docker](Docker) is the best choice for delivering and running JAICF applications.
+[Docker](env/Docker) is the best choice for delivering and running JAICF applications.
 It makes it easy to isolate your image from the host environment and guarantee the same behaviour of your application everywhere.
 
 Docker compose could be used to build and run multi-service Dockerized application that includes third-party production-ready services like monitoring tools, log managers and others.
@@ -60,7 +57,7 @@ Spring Boot provides [logging features](https://docs.spring.io/spring-boot/docs/
 
 #### Conversation logging
 
-[JAICP](JAICP) module also provides `JaicpConversationLogger` logger that sends all conversation logs to the JAICP server.
+[JAICP](channels/jaicp) module also provides `JaicpConversationLogger` logger that sends all conversation logs to the JAICP server.
 You can then analyse these logs via web-interface to learn how your bot converses with users and make changes in scenarios.
 
 This logger can be enabled in `BotEngine` with

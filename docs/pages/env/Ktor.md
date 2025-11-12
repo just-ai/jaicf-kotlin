@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Ktor
-permalink: Ktor
-parent: Environments
 ---
 
-![](/assets/images/env/ktor.png)
+![](../../assets/images/env/ktor.png)
 
 [Ktor](https://ktor.io) is a framework for building asynchronous servers.
 It allows you to quickly setup any HTTP server like Netty or Jetty and serve your JAICF agent.

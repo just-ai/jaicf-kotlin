@@ -1,8 +1,5 @@
 ---
-layout: default
 title: reactions
-permalink: reactions
-parent: Scenario DSL
 ---
 
 [Reactions](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/reactions/Reactions.kt) is a main interface for building the response that should be sent back to the user.

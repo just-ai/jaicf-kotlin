@@ -1,9 +1,5 @@
 ---
-layout: default
 title: Channels
-nav_order: 6
-permalink: Channels
-has_children: true
 ---
 
 Channel in terms of JAICF is a messaging or voice platform that actually receives a user's requests through some user interface.
@@ -13,24 +9,24 @@ Channel in terms of JAICF is a messaging or voice platform that actually receive
 ### JAICP
 
 [JAICP](https://app.jaicp.com) (_Just AI Conversational Platform_) provides a wide range of channels and features for your chat and voice bots.
-Like [telephony](Telephony), [web widget](Chat-Widget), live operators and others.
+Like [telephony](telephony), [web widget](chat-widget), live operators and others.
 Moreover JAICP transparently handles queries and reactions to store it to the internal database providing you with comprehensive conversations analytics tool.
 
-Learn more about JAICP and how to use it [here](JAICP).
+Learn more about JAICP and how to use it [here](jaicp).
 
 ### Voice assistants
 
-* [Aimybox](Aimybox)
-* [Amazon Alexa](Alexa)
-* [Google Actions](Google-Actions)
+* [Aimybox](aimybox)
+* [Amazon Alexa](alexa)
+* [Google Actions](google-actions)
 
 ### Messengers
 
-* [Facebook Messenger](Facebook-Messenger)
-* [Slack](Slack)
-* [Telegram](Telegram)
-* [Viber](Viber)
-* [Алиса](Yandex-Alice)
+* [Facebook Messenger](facebook)
+* [Slack](slack)
+* [Telegram](telegram)
+* [Viber](viber)
+* [Алиса](yandex-alice)
 
 # Multi-channel support
 
@@ -66,7 +62,7 @@ state("main") {
 In this example you can see how the user's name could be retrieved from the different channel-specific request data.
 Thanks to Kotlin extensions feature, it is possible to use `request.telegram?`, `request.facebook?` and others null-safe variables to have an access to the channel-related native requests.
 
-> Learn more about request [here](request).
+> Learn more about request [here](../dsl/request).
 
 Here is another example that shows how to build a channel-specified responses.
 
@@ -97,7 +93,7 @@ In the code snippet above you can see, how `reactions` object is used to build a
 You can use some common response builder methods like `say` to send a simple text or speech response.
 At the same time a channel-related native methods could be used as well via null-safe variables like `reactions.actions?` for Google Actions, `reactions.alexa?` for Alexa and etc.
 
-> Learn more about reactions [here](reactions).
+> Learn more about reactions [here](../dsl/reactions).
 
 As you can see, every channel in JAICF **defines its own** [BotRequest](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/api/BotRequest.kt) and [Reactions](https://github.com/just-ai/jaicf-kotlin/blob/master/core/src/main/kotlin/com/justai/jaicf/reactions/Reactions.kt) **implementations** enabling the conversational agent to achieve a channel-specific features.
 
@@ -127,7 +123,7 @@ fun main() {
 }
 ```
 
-Here you can see how a single [Ktor server](Ktor) can be started to serve requests for both webhook endpoints of your JAICF `gameClockBot`.
+Here you can see how a single [Ktor server](../env/Ktor) can be started to serve requests for both webhook endpoints of your JAICF `gameClockBot`.
 
 Here is another example that shows how can be served a Facebook Messenger requests:
 

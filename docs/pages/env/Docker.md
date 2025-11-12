@@ -1,11 +1,8 @@
 ---
-layout: default
 title: Docker
-permalink: Docker
-parent: Environments
 ---
 
-<img src="/assets/images/env/docker.png" width="256"/>
+<img src="../../assets/images/env/docker.png" width="256"/>
 
 [Docker](https://www.docker.com/) enables developer to separate an application from an infrastructure.
 This significantly reduces the delay between writing code and running applications in production.

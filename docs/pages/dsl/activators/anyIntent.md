@@ -1,9 +1,5 @@
 ---
-layout: default
 title: anyIntent
-permalink: anyIntent
-parent: activators
-grand_parent: Scenario DSL
 ---
 
 Activates state if a NLU service has recognised any intent. Useful if you don't want to define exact intent names.
