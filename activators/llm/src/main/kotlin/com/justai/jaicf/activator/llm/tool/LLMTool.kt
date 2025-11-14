@@ -5,8 +5,12 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
+import com.justai.jaicf.activator.llm.telemetry.ToolExecuteErrorHook
+import com.justai.jaicf.activator.llm.telemetry.ToolExecuteFinishHook
+import com.justai.jaicf.activator.llm.telemetry.ToolExecuteStartHook
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
@@ -55,6 +59,66 @@ open class LLMTool<T>(
 
     val withoutConfirmation by lazy {
         withConfirmation { true }
+    }
+
+    /**
+     * Wraps tool function execution in a telemetry span using hooks.
+     * Creates a long-lived span for the tool execution with proper parent hierarchy.
+     */
+    suspend fun <R> withToolTelemetrySpan(
+        context: LLMToolCallContext<T>,
+        block: suspend LLMToolCallContext<T>.() -> R
+    ): R {
+        val engine = BotEngine.current()!!
+
+        val toolName = context.call.name
+        val baseAttributes = mapOf(
+            "llm.tool.name" to toolName,
+            "llm.tool.call_id" to context.call.callId,
+            "llm.tool.arguments" to (context.call.arguments?.toString() ?: "")
+        )
+
+        var started = false
+        return try {
+            engine.hooks.triggerHook(
+                ToolExecuteStartHook(
+                    context.context,
+                    context.request,
+                    baseAttributes
+                )
+            )
+            started = true
+
+            val result = context.block()
+            engine.hooks.triggerHook(
+                ToolExecuteFinishHook(
+                    context.context,
+                    context.request,
+                    baseAttributes
+                )
+            )
+            result
+        } catch (e: LLMToolInterruptionException) {
+            if (started) {
+                engine.hooks.triggerHook(
+                    ToolExecuteFinishHook(
+                        context.context,
+                        context.request,
+                        baseAttributes + ("llm.tool.cancelled" to true)
+                    )
+                )
+            }
+            throw e
+        } catch (e: Throwable) {
+            engine.hooks.triggerHook(
+                ToolExecuteErrorHook(
+                    context.context,
+                    context.request,
+                    baseAttributes + mapOf("llm.tool.error" to e)
+                )
+            )
+            throw e
+        }
     }
 
     companion object {

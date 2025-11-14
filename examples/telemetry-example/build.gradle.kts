@@ -8,21 +8,25 @@ repositories {
 
 dependencies {
     implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization)
 
     core()
-    implementation(project(":activators:llm"))
-    implementation(libs.jline)
     implementation(project(":telemetry:opentelemetry"))
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.43.0")
+    implementation(libs.opentelemetry.api)
     implementation(libs.opentelemetry.sdk)
     implementation(libs.opentelemetry.sdk.trace)
     implementation("io.opentelemetry:opentelemetry-exporter-logging:1.43.0")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.43.0")
 
-    testImplementation(testFixtures(project(":activators:llm")))
+    implementation(libs.slf4j.simple)
+
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.engine)
-    testImplementation(libs.opentelemetry.sdk)
-    testImplementation(libs.opentelemetry.sdk.trace)
+    testImplementation("io.opentelemetry:opentelemetry-sdk-testing:1.43.0")
 }
 
 tasks {
@@ -30,3 +34,4 @@ tasks {
         useJUnitPlatform()
     }
 }
+

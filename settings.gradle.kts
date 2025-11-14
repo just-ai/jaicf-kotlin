@@ -14,6 +14,8 @@ include("examples:multilingual-bot")
 findProject(":examples:multilingual-bot")?.name = "multilingual-bot"
 include("examples:llm-example")
 findProject(":examples:llm-example")?.name = "llm-example"
+include("examples:telemetry-example")
+findProject(":examples:telemetry-example")?.name = "telemetry-example"
 
 include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"
@@ -49,3 +51,6 @@ include("activators:rasa")
 findProject(":activators:rasa")?.name = "rasa"
 include("activators:llm")
 findProject(":activators:llm")?.name = "llm"
+
+include("telemetry:opentelemetry")
+findProject(":telemetry:opentelemetry")?.name = "opentelemetry"

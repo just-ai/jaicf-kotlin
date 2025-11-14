@@ -5,8 +5,31 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.*
-import com.justai.jaicf.activator.llm.tool.*
+import com.justai.jaicf.activator.llm.LLMContext
+import com.justai.jaicf.activator.llm.LLMEvent
+import com.justai.jaicf.activator.llm.LLMMessage
+import com.justai.jaicf.activator.llm.LLMToolCallHook
+import com.justai.jaicf.activator.llm.LLMToolCallsHook
+import com.justai.jaicf.activator.llm.ifLLMMemory
+import com.justai.jaicf.activator.llm.telemetry.AfterLLMCallHook
+import com.justai.jaicf.activator.llm.telemetry.BeforeLLMCallHook
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanName
+import com.justai.jaicf.telemetry.TelemetrySpan
+import com.justai.jaicf.telemetry.currentTelemetrySpanBlocking
+import com.justai.jaicf.telemetry.getTelemetrySpan
+import com.justai.jaicf.telemetry.removeTelemetrySpan
+import com.justai.jaicf.telemetry.setTelemetrySpan
+import com.justai.jaicf.activator.llm.telemetry.ToolCallErrorHook
+import com.justai.jaicf.activator.llm.telemetry.ToolCallFinishHook
+import com.justai.jaicf.activator.llm.telemetry.ToolCallStartHook
+import com.justai.jaicf.activator.llm.telemetry.ToolCallsFinishHook
+import com.justai.jaicf.activator.llm.telemetry.ToolCallsStartHook
+import com.justai.jaicf.activator.llm.tool.LLMTool
+import com.justai.jaicf.activator.llm.tool.LLMToolCall
+import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
+import com.justai.jaicf.activator.llm.tool.LLMToolFunction
+import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
+import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
@@ -21,8 +44,17 @@ import com.openai.models.chat.completions.ChatCompletion
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 import com.openai.models.completions.CompletionUsage
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import java.util.stream.Stream
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrDefault
@@ -38,6 +70,10 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     override val reactions: R,
     val llm: LLMContext,
 ) : ActionContext<A, B, R>(context, activator, request, reactions) {
+
+    private var startStreamTime: Long = 0L
+    private var firstChunkTime: Long? = null
+
     private lateinit var response: StreamResponse<ChatCompletionChunk>
     private lateinit var stream: Stream<ChatCompletionChunk>
     private lateinit var acc: ChatCompletionAccumulator
@@ -66,7 +102,20 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 
     internal suspend fun LLMContext.startStream() = withActiveJob {
         completed = null
-        acc = ChatCompletionAccumulator.Companion.create()
+        acc = ChatCompletionAccumulator.create()
+        startStreamTime = System.nanoTime()
+        BotEngine.current()?.run {
+            hooks.triggerHook(
+                BeforeLLMCallHook(
+                    model.states[context.dialogContext.currentState]!!,
+                    context, request, reactions, activator,
+                    attributes = mapOf(
+                        "llm.model" to (props.model ?: ""),
+                        "llm.tools.declared" to (props.tools?.size ?: 0)
+                    )
+                )
+            )
+        }
         response = api.createStreaming(params)
         stream = response.stream()
         throwIfCancelled()
@@ -96,11 +145,40 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
             channelStream { channel ->
                 var finished = false
                 val chunks = mutableListOf<ChatCompletionChunk>()
+
+                val engine = BotEngine.current()
+                val streamingSpanName = LLMSpanName.Streaming
+                val parentSpan = engine?.let {
+                    context.getTelemetrySpan(LLMSpanName.LLMCall)
+                        ?: currentTelemetrySpanBlocking(context)
+                }
+                val streamingSpan = engine?.telemetryProvider?.let { provider ->
+                    val span = provider.createSpan(
+                        streamingSpanName,
+                        emptyMap(),
+                        parentSpan
+                    )
+                    if (span != TelemetrySpan.NoOp) {
+                        span.setAttribute("jaicf.client.id", context.clientId)
+                        span.setAttribute("jaicf.request.type", request.type.name)
+                        context.setTelemetrySpan(streamingSpanName, span)
+                    }
+                    span
+                } ?: TelemetrySpan.NoOp
+                
                 try {
                     val iterator = stream.iterator()
                     while (iterator.hasNext()) {
                         val chunk = iterator.next()
                         yield()
+                        if (firstChunkTime == null) {
+                            firstChunkTime = System.nanoTime()
+                            val fblMs = (firstChunkTime!! - startStreamTime) / 1_000_000.0
+                            // Record first byte latency in streaming span
+                            if (streamingSpan != TelemetrySpan.NoOp) {
+                                streamingSpan.setAttribute("llm.fbl.ms", fblMs)
+                            }
+                        }
 
                         chunks.add(chunk)
                         channel.send(chunk)
@@ -133,6 +211,31 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                     }
                 } finally {
                     completed!!.complete(chunks)
+                    val usage = acc.chatCompletion().usage().getOrNull()
+                    val latencyMs = (System.nanoTime() - startStreamTime) / 1_000_000.0
+
+                    if (streamingSpan != TelemetrySpan.NoOp) {
+                        streamingSpan.setAttribute("llm.stream.duration.ms", latencyMs)
+                        if (firstChunkTime != null) {
+                            val fblMs = (firstChunkTime!! - startStreamTime) / 1_000_000.0
+                            streamingSpan.setAttribute("llm.fbl.ms", fblMs)
+                        }
+                        streamingSpan.close()
+                        context.removeTelemetrySpan(streamingSpanName)
+                    }
+                    
+                    BotEngine.current()?.run {
+                        hooks.triggerHook(
+                            AfterLLMCallHook(
+                                model.states[context.dialogContext.currentState]!!,
+                                context, request, reactions, activator,
+                                completionUsage = usage,
+                                attributes = buildMap {
+                                    put("llm.latency.ms", latencyMs)
+                                }
+                            )
+                        )
+                    }
                     closeStream()
                 }
             }
@@ -213,11 +316,78 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     }
 
     suspend fun LLMContext.callTools(): List<Result<LLMToolResult>> {
-        return coroutineScope {
+        val planned = toolCalls().size
+        BotEngine.current()?.run {
+            hooks.triggerHook(
+                ToolCallsStartHook(
+                    model.states[context.dialogContext.currentState]!!,
+                    context, request, reactions, activator,
+                    attributes = mapOf(
+                        "llm.tools.planned" to planned
+                    )
+                )
+            )
+        }
+        val results = coroutineScope {
             toolCalls().map { call ->
-                async { runCatching { callTool(call) } }
+                async {
+                    val fname = call.function().name()
+                    BotEngine.current()?.run {
+                        hooks.triggerHook(
+                            ToolCallStartHook(
+                                model.states[context.dialogContext.currentState]!!,
+                                context, request, reactions, activator,
+                                attributes = mapOf(
+                                    "llm.tool.name" to fname
+                                )
+                            )
+                        )
+                    }
+                    val res = runCatching { callTool(call) }
+                    BotEngine.current()?.run {
+                        res.exceptionOrNull()?.let { ex ->
+                            hooks.triggerHook(
+                                ToolCallErrorHook(
+                                    model.states[context.dialogContext.currentState]!!,
+                                    context, request, reactions, activator,
+                                    attributes = mapOf(
+                                        "llm.tool.name" to fname,
+                                        "llm.tool.error" to ex
+                                    )
+                                )
+                            )
+                        } ?: run {
+                            val resultSize = res.getOrNull()?.result?.toString()?.length
+                            hooks.triggerHook(
+                                ToolCallFinishHook(
+                                    model.states[context.dialogContext.currentState]!!,
+                                    context, request, reactions, activator,
+                                    attributes = buildMap {
+                                        put("llm.tool.name", fname)
+                                        resultSize?.let { put("llm.tool.result.size", it) }
+                                    }
+                                )
+                            )
+                        }
+                    }
+                    res
+                }
             }.awaitAll()
         }
+        val errors = results.count { it.isFailure }
+        BotEngine.current()?.run {
+            hooks.triggerHook(
+                ToolCallsFinishHook(
+                    model.states[context.dialogContext.currentState]!!,
+                    context, request, reactions, activator,
+                    attributes = mapOf(
+                        "llm.tools.total" to results.size,
+                        "llm.tools.errors" to errors
+                    )
+                )
+            )
+        }
+        return results
     }
 
     @Throws(LLMToolInterruptionException::class)
@@ -231,16 +401,19 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
             name = function.name(),
             arguments = args,
             result = tool?.let { tool ->
+                val toolContext = LLMToolCallContext(
+                    context,
+                    request,
+                    this,
+                    LLMToolCall(function.name(), call.id(), args!!, call)
+                )
                 try {
                     @Suppress("UNCHECKED_CAST")
-                    (tool.function as LLMToolFunction<Any>).invoke(
-                        LLMToolCallContext(
-                            context,
-                            request,
-                            this,
-                            LLMToolCall(function.name(), call.id(), args!!, call)
-                        )
-                    )
+                    val toolInstance = tool as LLMTool<Any>
+                    toolInstance.withToolTelemetrySpan(toolContext) {
+                        @Suppress("UNCHECKED_CAST")
+                        (toolInstance.function as LLMToolFunction<Any>).invoke(toolContext)
+                    }
                 } catch (e: Exception) {
                     if (e is LLMToolInterruptionException) throw e
                     if (e is CancellationException) throw e
@@ -346,7 +519,7 @@ private suspend inline fun <T> channelStream(
     crossinline block: suspend (Channel<T>) -> Unit
 ): Stream<T> {
     val channel = Channel<T>(Channel.UNLIMITED)
-    val job = CoroutineScope(coroutineContext).launch {
+    val job = CoroutineScope(currentCoroutineContext()).launch {
         try {
             block(channel)
         } finally {

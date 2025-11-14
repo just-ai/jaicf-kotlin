@@ -10,6 +10,9 @@ import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.generic.ChannelTypeToken
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.BotEngine
+import com.justai.jaicf.activator.llm.telemetry.AgentInvokeFinishHook
+import com.justai.jaicf.activator.llm.telemetry.AgentInvokeStartHook
 
 
 typealias LLMActionBlock = suspend LLMActionContext<out ActivatorContext, out BotRequest, out Reactions>.() -> Unit
@@ -26,9 +29,28 @@ private suspend fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionCon
     val context = LLMActionContext(context, activator, request, reactions, llm)
 
     try {
+        BotEngine.current()?.run {
+            hooks.triggerHook(
+                AgentInvokeStartHook(
+                    model.states[context.context.dialogContext.currentState]!!,
+                    context.context, context.request, context.reactions, context.activator,
+                    attributes = emptyMap()
+                )
+            )
+        }
         body.invoke(context)
     } catch (e: LLMToolInterruptionException) {
         e.callback.invoke(this)
+    } finally {
+        BotEngine.current()?.run {
+            hooks.triggerHook(
+                AgentInvokeFinishHook(
+                    model.states[context.context.dialogContext.currentState]!!,
+                    context.context, context.request, context.reactions, context.activator,
+                    attributes = emptyMap()
+                )
+            )
+        }
     }
 }
 

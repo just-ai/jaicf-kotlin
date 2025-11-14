@@ -28,7 +28,7 @@ class MergeHooksTest {
     }
 
     private fun RootBuilder<*, *>.testHandle(list: MutableList<String>, name: String) {
-        handle<BeforeActionHook> { list += "$name hook from ${state.path.toString()}" }
+        handle<BeforeActionHook> { list += "$name hook from ${state.path}" }
     }
 
     private fun List<String>.assertHooks(vararg results: String) = assertEquals(results.toList(), this)

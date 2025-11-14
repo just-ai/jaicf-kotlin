@@ -5,6 +5,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.Reaction
+import com.justai.jaicf.telemetry.TelemetrySpan
 
 /**
  * This class will accumulate all execution information obtained during processing request.
@@ -29,5 +30,6 @@ data class ExecutionContext(
     val reactions: MutableList<Reaction> = mutableListOf(),
     val input: String = request.input,
     var scenarioException: BotException? = null,
-    val isNewUser: Boolean = (botContext.temp[BotContextKeys.IS_NEW_USER_KEY] as? Boolean) ?: false
+    val isNewUser: Boolean = (botContext.temp[BotContextKeys.IS_NEW_USER_KEY] as? Boolean) ?: false,
+    var telemetrySpan: TelemetrySpan? = null,
 )
