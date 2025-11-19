@@ -64,12 +64,45 @@ private val LLMAgent.handoffTool
             throw IllegalArgumentException("You try to hand off the same conversation back in cycle")
         }
 
+        val engine = BotEngine.current()
+        val currentState = engine?.model?.states?.get(context.dialogContext.currentState)
+
         interrupt {
             val state = agentStateName(agentName)
-            val model = BotEngine.current()?.model
+            val model = engine?.model
                 ?: throw IllegalStateException("Scenario model is not available in current context")
             model.states.keys.find { it.endsWith(state) }?.also { path ->
                 context.handoffChain = context.handoffChain + (name to snapshot)
+
+                // Телеметрия handoff: фиксируем факт передачи и сохраняем info для следующего action
+                if (engine != null && currentState != null) {
+                    try {
+                        engine.hooks.triggerHook(
+                            HandoffStartHook(
+                                currentState,
+                                context,
+                                request,
+                                reactions = Reactions().apply { botContext = context },
+                                activator = object : StrictActivatorContext() {},
+                                attributes = mapOf(
+                                    "llm.handoff.from.agent" to name,
+                                    "llm.handoff.to.agent" to agentName,
+                                    "llm.handoff.messages.count" to messages.size,
+                                ),
+                            ),
+                        )
+                    } catch (_: Exception) {
+                        // ignore telemetry errors
+                    }
+                }
+
+                // Эта информация будет использована в BeforeActionHook следующего состояния
+                context.handoffInfo = mapOf(
+                    "llm.handoff.from.agent" to name,
+                    "llm.handoff.to.agent" to agentName,
+                    "llm.handoff.messages.count" to messages.size,
+                )
+
                 reactions.handoff(path, messages)
             } ?: throw IllegalArgumentException("Agent not found [$agentName]")
         }

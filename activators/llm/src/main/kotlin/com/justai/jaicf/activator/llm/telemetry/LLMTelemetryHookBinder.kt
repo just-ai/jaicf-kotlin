@@ -123,8 +123,8 @@ private object LLMTelemetryHookProcessor {
     }
 
     fun handleAgentInvokeStart(telemetryProvider: TelemetryProvider, hook: AgentInvokeStartHook) {
-        // Получаем текущий span из BotContext (это будет jaicf.process.start или jaicf.action.start)
-        val parent = currentTelemetrySpanBlocking(hook.context)
+        // Если есть активный Handoff span, делаем его родителем, иначе используем текущий JAICF span
+        val parent = getSpan(hook.context, LLMSpanName.Handoff) ?: currentTelemetrySpanBlocking(hook.context)
         val attributes = hook.attributes.toMutableMap().apply {
             put("llm.agent.state", hook.state.path.toString())
             put("llm.agent.input.length", hook.request.input.length)
@@ -148,6 +148,13 @@ private object LLMTelemetryHookProcessor {
             close()
             removeSpan(hook.context, LLMSpanName.AgentInvoke)
         }
+
+        // Если Handoff span был активен для этого AgentInvoke, закрываем его после завершения агента
+        getSpan(hook.context, LLMSpanName.Handoff)?.apply {
+            close()
+            removeSpan(hook.context, LLMSpanName.Handoff)
+        }
+
         // Восстанавливаем родительский span (jaicf.process.start или jaicf.action.start) как текущий
         val parentSpan = hook.context.getTelemetrySpan("jaicf.action.start") 
             ?: hook.context.getTelemetrySpan("jaicf.process.start")
@@ -246,11 +253,11 @@ private object LLMTelemetryHookProcessor {
     }
 
     fun handleHandoffStart(telemetryProvider: TelemetryProvider, hook: HandoffStartHook) {
-        val parentSpan = getSpan(hook.context, LLMSpanName.AgentInvoke) ?: currentTelemetrySpanBlocking(hook.context)
+        val parentSpan = currentTelemetrySpanBlocking(hook.context)
         val span = createSpanWithParent(telemetryProvider, LLMSpanName.Handoff, hook.attributes, parentSpan)
         if (span != TelemetrySpan.NoOp) {
             addCommonAttributes(span, hook)
-            span.close()
+            setSpan(hook.context, LLMSpanName.Handoff, span)
         }
     }
 
