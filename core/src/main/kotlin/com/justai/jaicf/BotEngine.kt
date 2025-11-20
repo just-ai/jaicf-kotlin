@@ -17,7 +17,6 @@ import com.justai.jaicf.context.*
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
 import com.justai.jaicf.exceptions.*
-import com.justai.jaicf.helpers.kotlin.WithDispatcher
 import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.hook.*
 import com.justai.jaicf.logging.ConversationLogger
@@ -73,11 +72,11 @@ open class BotEngine(
     val slotReactor: SlotReactor? = null,
     val conversationLoggers: Array<ConversationLogger> = DefaultConversationLoggers,
     val requestExecutor: Executor = DefaultRequestExecutor,
-) : BotApi, WithDispatcher, WithLogger {
+) : BotApi, WithLogger {
 
     val model = scenario.model.verify()
 
-    override val requestDispatcher = requestExecutor.asCoroutineDispatcher()
+    private val requestDispatcher = requestExecutor.asCoroutineDispatcher()
     private val activatorsList = activators.map { it.create(model) }.addBuiltinActivators()
 
     private fun List<Activator>.addBuiltinActivators(): List<Activator> {

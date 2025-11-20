@@ -29,7 +29,6 @@ import com.justai.jaicf.channel.telegram.aggregation.TelegramRequestAggregator
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
-import com.justai.jaicf.helpers.kotlin.WithDispatcher
 import com.justai.jaicf.channel.telegram.streaming.TelegramStreamProcessor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -49,7 +48,7 @@ class TelegramChannel(
     private val streamProcessorFactory: TelegramStreamProcessorFactory = DefaultStreamProcessorFactory,
     private val aggregation: AggregationConfig? = AggregationConfig(),
     private val defaultParseMode: ParseMode = ParseMode.MARKDOWN,
-) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
+) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
     val mapper: JsonMapper = JsonMapper.builder()
         .addModule(kotlinModule())
@@ -291,23 +290,14 @@ class TelegramChannel(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider,
-        ): JaicpCompatibleAsyncBotChannel {
-            val requestDispatcher =
-                if (botApi is WithDispatcher) {
-                    botApi.requestDispatcher
-                } else {
-                    DefaultRequestExecutor.asCoroutineDispatcher()
-                }
-
-            return TelegramChannel(
-                botApi,
-                telegramApiUrl = apiUrl,
-                telegramBotToken = "",
-                requestDispatcher = requestDispatcher
-            ).apply {
-                this.liveChatProvider = liveChatProvider
-                this.bot.startPolling()
-            }
+        ): JaicpCompatibleAsyncBotChannel = TelegramChannel(
+            botApi,
+            telegramApiUrl = apiUrl,
+            telegramBotToken = "",
+            requestDispatcher = DefaultRequestExecutor.asCoroutineDispatcher()
+        ).apply {
+            this.liveChatProvider = liveChatProvider
+            this.bot.startPolling()
         }
 
         private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
@@ -322,19 +312,17 @@ class TelegramChannel(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider
-        ): JaicpCompatibleAsyncBotChannel {
-            val requestDispatcher =
-                if (botApi is WithDispatcher) {
-                    botApi.requestDispatcher
-                } else {
-                    executor.asCoroutineDispatcher()
-                }
-
-            return TelegramChannel(botApi, "", apiUrl, logLevel, requestDispatcher).apply {
+        ): JaicpCompatibleAsyncBotChannel =
+            TelegramChannel(
+                botApi,
+                "",
+                apiUrl,
+                logLevel,
+                executor.asCoroutineDispatcher()
+            ).apply {
                 this.liveChatProvider = liveChatProvider
                 this.bot.startPolling()
             }
-        }
 
         override val channelType: String = "telegram"
     }
