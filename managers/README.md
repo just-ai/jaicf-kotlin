@@ -4,6 +4,7 @@ Managers are used by JAICF to persist and retrieve a [BotContext](https://github
 
 * [MongoDB](https://github.com/just-ai/jaicf-kotlin/tree/master/managers/mongo)
 * [MapDB](https://github.com/just-ai/jaicf-kotlin/tree/master/managers/mapdb)
+* [AWS S3](https://github.com/just-ai/jaicf-kotlin/tree/master/managers/s3)
 
 # How to use
 

@@ -230,6 +230,70 @@ httpSettings {
 }
 ```
 
+#### Environment Variables
+
+Configure environment variables that will be passed to your model container. The plugin provides a type-safe DSL for managing environment variables.
+
+```kotlin
+environmentVariables {
+    put("API_KEY", "your-api-key")
+    put("LOG_LEVEL", "INFO")
+    put("DATABASE_URL", "postgres://...")
+
+    // Or add multiple variables at once
+    putAll(mapOf(
+        "VAR1" to "value1",
+        "VAR2" to "value2"
+    ))
+
+    // Use Gradle properties
+    put("SECRET", providers.gradleProperty("mySecret").get())
+}
+```
+
+**Automatic S3 Integration:**
+
+The plugin automatically configures S3 context manager credentials if available from CAILA API. The following environment variables are automatically injected:
+
+- `CAILA_S3_URL` - S3 endpoint URL
+- `CAILA_S3_ACCESS_KEY` - S3 access key
+- `CAILA_S3_SECRET_KEY` - S3 secret key
+- `CAILA_S3_BUCKET_NAME` - S3 bucket name
+- `CAILA_S3_KEY_PREFIX` - Key prefix (default: `contexts`)
+- `CAILA_S3_REGION` - Region (default: `ru`)
+
+These credentials are fetched automatically during model publishing and are combined with any custom environment variables you configure.
+
+**Using S3 in Your Application:**
+
+```kotlin
+// In your bot code (e.g., HelloWorldBot.kt)
+import com.justai.jaicf.context.manager.s3.S3Config
+import software.amazon.awssdk.regions.Region
+import java.net.URI
+
+val s3ContextManager = System.getenv("CAILA_S3_BUCKET_NAME")?.let { bucketName ->
+    S3Config.create(
+        bucketName = bucketName,
+        region = Region.of(System.getenv("CAILA_S3_REGION") ?: "ru"),
+        accessKeyId = System.getenv("CAILA_S3_ACCESS_KEY")
+            ?: error("Missing CAILA_S3_ACCESS_KEY"),
+        secretAccessKey = System.getenv("CAILA_S3_SECRET_KEY")
+            ?: error("Missing CAILA_S3_SECRET_KEY"),
+        keyPrefix = System.getenv("CAILA_S3_KEY_PREFIX") ?: "contexts",
+        endpointOverride = System.getenv("CAILA_S3_URL")?.let { URI.create(it) }
+    )
+}
+
+val bot = BotEngine(
+    scenario = YourScenario,
+    defaultContextManager = s3ContextManager ?: InMemoryBotContextManager,
+    activators = arrayOf(...)
+)
+```
+
+If S3 credentials are not available from CAILA API, the plugin logs a warning and continues without S3 configuration.
+
 #### Public Access Settings
 
 ```kotlin

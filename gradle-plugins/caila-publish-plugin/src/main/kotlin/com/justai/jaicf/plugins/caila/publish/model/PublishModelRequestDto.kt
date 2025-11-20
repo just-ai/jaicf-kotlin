@@ -49,7 +49,7 @@ data class PublishModelRequestDto(
         displayAuthor = spec.displayAuthor.orNull,
         rejectRequestsIfInactive = spec.rejectRequestsIfInactive.orNull,
         config = spec.config.orNull,
-        env = spec.env.orNull,
+        env = combineEnvVariables(spec.env.orNull, spec.environmentVariables.orNull?.toEnvString()),
         fittable = spec.fittable.orNull,
         hostingType = spec.hostingType.orNull,
         resourceGroup = spec.resourceGroup.orNull,
@@ -309,4 +309,17 @@ data class PublicSettingsDto(
         publicTestingAllowed = spec.publicTestingAllowed.get(),
         showPersonalDataDisclaimer = spec.showPersonalDataDisclaimer.get(),
     )
+}
+
+/**
+ * Combines legacy env string and new environmentVariables spec into a single env string.
+ * If both are present, they are concatenated with a newline.
+ */
+private fun combineEnvVariables(legacyEnv: String?, envVariablesString: String?): String? {
+    return when {
+        legacyEnv != null && envVariablesString != null -> "$legacyEnv\n$envVariablesString"
+        legacyEnv != null -> legacyEnv
+        envVariablesString != null -> envVariablesString
+        else -> null
+    }
 }

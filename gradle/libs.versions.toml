@@ -27,6 +27,7 @@ messenger4j = "1.1.0"
 openai = "2.17.0"
 modelcontextprotocol = "0.5.0"
 lexruntimev2 = "2.32.4"
+awsS3 = "2.32.4"
 grpc-okhttp = "1.73.0"
 google-dialogflow = "4.74.0"
 
@@ -43,6 +44,7 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-cio-jvm = { module = "io.ktor:ktor-client-cio-jvm", version.ref = "ktor" }
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization-jvm", version.ref = "ktor" }
@@ -83,6 +85,7 @@ jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datat
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
 modelcontextprotocol = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "modelcontextprotocol"}
 lexruntimev2 = { module = "software.amazon.awssdk:lexruntimev2", version.ref = "lexruntimev2"}
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsS3"}
 google-dialogflow = { module = "com.google.cloud:google-cloud-dialogflow", version.ref = "google-dialogflow"}
 grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpc-okhttp"}
 

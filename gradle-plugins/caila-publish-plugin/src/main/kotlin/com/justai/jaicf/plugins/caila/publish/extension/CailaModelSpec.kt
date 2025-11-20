@@ -54,6 +54,14 @@ constructor(
     val env: Property<String> = objectFactory.property()
 
     /**
+     * Environment variables to be passed to the model container.
+     * Provides a type-safe DSL for configuring environment variables.
+     */
+    @get:Input
+    @Optional
+    val environmentVariables: Property<EnvVariablesSpec> = objectFactory.property()
+
+    /**
      * Whether the service requires training on user data.
      */
     @get:Input
@@ -226,7 +234,43 @@ constructor(
         current.add(spec)
         this.dataImageMounts.set(current)
     }
+
+    fun environmentVariables(action: Action<EnvVariablesSpec>) {
+        val spec = objectFactory.newInstance(EnvVariablesSpec::class.java)
+        action.execute(spec)
+        this.environmentVariables.set(spec)
+    }
+
+    @get:Input
+    @Optional
+    val s3Settings: Property<S3SettingsSpec> = objectFactory.property()
+
+    fun s3Settings(action: Action<S3SettingsSpec>) {
+        val spec = objectFactory.newInstance(S3SettingsSpec::class.java)
+        action.execute(spec)
+        this.s3Settings.set(spec)
+    }
 }
+
+/**
+ * S3 settings for automatic S3 context manager configuration
+ */
+open class S3SettingsSpec
+@Inject
+constructor(
+    private val objectFactory: ObjectFactory,
+) {
+    @get:Input
+    @Optional
+    val keyPrefix: Property<String> = objectFactory.property<String>()
+        .convention("contexts")
+
+    @get:Input
+    @Optional
+    val region: Property<String> = objectFactory.property<String>()
+        .convention("ru")
+}
+
 open class PersistentVolumeSpec
     @Inject
     constructor(

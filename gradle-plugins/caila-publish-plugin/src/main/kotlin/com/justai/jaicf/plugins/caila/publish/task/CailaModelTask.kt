@@ -7,6 +7,8 @@ import com.justai.jaicf.plugins.caila.publish.internal.client.CailaApiClient
 import com.justai.jaicf.plugins.caila.publish.internal.http.HttpClientFactory
 import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
 import io.ktor.client.plugins.logging.LogLevel
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -73,22 +75,165 @@ abstract class CailaModelTask : DefaultTask() {
                 keepAliveTimeMs = httpSpec.keepAliveTimeMs.get(),
             )
             val client = CailaApiClient(token, baseUrl, httpClient)
-            val request = PublishModelRequestDto(
+
+            // Fetch S3 credentials and add them to request
+            val s3Settings = modelSpec.s3Settings.orNull
+            val s3EnvVars = fetchS3CredentialsAsMap(client, accountId, s3Settings)
+
+            val request = createRequestWithS3Credentials(
                 imageId = image,
                 imageAccountId = accountId,
                 spec = modelSpec,
+                s3EnvVars = s3EnvVars
             )
 
             client.publishModelBlocking(accountId, request)
 
             logger.lifecycle("Model published successfully")
-            
+
             logPublicAccessUrl(modelSpec, accountId)
 
         } catch (e: Exception) {
             logger.error("Failed to publish model: ${e.message}", e)
             throw TaskExecutionException(this, e)
         }
+    }
+
+    /**
+     * Fetches S3 credentials from CAILA API and returns them as a map.
+     * Returns null if S3 credentials are not available or if fetch fails.
+     */
+    private fun fetchS3CredentialsAsMap(
+        client: CailaApiClient,
+        accountId: Int,
+        s3Settings: com.justai.jaicf.plugins.caila.publish.extension.S3SettingsSpec?
+    ): Map<String, String>? {
+        return try {
+            logger.lifecycle("Fetching S3 credentials from CAILA API...")
+            val s3Creds = client.getS3CredentialsBlocking(accountId)
+
+            if (s3Creds != null) {
+                logger.lifecycle("✓ S3 credentials obtained")
+                logger.lifecycle("  Bucket: ${s3Creds.bucketName}")
+
+                val keyPrefix = s3Settings?.keyPrefix?.getOrElse("contexts") ?: "contexts"
+                val region = s3Settings?.region?.getOrElse("ru") ?: "ru"
+
+                logger.lifecycle("  Key prefix: $keyPrefix")
+                logger.lifecycle("  Region: $region")
+
+                mapOf(
+                    "CAILA_S3_URL" to s3Creds.s3Url,
+                    "CAILA_S3_ACCESS_KEY" to s3Creds.accessKey,
+                    "CAILA_S3_SECRET_KEY" to s3Creds.secretKey,
+                    "CAILA_S3_BUCKET_NAME" to s3Creds.bucketName,
+                    "CAILA_S3_KEY_PREFIX" to keyPrefix,
+                    "CAILA_S3_REGION" to region
+                )
+            } else {
+                logger.lifecycle("⚠ S3 credentials not available from CAILA API")
+                null
+            }
+        } catch (e: Exception) {
+            logger.warn("Could not fetch S3 credentials: ${e.message}")
+            logger.lifecycle("⚠ S3 context manager will not be configured automatically")
+            null
+        }
+    }
+
+    /**
+     * Creates PublishModelRequestDto with S3 credentials injected into environment variables.
+     */
+    private fun createRequestWithS3Credentials(
+        imageId: Int,
+        imageAccountId: Int,
+        spec: CailaModelSpec,
+        s3EnvVars: Map<String, String>?
+    ): PublishModelRequestDto {
+        val existingEnvMap = mutableMapOf<String, String>()
+
+        spec.env.orNull?.let { envString ->
+            try {
+                val json = Json { ignoreUnknownKeys = true }
+                existingEnvMap.putAll(json.decodeFromString<Map<String, String>>(envString))
+            } catch (e: Exception) {
+                envString.lines().forEach { line ->
+                    val parts = line.split("=", limit = 2)
+                    if (parts.size == 2) {
+                        existingEnvMap[parts[0].trim()] = parts[1].trim()
+                    }
+                }
+            }
+        }
+
+        spec.environmentVariables.orNull?.variables?.orNull?.let { vars ->
+            existingEnvMap.putAll(vars)
+        }
+
+        s3EnvVars?.let { existingEnvMap.putAll(it) }
+
+        val combinedEnv = if (existingEnvMap.isNotEmpty()) {
+            Json.encodeToString(existingEnvMap)
+        } else {
+            null
+        }
+
+        return PublishModelRequestDto(
+            modelName = spec.modelName.get(),
+            imageId = imageId,
+            imageAccountId = imageAccountId,
+            taskType = spec.taskType.get(),
+            displayName = spec.displayName.orNull,
+            displayAuthor = spec.displayAuthor.orNull,
+            rejectRequestsIfInactive = spec.rejectRequestsIfInactive.orNull,
+            config = spec.config.orNull,
+            env = combinedEnv,  // Our custom combined env with S3 credentials
+            fittable = spec.fittable.orNull,
+            hostingType = spec.hostingType.orNull,
+            resourceGroup = spec.resourceGroup.orNull,
+            shortDescription = spec.shortDescription.orNull,
+            minInstancesCount = spec.minInstancesCount.orElse(1).get(),
+            startTimeSec = spec.startTimeSec.orNull,
+            additionalFlags = spec.additionalFlags.orNull ?: emptyList(),
+            languages = spec.languages.orNull ?: emptyList(),
+            aliases = spec.aliases.orNull ?: emptyList(),
+            persistentVolumes = spec.persistentVolumes.orNull?.map {
+                com.justai.jaicf.plugins.caila.publish.model.PersistentVolumeDto(it)
+            } ?: emptyList(),
+            dataImageMounts = spec.dataImageMounts.orNull?.map {
+                com.justai.jaicf.plugins.caila.publish.model.DataImageMountDto(it)
+            } ?: emptyList(),
+            timeouts = spec.timeouts.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.TimeoutsDto(it)
+            },
+            resourceLimits = spec.resourceLimits.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.ResourceLimitsDto(it)
+            },
+            retriesConfig = spec.retriesConfig.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.RetriesConfigDto(it)
+            },
+            batchesConfig = spec.batchesConfig.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.BatchesConfigDto(it)
+            },
+            caching = spec.caching.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.CachingDto(it)
+            },
+            priorityQueue = spec.priorityQueue.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.PriorityQueueDto(it)
+            },
+            autoScalingConfiguration = spec.autoScalingConfiguration.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.AutoScalingConfigurationDto(it)
+            },
+            httpSettings = spec.httpSettings.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.HttpSettingsDto(it)
+            },
+            archiveSettings = spec.archiveSettings.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.ArchiveSettingsDto(it)
+            },
+            publicSettings = spec.publicSettings.orNull?.let {
+                com.justai.jaicf.plugins.caila.publish.model.PublicSettingsDto(it)
+            },
+        )
     }
 
     private fun validateInputs() {

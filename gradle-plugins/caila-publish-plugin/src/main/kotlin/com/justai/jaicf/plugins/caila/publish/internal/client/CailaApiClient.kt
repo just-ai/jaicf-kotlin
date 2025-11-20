@@ -5,6 +5,7 @@ import com.justai.jaicf.plugins.caila.publish.model.GetModelResponse
 import com.justai.jaicf.plugins.caila.publish.model.PublishImageRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.PublishImageResponseDto
 import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
+import com.justai.jaicf.plugins.caila.publish.model.S3CredentialsResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -97,6 +98,34 @@ class CailaApiClient(
                 }
                 contentType(ContentType.Application.Json)
             }.body()
+        }
+    }
+
+    /**
+     * Fetches S3 credentials for the account.
+     * Returns null if credentials are not available or if the request fails.
+     */
+    suspend fun getS3Credentials(accountId: Int): S3CredentialsResponseDto {
+        return httpClient.get("$baseUrl/account/$accountId/s3") {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer $accessToken")
+            }
+            contentType(ContentType.Application.Json)
+        }.body()
+    }
+
+    /**
+     * Fetches S3 credentials for the account (blocking version).
+     * Returns null if credentials are not available or if the request fails.
+     * This is an optional feature - if it fails, the plugin continues without S3.
+     */
+    fun getS3CredentialsBlocking(accountId: Int): S3CredentialsResponseDto? {
+        return runBlocking {
+            try {
+                getS3Credentials(accountId)
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 }

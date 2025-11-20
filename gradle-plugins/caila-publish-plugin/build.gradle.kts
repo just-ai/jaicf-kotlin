@@ -1,29 +1,32 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-    id("com.gradle.plugin-publish")
-    kotlin("jvm")
+    id("com.gradle.plugin-publish") version "1.2.1"
+    kotlin("jvm") version "2.0.20"
     `kotlin-dsl`
     `java-gradle-plugin`
     `maven-publish`
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.20"
 }
 
 group = "com.justai.jaicf"
 version = "1.0.0"
 
-val kotlinVersion = "2.2.0"
-val ktorVersion = "3.2.1"
-val dockerJavaApplicationPluginVersion = "9.4.0"
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
 
 dependencies {
+    val kotlinVersion = "2.0.20"
+    val ktorVersion = "2.3.7"
+    val dockerJavaApplicationPluginVersion = "9.4.0"
+
     implementation(kotlin("gradle-plugin", kotlinVersion))
     implementation(kotlin("stdlib", kotlinVersion))
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    implementation("com.bmuschko.docker-java-application:com.bmuschko.docker-java-application.gradle.plugin:$dockerJavaApplicationVersion")
+    implementation("com.bmuschko.docker-java-application:com.bmuschko.docker-java-application.gradle.plugin:$dockerJavaApplicationPluginVersion")
 }
 
 gradlePlugin {
