@@ -28,17 +28,6 @@ import java.util.stream.Stream
 val Reactions.telegram
     get() = this as? TelegramReactions
 
-/**
- * Telegram channel-specific reactions implementation.
- * Provides methods for sending messages, media, buttons, and other Telegram-specific features.
- *
- * @property api the Telegram Bot API instance
- * @property request the current bot request
- * @property liveChatProvider optional JAICP live chat provider for asynchronous operations
- * @property requestDispatcher the coroutine dispatcher for executing reactions
- * @property streamProcessorFactory factory for creating custom stream processors
- * @property defaultParseMode default parse mode for messages (Markdown by default)
- */
 @Suppress("MemberVisibilityCanBePrivate")
 open class TelegramReactions(
     val api: Bot,
@@ -52,14 +41,6 @@ open class TelegramReactions(
     val chatId = ChatId.fromId(request.chatId)
     private val messages = mutableListOf<Message?>()
 
-    /**
-     * Creates a stream processor for handling streaming text messages.
-     * Uses the provided streamProcessorFactory to create the processor.
-     * Can be overridden to provide custom streaming behavior.
-     *
-     * @param debounceMs the debounce delay in milliseconds
-     * @return a TelegramStreamProcessor instance
-     */
     protected open fun createStreamProcessor(debounceMs: Long = DEFAULT_DEBOUNCE_MS): TelegramStreamProcessor {
         return streamProcessorFactory.create(api, chatId, debounceMs, requestDispatcher, defaultParseMode)
     }
@@ -90,26 +71,10 @@ open class TelegramReactions(
         return sendMessage(text, parseMode = defaultParseMode)
     }
 
-    /**
-     * Processes a stream of text chunks with default debouncing.
-     * Uses the stream processor created by [createStreamProcessor].
-     *
-     * @param stream the stream of text chunks to process
-     * @return SayReaction containing the full accumulated text
-     */
     override fun say(stream: Stream<String>): SayReaction {
         return say(stream, DEFAULT_DEBOUNCE_MS)
     }
 
-    /**
-     * Processes a stream of text chunks with custom debouncing.
-     * This method can be overridden to provide custom streaming behavior,
-     * or you can override [createStreamProcessor] to customize the processor.
-     *
-     * @param stream the stream of text chunks to process
-     * @param debounceMs the debounce delay in milliseconds
-     * @return SayReaction containing the full accumulated text
-     */
     open fun say(stream: Stream<String>, debounceMs: Long = DEFAULT_DEBOUNCE_MS): SayReaction {
         val processor = createStreamProcessor(debounceMs)
         val fullText = processor.processStream(stream)
@@ -166,12 +131,6 @@ open class TelegramReactions(
         messageThreadId,
     )
 
-    /**
-     * Safely sends a message with fallback strategies if Telegram rejects it.
-     * First tries with the provided parseMode, then without parseMode if it fails.
-     *
-     * @return SayReaction with the sent text
-     */
     fun sendMessage(
         text: String,
         parseMode: ParseMode? = null,
@@ -196,11 +155,8 @@ open class TelegramReactions(
             messageThreadId,
         )
 
-        // If sending failed and we had a parseMode, retry without it
-        // Check if the result failed by attempting to extract the value
         when {
             result.getOrNull() == null && parseMode != null -> {
-                // Retry without parseMode
                 val fallbackResult = api.sendMessage(
                     chatId,
                     text,
@@ -247,12 +203,6 @@ open class TelegramReactions(
         replyMarkup
     )
 
-    /**
-     * Safely sends a photo with caption, with fallback if Telegram rejects it.
-     * First tries with the provided parseMode, then without parseMode if it fails.
-     *
-     * @return ImageReaction with the URL
-     */
     fun sendPhoto(
         url: String,
         caption: String? = null,
@@ -275,11 +225,8 @@ open class TelegramReactions(
             replyMarkup,
         )
 
-        // If sending failed and we had a parseMode, retry without it
-        // For sendPhoto, the result is a Pair (not TelegramBotResult)
         when {
             (result.first == null || result.second != null) && parseMode != null -> {
-                // Retry without parseMode
                 val fallbackResult = api.sendPhoto(
                     chatId,
                     TelegramFile.ByUrl(url),
@@ -301,10 +248,6 @@ open class TelegramReactions(
         return ImageReaction.create(url)
     }
 
-    /**
-     * Safely sends a video with caption, with fallback if Telegram rejects it.
-     * First tries with the provided parseMode, then without parseMode if it fails.
-     */
     fun sendVideo(
         url: String,
         duration: Int? = null,
@@ -333,10 +276,8 @@ open class TelegramReactions(
             replyMarkup
         )
 
-        // If sending failed and we had a parseMode, retry without it
         when {
             (result.first == null || result.second != null) && parseMode != null -> {
-                // Retry without parseMode
                 val fallbackResult = api.sendVideo(
                     chatId,
                     TelegramFile.ByUrl(url),
@@ -359,10 +300,6 @@ open class TelegramReactions(
         }
     }
 
-    /**
-     * Safely sends a voice message, with fallback if Telegram rejects it.
-     * First tries with the provided parseMode, then without parseMode if it fails.
-     */
     fun sendVoice(
         url: String,
         duration: Int? = null,
@@ -385,10 +322,8 @@ open class TelegramReactions(
             replyMarkup = replyMarkup,
         )
 
-        // If sending failed and we had a parseMode, retry without it
         when {
             (result.first == null || result.second != null) && parseMode != null -> {
-                // Retry without parseMode
                 val fallbackResult = api.sendVoice(
                     chatId,
                     TelegramFile.ByUrl(url),
@@ -412,12 +347,6 @@ open class TelegramReactions(
         return sendAudio(url)
     }
 
-    /**
-     * Safely sends an audio file.
-     * Note: sendAudio doesn't support parseMode in Telegram API, so no fallback is needed.
-     *
-     * @return AudioReaction with the URL
-     */
     fun sendAudio(
         url: String,
         duration: Int? = null,
@@ -445,10 +374,6 @@ open class TelegramReactions(
         return AudioReaction.create(url)
     }
 
-    /**
-     * Safely sends a document with caption, with fallback if Telegram rejects it.
-     * First tries with the provided parseMode, then without parseMode if it fails.
-     */
     fun sendDocument(
         url: String,
         caption: String? = null,
@@ -475,10 +400,8 @@ open class TelegramReactions(
             mimeType,
         )
 
-        // If sending failed and we had a parseMode, retry without it
         when {
             (result.first == null || result.second != null) && parseMode != null -> {
-                // Retry without parseMode
                 val fallbackResult = api.sendDocument(
                     chatId,
                     TelegramFile.ByUrl(url),
@@ -659,55 +582,3 @@ open class TelegramReactions(
     }
 }
 
-// Extension properties for convenient access to composite requests
-
-/**
- * Extension property to access TelegramCompositeRequest from BotRequest.
- * Returns null if the request is not a composite request.
- */
-val com.justai.jaicf.api.BotRequest.telegramComposite: TelegramCompositeRequest?
-    get() = this as? TelegramCompositeRequest
-
-/**
- * Extension property to get all text items from a composite request.
- * Returns an empty list if there are no text items.
- */
-val TelegramCompositeRequest.texts: List<String>
-    get() = items.filterIsInstance<MessageItem.Text>().map { it.text }
-
-/**
- * Extension property to get all photo items from a composite request.
- * Returns a flat list of all PhotoSize objects from all photo items.
- */
-val TelegramCompositeRequest.allPhotos: List<com.github.kotlintelegrambot.entities.files.PhotoSize>
-    get() = items.filterIsInstance<MessageItem.Photos>().flatMap { it.photos }
-
-/**
- * Extension property to get all video items from a composite request.
- */
-val TelegramCompositeRequest.videos: List<com.github.kotlintelegrambot.entities.files.Video>
-    get() = items.filterIsInstance<MessageItem.Video>().map { it.video }
-
-/**
- * Extension property to get all document items from a composite request.
- */
-val TelegramCompositeRequest.documents: List<com.github.kotlintelegrambot.entities.files.Document>
-    get() = items.filterIsInstance<MessageItem.Document>().map { it.document }
-
-/**
- * Extension property to get all audio items from a composite request.
- */
-val TelegramCompositeRequest.audios: List<com.github.kotlintelegrambot.entities.files.Audio>
-    get() = items.filterIsInstance<MessageItem.Audio>().map { it.audio }
-
-/**
- * Extension property to get all voice items from a composite request.
- */
-val TelegramCompositeRequest.voiceMessages: List<com.github.kotlintelegrambot.entities.files.Voice>
-    get() = items.filterIsInstance<MessageItem.Voice>().map { it.voice }
-
-/**
- * Extension property to get the number of items in the composite request.
- */
-val TelegramCompositeRequest.itemCount: Int
-    get() = items.size

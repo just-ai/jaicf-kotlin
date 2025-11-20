@@ -1,53 +1,5 @@
 package com.justai.jaicf.channel.telegram
 
-/*
- * Example usage with custom TelegramStreamProcessor:
- *
- * class CustomStreamProcessor(
- *     api: Bot,
- *     chatId: ChatId,
- *     debounceMs: Long,
- *     dispatcher: CoroutineDispatcher,
- *     parseMode: ParseMode?
- * ) : TelegramStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode) {
- *     override fun shouldSplitMessage(state: MessageState): Boolean {
- *         // Custom splitting logic
- *         return state.text.length > 2000
- *     }
- * }
- *
- * val channel = TelegramChannel(
- *     botApi = botEngine,
- *     telegramBotToken = "YOUR_TOKEN",
- *     requestDispatcher = Dispatchers.IO,
- *     streamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher, parseMode ->
- *         CustomStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode)
- *     }
- * )
- *
- * Example usage with message aggregation (for handling long messages and media groups):
- *
- * val channel = TelegramChannel(
- *     botApi = botEngine,
- *     telegramBotToken = "YOUR_TOKEN",
- *     requestDispatcher = Dispatchers.IO,
- *     aggregation = AggregationConfig(
- *         enabled = true,
- *         waitTimeMs = 500L,
- *         useMediaGroupId = true,
- *         strategy = DefaultAggregationStrategy()
- *     )
- * )
- *
- * Example usage with custom parse mode:
- *
- * val channel = TelegramChannel(
- *     botApi = botEngine,
- *     telegramBotToken = "YOUR_TOKEN",
- *     defaultParseMode = ParseMode.MARKDOWN_V2  // Use Markdown v2 instead of default v1
- * )
- */
-
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.json.JsonMapper
@@ -64,7 +16,6 @@ import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.logging.LogLevel
 import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
 import com.justai.jaicf.api.BotApi
-import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
 import com.justai.jaicf.channel.invocationapi.InvocableBotChannel
@@ -73,6 +24,8 @@ import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
+import com.justai.jaicf.channel.telegram.aggregation.AggregationConfig
+import com.justai.jaicf.channel.telegram.aggregation.TelegramRequestAggregator
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
@@ -87,31 +40,14 @@ import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
-/**
- * Configuration for message aggregation in Telegram channel.
- *
- * @param enabled Enable message aggregation (default: true)
- * @param waitTimeMs Debounce delay in milliseconds (default: 500ms)
- * @param useMediaGroupId Use Telegram's mediaGroupId for instant media group detection (default: true)
- * @param strategy Custom aggregation strategy (default: DefaultAggregationStrategy)
- * @param maxItems Maximum number of items to aggregate (default: 20)
- */
-data class AggregationConfig(
-    val enabled: Boolean = true,
-    val waitTimeMs: Long = 500L,
-    val useMediaGroupId: Boolean = true,
-    val strategy: AggregationStrategy = DefaultAggregationStrategy(),
-    val maxItems: Int = 20
-)
-
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: LogLevel = LogLevel.None,
-    override val requestDispatcher: CoroutineDispatcher = DefaultRequestExecutor.asCoroutineDispatcher(),
+    private val requestDispatcher: CoroutineDispatcher = DefaultRequestExecutor.asCoroutineDispatcher(),
     private val streamProcessorFactory: TelegramStreamProcessorFactory = DefaultStreamProcessorFactory,
-    aggregation: AggregationConfig = AggregationConfig(),
+    private val aggregation: AggregationConfig? = AggregationConfig(),
     private val defaultParseMode: ParseMode = ParseMode.MARKDOWN,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithDispatcher {
 
@@ -125,17 +61,14 @@ class TelegramChannel(
 
     private var liveChatProvider: JaicpLiveChatProvider? = null
 
-    private val requestAggregator: TelegramRequestAggregator? = if (aggregation.enabled) {
+    private val requestAggregator: TelegramRequestAggregator? = if (aggregation != null) {
         TelegramRequestAggregator(
-            waitTimeMs = aggregation.waitTimeMs,
             scope = CoroutineScope(requestDispatcher + SupervisorJob()),
-            strategy = aggregation.strategy,
-            maxItems = aggregation.maxItems,
-            useMediaGroupId = aggregation.useMediaGroupId
+            config = aggregation,
         )
     } else null
 
-    private val bot: Bot = bot {
+    val bot: Bot = bot {
         apiUrl = telegramApiUrl.withTrailingSlash()
         token = telegramBotToken
         logLevel = telegramLogLevel
@@ -144,7 +77,14 @@ class TelegramChannel(
             fun process(request: TelegramBotRequest) {
                 botApi.process(
                     request,
-                    TelegramReactions(bot, request, liveChatProvider, requestDispatcher, streamProcessorFactory, defaultParseMode),
+                    TelegramReactions(
+                        bot,
+                        request,
+                        liveChatProvider,
+                        requestDispatcher,
+                        streamProcessorFactory,
+                        defaultParseMode
+                    ),
                     RequestContext.fromHttp(request.update.httpBotRequest)
                 )
             }
@@ -322,7 +262,18 @@ class TelegramChannel(
         val update = mapper.readValue<Update?>(generatedRequest) ?: return
         val message = update.message ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, requestDispatcher, streamProcessorFactory, defaultParseMode), requestContext)
+        botApi.process(
+            telegramRequest,
+            TelegramReactions(
+                bot,
+                telegramRequest,
+                liveChatProvider,
+                requestDispatcher,
+                streamProcessorFactory,
+                defaultParseMode
+            ),
+            requestContext
+        )
     }
 
     fun run() {
@@ -330,14 +281,10 @@ class TelegramChannel(
     }
 
     companion object : JaicpCompatibleAsyncChannelFactory {
-        /**
-         * Default factory for creating TelegramStreamProcessor instances.
-         * This factory creates the standard processor with default debouncing (100ms)
-         * and automatic message splitting at 3900 characters.
-         */
-        val DefaultStreamProcessorFactory = TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher, parseMode ->
-            TelegramStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode)
-        }
+        val DefaultStreamProcessorFactory =
+            TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher, parseMode ->
+                TelegramStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode)
+            }
 
         override val channelType = "telegram"
         override fun create(

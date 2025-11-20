@@ -1,4 +1,6 @@
-package com.justai.jaicf.channel.telegram
+package com.justai.jaicf.channel.telegram.aggregation
+
+import com.justai.jaicf.channel.telegram.*
 
 /**
  * Strategy interface for customizing message aggregation behavior.
@@ -21,11 +23,35 @@ interface AggregationStrategy {
 
     /**
      * Creates a composite request from a list of aggregated requests.
+     * Default implementation copies the first request with the aggregated list.
      *
      * @param requests List of requests to combine
      * @return A composite request or a single request if only one item
      */
-    fun createComposite(requests: List<TelegramBotRequest>): TelegramBotRequest
+    fun createComposite(requests: List<TelegramBotRequest>): TelegramBotRequest {
+        // Single request - return as-is
+        if (requests.size == 1) {
+            return requests.first()
+        }
+
+        // Multiple requests - copy first request with aggregated list
+        return when (val first = requests.first()) {
+            is TelegramTextRequest -> first.copy(aggregated = requests)
+            is TelegramPhotosRequest -> first.copy(aggregated = requests)
+            is TelegramVideoRequest -> first.copy(aggregated = requests)
+            is TelegramDocumentRequest -> first.copy(aggregated = requests)
+            is TelegramAudioRequest -> first.copy(aggregated = requests)
+            is TelegramVoiceRequest -> first.copy(aggregated = requests)
+            is TelegramVideoNoteRequest -> first.copy(aggregated = requests)
+            is TelegramStickerRequest -> first.copy(aggregated = requests)
+            is TelegramAnimationRequest -> first.copy(aggregated = requests)
+            is TelegramLocationRequest -> first.copy(aggregated = requests)
+            is TelegramContactRequest -> first.copy(aggregated = requests)
+            is TelegramGameRequest -> first.copy(aggregated = requests)
+            is TelegramQueryRequest -> first.copy(aggregated = requests)
+            else -> first // Fallback for other types
+        }
+    }
 }
 
 /**
@@ -38,21 +64,6 @@ class DefaultAggregationStrategy : AggregationStrategy {
         newRequest: TelegramBotRequest,
         pendingRequests: List<TelegramBotRequest>
     ): Boolean = true // Always aggregate within time window
-
-    override fun createComposite(requests: List<TelegramBotRequest>): TelegramBotRequest {
-        // Single request - return as-is
-        if (requests.size == 1) {
-            return requests.first()
-        }
-
-        // Multiple requests - create composite
-        return TelegramCompositeRequest(
-            update = requests.first().update,
-            message = requests.first().message,
-            items = requests.map { it.toMessageItem() },
-            mediaGroupId = requests.first().message.mediaGroupId
-        )
-    }
 }
 
 /**
@@ -79,18 +90,5 @@ class CommandAwareAggregationStrategy : AggregationStrategy {
         }
 
         return true
-    }
-
-    override fun createComposite(requests: List<TelegramBotRequest>): TelegramBotRequest {
-        if (requests.size == 1) {
-            return requests.first()
-        }
-
-        return TelegramCompositeRequest(
-            update = requests.first().update,
-            message = requests.first().message,
-            items = requests.map { it.toMessageItem() },
-            mediaGroupId = requests.first().message.mediaGroupId
-        )
     }
 }

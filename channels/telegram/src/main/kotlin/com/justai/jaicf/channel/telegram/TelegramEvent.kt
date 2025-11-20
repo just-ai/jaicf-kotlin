@@ -14,5 +14,4 @@ object TelegramEvent {
     const val VOICE = "voice"
     const val PRE_CHECKOUT = "pre_checkout"
     const val SUCCESSFUL_PAYMENT = "successful_payment"
-    const val COMPOSITE = "composite"
 }

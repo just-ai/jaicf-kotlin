@@ -1,5 +1,6 @@
-package com.justai.jaicf.channel.telegram
+package com.justai.jaicf.channel.telegram.aggregation
 
+import com.justai.jaicf.channel.telegram.TelegramBotRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,26 +17,15 @@ import kotlinx.coroutines.sync.withLock
  *
  * Supports cross-type aggregation (text + photos + videos) into composite requests.
  *
- * @param waitTimeMs Debounce delay in milliseconds (default: 500ms)
  * @param scope Coroutine scope for async operations
- * @param strategy Aggregation strategy for custom logic (default: DefaultAggregationStrategy)
- * @param maxItems Maximum number of items to aggregate (prevents abuse)
- * @param useMediaGroupId Whether to use Telegram's mediaGroupId for instant grouping
+ * @param config Aggregation configuration
  */
 class TelegramRequestAggregator(
-    private val waitTimeMs: Long = DEFAULT_WAIT_TIME_MS,
     private val scope: CoroutineScope,
-    private val strategy: AggregationStrategy = DefaultAggregationStrategy(),
-    private val maxItems: Int = DEFAULT_MAX_ITEMS,
-    private val useMediaGroupId: Boolean = true
+    private val config: AggregationConfig,
 ) {
     private val mutex = Mutex()
     private val pendingRequests = mutableMapOf<AggregationKey, PendingRequests>()
-
-    companion object {
-        const val DEFAULT_WAIT_TIME_MS = 500L
-        const val DEFAULT_MAX_ITEMS = 20
-    }
 
     /**
      * Key for aggregation grouping.
@@ -73,7 +63,7 @@ class TelegramRequestAggregator(
         scope.launch {
             mutex.withLock {
                 // Extract mediaGroupId if available and enabled
-                val mediaGroupId = if (useMediaGroupId) request.message.mediaGroupId else null
+                val mediaGroupId = if (config.useMediaGroupId) request.message.mediaGroupId else null
 
                 // Determine aggregation key
                 val key = AggregationKey(
@@ -87,14 +77,14 @@ class TelegramRequestAggregator(
                 }
 
                 // Check if we should aggregate using the strategy
-                if (!strategy.shouldAggregate(request.chatId, request, pending.requests)) {
+                if (!config.strategy.shouldAggregate(request.chatId, request, pending.requests)) {
                     // Strategy says no - process immediately
                     onProcess(request)
                     return@launch
                 }
 
                 // Check max items limit
-                if (pending.requests.size >= maxItems) {
+                if (pending.requests.size >= config.maxItems) {
                     // Hit limit - process what we have and start fresh
                     processAndRemove(key)
                     // Add current request to new batch
@@ -130,7 +120,7 @@ class TelegramRequestAggregator(
         pending.job = scope.launch {
             // Media groups: very short delay to collect all items sent together
             // Regular messages: full debounce delay
-            val delay = if (isMediaGroup) 50L else waitTimeMs
+            val delay = if (isMediaGroup) 50L else config.waitTimeMs
             delay(delay)
             processAndRemove(key)
         }
@@ -147,7 +137,7 @@ class TelegramRequestAggregator(
         if (pending.requests.isEmpty()) return
 
         // Use strategy to create final request
-        val finalRequest = strategy.createComposite(pending.requests)
+        val finalRequest = config.strategy.createComposite(pending.requests)
 
         // Process the result
         pending.onProcess(finalRequest)
