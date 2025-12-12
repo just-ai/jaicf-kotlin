@@ -15,8 +15,7 @@ import com.openai.models.chat.completions.ChatCompletionCreateParams
 
 private val DefaultOpenAIClient = try {
     OpenAIOkHttpClient.fromEnv()
-} catch (_: IllegalStateException
-) {
+} catch (_: IllegalStateException) {
     OpenAIOkHttpClient.builder().credential(BearerTokenCredential.create("")).build()
 }
 private val DefaultProps = LLMProps(
