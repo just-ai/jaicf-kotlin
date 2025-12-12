@@ -56,7 +56,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 import java.util.stream.Stream
-import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
@@ -116,7 +115,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 )
             )
         }
-        response = api.createStreaming(params)
+        response = api.createStreaming(params, props.client)
         stream = response.stream()
         throwIfCancelled()
     }

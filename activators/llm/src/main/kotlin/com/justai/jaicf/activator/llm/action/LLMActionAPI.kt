@@ -8,11 +8,17 @@ import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
 import com.openai.core.http.StreamResponse
+import com.openai.credential.BearerTokenCredential
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 
 
-private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
+private val DefaultOpenAIClient = try {
+    OpenAIOkHttpClient.fromEnv()
+} catch (_: IllegalStateException
+) {
+    OpenAIOkHttpClient.builder().credential(BearerTokenCredential.create("")).build()
+}
 private val DefaultProps = LLMProps(
     client = DefaultOpenAIClient,
     withUsages = true,
