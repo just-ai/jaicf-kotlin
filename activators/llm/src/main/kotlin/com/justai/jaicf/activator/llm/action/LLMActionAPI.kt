@@ -16,7 +16,7 @@ import com.openai.models.chat.completions.ChatCompletionCreateParams
 private val DefaultOpenAIClient = try {
     OpenAIOkHttpClient.fromEnv()
 } catch (_: IllegalStateException) {
-    OpenAIOkHttpClient.builder().credential(BearerTokenCredential.create("")).build()
+    null
 }
 private val DefaultProps = LLMProps(
     client = DefaultOpenAIClient,
@@ -28,7 +28,7 @@ class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
         params: ChatCompletionCreateParams,
         client: OpenAIClient? = null,
     ): StreamResponse<ChatCompletionChunk> {
-        val client = client ?: defaultProps.client ?: DefaultOpenAIClient
+        val client = client ?: defaultProps.client ?: DefaultOpenAIClient ?: throw IllegalStateException("OpenAIClient is required")
         return client.chat().completions().createStreaming(params)
     }
 
