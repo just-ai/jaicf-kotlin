@@ -8,11 +8,16 @@ import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
 import com.openai.client.okhttp.OpenAIOkHttpClient
 import com.openai.core.http.StreamResponse
+import com.openai.credential.BearerTokenCredential
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 
 
-private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
+private val DefaultOpenAIClient = try {
+    OpenAIOkHttpClient.fromEnv()
+} catch (_: IllegalStateException) {
+    null
+}
 private val DefaultProps = LLMProps(
     client = DefaultOpenAIClient,
     withUsages = true,
@@ -23,7 +28,7 @@ class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
         params: ChatCompletionCreateParams,
         client: OpenAIClient? = null,
     ): StreamResponse<ChatCompletionChunk> {
-        val client = client ?: defaultProps.client ?: DefaultOpenAIClient
+        val client = client ?: defaultProps.client ?: DefaultOpenAIClient ?: throw IllegalStateException("OpenAIClient is required")
         return client.chat().completions().createStreaming(params)
     }
 
