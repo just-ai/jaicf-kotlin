@@ -7,6 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
+import com.justai.jaicf.activator.llm.telemetry.ToolExecuteHook
+import com.justai.jaicf.activator.llm.telemetry.withTelemetryHook
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
@@ -55,6 +57,28 @@ open class LLMTool<T>(
 
     val withoutConfirmation by lazy {
         withConfirmation { true }
+    }
+
+    suspend fun <R> withToolTelemetrySpan(
+        context: LLMToolCallContext<T>,
+        block: suspend LLMToolCallContext<T>.() -> R
+    ): R {
+        val toolName = context.call.name
+        val baseAttributes = mapOf(
+            "llm.tool.name" to toolName,
+            "llm.tool.call_id" to context.call.callId,
+            "llm.tool.arguments" to (context.call.arguments?.toString() ?: "")
+        )
+
+        val hook = ToolExecuteHook(
+            context.context,
+            context.request,
+            baseAttributes
+        )
+
+        return withTelemetryHook(hook) {
+            context.block()
+        }
     }
 
     companion object {

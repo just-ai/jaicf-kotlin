@@ -13,26 +13,56 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.BotRequestController
 import com.justai.jaicf.api.routing.BotRequestRerouteException
 import com.justai.jaicf.api.routing.activators.TargetStateActivator
-import com.justai.jaicf.context.*
+import com.justai.jaicf.context.ActivatorContext
+import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.DialogContext
+import com.justai.jaicf.context.ExecutionContext
+import com.justai.jaicf.context.ProcessContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.BotContextManager
 import com.justai.jaicf.context.manager.InMemoryBotContextManager
-import com.justai.jaicf.exceptions.*
+import com.justai.jaicf.exceptions.ActionException
+import com.justai.jaicf.exceptions.ActivationException
+import com.justai.jaicf.exceptions.BotException
+import com.justai.jaicf.exceptions.BotExecutionException
+import com.justai.jaicf.exceptions.NoStateFoundException
+import com.justai.jaicf.exceptions.scenarioCause
 import com.justai.jaicf.helpers.logging.WithLogger
-import com.justai.jaicf.hook.*
+import com.justai.jaicf.hook.ActionErrorHook
+import com.justai.jaicf.hook.AfterActionHook
+import com.justai.jaicf.hook.AfterProcessHook
+import com.justai.jaicf.hook.AnyErrorHook
+import com.justai.jaicf.hook.BeforeActionHook
+import com.justai.jaicf.hook.BeforeActivationHook
+import com.justai.jaicf.hook.BeforeProcessHook
+import com.justai.jaicf.hook.BotExceptionHandlingHook
+import com.justai.jaicf.hook.BotHook
+import com.justai.jaicf.hook.BotHookException
+import com.justai.jaicf.hook.BotHookHandler
+import com.justai.jaicf.hook.BotRequestHook
 import com.justai.jaicf.logging.ConversationLogger
 import com.justai.jaicf.logging.Slf4jConversationLogger
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.ResponseReactions
-import com.justai.jaicf.slotfilling.*
+import com.justai.jaicf.slotfilling.SlotFillingFinished
+import com.justai.jaicf.slotfilling.SlotFillingInProgress
+import com.justai.jaicf.slotfilling.SlotFillingInterrupted
+import com.justai.jaicf.slotfilling.SlotReactor
+import com.justai.jaicf.slotfilling.getSlotFillingContext
+import com.justai.jaicf.slotfilling.isActiveSlotFilling
+import com.justai.jaicf.slotfilling.startSlotFilling
+import com.justai.jaicf.telemetry.TelemetryProvider
+import com.justai.jaicf.telemetry.installTelemetryHooks
+import com.justai.jaicf.telemetry.runWithTelemetry
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 
 /**
  * Default [BotApi] implementation.
@@ -79,6 +109,9 @@ open class BotEngine(
     private val requestDispatcher = requestExecutor.asCoroutineDispatcher()
     private val activatorsList = activators.map { it.create(model) }.addBuiltinActivators()
 
+    var telemetryProvider: TelemetryProvider = TelemetryProvider.NoOp
+        private set
+
     private fun List<Activator>.addBuiltinActivators(): List<Activator> {
         fun MutableList<Activator>.removeIfPresent(a: Activator) = removeIf { it.name == a.name }
         fun MutableList<Activator>.pushToTheEnd(a: Activator) = find { it.name == a.name } ?: add(a)
@@ -122,17 +155,21 @@ open class BotEngine(
         requestContext: RequestContext,
         contextManager: BotContextManager? = null,
     ) {
-        try {
-            val manager = contextManager ?: defaultContextManager
-            val botContext = manager.loadContext(request, requestContext)
-            val executionContext = ExecutionContext(requestContext, null, botContext, request)
-            processRequest(request, reactions, requestContext, botContext, executionContext)
-            saveContext(manager, botContext, request, reactions, requestContext)
-        } catch (e: BotRequestRerouteException) {
-            throw e
-        } catch (e: Exception) {
-            logger.error("", e)
-            throw e
+        val manager = contextManager ?: defaultContextManager
+        val botContext = manager.loadContext(request, requestContext)
+        runWithTelemetry(request, requestContext, botContext) {
+            try {
+                val executionContext = ExecutionContext(requestContext, null, botContext, request)
+                processRequest(request, reactions, requestContext, botContext, executionContext)
+                saveContext(manager, botContext, request, reactions, requestContext)
+            } catch (e: BotRequestRerouteException) {
+                throw e
+            } catch (e: Exception) {
+                val exception = BotExecutionException(e, botContext.currentState)
+                withHook(AnyErrorHook(botContext, request, reactions, exception))
+                logger.error("Error handle request", e)
+                throw e
+            }
         }
     }
 
@@ -215,12 +252,17 @@ open class BotEngine(
 
     internal fun getActivatorForName(activatorName: String) = activatorsList.find { it.name == activatorName }
 
+    fun withTelemetry(provider: TelemetryProvider): BotEngine = apply {
+        telemetryProvider = provider
+        installTelemetryHooks(provider)
+    }
+
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
         try {
             hooks.triggerHook(hook)
             block.invoke()
         } catch (e: BotHookException) {
-            logger.debug("Hook $hook interrupted a request processing", e)
+            logger.debug("Hook {} interrupted a request processing", hook, e)
         }
     }
 
@@ -291,11 +333,11 @@ open class BotEngine(
             return
         }
         try {
-            logger.trace("Executing state: $state")
+            logger.trace("Executing state: {}", state)
             state.action.execute(this)
             withHook(AfterActionHook(botContext, request, reactions, activator, state))
         } catch (e: BotRequestRerouteException) {
-            logger.trace("Changing executable bot engine to: ${e.rerouteRequest}")
+            logger.trace("Changing executable bot engine to: {}", e.rerouteRequest)
             throw e
         } catch (e: Exception) {
             logger.trace("Error execute action message: ${e.message}")
@@ -323,9 +365,7 @@ open class BotEngine(
         val DefaultActivationSelector: ActivationSelector = ActivationSelector.default
         val DefaultConversationLoggers: Array<ConversationLogger> = arrayOf(Slf4jConversationLogger())
         val DefaultRequestExecutor: Executor = Executors.newCachedThreadPool()
-
-        suspend fun current() =
-            coroutineContext[Element.Key]?.engine
+        suspend fun current() = currentCoroutineContext()[Element.Key]?.engine
     }
 }
 

@@ -49,3 +49,6 @@ include("activators:rasa")
 findProject(":activators:rasa")?.name = "rasa"
 include("activators:llm")
 findProject(":activators:llm")?.name = "llm"
+
+include("telemetry:opentelemetry")
+findProject(":telemetry:opentelemetry")?.name = "opentelemetry"

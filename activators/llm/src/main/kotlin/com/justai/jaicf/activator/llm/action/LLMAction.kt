@@ -2,6 +2,9 @@ package com.justai.jaicf.activator.llm.action
 
 import com.justai.jaicf.activator.llm.DefaultLLMProps
 import com.justai.jaicf.activator.llm.LLMPropsBuilder
+import com.justai.jaicf.activator.llm.telemetry.AgentInvokeHook
+import com.justai.jaicf.activator.llm.telemetry.currentState
+import com.justai.jaicf.activator.llm.telemetry.withTelemetryHook
 import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.builder.ScenarioDsl
@@ -23,10 +26,13 @@ private suspend fun <A: ActivatorContext, B: BotRequest, R: Reactions> ActionCon
     body: LLMActionBlock,
 ) {
     val llm = LLMActionAPI.get.createContext(context, request, props)
-    val context = LLMActionContext(context, activator, request, reactions, llm)
+    val actionContext = LLMActionContext(context, activator, request, reactions, llm)
+    val state = currentState(context)!!
 
     try {
-        body.invoke(context)
+        withTelemetryHook(AgentInvokeHook(state, context, request, reactions, activator)) {
+            body.invoke(actionContext)
+        }
     } catch (e: LLMToolInterruptionException) {
         e.callback.invoke(this)
     }

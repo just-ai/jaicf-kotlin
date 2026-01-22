@@ -12,10 +12,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly(libs.kotlin.serialization)
-
+    compileOnly(kotlin("serialization"))
     implementation(libs.github.release)
     implementation(libs.dokka.gradle.plugin)
-    implementation(libs.kotlin.reflect)
+    implementation(kotlin("reflect"))
     implementation(gradleApi())
 }
