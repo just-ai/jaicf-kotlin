@@ -1,21 +1,21 @@
 package com.justai.jaicf.channel.telegram
 
-import com.github.kotlintelegrambot.entities.Chat
-import com.github.kotlintelegrambot.entities.Contact
-import com.github.kotlintelegrambot.entities.Game
-import com.github.kotlintelegrambot.entities.Location
-import com.github.kotlintelegrambot.entities.Message
-import com.github.kotlintelegrambot.entities.Update
-import com.github.kotlintelegrambot.entities.files.Animation
-import com.github.kotlintelegrambot.entities.files.Audio
-import com.github.kotlintelegrambot.entities.files.Document
-import com.github.kotlintelegrambot.entities.files.PhotoSize
-import com.github.kotlintelegrambot.entities.files.Video
-import com.github.kotlintelegrambot.entities.files.VideoNote
-import com.github.kotlintelegrambot.entities.files.Voice
-import com.github.kotlintelegrambot.entities.payments.PreCheckoutQuery
-import com.github.kotlintelegrambot.entities.payments.SuccessfulPayment
-import com.github.kotlintelegrambot.entities.stickers.Sticker
+import com.pengrad.telegrambot.model.Animation
+import com.pengrad.telegrambot.model.Audio
+import com.pengrad.telegrambot.model.Chat
+import com.pengrad.telegrambot.model.Contact
+import com.pengrad.telegrambot.model.Document
+import com.pengrad.telegrambot.model.Game
+import com.pengrad.telegrambot.model.Location
+import com.pengrad.telegrambot.model.Message
+import com.pengrad.telegrambot.model.PhotoSize
+import com.pengrad.telegrambot.model.Sticker
+import com.pengrad.telegrambot.model.Update
+import com.pengrad.telegrambot.model.Video
+import com.pengrad.telegrambot.model.VideoNote
+import com.pengrad.telegrambot.model.Voice
+import com.pengrad.telegrambot.model.PreCheckoutQuery
+import com.pengrad.telegrambot.model.SuccessfulPayment
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.EventBotRequest
 import com.justai.jaicf.api.QueryBotRequest
@@ -42,18 +42,18 @@ val TelegramBotRequest.voice get() = this as? TelegramVoiceRequest
 val TelegramBotRequest.preCheckout get() = this as? TelegramPreCheckoutRequest
 val TelegramBotRequest.successfulPayment get() = this as? TelegramSuccessfulPaymentRequest
 
-internal val Message.clientId get() = chat.id.toString()
+internal val Message.clientId get() = chat().id().toString()
 
 interface TelegramBotRequest : BotRequest {
     val update: Update
     val message: Message
-    val chatId: Long get() = message.chat.id
+    val chatId: Long get() = message.chat().id()
 }
 
 data class TelegramTextRequest(
     override val update: Update,
     override val message: Message
-) : TelegramBotRequest, QueryBotRequest(clientId = message.clientId, input = message.text.toString())
+) : TelegramBotRequest, QueryBotRequest(clientId = message.clientId, input = message.text() ?: "")
 
 data class TelegramQueryRequest(
     override val update: Update,
@@ -100,8 +100,28 @@ data class TelegramGameRequest(
 data class TelegramPhotosRequest(
     override val update: Update,
     override val message: Message,
-    val photos: List<PhotoSize>
-) : TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.PHOTOS)
+    val photos: Array<PhotoSize>
+) : TelegramBotRequest, EventBotRequest(clientId = message.clientId, input = TelegramEvent.PHOTOS) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TelegramPhotosRequest
+
+        if (update != other.update) return false
+        if (message != other.message) return false
+        if (!photos.contentEquals(other.photos)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = update.hashCode()
+        result = 31 * result + message.hashCode()
+        result = 31 * result + photos.contentHashCode()
+        return result
+    }
+}
 
 data class TelegramStickerRequest(
     override val update: Update,
@@ -130,13 +150,14 @@ data class TelegramVoiceRequest(
 data class TelegramPreCheckoutRequest(
     override val update: Update,
     val preCheckoutQuery: PreCheckoutQuery
-) : TelegramBotRequest, EventBotRequest(clientId = preCheckoutQuery.from.id.toString(), input = TelegramEvent.PRE_CHECKOUT) {
-    override val message = Message(
-        messageId = Random.nextLong(),
-        from = preCheckoutQuery.from,
-        date = System.currentTimeMillis(),
-        chat = Chat(preCheckoutQuery.from.id, "private")
-    )
+) : TelegramBotRequest, EventBotRequest(clientId = preCheckoutQuery.from().id().toString(), input = TelegramEvent.PRE_CHECKOUT) {
+    // For PreCheckoutQuery, there's no associated message in the update
+    // We provide a minimal stub implementation to satisfy the interface
+    override val message: Message
+        get() = throw UnsupportedOperationException("PreCheckoutQuery does not have an associated message")
+
+    override val chatId: Long
+        get() = preCheckoutQuery.from().id()
 }
 
 data class TelegramSuccessfulPaymentRequest(

@@ -2,7 +2,7 @@
 
 Allows to create chatbots for [Telegram](https://core.telegram.org/bots).
 
-_Built on top of [Kotlin Telegram Bot](https://github.com/kotlin-telegram-bot/kotlin-telegram-bot) library._
+_Built on top of [java-telegram-bot-api](https://github.com/pengrad/java-telegram-bot-api) library._
 
 ## How to use
 
