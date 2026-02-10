@@ -54,7 +54,7 @@ import com.justai.jaicf.slotfilling.getSlotFillingContext
 import com.justai.jaicf.slotfilling.isActiveSlotFilling
 import com.justai.jaicf.slotfilling.startSlotFilling
 import com.justai.jaicf.telemetry.TelemetryProvider
-import com.justai.jaicf.telemetry.installTelemetryHooks
+import com.justai.jaicf.telemetry.addTelemetryHooks
 import com.justai.jaicf.telemetry.runWithTelemetry
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.currentCoroutineContext
@@ -253,8 +253,11 @@ open class BotEngine(
     internal fun getActivatorForName(activatorName: String) = activatorsList.find { it.name == activatorName }
 
     fun withTelemetry(provider: TelemetryProvider): BotEngine = apply {
+        if (telemetryProvider != TelemetryProvider.NoOp) {
+            throw IllegalStateException("Telemetry provider is already set")
+        }
         telemetryProvider = provider
-        installTelemetryHooks(provider)
+        addTelemetryHooks()
     }
 
     private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {

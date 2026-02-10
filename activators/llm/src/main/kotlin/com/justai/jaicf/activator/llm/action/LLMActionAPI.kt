@@ -1,8 +1,10 @@
 package com.justai.jaicf.activator.llm.action
 
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.agent.handoffMessages
 import com.justai.jaicf.activator.llm.builder.build
+import com.justai.jaicf.activator.llm.telemetry.addLLMTelemetryHooks
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.openai.client.OpenAIClient
@@ -10,6 +12,7 @@ import com.openai.client.okhttp.OpenAIOkHttpClient
 import com.openai.core.http.StreamResponse
 import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
+import java.util.concurrent.atomic.AtomicBoolean
 
 
 private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
@@ -19,6 +22,8 @@ private val DefaultProps = LLMProps(
 )
 
 class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
+    private val initialized: AtomicBoolean = AtomicBoolean(false)
+
     fun createStreaming(
         params: ChatCompletionCreateParams,
         client: OpenAIClient? = null,
@@ -27,11 +32,14 @@ class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
         return client.chat().completions().createStreaming(params)
     }
 
-    internal fun createContext(
+    internal suspend fun createContext(
         context: BotContext,
         request: BotRequest,
         props: LLMPropsBuilder = DefaultLLMProps,
     ): LLMContext {
+        if (initialized.compareAndSet(false, true)) {
+            BotEngine.current()?.addLLMTelemetryHooks()
+        }
         val props = defaultProps.withOptions(props.build(context, request))
         val params = props.toChatCompletionCreateParams().apply {
             if (context.handoffMessages.isEmpty()) {

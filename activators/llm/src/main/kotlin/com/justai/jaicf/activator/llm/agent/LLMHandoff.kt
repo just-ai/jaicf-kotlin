@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMProps
-import com.justai.jaicf.activator.llm.telemetry.HandoffStartHook
-import com.justai.jaicf.activator.llm.telemetry.triggerHook
+import com.justai.jaicf.activator.llm.telemetry.LLMHandoffHook
 import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.activator.llm.withSystemMessage
@@ -13,6 +12,7 @@ import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.helpers.context.tempProperty
 import com.justai.jaicf.helpers.kotlin.ifTrue
+import com.justai.jaicf.hook.triggerBotHook
 import com.justai.jaicf.logging.GoReaction
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
@@ -69,15 +69,15 @@ private val LLMAgent.handoffTool
         )
 
         interrupt {
-            val state = agentStateName(agentName)
+            val stateName = agentStateName(agentName)
             val model = BotEngine.current()?.model
                 ?: throw IllegalStateException("Scenario model is not available in current context")
-            model.states.keys.find { it.endsWith(state) }?.also { path ->
+            model.states.keys.find { it.endsWith(stateName) }?.also { path ->
                 context.handoffChain += (name to snapshot)
 
-                triggerHook(context) { currentState ->
-                    HandoffStartHook(
-                        currentState, context, request,
+                triggerBotHook(context) { state ->
+                    LLMHandoffHook(
+                        state, context, request,
                         reactions = Reactions().apply { botContext = context },
                         activator = object : StrictActivatorContext() {},
                         attributes = handoffAttributes,

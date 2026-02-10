@@ -12,9 +12,21 @@ import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
+import io.opentelemetry.exporter.logging.LoggingSpanExporter
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
+import io.opentelemetry.sdk.OpenTelemetrySdk
+import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
+import io.opentelemetry.sdk.trace.samplers.Sampler
+
+private const val DEFAULT_ENDPOINT = "http://localhost:4317"
+private const val DEFAULT_SERVICE_NAME = "JAICF Bot"
+private const val DEFAULT_SERVICE_VERSION = "1.0.0"
+private const val DEFAULT_ENVIRONMENT = "development"
 
 class OpenTelemetryTelemetryProvider(
-    private val tracer: Tracer,
+    private val tracer: Tracer
 ) : TelemetryProvider {
 
     constructor(
@@ -25,6 +37,42 @@ class OpenTelemetryTelemetryProvider(
         instrumentationVersion?.let { version ->
             openTelemetry.getTracer(instrumentationName, version)
         } ?: openTelemetry.getTracer(instrumentationName)
+    )
+
+    constructor(
+        endpoint: String = DEFAULT_ENDPOINT,
+        environment: String = DEFAULT_ENVIRONMENT,
+        serviceName: String = DEFAULT_SERVICE_NAME,
+        serviceVersion: String = DEFAULT_SERVICE_VERSION,
+    ) : this(
+        endpoint.let {
+            val resource = Resource.create(
+                Attributes.builder()
+                    .put(AttributeKey.stringKey("service.name"), serviceName)
+                    .put(AttributeKey.stringKey("service.version"), serviceVersion)
+                    .put(AttributeKey.stringKey("deployment.environment"), environment)
+                    .build()
+            )
+
+            val tracerProvider = SdkTracerProvider.builder()
+                .setResource(resource)
+                .setSampler(Sampler.alwaysOn())
+                .addSpanProcessor(
+                    SimpleSpanProcessor.create(
+                        OtlpGrpcSpanExporter.builder()
+                            .setEndpoint(endpoint)
+                            .build()
+                    )
+                )
+                .addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()))
+                .build()
+
+            val sdk = OpenTelemetrySdk.builder()
+                .setTracerProvider(tracerProvider)
+                .build()
+
+            sdk.getTracer(serviceName, serviceVersion)
+        }
     )
 
     override fun createSpan(

@@ -6,8 +6,8 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.hook.BotActionHook
-import com.justai.jaicf.hook.HookStage
-import com.justai.jaicf.hook.TelemetryHook
+import com.justai.jaicf.telemetry.TelemetryHookStage
+import com.justai.jaicf.telemetry.TelemetryHook
 import com.justai.jaicf.telemetry.TelemetryProvider
 import com.justai.jaicf.telemetry.TelemetrySpan
 import com.justai.jaicf.telemetry.closeAllTelemetrySpans
@@ -19,17 +19,17 @@ import com.justai.jaicf.telemetry.removeTelemetrySpan
 import com.justai.jaicf.telemetry.setCurrentTelemetrySpan
 import com.justai.jaicf.telemetry.setTelemetrySpan
 
-fun BotEngine.installLLMActivatorTelemetryHooks() {
+internal fun BotEngine.addLLMTelemetryHooks() {
 
     hooks.addHookAction<AnyErrorHook> {
         SpanProcessor.handleAnyError(this)
     }
 
-    hooks.addHookAction<HandoffStartHook> {
+    hooks.addHookAction<LLMHandoffHook> {
         SpanProcessor.handleHandoffStart(telemetryProvider, this)
     }
 
-    addLifecycleHook<AgentInvokeHook>(
+    addLifecycleHook<LLMActionHook>(
         onStart = SpanProcessor::handleAgentInvokeStart,
         onFinish = SpanProcessor::handleAgentInvokeFinish,
         onError = SpanProcessor::handleAgentInvokeError
@@ -41,23 +41,23 @@ fun BotEngine.installLLMActivatorTelemetryHooks() {
         onError = SpanProcessor::handleLLMCallError
     )
 
-    addLifecycleHook<StreamingHook>(
+    addLifecycleHook<LLMStreamingHook>(
         onStart = SpanProcessor::handleStreamingStart,
         onFinish = SpanProcessor::handleStreamingFinish
     )
 
-    addLifecycleHook<ToolCallsHook>(
+    addLifecycleHook<LLMToolCallsHook>(
         onStart = SpanProcessor::handleToolCallsStart,
         onFinish = SpanProcessor::handleToolCallsFinish
     )
 
-    addLifecycleHook<ToolCallHook>(
+    addLifecycleHook<LLMToolCallHook>(
         onStart = SpanProcessor::handleToolCallStart,
         onFinish = SpanProcessor::handleToolCallFinish,
         onError = SpanProcessor::handleToolCallError
     )
 
-    addLifecycleHook<ToolExecuteHook>(
+    addLifecycleHook<LLMToolExecuteHook>(
         onStart = SpanProcessor::handleToolExecuteStart,
         onFinish = SpanProcessor::handleToolExecuteFinish,
         onError = SpanProcessor::handleToolExecuteError
@@ -71,9 +71,9 @@ private inline fun <reified T : TelemetryHook> BotEngine.addLifecycleHook(
 ) {
     hooks.addHookAction<T> {
         when (stage) {
-            HookStage.START -> onStart(telemetryProvider, this)
-            HookStage.FINISH -> onFinish(this)
-            HookStage.ERROR -> onError(this)
+            TelemetryHookStage.START -> onStart(telemetryProvider, this)
+            TelemetryHookStage.FINISH -> onFinish(this)
+            TelemetryHookStage.ERROR -> onError(this)
         }
     }
 }
@@ -131,7 +131,7 @@ private object SpanProcessor {
 
     private fun startSpan(
         provider: TelemetryProvider,
-        hook: LifecycleHook,
+        hook: LLMLifecycleHook,
         spanName: String,
         extraAttributes: Map<String, Any?> = emptyMap()
     ) {
@@ -158,22 +158,22 @@ private object SpanProcessor {
         }
     }
 
-    fun handleAgentInvokeStart(provider: TelemetryProvider, hook: AgentInvokeHook) {
+    fun handleAgentInvokeStart(provider: TelemetryProvider, hook: LLMActionHook) {
         startSpan(
-            provider, hook, LLMSpanName.AgentInvoke, mapOf(
+            provider, hook, LLMSpanName.ActionInvoke, mapOf(
                 "llm.agent.state" to hook.state.path.toString(),
                 "llm.agent.input.length" to hook.request.input.length
             )
         )
     }
 
-    fun handleAgentInvokeFinish(hook: AgentInvokeHook) {
-        finishSpan(hook.context, LLMSpanName.AgentInvoke, hook.attributes)
+    fun handleAgentInvokeFinish(hook: LLMActionHook) {
+        finishSpan(hook.context, LLMSpanName.ActionInvoke, hook.attributes)
         closeHandoffSpans(hook.context)
     }
 
-    fun handleAgentInvokeError(hook: AgentInvokeHook) {
-        hook.context.getTelemetrySpan(LLMSpanName.AgentInvoke)?.apply {
+    fun handleAgentInvokeError(hook: LLMActionHook) {
+        hook.context.getTelemetrySpan(LLMSpanName.ActionInvoke)?.apply {
             setAttributes(hook.attributes)
             recordError(hook.exception, "llm.agent")
             close()
@@ -204,10 +204,10 @@ private object SpanProcessor {
         }
     }
 
-    fun handleStreamingStart(provider: TelemetryProvider, hook: StreamingHook) =
+    fun handleStreamingStart(provider: TelemetryProvider, hook: LLMStreamingHook) =
         startSpan(provider, hook, LLMSpanName.Streaming)
 
-    fun handleStreamingFinish(hook: StreamingHook) {
+    fun handleStreamingFinish(hook: LLMStreamingHook) {
         val span = hook.context.getTelemetrySpan(LLMSpanName.Streaming)?.apply {
             setAttributes(hook.attributes)
             close()
@@ -215,19 +215,19 @@ private object SpanProcessor {
         hook.context.setCurrentTelemetrySpan(span)
     }
 
-    fun handleToolCallsStart(provider: TelemetryProvider, hook: ToolCallsHook) =
+    fun handleToolCallsStart(provider: TelemetryProvider, hook: LLMToolCallsHook) =
         startSpan(provider, hook, LLMSpanName.ToolCalls)
 
-    fun handleToolCallsFinish(hook: ToolCallsHook) =
+    fun handleToolCallsFinish(hook: LLMToolCallsHook) =
         finishSpan(hook.context, LLMSpanName.ToolCalls, hook.attributes)
 
-    fun handleToolCallStart(provider: TelemetryProvider, hook: ToolCallHook) {
+    fun handleToolCallStart(provider: TelemetryProvider, hook: LLMToolCallHook) {
         val name = toolName(hook.attributes)
         if (shouldSkip(name)) return
         startSpan(provider, hook, toolSpanName(name))
     }
 
-    fun handleToolCallFinish(hook: ToolCallHook) {
+    fun handleToolCallFinish(hook: LLMToolCallHook) {
         val name = toolName(hook.attributes)
         if (shouldSkip(name)) return
 
@@ -240,7 +240,7 @@ private object SpanProcessor {
         hook.context.setCurrentTelemetrySpan(span)
     }
 
-    fun handleToolCallError(hook: ToolCallHook) {
+    fun handleToolCallError(hook: LLMToolCallHook) {
         val name = toolName(hook.attributes)
         if (shouldSkip(name)) return
 
@@ -253,7 +253,7 @@ private object SpanProcessor {
         }
     }
 
-    fun handleHandoffStart(provider: TelemetryProvider, hook: HandoffStartHook) {
+    fun handleHandoffStart(provider: TelemetryProvider, hook: LLMHandoffHook) {
         val from = hook.attributes["llm.handoff.from.agent"]
         val to = hook.attributes["llm.handoff.to.agent"]
         val spanName = "${LLMSpanName.Handoff} $from -> $to"
@@ -266,7 +266,7 @@ private object SpanProcessor {
         }
     }
 
-    fun handleToolExecuteStart(provider: TelemetryProvider, hook: ToolExecuteHook) {
+    fun handleToolExecuteStart(provider: TelemetryProvider, hook: LLMToolExecuteHook) {
         val name = toolName(hook.attributes)
         if (shouldSkip(name)) return
 
@@ -280,7 +280,7 @@ private object SpanProcessor {
         }
     }
 
-    fun handleToolExecuteFinish(hook: ToolExecuteHook) {
+    fun handleToolExecuteFinish(hook: LLMToolExecuteHook) {
         val name = toolName(hook.attributes)
         if (shouldSkip(name)) return
 
@@ -292,7 +292,7 @@ private object SpanProcessor {
         }
     }
 
-    fun handleToolExecuteError(hook: ToolExecuteHook) {
+    fun handleToolExecuteError(hook: LLMToolExecuteHook) {
         val name = toolName(hook.attributes)
         if (shouldSkip(name)) return
 

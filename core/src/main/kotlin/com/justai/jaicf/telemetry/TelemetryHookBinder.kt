@@ -8,12 +8,10 @@ import com.justai.jaicf.hook.ActionErrorHook
 import com.justai.jaicf.hook.AfterProcessHook
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.hook.BeforeProcessHook
-import com.justai.jaicf.hook.RequestLifecycleStage
-import com.justai.jaicf.hook.TelemetryStartProcessHook
 import com.justai.jaicf.test.reactions.answer
 import java.util.UUID
 
-suspend inline fun <T> BotEngine.runWithTelemetry(
+internal suspend inline fun <T> BotEngine.runWithTelemetry(
     request: BotRequest,
     requestContext: RequestContext,
     context: BotContext,
@@ -35,7 +33,6 @@ suspend inline fun <T> BotEngine.runWithTelemetry(
         sessionRootSpan = try {
             telemetryProvider.createSpan(sessionRootName, sessionAttributes, parent = null)
         } catch (e: Throwable) {
-            print(e)
             TelemetrySpan.NoOp
         }
 
@@ -47,9 +44,10 @@ suspend inline fun <T> BotEngine.runWithTelemetry(
 
     val attributes = mapOf(
         "jaicf.request.type" to request.type.name,
+        "jaicf.request.input" to request.input,
         "jaicf.request.client_id" to request.clientId,
         "jaicf.session.new" to requestContext.newSession,
-        "session.id" to sessionId
+        "session.id" to sessionId,
     )
 
     val parentSpan = sessionRootSpan.takeUnless { it == TelemetrySpan.NoOp }
@@ -65,27 +63,27 @@ suspend inline fun <T> BotEngine.runWithTelemetry(
     }
 
     return try {
-        val startHook = TelemetryStartProcessHook(
+        val startHook = TelemetryProcessHook(
             context,
             request,
             requestContext,
-            RequestLifecycleStage.START,
+            BotRequestStage.START,
             durationMillis(startedAt)
         )
-        this.hooks.triggerHook(startHook)
+        hooks.triggerHook(startHook)
         block()
     } catch (e: Throwable) {
         span.recordException(e)
         throw e
     } finally {
-        val endHook = TelemetryStartProcessHook(
+        val endHook = TelemetryProcessHook(
             context,
             request,
             requestContext,
-            RequestLifecycleStage.END,
+            BotRequestStage.END,
             durationMillis(startedAt)
         )
-        this.hooks.triggerHook(endHook)
+        hooks.triggerHook(endHook)
 
         if (span != TelemetrySpan.NoOp) {
             span.close()
@@ -99,9 +97,9 @@ suspend inline fun <T> BotEngine.runWithTelemetry(
 }
 
 
-internal fun BotEngine.installTelemetryHooks(telemetryProvider: TelemetryProvider = TelemetryProvider.NoOp) {
+internal fun BotEngine.addTelemetryHooks() {
 
-    hooks.addHookAction<TelemetryStartProcessHook> {
+    hooks.addHookAction<TelemetryProcessHook> {
         TelemetryHookProcessor.handleRequestLifecycle(telemetryProvider, this)
     }
 
@@ -124,8 +122,8 @@ internal fun BotEngine.installTelemetryHooks(telemetryProvider: TelemetryProvide
 
 private object TelemetryHookProcessor {
 
-    fun handleRequestLifecycle(telemetryProvider: TelemetryProvider, hook: TelemetryStartProcessHook) {
-        if (hook.stage == RequestLifecycleStage.START) {
+    fun handleRequestLifecycle(telemetryProvider: TelemetryProvider, hook: TelemetryProcessHook) {
+        if (hook.stage == BotRequestStage.START) {
             val name = "jaicf.request.start"
             val attributes = mapOf(
                 "jaicf.request.input" to hook.request.input,

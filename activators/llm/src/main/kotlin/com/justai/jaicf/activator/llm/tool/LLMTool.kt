@@ -7,10 +7,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
-import com.justai.jaicf.activator.llm.telemetry.ToolExecuteHook
-import com.justai.jaicf.activator.llm.telemetry.withTelemetryHook
+import com.justai.jaicf.activator.llm.telemetry.LLMToolExecuteHook
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.telemetry.runWithTelemetry
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 
 typealias LLMToolFunction<T> = suspend LLMToolCallContext<T>.() -> Any?
@@ -70,13 +70,13 @@ open class LLMTool<T>(
             "llm.tool.arguments" to (context.call.arguments?.toString() ?: "")
         )
 
-        val hook = ToolExecuteHook(
+        val hook = LLMToolExecuteHook(
             context.context,
             context.request,
             baseAttributes
         )
 
-        return withTelemetryHook(hook) {
+        return runWithTelemetry(hook) {
             context.block()
         }
     }

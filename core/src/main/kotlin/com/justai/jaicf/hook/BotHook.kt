@@ -1,10 +1,11 @@
 package com.justai.jaicf.hook
 
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.MutableBotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.RequestContext
+import com.justai.jaicf.context.currentState
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.exceptions.BotExecutionException
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -114,26 +115,13 @@ data class AnyErrorHook(
     override val exception: BotException,
 ) : BotPreProcessHook, BotExceptionHandlingHook
 
-enum class RequestLifecycleStage { START, END }
 
-data class TelemetryStartProcessHook(
-    override val context: BotContext,
-    val request: BotRequest,
-    val requestContext: RequestContext,
-    val stage: RequestLifecycleStage,
-    val durationMs: Double = 0.0,
-) : BotHook
-
-enum class HookStage {
-    START,
-    FINISH,
-    ERROR
+suspend fun triggerBotHook(hook: BotHook) {
+    BotEngine.current()?.hooks?.triggerHook(hook)
 }
 
-interface TelemetryHook : BotHook {
-    val stage: HookStage
-    val exception: Throwable?
-        get() = null
-
-    fun withStage(stage: HookStage, exception: Throwable? = null): TelemetryHook
+suspend inline fun triggerBotHook(context: BotContext, hookFactory: (State) -> BotHook) {
+    context.currentState()?.let { state ->
+        triggerBotHook(hookFactory(state))
+    }
 }

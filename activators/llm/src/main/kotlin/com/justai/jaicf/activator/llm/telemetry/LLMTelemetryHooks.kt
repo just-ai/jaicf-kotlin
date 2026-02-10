@@ -4,26 +4,26 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.BotActionHook
-import com.justai.jaicf.hook.HookStage
-import com.justai.jaicf.hook.TelemetryHook
+import com.justai.jaicf.telemetry.TelemetryHookStage
+import com.justai.jaicf.telemetry.TelemetryHook
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
 import com.openai.models.completions.CompletionUsage
 
-enum class HookType {
-    AGENT_INVOKE,
+enum class LLMHookType {
+    ACTION_INVOKE,
     LLM_CALL,
     TOOL_CALL,
     TOOL_CALLS,
     STREAMING,
-    TOOL_EXECUTE
+    TOOL_EXECUTE,
 }
 
 interface LLMTelemetryHook : TelemetryHook {
-    val hookType: HookType
+    val type: LLMHookType
 }
 
-interface LifecycleHook : LLMTelemetryHook, BotActionHook {
+interface LLMLifecycleHook : LLMTelemetryHook, BotActionHook {
     override val state: State
     override val context: BotContext
     override val request: BotRequest
@@ -31,7 +31,7 @@ interface LifecycleHook : LLMTelemetryHook, BotActionHook {
     override val activator: ActivatorContext
     val attributes: Map<String, Any?>
 
-    override fun withStage(stage: HookStage, exception: Throwable?): LifecycleHook
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMLifecycleHook
 }
 
 interface SimpleLifecycleHook : LLMTelemetryHook {
@@ -39,22 +39,22 @@ interface SimpleLifecycleHook : LLMTelemetryHook {
     val request: BotRequest
     val attributes: Map<String, Any?>
 
-    override fun withStage(stage: HookStage, exception: Throwable?): SimpleLifecycleHook
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): SimpleLifecycleHook
 }
 
-data class AgentInvokeHook(
+data class LLMActionHook(
     override val state: State,
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: HookStage = HookStage.START,
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
     override val exception: Throwable? = null,
-) : LifecycleHook {
-    override val hookType: HookType = HookType.AGENT_INVOKE
+) : LLMLifecycleHook {
+    override val type: LLMHookType = LLMHookType.ACTION_INVOKE
 
-    override fun withStage(stage: HookStage, exception: Throwable?): AgentInvokeHook =
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMActionHook =
         copy(stage = stage, exception = exception)
 }
 
@@ -65,81 +65,81 @@ data class LLMCallHook(
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: HookStage = HookStage.START,
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
     override val exception: Throwable? = null,
     val completionUsage: CompletionUsage? = null,
-) : LifecycleHook {
-    override val hookType: HookType = HookType.LLM_CALL
+) : LLMLifecycleHook {
+    override val type: LLMHookType = LLMHookType.LLM_CALL
 
-    override fun withStage(stage: HookStage, exception: Throwable?): LLMCallHook =
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMCallHook =
         copy(stage = stage, exception = exception)
 
     fun withCompletionUsage(usage: CompletionUsage?): LLMCallHook =
         copy(completionUsage = usage)
 }
 
-data class ToolCallHook(
+data class LLMToolCallHook(
     override val state: State,
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: HookStage = HookStage.START,
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
     override val exception: Throwable? = null,
-) : LifecycleHook {
-    override val hookType: HookType = HookType.TOOL_CALL
+) : LLMLifecycleHook {
+    override val type: LLMHookType = LLMHookType.TOOL_CALL
 
-    override fun withStage(stage: HookStage, exception: Throwable?): ToolCallHook =
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMToolCallHook =
         copy(stage = stage, exception = exception)
 }
 
-data class ToolCallsHook(
+data class LLMToolCallsHook(
     override val state: State,
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: HookStage = HookStage.START,
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
     override val exception: Throwable? = null,
-) : LifecycleHook {
-    override val hookType: HookType = HookType.TOOL_CALLS
+) : LLMLifecycleHook {
+    override val type: LLMHookType = LLMHookType.TOOL_CALLS
 
-    override fun withStage(stage: HookStage, exception: Throwable?): ToolCallsHook =
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMToolCallsHook =
         copy(stage = stage, exception = exception)
 }
 
-data class StreamingHook(
+data class LLMStreamingHook(
     override val state: State,
     override val context: BotContext,
     override val request: BotRequest,
     override val reactions: Reactions,
     override val activator: ActivatorContext,
     override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: HookStage = HookStage.START,
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
     override val exception: Throwable? = null,
-) : LifecycleHook {
-    override val hookType: HookType = HookType.STREAMING
+) : LLMLifecycleHook {
+    override val type: LLMHookType = LLMHookType.STREAMING
 
-    override fun withStage(stage: HookStage, exception: Throwable?): StreamingHook =
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMStreamingHook =
         copy(stage = stage, exception = exception)
 }
 
-data class ToolExecuteHook(
+data class LLMToolExecuteHook(
     override val context: BotContext,
     override val request: BotRequest,
     override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: HookStage = HookStage.START,
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
     override val exception: Throwable? = null,
 ) : SimpleLifecycleHook {
-    override val hookType: HookType = HookType.TOOL_EXECUTE
+    override val type: LLMHookType = LLMHookType.TOOL_EXECUTE
 
-    override fun withStage(stage: HookStage, exception: Throwable?): ToolExecuteHook =
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMToolExecuteHook =
         copy(stage = stage, exception = exception)
 }
 
-data class HandoffStartHook(
+data class LLMHandoffHook(
     override val state: State,
     override val context: BotContext,
     override val request: BotRequest,
@@ -147,4 +147,3 @@ data class HandoffStartHook(
     override val activator: ActivatorContext,
     val attributes: Map<String, Any?> = emptyMap(),
 ) : BotActionHook
-

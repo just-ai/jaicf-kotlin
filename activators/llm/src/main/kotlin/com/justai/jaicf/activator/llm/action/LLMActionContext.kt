@@ -11,8 +11,7 @@ import com.justai.jaicf.activator.llm.LLMToolCallHook
 import com.justai.jaicf.activator.llm.LLMToolCallsHook
 import com.justai.jaicf.activator.llm.ifLLMMemory
 import com.justai.jaicf.activator.llm.telemetry.LLMCallHook
-import com.justai.jaicf.activator.llm.telemetry.StreamingHook
-import com.justai.jaicf.activator.llm.telemetry.triggerHook
+import com.justai.jaicf.activator.llm.telemetry.LLMStreamingHook
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCall
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
@@ -22,7 +21,8 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.hook.HookStage
+import com.justai.jaicf.hook.triggerBotHook
+import com.justai.jaicf.telemetry.TelemetryHookStage
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.stream
 import com.openai.core.JsonField
@@ -87,14 +87,14 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     internal suspend fun LLMContext.startStream() = withActiveJob {
         completed = null
         acc = ChatCompletionAccumulator.create()
-        triggerHook(context) { state ->
+        triggerBotHook(context) { state ->
             LLMCallHook(
                 state, context, request, reactions, activator,
                 attributes = mapOf(
                     "llm.model" to (props.model ?: ""),
                     "llm.tools.size" to (props.tools?.size ?: 0)
                 ),
-                stage = HookStage.START
+                stage = TelemetryHookStage.START
             )
         }
         response = api.createStreaming(params)
@@ -127,8 +127,8 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 var finished = false
                 val chunks = mutableListOf<ChatCompletionChunk>()
 
-                triggerHook(context) { state ->
-                    StreamingHook(state, context, request, reactions, activator, stage = HookStage.START)
+                triggerBotHook(context) { state ->
+                    LLMStreamingHook(state, context, request, reactions, activator, stage = TelemetryHookStage.START)
                 }
                 
                 try {
@@ -173,17 +173,17 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                     val finalContent = runCatching { message().content().getOrNull() }.getOrNull()
                     val truncatedContent = finalContent?.take(2_000)
 
-                    triggerHook(context) { state ->
-                        StreamingHook(
+                    triggerBotHook(context) { state ->
+                        LLMStreamingHook(
                             state, context, request, reactions, activator,
                             attributes = mapOf("llm.response" to truncatedContent),
-                            stage = HookStage.FINISH
+                            stage = TelemetryHookStage.FINISH
                         )
                     }
-                    triggerHook(context) { state ->
+                    triggerBotHook(context) { state ->
                         LLMCallHook(
                             state, context, request, reactions, activator,
-                            stage = HookStage.FINISH,
+                            stage = TelemetryHookStage.FINISH,
                             completionUsage = usage
                         )
                     }
@@ -305,7 +305,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 }
             } ?: "Error: no tool found with name ${function.name()}"
         ).also { result ->
-            triggerHook(context) { state ->
+            triggerBotHook(context) { state ->
                 LLMToolCallHook(state, context, request, reactions, activator, result)
             }
         }
@@ -341,7 +341,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 .forEach(::addMessage)
         }.build()
 
-        triggerHook(context) { state ->
+        triggerBotHook(context) { state ->
             LLMToolCallsHook(state, context, request, reactions, activator, toolCallResults)
         }
 
