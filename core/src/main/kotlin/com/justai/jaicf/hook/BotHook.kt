@@ -1,9 +1,11 @@
 package com.justai.jaicf.hook
 
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.MutableBotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.currentState
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.exceptions.BotExecutionException
 import com.justai.jaicf.helpers.logging.WithLogger
@@ -112,3 +114,14 @@ data class AnyErrorHook(
     override val reactions: Reactions,
     override val exception: BotException,
 ) : BotPreProcessHook, BotExceptionHandlingHook
+
+
+suspend fun triggerBotHook(hook: BotHook) {
+    BotEngine.current()?.hooks?.triggerHook(hook)
+}
+
+suspend inline fun triggerBotHook(context: BotContext, hookFactory: (State) -> BotHook) {
+    context.currentState()?.let { state ->
+        triggerBotHook(hookFactory(state))
+    }
+}

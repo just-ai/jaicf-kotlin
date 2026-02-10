@@ -12,6 +12,7 @@ dependencies {
     core()
     implementation(project(":activators:llm"))
     implementation(libs.jline)
+    implementation(project(":telemetry:opentelemetry"))
 
     testImplementation(testFixtures(project(":activators:llm")))
     testImplementation(libs.junit.jupiter.api)

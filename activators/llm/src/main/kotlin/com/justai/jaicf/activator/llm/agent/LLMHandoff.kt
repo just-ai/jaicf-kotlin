@@ -4,17 +4,19 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMProps
+import com.justai.jaicf.activator.llm.telemetry.LLMHandoffHook
 import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.activator.llm.withSystemMessage
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.StrictActivatorContext
 import com.justai.jaicf.helpers.context.tempProperty
 import com.justai.jaicf.helpers.kotlin.ifTrue
+import com.justai.jaicf.hook.triggerBotHook
 import com.justai.jaicf.logging.GoReaction
 import com.justai.jaicf.plugin.PathValue
 import com.justai.jaicf.reactions.Reactions
 import com.openai.models.chat.completions.ChatCompletionMessageParam
-import kotlin.coroutines.coroutineContext
 
 
 private val HANDOFF_PROMPT_PREFIX = """
@@ -60,14 +62,27 @@ private val LLMAgent.handoffTool
             throw IllegalArgumentException("You try to hand off the same conversation back in cycle")
         }
 
+        val handoffAttributes = mapOf(
+            "llm.handoff.from.agent" to name,
+            "llm.handoff.to.agent" to agentName,
+            "llm.handoff.messages.count" to messages.size,
+        )
+
         interrupt {
-            val state = agentStateName(agentName)
+            val stateName = agentStateName(agentName)
             val model = BotEngine.current()?.model
-            if (model == null) {
-                throw IllegalStateException("Scenario model is not available in current context")
-            }
-            model.states.keys.find { it.endsWith(state) }?.also { path ->
-                context.handoffChain = context.handoffChain + (name to snapshot)
+                ?: throw IllegalStateException("Scenario model is not available in current context")
+            model.states.keys.find { it.endsWith(stateName) }?.also { path ->
+                context.handoffChain += (name to snapshot)
+
+                triggerBotHook(context) { state ->
+                    LLMHandoffHook(
+                        state, context, request,
+                        reactions = Reactions().apply { botContext = context },
+                        activator = object : StrictActivatorContext() {},
+                        attributes = handoffAttributes,
+                    )
+                }
                 reactions.handoff(path, messages)
             } ?: throw IllegalArgumentException("Agent not found [$agentName]")
         }

@@ -1,5 +1,8 @@
 package com.justai.jaicf.context
 
+import com.justai.jaicf.BotEngine
+import com.justai.jaicf.model.state.State
+
 /**
  * Class that contains a required data for request processing. The instance of this class is available fro each request in [ActionContext].
  * Here are scoped mutable properties available to store the arbitrary user-related data during the scenario execution.
@@ -75,3 +78,6 @@ data class BotContext(
 internal object BotContextKeys {
     const val IS_NEW_USER_KEY = "com/justai/jaicf/core/context/isNewUser"
 }
+
+suspend fun BotContext.currentState(): State? =
+    BotEngine.current()?.model?.states?.get(dialogContext.currentState)

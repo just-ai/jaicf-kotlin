@@ -29,6 +29,7 @@ modelcontextprotocol = "0.7.2"
 lexruntimev2 = "2.32.4"
 grpc-okhttp = "1.73.0"
 google-dialogflow = "4.74.0"
+otel = "1.43.0"
 
 [libraries]
 github-release = { module = "com.github.breadmoirai:github-release", version.ref = "github" }
@@ -86,6 +87,9 @@ lexruntimev2 = { module = "software.amazon.awssdk:lexruntimev2", version.ref = "
 google-dialogflow = { module = "com.google.cloud:google-cloud-dialogflow", version.ref = "google-dialogflow"}
 grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpc-okhttp"}
 
+opentelemetry-api = { module = "io.opentelemetry:opentelemetry-api", version.ref = "otel" }
+opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk", version.ref = "otel" }
+opentelemetry-sdk-trace = { module = "io.opentelemetry:opentelemetry-sdk-trace", version.ref = "otel" }
 
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "jUnit" }

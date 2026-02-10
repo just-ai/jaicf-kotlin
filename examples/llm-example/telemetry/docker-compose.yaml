@@ -1,0 +1,19 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    command: [ "--query.ui-config", "/etc/jaeger/ui.json" ]
+    configs:
+      - source: ui_config
+        target: /etc/jaeger/ui.json
+
+configs:
+  ui_config:
+    content: |
+      {
+        "themes": {
+          "enabled": true
+        }
+      }

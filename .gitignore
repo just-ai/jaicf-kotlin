@@ -7,4 +7,5 @@ build/
 managers/mapdb/.mapdb
 /docs/.sass-cache/
 /docs/_site/
+bin/
 .DS_Store
