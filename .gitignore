@@ -8,3 +8,4 @@ managers/mapdb/.mapdb
 /docs/.sass-cache/
 /docs/_site/
 .DS_Store
+*out*

@@ -1,25 +1,20 @@
 package com.justai.jaicf.channel.telegram
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.bot
 import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.animation
-import com.github.kotlintelegrambot.dispatcher.audio
-import com.github.kotlintelegrambot.dispatcher.callbackQuery
-import com.github.kotlintelegrambot.dispatcher.contact
-import com.github.kotlintelegrambot.dispatcher.document
-import com.github.kotlintelegrambot.dispatcher.game
-import com.github.kotlintelegrambot.dispatcher.location
-import com.github.kotlintelegrambot.dispatcher.photos
-import com.github.kotlintelegrambot.dispatcher.preCheckoutQuery
-import com.github.kotlintelegrambot.dispatcher.sticker
-import com.github.kotlintelegrambot.dispatcher.text
-import com.github.kotlintelegrambot.dispatcher.video
-import com.github.kotlintelegrambot.dispatcher.videoNote
-import com.github.kotlintelegrambot.dispatcher.voice
+import com.github.kotlintelegrambot.dispatcher.*
+import com.github.kotlintelegrambot.entities.ParseMode
 import com.github.kotlintelegrambot.entities.Update
 import com.github.kotlintelegrambot.logging.LogLevel
-import com.github.kotlintelegrambot.network.serialization.GsonFactory
-import com.github.kotlintelegrambot.updater.Updater
+import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
@@ -29,12 +24,19 @@ import com.justai.jaicf.channel.invocationapi.getRequestTemplateFromResources
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
+import com.justai.jaicf.channel.telegram.aggregation.AggregationConfig
+import com.justai.jaicf.channel.telegram.aggregation.TelegramRequestAggregator
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
-import java.util.UUID
+import com.justai.jaicf.channel.telegram.streaming.TelegramStreamProcessor
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.runBlocking
+import java.util.*
 import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class TelegramChannel(
@@ -42,83 +44,189 @@ class TelegramChannel(
     private val telegramBotToken: String,
     private val telegramApiUrl: String = "https://api.telegram.org/",
     private val telegramLogLevel: LogLevel = LogLevel.None,
-    private val requestExecutor: Executor = Executors.newFixedThreadPool(10)
+    private val requestDispatcher: CoroutineDispatcher = DefaultRequestExecutor.asCoroutineDispatcher(),
+    private val streamProcessorFactory: TelegramStreamProcessorFactory = DefaultStreamProcessorFactory,
+    private val aggregation: AggregationConfig? = AggregationConfig(),
+    private val defaultParseMode: ParseMode = ParseMode.MARKDOWN,
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
-    private val gson = GsonFactory.createForApiClient()
-    private var liveChatProvider: JaicpLiveChatProvider? = null
-    private lateinit var botUpdater: Updater
+    val mapper: JsonMapper = JsonMapper.builder()
+        .addModule(kotlinModule())
+        .addModule(Jdk8Module())
+        .addModule(JavaTimeModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .build()
 
-    private val bot = bot {
+    private var liveChatProvider: JaicpLiveChatProvider? = null
+
+    private val requestAggregator: TelegramRequestAggregator? = if (aggregation != null) {
+        TelegramRequestAggregator(
+            scope = CoroutineScope(requestDispatcher + SupervisorJob()),
+            config = aggregation,
+        )
+    } else null
+
+    val bot: Bot = bot {
         apiUrl = telegramApiUrl.withTrailingSlash()
         token = telegramBotToken
-        botUpdater = updater
         logLevel = telegramLogLevel
-
-        botUpdater.startCheckingUpdates()
 
         dispatch {
             fun process(request: TelegramBotRequest) {
-                requestExecutor.execute {
-                    botApi.process(
+                botApi.process(
+                    request,
+                    TelegramReactions(
+                        bot,
                         request,
-                        TelegramReactions(bot, request, liveChatProvider),
-                        RequestContext.fromHttp(request.update.httpBotRequest)
-                    )
-                }
+                        liveChatProvider,
+                        requestDispatcher,
+                        streamProcessorFactory,
+                        defaultParseMode
+                    ),
+                    RequestContext.fromHttp(request.update.httpBotRequest)
+                )
             }
 
             text {
-                process(TelegramTextRequest(update, message))
+                val textRequest = TelegramTextRequest(update, message)
+
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(textRequest) { aggregated ->
+                            process(aggregated)
+                        }
+                    } else {
+                        process(textRequest)
+                    }
+                }
             }
 
             callbackQuery {
                 val message = callbackQuery.message ?: return@callbackQuery
+                // Callback queries are not aggregated - process immediately
                 process(TelegramQueryRequest(update, message, callbackQuery.data))
             }
 
             location {
-                process(TelegramLocationRequest(update, message, location))
+                val request = TelegramLocationRequest(update, message, location)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             contact {
-                process(TelegramContactRequest(update, message, contact))
+                val request = TelegramContactRequest(update, message, contact)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             audio {
-                process(TelegramAudioRequest(update, message, media))
+                val request = TelegramAudioRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             document {
-                process(TelegramDocumentRequest(update, message, media))
+                val request = TelegramDocumentRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             animation {
-                process(TelegramAnimationRequest(update, message, media))
+                val request = TelegramAnimationRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             game {
-                process(TelegramGameRequest(update, message, media))
+                val request = TelegramGameRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             photos {
-                process(TelegramPhotosRequest(update, message, media))
+                val request = TelegramPhotosRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             sticker {
-                process(TelegramStickerRequest(update, message, media))
+                val request = TelegramStickerRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             video {
-                process(TelegramVideoRequest(update, message, media))
+                val request = TelegramVideoRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             videoNote {
-                process(TelegramVideoNoteRequest(update, message, media))
+                val request = TelegramVideoNoteRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             voice {
-                process(TelegramVoiceRequest(update, message, media))
+                val request = TelegramVoiceRequest(update, message, media)
+                runBlocking(requestDispatcher) {
+                    if (requestAggregator != null) {
+                        requestAggregator.addRequest(request) { process(it) }
+                    } else {
+                        process(request)
+                    }
+                }
             }
 
             preCheckoutQuery {
@@ -132,9 +240,13 @@ class TelegramChannel(
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
-        val update = gson.fromJson(request.receiveText(), Update::class.java)
+        val update = mapper.readValue<Update>(request.receiveText())
         update.httpBotRequest = request
-        bot.processUpdate(update)
+
+        runBlocking(requestDispatcher) {
+            bot.processUpdate(update)
+        }
+
         return HttpBotResponse.accepted()
     }
 
@@ -146,25 +258,46 @@ class TelegramChannel(
 
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val generatedRequest = generateRequestFromTemplate(request)
-        val update = gson.fromJson(generatedRequest, Update::class.java) ?: return
+        val update = mapper.readValue<Update?>(generatedRequest) ?: return
         val message = update.message ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider), requestContext)
+        botApi.process(
+            telegramRequest,
+            TelegramReactions(
+                bot,
+                telegramRequest,
+                liveChatProvider,
+                requestDispatcher,
+                streamProcessorFactory,
+                defaultParseMode
+            ),
+            requestContext
+        )
     }
 
     fun run() {
-        botUpdater.stopCheckingUpdates()
         bot.startPolling()
     }
 
     companion object : JaicpCompatibleAsyncChannelFactory {
+        val DefaultStreamProcessorFactory =
+            TelegramStreamProcessorFactory { api, chatId, debounceMs, dispatcher, parseMode ->
+                TelegramStreamProcessor(api, chatId, debounceMs, dispatcher, parseMode)
+            }
+
         override val channelType = "telegram"
         override fun create(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider,
-        ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").apply {
+        ): JaicpCompatibleAsyncBotChannel = TelegramChannel(
+            botApi,
+            telegramApiUrl = apiUrl,
+            telegramBotToken = "",
+            requestDispatcher = DefaultRequestExecutor.asCoroutineDispatcher()
+        ).apply {
             this.liveChatProvider = liveChatProvider
+            this.bot.startPolling()
         }
 
         private const val REQUEST_TEMPLATE_PATH = "/TelegramRequestTemplate.json"
@@ -179,9 +312,17 @@ class TelegramChannel(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider
-        ): JaicpCompatibleAsyncBotChannel = TelegramChannel(botApi, "", apiUrl, logLevel, executor).apply {
-            this.liveChatProvider = liveChatProvider
-        }
+        ): JaicpCompatibleAsyncBotChannel =
+            TelegramChannel(
+                botApi,
+                "",
+                apiUrl,
+                logLevel,
+                executor.asCoroutineDispatcher()
+            ).apply {
+                this.liveChatProvider = liveChatProvider
+                this.bot.startPolling()
+            }
 
         override val channelType: String = "telegram"
     }
