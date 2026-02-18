@@ -29,6 +29,7 @@ modelcontextprotocol = "0.7.2"
 lexruntimev2 = "2.32.4"
 grpc-okhttp = "1.73.0"
 google-dialogflow = "4.74.0"
+jtokkit = "1.1.0"
 
 [libraries]
 github-release = { module = "com.github.breadmoirai:github-release", version.ref = "github" }
@@ -85,6 +86,7 @@ modelcontextprotocol = { module = "io.modelcontextprotocol:kotlin-sdk", version.
 lexruntimev2 = { module = "software.amazon.awssdk:lexruntimev2", version.ref = "lexruntimev2"}
 google-dialogflow = { module = "com.google.cloud:google-cloud-dialogflow", version.ref = "google-dialogflow"}
 grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpc-okhttp"}
+jtokkit = { module = "com.knuddels:jtokkit", version.ref = "jtokkit" }
 
 
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jUnit" }

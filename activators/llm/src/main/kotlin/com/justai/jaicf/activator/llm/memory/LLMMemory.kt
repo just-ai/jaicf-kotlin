@@ -1,7 +1,6 @@
-package com.justai.jaicf.activator.llm
+package com.justai.jaicf.activator.llm.memory
 
 import com.justai.jaicf.context.BotContext
-import kotlin.jvm.optionals.getOrNull
 import com.openai.models.chat.completions.ChatCompletionMessageParam as Message
 
 typealias MessagesTransform = (List<Message>) -> List<Message>
@@ -41,22 +40,6 @@ class LLMMemory(
 fun BotContext.llmMemory(key: String, transform: MessagesTransform? = null) =
     LLMMemory(this, key, transform)
 
-fun withSystemMessage(message: String): MessagesTransform =
-    withSystemMessage({message})
-
-fun withSystemMessage(producer: () -> String): MessagesTransform = { messages ->
-    val msg = LLMMessage.system(producer.invoke())
-    if (messages.isEmpty()) {
-        listOf(msg)
-    } else {
-        messages.toMutableList().apply {
-            val idx = indexOfFirst { it.isSystem() }
-            if (idx != -1) set(idx, msg)
-            else add(msg)
-        }.toList()
-    }
-}
-
 fun List<Message>.ifLLMMemory(block: (memory: LLMMemory) -> Unit) =
     apply {
         if (this is LLMMemory) {
@@ -72,19 +55,4 @@ fun List<Message>?.transform(
     } else {
         messages.transform(transform)
     }
-}
-
-fun List<Message>?.withSystemMessage(name: String, message: String) = transform { messages ->
-    val msg = LLMMessage.system {
-        name(name)
-        content(message)
-    }
-    val idx = messages.indexOfLast { it.isSystem() && it.asSystem().name().getOrNull() == name }
-    messages.toMutableList().apply {
-        if (idx != -1) {
-            set(idx, msg)
-        } else {
-            add(indexOfLast { it.isSystem() } + 1, msg)
-        }
-    }.toList()
 }

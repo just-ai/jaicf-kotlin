@@ -3,12 +3,8 @@ package com.justai.jaicf.activator.llm
 import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.justai.jaicf.activator.llm.DefaultLLMProps
-import com.justai.jaicf.activator.llm.LLMPropsBuilder
 import com.justai.jaicf.activator.llm.agent.LLMAgent
-import com.justai.jaicf.activator.llm.llmMemory
-import com.justai.jaicf.activator.llm.withProps
-import com.justai.jaicf.activator.llm.withSystemMessage
+import com.justai.jaicf.activator.llm.memory.transformers.withSystemMessage
 import com.justai.jaicf.api.QueryBotRequest
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.manager.InMemoryBotContextManager

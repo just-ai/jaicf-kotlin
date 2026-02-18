@@ -2,7 +2,7 @@ package com.justai.jaicf.examples.llm.props
 
 import com.justai.jaicf.activator.llm.createLLMProps
 import com.justai.jaicf.activator.llm.llmMemory
-import com.justai.jaicf.activator.llm.withSystemMessage
+import com.justai.jaicf.activator.llm.memory.transformers.withSystemMessage
 import com.justai.jaicf.examples.llm.tools.CalcTool
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

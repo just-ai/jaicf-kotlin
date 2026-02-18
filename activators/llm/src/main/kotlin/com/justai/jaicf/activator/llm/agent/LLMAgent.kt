@@ -4,6 +4,10 @@ import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
 import com.justai.jaicf.activator.llm.action.DefaultLLMActionBlock
 import com.justai.jaicf.activator.llm.action.LLMActionBlock
+import com.justai.jaicf.activator.llm.memory.LLMMemory
+import com.justai.jaicf.activator.llm.memory.ifLLMMemory
+import com.justai.jaicf.activator.llm.memory.transformers.withSystemMessage
+import com.justai.jaicf.activator.llm.memory.transformers.withTokenLimit
 import com.justai.jaicf.activator.llm.scenario.DefaultLLMOnlyIf
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.tool.*
@@ -23,16 +27,10 @@ import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.reactions.Reactions
 import com.openai.client.OpenAIClient
 import com.openai.core.JsonValue
+import com.openai.models.ChatModel
 import java.util.concurrent.Executor
 import kotlin.jvm.optionals.getOrNull
 
-
-private val DefaultAgentToolParams: LLMToolParameters = {
-    str("input", "Request text", true)
-}
-
-fun agentStateName(agentName: String) = "/Agent/$agentName"
-fun LLMAgent.withProps(builder: LLMPropsBuilder) = props.withProps(builder)
 
 open class LLMAgent(
     open val name: String,
@@ -55,13 +53,14 @@ open class LLMAgent(
     constructor(
         name: String,
         model: String? = null,
+        instructions: String? = null,
+        contextSize: Long? = null,
+        maxTokens: Long? = null,
         temperature: Double? = null,
         topP: Double? = null,
-        maxTokens: Long? = null,
         frequencyPenalty: Double? = null,
         presencePenalty: Double? = null,
         responseFormat: Class<*>? = null,
-        instructions: String? = null,
         tools: List<LLMTool<*>>? = null,
         client: OpenAIClient? = null,
         onlyIf: ActivationRule.OnlyIfContext.() -> Boolean = DefaultLLMOnlyIf,
@@ -80,9 +79,7 @@ open class LLMAgent(
             setResponseFormat(responseFormat)
             setClient(client)
             setTools(tools)
-            setMessages(
-                llmMemory(name, instructions?.let { withSystemMessage(it) })
-            )
+            setMessages(agentMemory(name, model, instructions, contextSize))
         }
     )
 
@@ -104,7 +101,7 @@ open class LLMAgent(
                 onlyIf = onlyIf,
                 block = action,
                 props = withProps {
-                    messages = messages ?: llmMemory(name)
+                    messages = messages ?: agentMemory(name, model, contextSize = 32_000)
                     setupHandoffProps(this@LLMAgent)
                 }
             )
@@ -120,7 +117,7 @@ open class LLMAgent(
             handoffs.forEach {
                 next = it.appendTo(next, appended + state)
             }
-            return next
+            next
         }
     }
 
@@ -186,3 +183,22 @@ open class LLMAgent(
             .joinToString("\n") { it.text }
     }
 }
+
+private val DefaultAgentToolParams: LLMToolParameters = {
+    str("input", "Request text", true)
+}
+
+fun agentStateName(agentName: String) = "/Agent/$agentName"
+fun LLMAgent.withProps(builder: LLMPropsBuilder) = props.withProps(builder)
+
+private fun LLMProps.Builder.agentMemory(
+    key: String,
+    model: String? = null,
+    instructions: String? = null,
+    contextSize: Long? = null,
+) = llmMemory(key, instructions?.let { withSystemMessage(it) })
+    .let { memory ->
+        contextSize?.let {
+            memory.withTokenLimit(it, model?.let { model -> ChatModel.of(model) } ?: DefaultLLMModel)
+        } ?: memory
+    }

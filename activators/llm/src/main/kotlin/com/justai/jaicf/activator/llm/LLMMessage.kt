@@ -11,6 +11,8 @@ object LLMMessage {
         get() = ChatCompletionAssistantMessageParam.builder()
     val systemBuilder
         get() = ChatCompletionSystemMessageParam.builder()
+    val developerBuilder
+        get() = ChatCompletionDeveloperMessageParam.builder()
     val toolBuilder
         get() = ChatCompletionToolMessageParam.builder()
 
@@ -34,12 +36,24 @@ object LLMMessage {
         assistantBuilder.content(content).build()
     )
 
+    fun assistant(builder: ChatCompletionAssistantMessageParam.Builder.() -> Unit) = ChatCompletionMessageParam.ofAssistant(
+        assistantBuilder.apply(builder).build()
+    )
+
     fun system(content: String) = ChatCompletionMessageParam.ofSystem(
         systemBuilder.content(content).build()
     )
 
     fun system(builder: ChatCompletionSystemMessageParam.Builder.() -> Unit) = ChatCompletionMessageParam.ofSystem(
         systemBuilder.apply(builder).build()
+    )
+
+    fun developer(content: String) = ChatCompletionMessageParam.ofDeveloper(
+        developerBuilder.content(content).build()
+    )
+
+    fun developer(builder: ChatCompletionDeveloperMessageParam.Builder.() -> Unit) = ChatCompletionMessageParam.ofDeveloper(
+        developerBuilder.apply(builder).build()
     )
 
     fun tool(result: LLMToolResult) = ChatCompletionMessageParam.ofTool(

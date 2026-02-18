@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
+import com.justai.jaicf.activator.llm.memory.ifLLMMemory
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
