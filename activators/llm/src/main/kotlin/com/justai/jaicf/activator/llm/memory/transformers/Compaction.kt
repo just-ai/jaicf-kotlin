@@ -2,7 +2,7 @@ package com.justai.jaicf.activator.llm.memory.transformers
 
 import com.justai.jaicf.activator.llm.DefaultLLMModel
 import com.justai.jaicf.activator.llm.LLMMessage
-import com.justai.jaicf.activator.llm.action.DefaultOpenAIClient
+import com.justai.jaicf.activator.llm.action.LLMActionAPI
 import com.justai.jaicf.activator.llm.memory.MessagesTransform
 import com.justai.jaicf.activator.llm.memory.transform
 import com.knuddels.jtokkit.Encodings
@@ -41,7 +41,7 @@ fun withCompaction(
     maxTokens: Long,
     countingModel: ModelType = ModelType.GPT_4O_MINI,
     compactionModel: String = DefaultLLMModel.asString(),
-    client: OpenAIClient = DefaultOpenAIClient,
+    client: OpenAIClient = LLMActionAPI.get.defaultClient,
     compactionPrompt: String = DEFAULT_COMPACTION_PROMPT,
     registry: EncodingRegistry = Encodings.newDefaultEncodingRegistry(),
 ): MessagesTransform {
@@ -70,7 +70,7 @@ fun List<ChatCompletionMessageParam>?.withCompaction(
     maxTokens: Long,
     countingModel: ModelType = ModelType.GPT_4O_MINI,
     compactionModel: String = DefaultLLMModel.asString(),
-    client: OpenAIClient = DefaultOpenAIClient,
+    client: OpenAIClient = LLMActionAPI.get.defaultClient,
     compactionPrompt: String = DEFAULT_COMPACTION_PROMPT,
     registry: EncodingRegistry = Encodings.newDefaultEncodingRegistry(),
 ): List<ChatCompletionMessageParam> {
