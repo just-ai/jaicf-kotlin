@@ -11,36 +11,6 @@ import org.junit.jupiter.api.DisplayName
 
 @DisplayName("withTokenLimit tests")
 class TokenLimitTest {
-
-    // Helper function to create assistant message with tool calls
-    private fun toolCall(toolCallId: String, functionName: String, arguments: String) =
-        ChatCompletionMessageParam.ofAssistant(
-            ChatCompletionAssistantMessageParam.builder()
-                .toolCalls(
-                    listOf(
-                        ChatCompletionMessageToolCall.builder()
-                            .id(toolCallId)
-                            .function(
-                                ChatCompletionMessageToolCall.Function.builder()
-                                    .name(functionName)
-                                    .arguments(arguments)
-                                    .build()
-                            )
-                            .build()
-                    )
-                )
-                .build()
-        )
-
-    // Helper function to create tool result message
-    private fun toolResult(toolCallId: String, content: String) =
-        ChatCompletionMessageParam.ofTool(
-            ChatCompletionToolMessageParam.builder()
-                .toolCallId(toolCallId)
-                .content(content)
-                .build()
-        )
-
     @Test
     @DisplayName("Should preserve system messages regardless of token limit")
     fun testSystemMessagesAlwaysPreserved() {
@@ -343,7 +313,7 @@ class TokenLimitTest {
         // Verify the tool result matches the tool call
         val assistantMsg = result[1].asAssistant()
         val toolMsg = result[2].asTool()
-        assertEquals(toolCallId, assistantMsg.toolCalls().get().first().id())
+        assertEquals(toolCallId, assistantMsg.toolCalls().get().first().asFunction().id())
         assertEquals(toolCallId, toolMsg.toolCallId())
     }
 
@@ -379,31 +349,9 @@ class TokenLimitTest {
 
         val messages = listOf(
             user("Get weather and time"),
-            ChatCompletionMessageParam.ofAssistant(
-                ChatCompletionAssistantMessageParam.builder()
-                    .toolCalls(
-                        listOf(
-                            ChatCompletionMessageToolCall.builder()
-                                .id(toolCallId1)
-                                .function(
-                                    ChatCompletionMessageToolCall.Function.builder()
-                                        .name("get_weather")
-                                        .arguments("{\"location\":\"NYC\"}")
-                                        .build()
-                                )
-                                .build(),
-                            ChatCompletionMessageToolCall.builder()
-                                .id(toolCallId2)
-                                .function(
-                                    ChatCompletionMessageToolCall.Function.builder()
-                                        .name("get_time")
-                                        .arguments("{\"timezone\":\"EST\"}")
-                                        .build()
-                                )
-                                .build()
-                        )
-                    )
-                    .build()
+            toolCall(
+                ToolCallSpec(toolCallId1, "get_weather", "{\"location\":\"NYC\"}"),
+                ToolCallSpec(toolCallId2, "get_time", "{\"timezone\":\"EST\"}"),
             ),
             toolResult(toolCallId1, "Sunny, 75°F"),
             toolResult(toolCallId2, "3:45 PM EST")

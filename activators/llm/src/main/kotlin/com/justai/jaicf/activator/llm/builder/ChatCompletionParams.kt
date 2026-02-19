@@ -6,6 +6,7 @@ import com.justai.jaicf.activator.llm.tool.LLMToolWithConfirmation
 import com.openai.core.JsonValue
 import com.openai.models.FunctionParameters
 import com.openai.models.chat.completions.ChatCompletionCreateParams
+import com.openai.models.chat.completions.ChatCompletionTool
 import kotlin.collections.plus
 import kotlin.collections.toMutableMap
 import kotlin.jvm.optionals.getOrNull
@@ -15,7 +16,7 @@ internal fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatComp
     if (props.tools.isNullOrEmpty()) return params
 
     params.tools().getOrNull()?.mapIndexed { index, tool ->
-        val function = tool.function()
+        val function = tool.asFunction().function()
         val propTool = props.tools[index]
 
         val parameters = function._parameters().let { parameters ->
@@ -25,7 +26,7 @@ internal fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatComp
         val properties = parameters["properties"]?.asObject()?.get() ?: emptyMap()
 
         if (properties.isEmpty() || propTool.requiresConfirmation || propTool.definition.name != function.name() || propTool.definition.description != function.description().getOrNull()) {
-            tool.toBuilder().function(
+            tool.asFunction().toBuilder().function(
                 function.toBuilder()
                     .strict(!propTool.requiresConfirmation && !properties.isEmpty())
                     .name(propTool.definition.name)
@@ -46,9 +47,9 @@ internal fun ChatCompletionCreateParams.Builder.build(props: LLMProps): ChatComp
                     }.build()
             ).build()
         } else {
-            tool
+            tool.asFunction()
         }
-    }?.also(::tools)
+    }?.map(ChatCompletionTool::ofFunction)?.also(::tools)
 
     return build()
 }

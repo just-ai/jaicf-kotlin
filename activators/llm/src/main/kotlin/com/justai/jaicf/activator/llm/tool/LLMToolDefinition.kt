@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.openai.models.FunctionDefinition
 import com.openai.models.FunctionParameters
+import com.openai.models.chat.completions.ChatCompletionFunctionTool
 import com.openai.models.chat.completions.ChatCompletionTool
 
 sealed interface LLMToolDefinition<T> {
@@ -31,7 +32,7 @@ sealed interface LLMToolDefinition<T> {
         override val description: String? = description ?: parametersType.toolDescription
 
         val asChatCompletionTool
-            get() = ChatCompletionTool.builder().function(asFunctionDefinition).build()
+            get() = ChatCompletionFunctionTool.builder().function(asFunctionDefinition).build()
 
         val asFunctionDefinition: FunctionDefinition
             get() = FunctionDefinition.builder().apply {

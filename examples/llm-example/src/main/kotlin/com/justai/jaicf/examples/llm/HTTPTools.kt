@@ -28,15 +28,15 @@ private val ListRecipesTool = llmTool<ListRecipes>(
 @JsonClassDescription("Get recipe details")
 private class GetRecipe(val id: Int)
 
+@JsonClassDescription("Add recipe ingredients to cart")
+private class AddToCart(val id: Int)
+
 // Tool to get particular recipe details from HTTP service
 private val GetRecipeTool = llmTool<GetRecipe>(
     httpGet("https://dummyjson.com/recipes/{id}")  // Placeholders can be used to fill URL parts with tool argument fields
 )
 
-private val AddToCartTool = llmTool<GetRecipe>(
-    name = "AddToCart",
-    description = "Add recipe ingredients to cart"
-) {
+private val AddToCartTool = llmTool<AddToCart> {
     "Ingredients of recipe [${call.arguments.id}] added to cart"
 }
 
@@ -56,7 +56,7 @@ private val agent = LLMAgent(
         if (llm.hasToolCalls()) {
             llm.toolCalls()
                 .joinToString(", ", ">> CALLING ", "...") {
-                    it.function().name()
+                    it.asFunction().function().name()
                 }.also(::println)
         }
     }

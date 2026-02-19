@@ -5,39 +5,12 @@ import com.justai.jaicf.activator.llm.LLMMessage.developer
 import com.justai.jaicf.activator.llm.LLMMessage.system
 import com.justai.jaicf.activator.llm.LLMMessage.user
 import com.justai.jaicf.activator.llm.openai.OpenAITest
-import com.openai.models.chat.completions.ChatCompletionAssistantMessageParam
 import com.openai.models.chat.completions.ChatCompletionMessageParam
-import com.openai.models.chat.completions.ChatCompletionMessageToolCall
-import com.openai.models.chat.completions.ChatCompletionToolMessageParam
 import kotlin.jvm.optionals.getOrNull
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-private fun toolCallAssistant(toolCallId: String, toolName: String, arguments: String = "{}") =
-    ChatCompletionMessageParam.ofAssistant(
-        ChatCompletionAssistantMessageParam.builder()
-            .toolCalls(listOf(
-                ChatCompletionMessageToolCall.builder()
-                    .id(toolCallId)
-                    .function(
-                        ChatCompletionMessageToolCall.Function.builder()
-                            .name(toolName)
-                            .arguments(arguments)
-                            .build()
-                    )
-                    .build()
-            ))
-            .build()
-    )
-
-private fun toolResult(toolCallId: String, content: String) =
-    ChatCompletionMessageParam.ofTool(
-        ChatCompletionToolMessageParam.builder()
-            .toolCallId(toolCallId)
-            .content(content)
-            .build()
-    )
 
 private fun List<ChatCompletionMessageParam>.hasSummary() =
     any { it.isAssistant() && it.asAssistant().name().getOrNull() == CONVERSATION_SUMMARY_MESSAGE }
@@ -117,11 +90,11 @@ class CompactionTest {
     fun testToolResultsDroppedBeforeCompaction() {
         val messages = listOf(
             user("What is the weather in Paris?"),
-            toolCallAssistant("call_1", "get_weather", "{\"city\":\"Paris\"}"),
+            toolCall("call_1", "get_weather", "{\"city\":\"Paris\"}"),
             toolResult("call_1", "Sunny, 22 degrees"),
             assistant("It is sunny and 22 degrees in Paris."),
             user("And in Tokyo?"),
-            toolCallAssistant("call_2", "get_weather", "{\"city\":\"Tokyo\"}"),
+            toolCall("call_2", "get_weather", "{\"city\":\"Tokyo\"}"),
             toolResult("call_2", "Cloudy, 18 degrees"),
             assistant("It is cloudy and 18 degrees in Tokyo."),
         )
@@ -136,11 +109,11 @@ class CompactionTest {
     fun testToolCallOnlyAssistantMessagesDropped() {
         val messages = listOf(
             user("What is the weather in Paris?"),
-            toolCallAssistant("call_1", "get_weather", "{\"city\":\"Paris\"}"),
+            toolCall("call_1", "get_weather", "{\"city\":\"Paris\"}"),
             toolResult("call_1", "Sunny, 22 degrees"),
             assistant("It is sunny and 22 degrees in Paris."),
             user("And in Tokyo?"),
-            toolCallAssistant("call_2", "get_weather", "{\"city\":\"Tokyo\"}"),
+            toolCall("call_2", "get_weather", "{\"city\":\"Tokyo\"}"),
             toolResult("call_2", "Cloudy, 18 degrees"),
             assistant("It is cloudy and 18 degrees in Tokyo."),
         )
@@ -155,22 +128,7 @@ class CompactionTest {
     fun testAssistantWithTextAndToolCallsPreservesText() {
         val messages = listOf(
             user("Search for something and explain."),
-            ChatCompletionMessageParam.ofAssistant(
-                ChatCompletionAssistantMessageParam.builder()
-                    .content("Let me search for that right away.")
-                    .toolCalls(listOf(
-                        ChatCompletionMessageToolCall.builder()
-                            .id("call_3")
-                            .function(
-                                ChatCompletionMessageToolCall.Function.builder()
-                                    .name("search")
-                                    .arguments("{\"q\":\"something\"}")
-                                    .build()
-                            )
-                            .build()
-                    ))
-                    .build()
-            ),
+            toolCall("call_3", "search", "{\"q\":\"something\"}"),
             toolResult("call_3", "Some result"),
             assistant("Here is what I found based on the search."),
             user("Can you summarize that for me please?"),

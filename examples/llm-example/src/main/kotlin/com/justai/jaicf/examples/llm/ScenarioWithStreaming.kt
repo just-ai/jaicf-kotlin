@@ -35,7 +35,7 @@ private val scenario = Scenario {
 
                 // Printing tool calls statuses
                 if (llm.hasToolCalls()) {
-                    reactions.say("CALLING: ${llm.toolCalls().joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
+                    reactions.say("CALLING: ${llm.toolCalls().joinToString { "${it.asFunction().function().name()}(${it.asFunction().function().arguments()})" }}")
                 }
             }
         }

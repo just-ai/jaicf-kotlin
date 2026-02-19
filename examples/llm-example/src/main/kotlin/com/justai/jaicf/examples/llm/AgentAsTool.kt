@@ -1,6 +1,9 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.activator.llm.agent.LLMAgent
+import com.justai.jaicf.activator.llm.llmMemory
+import com.justai.jaicf.activator.llm.memory.transformers.withCompaction
+import com.justai.jaicf.activator.llm.memory.transformers.withTokenLimit
 import com.justai.jaicf.activator.llm.tool.llmTool
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.tools.Calculator
@@ -38,7 +41,9 @@ private val mainAgent = LLMAgent("main", {
 
         // Show tool calls status
         llm.toolCalls()
-            .joinToString { "${it.function().name()}(${it.function().arguments()})" }
+            .joinToString {
+                "${it.asFunction().function().name()}(${it.asFunction().function().arguments()})"
+            }
             .takeIf { it.isNotEmpty() }
             ?.also { reactions.say(">> CALLING: $it") }
 

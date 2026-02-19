@@ -198,7 +198,7 @@ private fun trimConversation(
                     if (!toolCalls.isNullOrEmpty()) {
                         // Check if this tool call matches our tool result
                         val toolResultId = msg.asTool().toolCallId()
-                        if (toolCalls.any { it.id() == toolResultId }) {
+                        if (toolCalls.any { it.asFunction().id() == toolResultId }) {
                             val assistantTokens = candidate.countTokens(encoding, modelName)
                             val pairTokens = tokens + assistantTokens
 
@@ -337,8 +337,9 @@ fun ChatCompletionMessageParam.countTokens(
 
             // Count tool call tokens
             assistant.toolCalls().getOrNull()?.forEach { toolCall ->
-                tokens += encoding.countTokens(toolCall.function().name())
-                tokens += encoding.countTokens(toolCall.function().arguments())
+                val function = toolCall.asFunction().function()
+                tokens += encoding.countTokens(function.name())
+                tokens += encoding.countTokens(function.arguments())
                 tokens += 3 // Structure tokens per tool call
             }
 
