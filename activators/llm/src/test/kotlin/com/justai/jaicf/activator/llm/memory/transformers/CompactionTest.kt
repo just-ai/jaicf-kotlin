@@ -44,8 +44,8 @@ private fun List<ChatCompletionMessageParam>.hasSummary() =
 
 
 @OpenAITest
-@DisplayName("withCompaction LLM tests")
-class WithCompactionLLMTest {
+@DisplayName("withCompaction tests")
+class CompactionTest {
 
     private val conversationAboveThreshold = listOf(
         user("Hello, my name is Alice and I am planning a trip to Tokyo next month with a budget of 150 USD per night."),
