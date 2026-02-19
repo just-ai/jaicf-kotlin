@@ -12,8 +12,8 @@ import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 
 
-private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
-private val DefaultProps = LLMProps(
+val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
+val DefaultProps = LLMProps(
     client = DefaultOpenAIClient,
     withUsages = true,
 )

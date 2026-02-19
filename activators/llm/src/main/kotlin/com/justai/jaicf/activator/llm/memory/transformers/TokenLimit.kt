@@ -124,7 +124,7 @@ fun List<ChatCompletionMessageParam>?.withTokenLimit(
     model: ChatModel,
     registry: EncodingRegistry = Encodings.newDefaultEncodingRegistry(),
 ): List<ChatCompletionMessageParam> {
-    val modelName = model.value().name
+    val modelName = model.asString()
     val modelType = ModelType.fromName(modelName).getOrNull() ?: ModelType.GPT_4O_MINI
     val encoding = registry.getEncodingForModel(modelType)
     return transform { messages -> trimMessages(messages, maxTokens, encoding, modelName) }

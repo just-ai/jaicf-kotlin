@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.DisplayName
 
 @DisplayName("withTokenLimit tests")
-class WithTokenLimitTest {
+class TokenLimitTest {
 
     // Helper function to create assistant message with tool calls
     private fun toolCall(toolCallId: String, functionName: String, arguments: String) =
