@@ -11,59 +11,59 @@ data class GetModelResponse(
 @Serializable
 data class ModelRecord(
     val id: Id,
-    val modelAccountName: String,
-    val modelAccountDisplayName: String,
-    val modelName: String,
-    val displayName: String,
-    val displayAuthor: String,
-    val imageAccountId: Int,
+    val modelAccountName: String = "",
+    val modelAccountDisplayName: String = "",
+    val modelName: String = "",
+    val displayName: String = "",
+    val displayAuthor: String = "",
+    val imageAccountId: Int = 0,
     val imageId: Int,
-    val image: ImageData,
-    val modelGroupId: Int,
-    val modelGroupName: String,
-    val trainingDatasetAccountId: Int,
-    val trainingDatasetId: Int,
-    val trainingDataset: TrainingDataset,
-    val trainingDatasetType: String,
-    val trainingFitConfigId: Int,
-    val trainingFitConfig: TrainingFitConfig,
-    val fitTemplateModelId: Int,
-    val composite: Boolean,
-    val prototype: Boolean,
-    val supportedTemplates: List<Int>,
-    val rejectRequestsIfInactive: Boolean,
-    val taskType: String,
-    val trainingModelAccountId: Int,
-    val trainingModelId: Int,
-    val trainingModelName: String,
-    val trainingType: String,
-    val config: String,
-    val env: String,
-    val additionalFlags: List<String>,
-    val fittable: Boolean,
-    val hostingType: String,
-    val persistentVolumes: List<PersistentVolume>,
-    val dataImageMounts: List<DataImageMount>,
-    val resourceGroup: String,
-    val timeouts: Timeouts,
-    val resourceLimits: ResourceLimits,
-    val retriesConfig: RetriesConfig,
-    val batchesConfig: BatchesConfig,
-    val caching: Caching,
-    val priorityQueue: PriorityQueue,
-    val autoScalingConfiguration: AutoScalingConfiguration,
-    val shortDescription: String,
-    val languages: List<String>,
-    val minInstancesCount: Int,
-    val publicSettings: PublicSettings,
-    val billingSettings: BillingSettings,
-    val httpSettings: HttpSettings,
-    val archiveSettings: ArchiveSettings,
-    val restrictedImageAccess: Boolean,
-    val lastActivity: Long,
-    val favorite: Boolean,
-    val state: String,
-    val deploymentPatch: String
+    val image: ImageData? = null,
+    val modelGroupId: Int? = null,
+    val modelGroupName: String? = null,
+    val trainingDatasetAccountId: Int? = null,
+    val trainingDatasetId: Int? = null,
+    val trainingDataset: TrainingDataset? = null,
+    val trainingDatasetType: String? = null,
+    val trainingFitConfigId: Int? = null,
+    val trainingFitConfig: TrainingFitConfig? = null,
+    val fitTemplateModelId: Int? = null,
+    val composite: Boolean = false,
+    val prototype: Boolean = false,
+    val supportedTemplates: List<Int>? = null,
+    val rejectRequestsIfInactive: Boolean = false,
+    val taskType: String = "",
+    val trainingModelAccountId: Int? = null,
+    val trainingModelId: Int? = null,
+    val trainingModelName: String? = null,
+    val trainingType: String? = null,
+    val config: String = "",
+    val env: String = "",
+    val additionalFlags: List<String>? = null,
+    val fittable: Boolean = false,
+    val hostingType: String = "",
+    val persistentVolumes: List<PersistentVolume>? = null,
+    val dataImageMounts: List<DataImageMount>? = null,
+    val resourceGroup: String = "",
+    val timeouts: Timeouts? = null,
+    val resourceLimits: ResourceLimits? = null,
+    val retriesConfig: RetriesConfig? = null,
+    val batchesConfig: BatchesConfig? = null,
+    val caching: Caching? = null,
+    val priorityQueue: PriorityQueue? = null,
+    val autoScalingConfiguration: AutoScalingConfiguration? = null,
+    val shortDescription: String = "",
+    val languages: List<String>? = null,
+    val minInstancesCount: Int = 0,
+    val publicSettings: PublicSettings? = null,
+    val billingSettings: BillingSettings? = null,
+    val httpSettings: HttpSettings? = null,
+    val archiveSettings: ArchiveSettings? = null,
+    val restrictedImageAccess: Boolean = false,
+    val lastActivity: Long? = null,
+    val favorite: Boolean = false,
+    val state: String = "",
+    val deploymentPatch: String? = null
 )
 
 @Serializable
@@ -185,19 +185,19 @@ data class PriorityQueue(
 
 @Serializable
 data class AutoScalingConfiguration(
-    val minInstanceCount: Int,
-    val maxInstanceCount: Int,
-    val scheduledInstanceCountSettings: List<ScheduledInstanceCountSetting>,
-    val cooldownDurationMinutes: Int,
-    val scaleUpRequestsPerMinuteThreshold: Int,
-    val scaleDownRequestsPerMinuteThreshold: Int,
-    val scaleUpLatencyThresholdMs: Int,
-    val scaleDownLatencyThresholdMs: Int,
-    val scaleUpCpuThresholdMilliCores: Int,
-    val scaleDownCpuThresholdMilliCores: Int,
-    val scaleUpActiveRequestsThreshold: Int,
-    val scaleDownActiveRequestsThreshold: Int,
-    val enabled: Boolean
+    val minInstanceCount: Int? = null,
+    val maxInstanceCount: Int? = null,
+    val scheduledInstanceCountSettings: List<ScheduledInstanceCountSetting>? = null,
+    val cooldownDurationMinutes: Int? = null,
+    val scaleUpRequestsPerMinuteThreshold: Int? = null,
+    val scaleDownRequestsPerMinuteThreshold: Int? = null,
+    val scaleUpLatencyThresholdMs: Int? = null,
+    val scaleDownLatencyThresholdMs: Int? = null,
+    val scaleUpCpuThresholdMilliCores: Int? = null,
+    val scaleDownCpuThresholdMilliCores: Int? = null,
+    val scaleUpActiveRequestsThreshold: Int? = null,
+    val scaleDownActiveRequestsThreshold: Int? = null,
+    val enabled: Boolean = false
 )
 
 @Serializable
@@ -228,25 +228,25 @@ data class PublicSettings(
 
 @Serializable
 data class BillingSettings(
-    val isBillingEnabled: Boolean,
-    val billingUnit: String,
-    val billingUnitPriceInNanoToken: Long,
-    val billingUnitPriceInCurrency: Long,
-    val freeUnitQuota: Long
+    val isBillingEnabled: Boolean = false,
+    val billingUnit: String? = null,
+    val billingUnitPriceInNanoToken: Long? = null,
+    val billingUnitPriceInCurrency: Double? = null,
+    val freeUnitQuota: Long? = null
 )
 
 @Serializable
 data class HttpSettings(
-    val isHttpEnabled: Boolean,
-    val httpPort: Int,
-    val mainPageEndpoint: String,
-    val httpInterfaceOnly: Boolean
+    val isHttpEnabled: Boolean = false,
+    val httpPort: Int? = null,
+    val mainPageEndpoint: String? = null,
+    val httpInterfaceOnly: Boolean = false
 )
 
 @Serializable
 data class ArchiveSettings(
-    val enabled: Boolean,
-    val numberOfArchivedRequests: Int,
-    val encryptionEnabled: Boolean,
-    val rsaPemPublicKey: String
+    val enabled: Boolean = false,
+    val numberOfArchivedRequests: Int = 0,
+    val encryptionEnabled: Boolean = false,
+    val rsaPemPublicKey: String? = null
 )

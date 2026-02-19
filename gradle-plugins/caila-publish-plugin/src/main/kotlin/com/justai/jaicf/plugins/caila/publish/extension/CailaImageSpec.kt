@@ -25,14 +25,21 @@ open class CailaImageSpec
         @get:Input
         val name: Property<String> = objectFactory.property()
 
-        @get:Input
-        val accessMode: Property<String> = objectFactory.property()
-
         /**
-         * If true, existing image with same name will be deleted
-         * along with attached models before re-publishing. Default false.
+         * Access mode for the image.
+         * Default: "private"
          */
         @get:Input
         @Optional
-        val allowDestructiveUpdate: Property<Boolean> = objectFactory.property()
+        val accessMode: Property<String> = objectFactory.property<String>()
+            .convention("private")
+
+        /**
+         * If true, existing image with same name will be deleted
+         * along with attached models before re-publishing. Default true.
+         */
+        @get:Input
+        @Optional
+        val allowDestructiveUpdate: Property<Boolean> = objectFactory.property<Boolean>()
+            .convention(true)
     }

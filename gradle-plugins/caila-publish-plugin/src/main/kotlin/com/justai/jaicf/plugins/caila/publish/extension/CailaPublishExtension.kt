@@ -16,6 +16,20 @@ open class CailaPublishExtension @Inject constructor(
 ) {
     val url: Property<String> = objectFactory.property<String>().convention(CAILA_BASE_URL)
 
+    // Top-level properties for simplified configuration
+    val modelName: Property<String> = objectFactory.property()
+    val httpPort: Property<Int> = objectFactory.property()
+
+    // Optionally: Image access settings
+    val imageAccessMode: Property<String> = objectFactory.property<String>().convention("private")
+    val allowDestructiveUpdate: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
+
+    // Optionally: Model metadata
+    val displayName: Property<String> = objectFactory.property()
+    val displayAuthor: Property<String> = objectFactory.property()
+    val shortDescription: Property<String> = objectFactory.property()
+    val taskType: Property<String> = objectFactory.property<String>().convention("custom")
+
     val httpClient: HttpClientSpec = objectFactory.newInstance(HttpClientSpec::class.java)
     val image: CailaImageSpec = objectFactory.newInstance(CailaImageSpec::class.java)
     val model: CailaModelSpec = objectFactory.newInstance(CailaModelSpec::class.java)

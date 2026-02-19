@@ -16,7 +16,7 @@ constructor(
     private val objectFactory: ObjectFactory,
 ) {
     @get:Input
-    val modelName: Property<String> = objectFactory.property()
+    val name: Property<String> = objectFactory.property()
 
     /**
      * Task type for the model.
@@ -149,7 +149,7 @@ constructor(
 
     @get:Input
     @Optional
-    val httpSettings: Property<HttpSettingsSpec> = objectFactory.property()
+    val http: Property<HttpSettingsSpec> = objectFactory.property()
 
     @get:Input
     @Optional
@@ -201,23 +201,6 @@ constructor(
         this.autoScalingConfiguration.set(spec)
     }
 
-    fun httpSettings(action: Action<HttpSettingsSpec>) {
-        val spec = objectFactory.newInstance(HttpSettingsSpec::class.java)
-        action.execute(spec)
-        this.httpSettings.set(spec)
-    }
-
-    fun archiveSettings(action: Action<ArchiveSettingsSpec>) {
-        val spec = objectFactory.newInstance(ArchiveSettingsSpec::class.java)
-        action.execute(spec)
-        this.archiveSettings.set(spec)
-    }
-
-    fun publicSettings(action: Action<PublicSettingsSpec>) {
-        val spec = objectFactory.newInstance(PublicSettingsSpec::class.java)
-        action.execute(spec)
-        this.publicSettings.set(spec)
-    }
 
     fun persistentVolume(action: Action<PersistentVolumeSpec>) {
         val spec = objectFactory.newInstance(PersistentVolumeSpec::class.java)
@@ -243,12 +226,24 @@ constructor(
 
     @get:Input
     @Optional
-    val s3Settings: Property<S3SettingsSpec> = objectFactory.property()
+    val s3: Property<S3SettingsSpec> = objectFactory.property()
 
-    fun s3Settings(action: Action<S3SettingsSpec>) {
+    fun s3(action: Action<S3SettingsSpec>) {
         val spec = objectFactory.newInstance(S3SettingsSpec::class.java)
         action.execute(spec)
-        this.s3Settings.set(spec)
+        this.s3.set(spec)
+    }
+
+    fun http(action: Action<HttpSettingsSpec>) {
+        val spec = objectFactory.newInstance(HttpSettingsSpec::class.java)
+        action.execute(spec)
+        this.http.set(spec)
+    }
+
+    fun publicSettings(action: Action<PublicSettingsSpec>) {
+        val spec = objectFactory.newInstance(PublicSettingsSpec::class.java)
+        action.execute(spec)
+        this.publicSettings.set(spec)
     }
 }
 
@@ -260,9 +255,18 @@ open class S3SettingsSpec
 constructor(
     private val objectFactory: ObjectFactory,
 ) {
+    /**
+     * Enable or disable S3 context manager.
+     * Default: true (enabled if credentials are available)
+     */
     @get:Input
     @Optional
-    val keyPrefix: Property<String> = objectFactory.property<String>()
+    val enabled: Property<Boolean> = objectFactory.property<Boolean>()
+        .convention(true)
+
+    @get:Input
+    @Optional
+    val prefix: Property<String> = objectFactory.property<String>()
         .convention("contexts")
 
     @get:Input
@@ -501,23 +505,31 @@ open class HttpSettingsSpec
     constructor(
         objectFactory: ObjectFactory,
     ) {
+        @get:Input
+        @get:Optional
         val isHttpEnabled: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
-        
+
         /**
          * Port that the application web server listens on.
          */
-        val httpPort: Property<Int> = objectFactory.property()
-        
+        @get:Input
+        val port: Property<Int> = objectFactory.property()
+
         /**
          * Path for availability check (healthcheck endpoint).
+         * Default: "/health"
          */
+        @get:Input
+        @get:Optional
         val mainPageEndpoint: Property<String> = objectFactory.property()
-        
+
         /**
          * Enable if the service does not support gRPC API.
          * Disable if the service is developed based on MLP SDK.
          */
-        val httpInterfaceOnly: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
+        @get:Input
+        @get:Optional
+        val interfaceOnly: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
     }
 
 /**

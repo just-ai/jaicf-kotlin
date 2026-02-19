@@ -77,52 +77,99 @@ dockerEmail=<your-email>
 
 ## Usage
 
-### Option 1: Automatic Image Build (Docker Extension)
+### QuickStart - Minimal Configuration
 
-Configure the plugin to build and push Docker images automatically:
+The minimal configuration you need to get started:
 
 ```kotlin
 cailaPublish {
-    httpClient {
-        logLevel.set("INFO")
-        connectTimeoutMs.set(10_000)
-        requestTimeoutMs.set(35_000)
-        keepAliveTimeMs.set(35_000)
-    }
-
     docker {
-        registryCredentials {
-            url.set("https://index.docker.io/v1/")
-            username.set(providers.gradleProperty("dockerUsername"))
-            password.set(providers.gradleProperty("dockerPassword"))
-            email.set(providers.gradleProperty("dockerEmail"))
-        }
-        
+        // REQUIRED: Java application settings
         javaApplication {
             mainClassName = "com.example.MainKt"
-            baseImage = "eclipse-temurin:17-jre-alpine"
             images = listOf("myuser/myapp:1.0.0")
-            ports = listOf(8080)
-            jvmArgs = listOf("-Xms256m", "-Xmx2048m")
         }
     }
-    
+
     image {
-        name.set("my-caila-image")              // Required
-        accessMode.set(AccessMode.PRIVATE.mode)
+        name = "my-caila-image"
     }
-    
+
     model {
-        modelName.set("my-model")               // Required
-        taskType.set(TaskType.CUSTOM.tag)
-        
-        httpSettings {
-            httpPort.set(8080)                  // Required when httpSettings used
-            mainPageEndpoint.set("/health")     // Required when httpSettings used
+        name = "my-model"
+
+        http {
+            port = 8080
         }
-        
+    }
+}
+```
+
+**That's it!** All other settings have sensible defaults.
+
+**Default values:**
+- `registryCredentials.url`: `https://index.docker.io/v1/` (Docker Hub) with credentials from `gradle.properties`
+- `baseImage`: `eclipse-temurin:17-jre-alpine` (Java 17 JRE on Alpine Linux)
+
+### Option 1: Automatic Image Build (Docker Extension)
+
+Full example with optional settings:
+
+```kotlin
+cailaPublish {
+    docker {
+        // OPTIONAL: Docker registry credentials
+        // If not specified, defaults to Docker Hub with credentials from gradle.properties
+        registryCredentials {
+            url.set("https://docker-hub.just-ai.com")  // Custom registry URL
+            username.set(providers.gradleProperty("dockerUsername"))
+            password.set(providers.gradleProperty("dockerPassword"))
+            email.set(providers.gradleProperty("dockerEmail"))  // Optional
+        }
+
+        // REQUIRED: Java application settings
+        javaApplication {
+            mainClassName = "com.example.MainKt"
+            baseImage = "eclipse-temurin:17-jre-alpine"  // Optional, defaults to eclipse-temurin:17-jre-alpine
+            images = listOf("myuser/myapp:1.0.0")
+            ports = listOf(8080)  // Optional
+            jvmArgs = listOf("-Xms256m", "-Xmx2048m")  // Optional
+        }
+    }
+
+    // Optional: Image settings
+    image {
+        name = "my-caila-image"
+        accessMode = "private"
+        allowDestructiveUpdate = true
+    }
+
+    // Optional: Model settings
+    model {
+        name = "my-model"
+        taskType = "custom"  // Default: "custom"
+        displayName = "My Bot"
+        displayAuthor = "My Team"
+        shortDescription = "A conversational bot"
+
+        http {
+            port = 8080
+            mainEndpoint = "/health"
+        }
+
         publicSettings {
-            isPublic.set(true)                  // Enable public HTTP access
+            isPublic = true
+        }
+
+        resourceLimits {
+            cpuRequest = "500m"  // Default: "500m"
+            memoryLimit = "1Gi"  // Default: "1Gi"
+        }
+
+        s3 {
+            enabled = true
+            prefix = "contexts"
+            region = "ru"
         }
     }
 }
@@ -146,17 +193,16 @@ Use an existing Docker image from a registry:
 ```kotlin
 cailaPublish {
     image {
-        image.set("registry.example.com/myapp:1.0.0")  // Required
-        name.set("my-caila-image")                     // Required
-        accessMode.set(AccessMode.PRIVATE.mode)
+        image = "registry.example.com/myapp:1.0.0"
+        name = "my-caila-image"
     }
-    
+
     model {
-        modelName.set("my-model")
-        
-        httpSettings {
-            httpPort.set(8080)
-            mainPageEndpoint.set("/api/predict")
+        name = "my-model"
+
+        http {
+            port = 8080
+            mainEndpoint = "/api/predict"
         }
     }
 }
@@ -192,10 +238,10 @@ httpClient {
 
 ```kotlin
 image {
-    image.set("...")              // Docker image path (required for manual registry workflow)
-    name.set("...")               // CAILA image name (required)
-    accessMode.set("...")         // Access mode: PUBLIC or PRIVATE
-    allowDestructiveUpdate.set(true)  // Allow overwriting existing images
+    image = "..."                 // Docker image path (required for manual registry workflow)
+    name = "..."                  // CAILA image name (required)
+    accessMode = "private"        // Access mode: "public" or "private". Default: "private"
+    allowDestructiveUpdate = true // Allow overwriting existing images. Default: true
 }
 ```
 
@@ -205,28 +251,27 @@ image {
 
 ```kotlin
 model {
-    modelName.set("...")          // Required
-    taskType.set("...")           // Task type for the model. Choose 'CUSTOM' if other options don't fit. See: https://docs.caila.io/api/task-types
-    displayName.set("...")
-    displayAuthor.set("...")
-    shortDescription.set("...")
-    minInstancesCount.set(1)
-    startTimeSec.set(30.0)
-    rejectRequestsIfInactive.set(true)  // Reject requests if service is inactive. If no active instances exist and this option is enabled, the request will return an error. If disabled, the request will wait until an instance starts or timeout occurs.
-    fittable.set(false)           // Whether the service requires training on user data
-    resourceGroup.set("...")      // Resource group - a set of servers where service instances are launched
-    languages.set(listOf("ru", "kk"))  // Languages for display in the catalog. Specify each language separately
+    name = "..."                  // Required
+    taskType = "..."              // Task type for the model. Choose 'CUSTOM' if other options don't fit. See: https://docs.caila.io/api/task-types
+    displayName = "..."
+    displayAuthor = "..."
+    shortDescription = "..."
+    minInstancesCount = 1
+    startTimeSec = 30.0
+    rejectRequestsIfInactive = true  // Reject requests if service is inactive
+    fittable = false              // Whether the service requires training on user data
+    resourceGroup = "..."         // Resource group - a set of servers where service instances are launched
+    languages = listOf("ru", "kk")  // Languages for display in the catalog
 }
 ```
 
 #### HTTP Settings
 
 ```kotlin
-httpSettings {
-    isHttpEnabled.set(true)       // Default: true
-    httpPort.set(8080)            // Required. Port that the application web server listens on
-    mainPageEndpoint.set("/")     // Required. Path for availability check (healthcheck endpoint)
-    httpInterfaceOnly.set(true)   // Default: true. Enable if the service does not support gRPC API. Disable if the service is developed based on MLP SDK
+http {
+    port = 8080               // Required: Port that the application web server listens on
+    mainEndpoint = "/health"  // Required: Main page endpoint for availability check
+    interfaceOnly = true      // Default: true. Enable if the service does not support gRPC API
 }
 ```
 
@@ -266,8 +311,24 @@ These credentials are fetched automatically during model publishing and are comb
 
 **Using S3 in Your Application:**
 
+The easiest way to use CAILA S3 context manager is with the `CailaS3ContextManager` helper:
+
 ```kotlin
 // In your bot code (e.g., HelloWorldBot.kt)
+import com.justai.jaicf.context.manager.s3.CailaS3ContextManager
+
+val bot = BotEngine(
+    scenario = YourScenario,
+    defaultContextManager = CailaS3ContextManager.createOrNull() ?: InMemoryBotContextManager,
+    activators = arrayOf(...)
+)
+```
+
+`CailaS3ContextManager.createOrNull()` automatically reads all CAILA S3 environment variables and creates a configured S3BotContextManager instance. If the environment variables are not set, it returns `null` so you can fall back to another context manager.
+
+Alternatively, you can manually configure S3 context manager using environment variables:
+
+```kotlin
 import com.justai.jaicf.context.manager.s3.S3Config
 import software.amazon.awssdk.regions.Region
 import java.net.URI
@@ -294,16 +355,33 @@ val bot = BotEngine(
 
 If S3 credentials are not available from CAILA API, the plugin logs a warning and continues without S3 configuration.
 
+#### S3 Settings
+
+Configure S3 context manager settings. The plugin automatically fetches credentials from CAILA API.
+
+```kotlin
+s3 {
+    enabled = true                 // Default: true. Enable or disable S3 context manager
+    prefix = "my-bot/contexts"     // Default: "contexts". Key prefix for S3 objects
+    region = "us"                  // Default: "ru". S3 region
+}
+
+// To disable S3
+s3 {
+    enabled = false
+}
+```
+
 #### Public Access Settings
 
 ```kotlin
-publicSettings {
-    isPublic.set(true)            // Default: false
-    featured.set(false)
-    featuredListOrder.set(0)
-    hidden.set(false)
-    publicTestingAllowed.set(false)
-    showPersonalDataDisclaimer.set(false)
+public {
+    isPublic = true            // Default: false
+    featured = false
+    featuredListOrder = 0
+    hidden = false
+    publicTestingAllowed = false
+    showPersonalDataDisclaimer = false
 }
 ```
 
@@ -312,11 +390,11 @@ publicSettings {
 Resources allocated to one service instance within a resource group.
 
 ```kotlin
-resourceLimits {
-    cpuRequest.set("1000m")       // CPU millicores guaranteed to the instance (can consume more if available)
-    memoryLimit.set("2Gi")        // Amount of RAM available to the instance. If the instance exceeds the limit, it will be stopped
-    ephemeralDiskLimit.set("10Gi")  // Amount of disk memory available to the instance. If the instance exceeds the limit, it will be stopped
-    gpuRequested.set(false)       // Whether GPU is requested. Multiple instances can share one GPU
+resources {
+    cpuRequest = "500m"        // Default: "500m". CPU millicores guaranteed to the instance
+    memoryLimit = "1Gi"        // Default: "1Gi". Amount of RAM available to the instance
+    ephemeralDiskLimit = "10Gi"  // Amount of disk memory available to the instance
+    gpuRequested = false       // Whether GPU is requested. Multiple instances can share one GPU
 }
 ```
 

@@ -32,9 +32,33 @@ dependencies {
 
 ## Usage
 
+### CAILA Integration (Recommended)
+
+If you're using the [CAILA Publish Plugin](../../gradle-plugins/caila-publish-plugin), the easiest way to set up S3 context manager is with `CailaS3ContextManager`:
+
+```kotlin
+import com.justai.jaicf.BotEngine
+import com.justai.jaicf.context.manager.s3.CailaS3ContextManager
+
+val botEngine = BotEngine(
+    scenario = myScenario,
+    defaultContextManager = CailaS3ContextManager.createOrNull() ?: InMemoryBotContextManager
+)
+```
+
+`CailaS3ContextManager.createOrNull()` automatically reads S3 configuration from environment variables that are injected by the CAILA Publish Plugin:
+- `CAILA_S3_BUCKET_NAME`
+- `CAILA_S3_ACCESS_KEY`
+- `CAILA_S3_SECRET_KEY`
+- `CAILA_S3_REGION` (default: "ru")
+- `CAILA_S3_KEY_PREFIX` (default: "contexts")
+- `CAILA_S3_URL` (optional, for custom S3 endpoints)
+
+If the environment variables are not set, it returns `null` so you can fall back to another context manager.
+
 ### Basic Setup with Default Credentials
 
-The simplest way to use S3BotContextManager is with the default AWS credentials provider chain:
+You can also use S3BotContextManager directly with the default AWS credentials provider chain:
 
 ```kotlin
 import com.justai.jaicf.BotEngine

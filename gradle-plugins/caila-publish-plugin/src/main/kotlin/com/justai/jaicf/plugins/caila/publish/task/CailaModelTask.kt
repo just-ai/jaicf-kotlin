@@ -77,7 +77,7 @@ abstract class CailaModelTask : DefaultTask() {
             val client = CailaApiClient(token, baseUrl, httpClient)
 
             // Fetch S3 credentials and add them to request
-            val s3Settings = modelSpec.s3Settings.orNull
+            val s3Settings = modelSpec.s3.orNull
             val s3EnvVars = fetchS3CredentialsAsMap(client, accountId, s3Settings)
 
             val request = createRequestWithS3Credentials(
@@ -86,6 +86,22 @@ abstract class CailaModelTask : DefaultTask() {
                 spec = modelSpec,
                 s3EnvVars = s3EnvVars
             )
+
+            // Log HTTP settings for debugging
+            logger.lifecycle("HTTP Settings:")
+            logger.lifecycle("  isHttpEnabled: ${request.httpSettings?.isHttpEnabled}")
+            logger.lifecycle("  httpPort: ${request.httpSettings?.httpPort}")
+            logger.lifecycle("  mainPageEndpoint: ${request.httpSettings?.mainPageEndpoint}")
+            logger.lifecycle("  httpInterfaceOnly: ${request.httpSettings?.httpInterfaceOnly}")
+
+            // Log full request for debugging
+            try {
+                val json = kotlinx.serialization.json.Json { prettyPrint = true }
+                logger.lifecycle("Full request body:")
+                logger.lifecycle(json.encodeToString(PublishModelRequestDto.serializer(), request))
+            } catch (e: Exception) {
+                logger.warn("Could not serialize request for logging: ${e.message}")
+            }
 
             client.publishModelBlocking(accountId, request)
 
@@ -101,13 +117,20 @@ abstract class CailaModelTask : DefaultTask() {
 
     /**
      * Fetches S3 credentials from CAILA API and returns them as a map.
-     * Returns null if S3 credentials are not available or if fetch fails.
+     * Returns null if S3 is disabled, credentials are not available, or if fetch fails.
      */
     private fun fetchS3CredentialsAsMap(
         client: CailaApiClient,
         accountId: Int,
         s3Settings: com.justai.jaicf.plugins.caila.publish.extension.S3SettingsSpec?
     ): Map<String, String>? {
+        // Check if S3 is explicitly disabled
+        val isEnabled = s3Settings?.enabled?.getOrElse(true) ?: true
+        if (!isEnabled) {
+            logger.lifecycle("⚠ S3 context manager is disabled in configuration")
+            return null
+        }
+
         return try {
             logger.lifecycle("Fetching S3 credentials from CAILA API...")
             val s3Creds = client.getS3CredentialsBlocking(accountId)
@@ -116,10 +139,10 @@ abstract class CailaModelTask : DefaultTask() {
                 logger.lifecycle("✓ S3 credentials obtained")
                 logger.lifecycle("  Bucket: ${s3Creds.bucketName}")
 
-                val keyPrefix = s3Settings?.keyPrefix?.getOrElse("contexts") ?: "contexts"
+                val prefix = s3Settings?.prefix?.getOrElse("contexts") ?: "contexts"
                 val region = s3Settings?.region?.getOrElse("ru") ?: "ru"
 
-                logger.lifecycle("  Key prefix: $keyPrefix")
+                logger.lifecycle("  Key prefix: $prefix")
                 logger.lifecycle("  Region: $region")
 
                 mapOf(
@@ -127,7 +150,7 @@ abstract class CailaModelTask : DefaultTask() {
                     "CAILA_S3_ACCESS_KEY" to s3Creds.accessKey,
                     "CAILA_S3_SECRET_KEY" to s3Creds.secretKey,
                     "CAILA_S3_BUCKET_NAME" to s3Creds.bucketName,
-                    "CAILA_S3_KEY_PREFIX" to keyPrefix,
+                    "CAILA_S3_KEY_PREFIX" to prefix,
                     "CAILA_S3_REGION" to region
                 )
             } else {
@@ -179,7 +202,7 @@ abstract class CailaModelTask : DefaultTask() {
         }
 
         return PublishModelRequestDto(
-            modelName = spec.modelName.get(),
+            modelName = spec.name.get(),
             imageId = imageId,
             imageAccountId = imageAccountId,
             taskType = spec.taskType.get(),
@@ -224,7 +247,7 @@ abstract class CailaModelTask : DefaultTask() {
             autoScalingConfiguration = spec.autoScalingConfiguration.orNull?.let {
                 com.justai.jaicf.plugins.caila.publish.model.AutoScalingConfigurationDto(it)
             },
-            httpSettings = spec.httpSettings.orNull?.let {
+            httpSettings = spec.http.orNull?.let {
                 com.justai.jaicf.plugins.caila.publish.model.HttpSettingsDto(it)
             },
             archiveSettings = spec.archiveSettings.orNull?.let {
@@ -246,23 +269,23 @@ abstract class CailaModelTask : DefaultTask() {
         require(token.isNotBlank()) { "Caila API token cannot be empty" }
 
         val modelSpec = spec.get()
-        if (modelSpec.httpSettings.isPresent) {
-            val httpSettings = modelSpec.httpSettings.get()
-            require(httpSettings.httpPort.isPresent) {
-                "httpPort must be specified when httpSettings block is used"
+        if (modelSpec.http.isPresent) {
+            val httpSettings = modelSpec.http.get()
+            require(httpSettings.port.isPresent) {
+                "port must be specified when http block is used"
             }
             require(httpSettings.mainPageEndpoint.isPresent) {
-                "mainPageEndpoint must be specified when httpSettings block is used"
+                "mainEndpoint must be specified when http block is used"
             }
         }
     }
 
     private fun logPublicAccessUrl(modelSpec: CailaModelSpec, accountId: Int) {
         val publicSettings = modelSpec.publicSettings.orNull
-        val httpSettings = modelSpec.httpSettings.orNull
-        
+        val httpSettings = modelSpec.http.orNull
+
         if (publicSettings?.isPublic?.orNull == true && httpSettings?.isHttpEnabled?.orNull == true) {
-            val modelName = modelSpec.modelName.get()
+            val modelName = modelSpec.name.get()
             val endpoint = httpSettings.mainPageEndpoint.orNull ?: "/"
             val publicUrl = "https://$accountId-$modelName.app.caila.io$endpoint"
 

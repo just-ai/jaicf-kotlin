@@ -41,7 +41,7 @@ data class PublishModelRequestDto(
         imageAccountId: Int,
         spec: CailaModelSpec,
     ) : this(
-        modelName = spec.modelName.get(),
+        modelName = spec.name.get(),
         imageId = imageId,
         imageAccountId = imageAccountId,
         taskType = spec.taskType.get(),
@@ -68,7 +68,7 @@ data class PublishModelRequestDto(
         caching = spec.caching.orNull?.let { CachingDto(it) },
         priorityQueue = spec.priorityQueue.orNull?.let { PriorityQueueDto(it) },
         autoScalingConfiguration = spec.autoScalingConfiguration.orNull?.let { AutoScalingConfigurationDto(it) },
-        httpSettings = spec.httpSettings.orNull?.let { HttpSettingsDto(it) },
+        httpSettings = spec.http.orNull?.let { HttpSettingsDto(it) },
         archiveSettings = spec.archiveSettings.orNull?.let { ArchiveSettingsDto(it) },
         publicSettings = spec.publicSettings.orNull?.let { PublicSettingsDto(it) },
     )
@@ -271,9 +271,9 @@ data class HttpSettingsDto(
 ) {
     constructor(spec: HttpSettingsSpec) : this(
         isHttpEnabled = spec.isHttpEnabled.orNull,
-        httpPort = spec.httpPort.orNull,
+        httpPort = spec.port.orNull,
         mainPageEndpoint = spec.mainPageEndpoint.orNull,
-        httpInterfaceOnly = spec.httpInterfaceOnly.orNull,
+        httpInterfaceOnly = spec.interfaceOnly.orNull,
     )
 }
 
