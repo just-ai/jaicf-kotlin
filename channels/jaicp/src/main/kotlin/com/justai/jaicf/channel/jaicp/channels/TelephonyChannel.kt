@@ -34,12 +34,12 @@ class TelephonyChannel(
 ) : JaicpNativeChannel(botApi, mutedEvents) {
 
     init {
-        (botApi as? BotEngine)?.run {
-            hooks.addHookAction(bargeInProcessor::handleBotRequest)
-            hooks.addHookAction(bargeInProcessor::handleBeforeProcess)
-            hooks.addHookAction(bargeInProcessor::handleBeforeActivation)
-            hooks.addHookAction(bargeInProcessor::handleActivationError)
-            hooks.addHookAction(bargeInProcessor::handleAfterProcess)
+        (botApi as? BotEngine)?.hooks?.registerOnce(bargeInProcessor) {
+            addHookAction(bargeInProcessor::handleBotRequest)
+            addHookAction(bargeInProcessor::handleBeforeProcess)
+            addHookAction(bargeInProcessor::handleBeforeActivation)
+            addHookAction(bargeInProcessor::handleActivationError)
+            addHookAction(bargeInProcessor::handleAfterProcess)
         }
     }
 
@@ -53,6 +53,9 @@ class TelephonyChannel(
             TelephonyChannel(botApi)
     }
 
+    /**
+     * Factory for creating [TelephonyChannel] with custom parameters.
+     */
     class Factory(
         private val bargeInProcessor: BargeInProcessor = BargeInProcessor.NON_FALLBACK,
         private val defaultBargeInProperties: BargeInProperties = BargeInProperties.DEFAULT,

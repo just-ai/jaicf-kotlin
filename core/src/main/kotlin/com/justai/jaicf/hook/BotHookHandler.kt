@@ -28,6 +28,23 @@ class BotHookHandler {
 
     val actions = mutableMapOf<KClass<out BotHook>, MutableList<BotHookListener<BotHook>>>()
 
+    private val registrationKeys = mutableSetOf<Any>()
+
+    /**
+     * Registers hooks only once per key.
+     * Useful when the same hooks might be registered from multiple channel instances.
+     *
+     * @param key unique identifier for the registration (e.g., a processor instance)
+     * @param registration block that registers hooks
+     */
+    fun registerOnce(key: Any, registration: BotHookHandler.() -> Unit) {
+        synchronized(registrationKeys) {
+            if (registrationKeys.add(key)) {
+                registration()
+            }
+        }
+    }
+
     /**
      * Adds a listener for specified [BotHook]
      *
