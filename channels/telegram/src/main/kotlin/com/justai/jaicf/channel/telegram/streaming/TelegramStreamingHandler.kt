@@ -23,7 +23,12 @@ internal class TelegramStreamingHandler(
         private const val SAFE_MESSAGE_LIMIT = 3900
     }
 
-    private val textBuffer = StringBuilder()
+    // Accumulates all text for the final return value
+    private val fullTextBuffer = StringBuilder()
+
+    // Accumulates text for the current message only
+    private val currentMessageBuffer = StringBuilder()
+
     private var currentMessageId: Int? = null
     private var lastUpdateTime = 0L
 
@@ -38,66 +43,60 @@ internal class TelegramStreamingHandler(
         }
 
         finalizeCurrentMessage()
-        return textBuffer.toString()
+        return fullTextBuffer.toString()
     }
 
     private fun sendInitialMessage() {
         val message = sendMessage(config.initialPlaceholder)
         currentMessageId = message.messageId()
-        textBuffer.clear()
+        currentMessageBuffer.clear()
     }
 
     private fun appendChunk(chunk: String) {
-        textBuffer.append(chunk)
-        val currentTime = System.currentTimeMillis()
+        fullTextBuffer.append(chunk)
 
-        when {
-            shouldSplitMessage() -> splitAndContinue()
-            shouldUpdateMessage(currentTime) -> {
+        // Check if adding this chunk would exceed the limit
+        if (currentMessageBuffer.length + chunk.length > SAFE_MESSAGE_LIMIT) {
+            // Finalize current message WITHOUT this chunk
+            finalizeCurrentMessage()
+
+            // Start new message
+            val message = sendMessage(config.initialPlaceholder)
+            currentMessageId = message.messageId()
+
+            // Clear buffer and start with the current chunk
+            currentMessageBuffer.clear()
+            currentMessageBuffer.append(chunk)
+
+            lastUpdateTime = System.currentTimeMillis()
+        } else {
+            // Normal append - chunk fits in current message
+            currentMessageBuffer.append(chunk)
+            val currentTime = System.currentTimeMillis()
+
+            if (shouldUpdateMessage(currentTime)) {
                 updateCurrentMessage()
                 lastUpdateTime = currentTime
             }
         }
     }
 
-    private fun shouldSplitMessage(): Boolean {
-        return textBuffer.length > SAFE_MESSAGE_LIMIT
-    }
-
     private fun shouldUpdateMessage(currentTime: Long): Boolean {
         return currentTime - lastUpdateTime >= config.updateIntervalMs
     }
 
-    private fun splitAndContinue() {
-        finalizeCurrentMessage()
-
-        val message = sendMessage(config.initialPlaceholder)
-        currentMessageId = message.messageId()
-
-        lastUpdateTime = System.currentTimeMillis()
-    }
-
     private fun finalizeCurrentMessage() {
         currentMessageId?.let { msgId ->
-            val textToSend = getTextForCurrentMessage()
+            val textToSend = currentMessageBuffer.toString()
             if (textToSend.isNotEmpty() && textToSend != config.initialPlaceholder) {
                 updateMessage(msgId, textToSend)
             }
         }
     }
 
-    private fun getTextForCurrentMessage(): String {
-        val fullText = textBuffer.toString()
-        return if (fullText.length > TELEGRAM_MESSAGE_LIMIT) {
-            fullText.takeLast(SAFE_MESSAGE_LIMIT)
-        } else {
-            fullText
-        }
-    }
-
     private fun updateCurrentMessage() {
         currentMessageId?.let { msgId ->
-            val text = getTextForCurrentMessage()
+            val text = currentMessageBuffer.toString()
             if (text.isNotEmpty() && text != config.initialPlaceholder) {
                 updateMessage(msgId, text)
             }
