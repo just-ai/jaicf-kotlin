@@ -16,6 +16,7 @@ import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
+import com.justai.jaicf.channel.telegram.streaming.StreamConfig
 import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -25,6 +26,7 @@ class TelegramChannel(
     private val telegramBotToken: String,
     private val telegramApiUrl: String? = null,
     private val requestExecutor: Executor = DefaultRequestExecutor,
+    private val streamConfig: StreamConfig = StreamConfig(),
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
 
     private val gson = Gson()
@@ -53,7 +55,7 @@ class TelegramChannel(
             val request = createBotRequest(update) ?: return@execute
             botApi.process(
                 request,
-                TelegramReactions(bot, request, liveChatProvider),
+                TelegramReactions(bot, request, liveChatProvider, streamConfig),
                 RequestContext.fromHttp(request.update.httpBotRequest)
             )
         }
@@ -145,7 +147,7 @@ class TelegramChannel(
         val update = gson.fromJson(generatedRequest, Update::class.java) ?: return
         val message = update.message() ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider), requestContext)
+        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, streamConfig), requestContext)
     }
 
     fun run() {

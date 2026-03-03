@@ -5,9 +5,14 @@ import com.pengrad.telegrambot.model.Message
 import com.pengrad.telegrambot.model.request.*
 import com.pengrad.telegrambot.request.*
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
+import com.justai.jaicf.channel.telegram.streaming.StreamConfig
+import com.justai.jaicf.channel.telegram.streaming.TelegramStreamingHandler
+import com.justai.jaicf.helpers.logging.WithLogger
 import com.justai.jaicf.logging.*
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.reactions.StreamReactions
 import com.justai.jaicf.reactions.jaicp.JaicpCompatibleAsyncReactions
+import java.util.stream.Stream
 
 val Reactions.telegram get() = this as? TelegramReactions
 
@@ -15,14 +20,16 @@ val Reactions.telegram get() = this as? TelegramReactions
 class TelegramReactions(
     val api: TelegramBot,
     val request: TelegramBotRequest,
-    override val liveChatProvider: JaicpLiveChatProvider?
-) : Reactions(), JaicpCompatibleAsyncReactions {
+    override val liveChatProvider: JaicpLiveChatProvider?,
+    private val streamConfig: StreamConfig = StreamConfig()
+) : Reactions(), StreamReactions, JaicpCompatibleAsyncReactions, WithLogger {
 
     val chatId = request.chatId
     private val messages = mutableListOf<Message>()
 
     override fun say(text: String): SayReaction {
-        api.execute(SendMessage(chatId, text))
+        val response = api.execute(SendMessage(chatId, text))
+        response.message()?.let { messages.add(it) }
         return SayReaction.create(text)
     }
 
@@ -109,5 +116,17 @@ class TelegramReactions(
         // Note: AnswerPreCheckoutQuery in Pengrad API uses different constructors
         // For now, we only support the error message variant
         api.execute(AnswerPreCheckoutQuery(preCheckoutQueryId, errorMessage ?: ""))
+    }
+
+    override fun say(stream: Stream<String>): SayReaction {
+        val handler = TelegramStreamingHandler(
+            api = api,
+            chatId = chatId,
+            config = streamConfig,
+            onMessageSent = { message -> messages.add(message) }
+        )
+
+        val resultText = handler.processStream(stream)
+        return SayReaction.create(resultText)
     }
 }
