@@ -36,8 +36,8 @@ private const val SIGNING_KEY = "signing.keyId"
 private const val SIGNING_PASS = "signing.password"
 private const val SECRING_FILE = "signing.secretKeyRingFile"
 
-private const val RELEASE_REPO = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-private const val SNAPSHOTS_REPO = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+private const val RELEASE_REPO = "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+private const val SNAPSHOTS_REPO = "https://ossrh-staging-api.central.sonatype.com/content/repositories/snapshots/"
 
 private const val MAVEN_CENTRAL = "MavenCentral"
 
