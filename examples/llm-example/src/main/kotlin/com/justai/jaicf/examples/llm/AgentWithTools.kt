@@ -29,7 +29,9 @@ val AgentWithTools = LLMAgent(
 
         // show tool calls if any
         toolCalls().takeIf { it.isNotEmpty() }?.run {
-            reactions.say(joinToString(prefix = ">> CALLING: ") { "${it.function().name()}(${it.function().arguments()})" })
+            reactions.say(joinToString(prefix = ">> CALLING: ") {
+                "${it.asFunction().function().name()}(${it.asFunction().function().arguments()})"
+            })
         }
     }
 }

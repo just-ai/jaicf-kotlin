@@ -3,7 +3,7 @@ package com.justai.jaicf.activator.llm.agent
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolDefinition
 import com.justai.jaicf.activator.llm.tool.LLMToolFunction
-import com.justai.jaicf.activator.llm.withSystemMessage
+import com.justai.jaicf.activator.llm.memory.transformers.withSystemMessage
 
 class LLMAgentWithGoal<T>(
     agent: LLMAgent,

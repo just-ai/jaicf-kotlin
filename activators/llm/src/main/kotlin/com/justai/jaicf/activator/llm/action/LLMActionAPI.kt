@@ -12,18 +12,23 @@ import com.openai.models.chat.completions.ChatCompletionChunk
 import com.openai.models.chat.completions.ChatCompletionCreateParams
 
 
-private val DefaultOpenAIClient = OpenAIOkHttpClient.fromEnv()
-private val DefaultProps = LLMProps(
-    client = DefaultOpenAIClient,
-    withUsages = true,
-)
+private val DefaultOpenAIClient by lazy {
+    OpenAIOkHttpClient.fromEnv()
+}
+
+private val DefaultProps by lazy {
+    LLMProps(client = DefaultOpenAIClient, withUsages = true)
+}
 
 class LLMActionAPI(val defaultProps: LLMProps = DefaultProps) {
+    val defaultClient: OpenAIClient
+        get() = defaultProps.client ?: DefaultOpenAIClient
+
     fun createStreaming(
         params: ChatCompletionCreateParams,
         client: OpenAIClient? = null,
     ): StreamResponse<ChatCompletionChunk> {
-        val client = client ?: defaultProps.client ?: DefaultOpenAIClient
+        val client = client ?: this.defaultClient
         return client.chat().completions().createStreaming(params)
     }
 

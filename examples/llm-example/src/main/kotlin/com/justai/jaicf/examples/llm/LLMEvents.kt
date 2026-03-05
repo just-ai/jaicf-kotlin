@@ -26,7 +26,7 @@ private val agent = LLMAgent(
             is LLMEvent.Start -> println(">> STEP STARTED")
             is LLMEvent.ContentDelta -> print(event.delta)
             is LLMEvent.Content -> println()
-            is LLMEvent.ToolCalls -> println(">> CALLING: ${event.calls.joinToString { "${it.function().name()}(${it.function().arguments()})" }}")
+            is LLMEvent.ToolCalls -> println(">> CALLING: ${event.calls.joinToString { "${it.asFunction().function().name()}(${it.asFunction().function().arguments()})" }}")
             is LLMEvent.ToolCallResults -> println(">> RESULTS: ${event.results.joinToString("\n\t", "\n\t") { "${it.name} = ${it.result}" }}")
             is LLMEvent.Finish -> println(">> STEP FINISHED: ${event.reason}${event.usage?.let { ", ${it.totalTokens()} tokens used" } ?: ""}")
             else -> Unit

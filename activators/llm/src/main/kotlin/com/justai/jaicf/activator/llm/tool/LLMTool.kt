@@ -45,7 +45,7 @@ open class LLMTool<T>(
     val requiresConfirmation = this is LLMToolWithConfirmation
 
     internal open fun arguments(call: ChatCompletionMessageToolCall) =
-        ArgumentsMapper.readValue(call.function().arguments(), definition.parametersType)
+        ArgumentsMapper.readValue(call.asFunction().function().arguments(), definition.parametersType)
 
     open fun withConfirmation(block: LLMToolConfirmationFunction<T>) =
         LLMToolWithConfirmation.WithCustomConfirmation(this, block)

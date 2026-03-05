@@ -38,7 +38,7 @@ sealed class LLMToolWithConfirmation<T>(
         message: String? = null,
     ): LLMToolWithConfirmation<T>(tool, {
         val confirmId = ArgumentsMapper
-            .readValue(call.origin.function().arguments(), ObjectNode::class.java)
+            .readValue(call.origin.asFunction().function().arguments(), ObjectNode::class.java)
             .get(CONFIRM_FIELD)?.asText()
 
         if (confirmId.isNullOrEmpty() || !context.confirmToolCalls.contains(confirmId)) {

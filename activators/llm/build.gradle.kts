@@ -16,6 +16,7 @@ dependencies {
     api(libs.okhttp)
     api(libs.okhttp.logging.interceptor)
     api(libs.kotlinx.coroutines.core)
+    api(libs.jtokkit)
     api(libs.openai.java) {
         exclude("com.squareup.okhttp3", "okhttp")
         exclude("com.squareup.okhttp3", "logging-interceptor")
@@ -23,6 +24,7 @@ dependencies {
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.datatype.jdk8)
     implementation(libs.jackson.datatype.jsr310)
+
     implementation(libs.modelcontextprotocol)
 
     implementation(libs.kotlinx.serialization)

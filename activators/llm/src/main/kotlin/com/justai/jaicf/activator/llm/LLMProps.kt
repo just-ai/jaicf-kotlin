@@ -3,6 +3,8 @@ package com.justai.jaicf.activator.llm
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
 import com.justai.jaicf.activator.llm.mcp.McpService
 import com.justai.jaicf.activator.llm.mcp.McpServiceResponseBuilder
+import com.justai.jaicf.activator.llm.memory.MessagesTransform
+import com.justai.jaicf.activator.llm.memory.llmMemory
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStore
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStoreResponseBuilder
@@ -20,7 +22,8 @@ import com.openai.models.chat.completions.ChatCompletionStreamOptions
 typealias LLMPropsBuilder = LLMProps.Builder.() -> Unit
 typealias LLMInputBuilder = (request: BotRequest) -> List<ChatCompletionMessageParam>?
 
-val DefaultLLMProps: LLMPropsBuilder = { model = ChatModel.GPT_4O_MINI.asString() }
+val DefaultLLMModel = ChatModel.GPT_4O_MINI
+val DefaultLLMProps: LLMPropsBuilder = { model = DefaultLLMModel.asString() }
 
 fun createLLMProps(builder: LLMPropsBuilder) = builder
 

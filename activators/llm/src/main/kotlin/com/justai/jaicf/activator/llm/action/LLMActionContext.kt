@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.*
+import com.justai.jaicf.activator.llm.memory.ifLLMMemory
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActionContext
@@ -222,13 +223,14 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
 
     @Throws(LLMToolInterruptionException::class)
     suspend fun LLMContext.callTool(call: ChatCompletionMessageToolCall): LLMToolResult {
-        val function = call.function()
-        val tool = props.tools?.find { t -> t.definition.name == function.name() }
+        val function = call.asFunction()
+        val name = function.function().name()
+        val tool = props.tools?.find { t -> t.definition.name == name }
         val args = tool?.arguments(call)
 
         return LLMToolResult(
-            callId = call.id(),
-            name = function.name(),
+            callId = function.id(),
+            name = name,
             arguments = args,
             result = tool?.let { tool ->
                 try {
@@ -238,7 +240,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                             context,
                             request,
                             this,
-                            LLMToolCall(function.name(), call.id(), args!!, call)
+                            LLMToolCall(name, function.id(), args!!, call)
                         )
                     )
                 } catch (e: Exception) {
@@ -246,7 +248,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                     if (e is CancellationException) throw e
                     "Error: ${e.message}"
                 }
-            } ?: "Error: no tool found with name ${function.name()}"
+            } ?: "Error: no tool found with name $name"
         ).also { result ->
             BotEngine.current()?.run {
                 hooks.triggerHook(
@@ -271,7 +273,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
         var message = message()
         message.toolCalls().ifPresent {
             val toolCalls = message.toolCalls().get().filter { tc ->
-                toolCallResults.any { it.callId == tc.id() }
+                toolCallResults.any { it.callId == tc.asFunction().id() }
             }
             message = message.toBuilder()
                 .toolCalls(toolCalls.takeIf { it.isNotEmpty() }
@@ -346,7 +348,7 @@ private suspend inline fun <T> channelStream(
     crossinline block: suspend (Channel<T>) -> Unit
 ): Stream<T> {
     val channel = Channel<T>(Channel.UNLIMITED)
-    val job = CoroutineScope(coroutineContext).launch {
+    val job = CoroutineScope(currentCoroutineContext()).launch {
         try {
             block(channel)
         } finally {
