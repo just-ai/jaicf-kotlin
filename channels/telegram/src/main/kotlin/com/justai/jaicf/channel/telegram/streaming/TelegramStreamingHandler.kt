@@ -47,7 +47,7 @@ internal class TelegramStreamingHandler(
     }
 
     private fun sendInitialMessage() {
-        val message = sendMessage(config.initialPlaceholder)
+        val message = sendMessage(config.initialPlaceholder())
         currentMessageId = message.messageId()
         currentMessageBuffer.clear()
     }
@@ -61,7 +61,7 @@ internal class TelegramStreamingHandler(
             finalizeCurrentMessage()
 
             // Start new message
-            val message = sendMessage(config.initialPlaceholder)
+            val message = sendMessage(config.initialPlaceholder())
             currentMessageId = message.messageId()
 
             // Clear buffer and start with the current chunk
@@ -88,7 +88,7 @@ internal class TelegramStreamingHandler(
     private fun finalizeCurrentMessage() {
         currentMessageId?.let { msgId ->
             val textToSend = currentMessageBuffer.toString()
-            if (textToSend.isNotEmpty() && textToSend != config.initialPlaceholder) {
+            if (textToSend.isNotEmpty() && textToSend != config.initialPlaceholder()) {
                 updateMessage(msgId, textToSend)
             }
         }
@@ -97,7 +97,7 @@ internal class TelegramStreamingHandler(
     private fun updateCurrentMessage() {
         currentMessageId?.let { msgId ->
             val text = currentMessageBuffer.toString()
-            if (text.isNotEmpty() && text != config.initialPlaceholder) {
+            if (text.isNotEmpty() && text != config.initialPlaceholder()) {
                 updateMessage(msgId, text)
             }
         }
