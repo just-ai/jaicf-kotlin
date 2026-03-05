@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.kotlin.stdlib)
 
     api(libs.ktor.client)
+    implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.jackson)
 

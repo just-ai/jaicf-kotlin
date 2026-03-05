@@ -1,6 +1,8 @@
 package com.justai.jaicf.activator.llm
 
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
+import com.justai.jaicf.activator.llm.mcp.McpService
+import com.justai.jaicf.activator.llm.mcp.McpServiceResponseBuilder
 import com.justai.jaicf.activator.llm.tool.*
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStore
 import com.justai.jaicf.activator.llm.vectorstore.LLMVectorStoreResponseBuilder
@@ -46,7 +48,7 @@ data class LLMProps(
     fun withOptions(props: LLMProps) =
         LLMProps(
             model = props.model ?: model,
-            temperature =  props.temperature ?: temperature,
+            temperature = props.temperature ?: temperature,
             maxTokens = props.maxTokens ?: maxTokens,
             topP = props.topP ?: topP,
             frequencyPenalty = props.frequencyPenalty ?: frequencyPenalty,
@@ -74,7 +76,11 @@ data class LLMProps(
             responseFormat?.let { responseFormat(it) }
             tools?.forEach {
                 when (it.definition) {
-                    is LLMToolDefinition.FromClass<*> -> addTool(it.definition.parametersType, JsonSchemaLocalValidation.NO)
+                    is LLMToolDefinition.FromClass<*> -> addTool(
+                        it.definition.parametersType,
+                        JsonSchemaLocalValidation.NO
+                    )
+
                     is LLMToolDefinition.CustomSchema<*> -> addTool(it.definition.asChatCompletionTool)
                 }
             }
@@ -133,12 +139,25 @@ data class LLMProps(
             noinline function: LLMToolFunction<T>
         ) = tool(llmTool(name, description, parameters, function))
 
+        inline fun <reified T> tool(
+            mcp: McpService,
+            toolName: String,
+            description: String? = null,
+            noinline responseBuilder: McpServiceResponseBuilder = { it }
+        ) = tool(mcp.tool(toolName, description, responseBuilder))
+
         fun vectorStore(
             store: LLMVectorStore,
             name: String,
             description: String = "",
             responseBuilder: LLMVectorStoreResponseBuilder = { it }
         ) = tool(store.asTool(name, description, responseBuilder))
+
+        fun mcp(
+            service: McpService,
+            tools: List<String> = emptyList(),
+            responseBuilder: McpServiceResponseBuilder = { it }
+        ) = service.tools(tools, responseBuilder).map { mcpTool -> tool(mcpTool) }
 
         fun build() = LLMProps(
             model,

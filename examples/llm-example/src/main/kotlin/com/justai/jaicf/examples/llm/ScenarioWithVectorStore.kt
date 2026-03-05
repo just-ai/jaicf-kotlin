@@ -1,10 +1,8 @@
 package com.justai.jaicf.examples.llm
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.LLMEvent
 import com.justai.jaicf.activator.llm.scenario.llmState
 import com.justai.jaicf.activator.llm.vectorstore.OpenAIVectorStoreFactory
-import com.justai.jaicf.activator.llm.vectorstore.asTool
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
