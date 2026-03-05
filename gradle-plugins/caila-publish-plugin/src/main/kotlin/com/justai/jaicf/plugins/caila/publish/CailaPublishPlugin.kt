@@ -17,9 +17,12 @@ class CailaPublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.pluginManager.apply("com.bmuschko.docker-java-application")
 
+        val cleanTask = project.tasks.named("clean")
+
         val buildImageTask = project.tasks.named<DockerBuildImage>("dockerBuildImage") {
             group = "docker"
             platform.set("linux/amd64")
+            dependsOn(cleanTask)
         }
 
         val pushImageTask = project.tasks.named<DockerPushImage>("dockerPushImage") {

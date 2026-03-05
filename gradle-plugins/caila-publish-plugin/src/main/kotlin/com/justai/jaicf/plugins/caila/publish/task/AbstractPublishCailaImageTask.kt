@@ -88,12 +88,21 @@ abstract class AbstractPublishCailaImageTask : DefaultTask() {
                 logger.lifecycle("Remove existing image ${existingImage.image}.")
                 val models = client.getModelBlocking(accountId)
                 val attachedModels = models.records.filter { it.imageId == existingImage.id.imageId }
-                attachedModels.forEach {
-                    logger.lifecycle("Remove model $it attached to image ${existingImage.id.imageId}.")
-                    client.deleteModelBlocking(accountId, it.id.modelId)
+
+                if (attachedModels.isNotEmpty()) {
+                    attachedModels.forEach {
+                        logger.lifecycle("Remove model ${it.modelName} (ID: ${it.id.modelId}) attached to image ${existingImage.id.imageId}.")
+                        client.deleteModelBlocking(accountId, it.id.modelId)
+                    }
+
+                    // Wait for models to be deleted before deleting the image
+                    logger.lifecycle("Waiting for models to be deleted...")
+                    waitForModelsToBeDeleted(client, accountId, existingImage.id.imageId, attachedModels.map { it.id.modelId })
                 }
+
+                logger.lifecycle("Deleting image ${existingImage.id.imageId}...")
+                deleteImageWithRetry(client, accountId, existingImage.id.imageId)
                 logger.lifecycle("Publishing new image $dockerImage.")
-                client.deleteImageBlocking(accountId, existingImage.id.imageId)
             } else if (existingImage != null) {
                 logger.lifecycle("Image with name ${existingImage.image} already exists; skipping destructive update.")
             }
@@ -129,8 +138,77 @@ abstract class AbstractPublishCailaImageTask : DefaultTask() {
     }
 
     protected abstract fun resolveDockerImage(): String
-    
+
     protected abstract fun validateDockerImage()
-    
+
     protected abstract fun getSourceDescription(): String
+
+    /**
+     * Waits for models to be deleted from CAILA.
+     * Polls the API until all models are removed or timeout is reached.
+     */
+    private fun waitForModelsToBeDeleted(
+        client: CailaApiClient,
+        accountId: Int,
+        imageId: Int,
+        modelIds: List<Int>,
+        maxRetries: Int = 30,
+        retryDelayMs: Long = 2000
+    ) {
+        var attempt = 0
+        while (attempt < maxRetries) {
+            attempt++
+            Thread.sleep(retryDelayMs)
+
+            val currentModels = client.getModelBlocking(accountId)
+            val remainingModels = currentModels.records.filter {
+                it.imageId == imageId && modelIds.contains(it.id.modelId)
+            }
+
+            if (remainingModels.isEmpty()) {
+                logger.lifecycle("✓ All models deleted successfully")
+                return
+            }
+
+            logger.lifecycle("Waiting for models to be deleted... (${remainingModels.size} remaining, attempt $attempt/$maxRetries)")
+        }
+
+        logger.warn("⚠ Timeout waiting for models to be deleted. Proceeding anyway...")
+    }
+
+    /**
+     * Deletes an image with retry logic.
+     * The image deletion might fail if models are still being deleted.
+     */
+    private fun deleteImageWithRetry(
+        client: CailaApiClient,
+        accountId: Int,
+        imageId: Int,
+        maxRetries: Int = 10,
+        retryDelayMs: Long = 2000
+    ) {
+        var lastException: Exception? = null
+
+        repeat(maxRetries) { attempt ->
+            try {
+                client.deleteImageBlocking(accountId, imageId)
+                logger.lifecycle("✓ Image deleted successfully")
+                return
+            } catch (e: Exception) {
+                lastException = e
+                if (e.message?.contains("has.models") == true) {
+                    logger.lifecycle("Image still has attached models, retrying... (attempt ${attempt + 1}/$maxRetries)")
+                    Thread.sleep(retryDelayMs)
+                } else {
+                    // If it's a different error, throw immediately
+                    throw e
+                }
+            }
+        }
+
+        throw TaskExecutionException(
+            this,
+            Exception("Failed to delete image after $maxRetries attempts. Last error: ${lastException?.message}", lastException)
+        )
+    }
 }
