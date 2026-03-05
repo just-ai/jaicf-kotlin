@@ -33,7 +33,7 @@ val HelloWorldScenario = Scenario {
 
             if (name == null) {
                 telegram {
-                    name = request.message.senderChat().firstName() ?: request.message.senderChat().username()
+                    name = request.message.chat().firstName() ?: request.message.senderChat().username()
                 }
                 facebook {
                     name = reactions.queryUserProfile()?.firstName()
