@@ -104,8 +104,8 @@ internal class TelegramStreamingHandler(
     }
 
     private fun sendMessage(text: String): Message {
-        var req = SendMessage(chatId, text)
-        config.parseMode?.let { req = req.parseMode(it) }
+        val req = SendMessage(chatId, text)
+        req.parseMode(config.parseMode)
 
         val response = api.execute(req)
         val message = response.message()
@@ -117,8 +117,8 @@ internal class TelegramStreamingHandler(
 
     private fun updateMessage(messageId: Int, text: String) {
         try {
-            var req = EditMessageText(chatId, messageId, text)
-            config.parseMode?.let { req = req.parseMode(it) }
+            val req = EditMessageText(chatId, messageId, text)
+            req.parseMode(config.parseMode)
 
             api.execute(req)
         } catch (e: Exception) {

@@ -12,5 +12,5 @@ import com.pengrad.telegrambot.model.request.ParseMode
 data class StreamConfig(
     val updateIntervalMs: Long = 500,
     val initialPlaceholder: String = "...",
-    val parseMode: ParseMode? = null
+    val parseMode: ParseMode = ParseMode.Markdown,
 )
