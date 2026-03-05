@@ -27,6 +27,16 @@ constructor(
     val taskType: Property<String> = objectFactory.property<String>()
         .convention(TaskType.CUSTOM.tag)
 
+    /**
+     * Model type for the service.
+     * Use "WEB_APPLICATION" for web applications, "MLP" for MLP SDK-based services.
+     * Default: "WEB_APPLICATION"
+     */
+    @get:Input
+    @Optional
+    val modelType: Property<String> = objectFactory.property<String>()
+        .convention("WEB_APPLICATION")
+
     @get:Input
     @Optional
     val displayName: Property<String> = objectFactory.property()

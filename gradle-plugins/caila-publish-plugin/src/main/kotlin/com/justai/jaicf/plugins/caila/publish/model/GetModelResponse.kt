@@ -142,9 +142,9 @@ data class DataImageMount(
 
 @Serializable
 data class Timeouts(
-    val podStartTimeoutSec: Int,
-    val predictTimeoutSec: Int,
-    val fitTimeoutSec: Int
+    val podStartTimeoutSec: Int? = null,
+    val predictTimeoutSec: Int? = null,
+    val fitTimeoutSec: Int? = null
 )
 
 @Serializable

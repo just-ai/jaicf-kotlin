@@ -206,6 +206,7 @@ abstract class CailaModelTask : DefaultTask() {
             imageId = imageId,
             imageAccountId = imageAccountId,
             taskType = spec.taskType.get(),
+            modelType = spec.modelType.orNull,
             displayName = spec.displayName.orNull,
             displayAuthor = spec.displayAuthor.orNull,
             rejectRequestsIfInactive = spec.rejectRequestsIfInactive.orNull,

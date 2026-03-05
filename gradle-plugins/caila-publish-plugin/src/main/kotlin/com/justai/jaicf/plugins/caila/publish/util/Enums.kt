@@ -32,3 +32,11 @@ enum class AccessMode(val mode: String) {
     PUBLIC("public"),
     RESTRICTED("restricted"),
 }
+
+/**
+ * Model type for the service
+ */
+enum class ModelType(val type: String) {
+    WEB_APPLICATION("WEB_APPLICATION"),
+    MLP("MLP")
+}
