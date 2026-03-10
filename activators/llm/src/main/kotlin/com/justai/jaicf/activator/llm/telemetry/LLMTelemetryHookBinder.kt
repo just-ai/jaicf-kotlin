@@ -1,22 +1,25 @@
 package com.justai.jaicf.activator.llm.telemetry
 
 import com.justai.jaicf.BotEngine
-import com.justai.jaicf.activator.llm.telemetry.LLMSpanName.ToolCall
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.hook.BotActionHook
-import com.justai.jaicf.telemetry.TelemetryHookStage
 import com.justai.jaicf.telemetry.TelemetryHook
+import com.justai.jaicf.telemetry.TelemetryHookStage
 import com.justai.jaicf.telemetry.TelemetryProvider
 import com.justai.jaicf.telemetry.TelemetrySpan
 import com.justai.jaicf.telemetry.closeAllTelemetrySpans
+import com.justai.jaicf.telemetry.JaicfTelemetryAttributes
 import com.justai.jaicf.telemetry.currentTelemetrySpan
 import com.justai.jaicf.telemetry.getHandoffSpan
+import com.justai.jaicf.telemetry.getTelemetrySessionId
 import com.justai.jaicf.telemetry.getTelemetrySpan
+import com.justai.jaicf.telemetry.handoffPending
+import com.justai.jaicf.telemetry.handoffSpanParent
+import com.justai.jaicf.telemetry.realOrNull
 import com.justai.jaicf.telemetry.removeAllTelemetrySpan
 import com.justai.jaicf.telemetry.removeTelemetrySpan
-import com.justai.jaicf.telemetry.setCurrentTelemetrySpan
 import com.justai.jaicf.telemetry.setTelemetrySpan
 
 internal fun BotEngine.addLLMTelemetryHooks() {
@@ -29,45 +32,17 @@ internal fun BotEngine.addLLMTelemetryHooks() {
         SpanProcessor.handleHandoffStart(telemetryProvider, this)
     }
 
-    addLifecycleHook<LLMActionHook>(
-        onStart = SpanProcessor::handleAgentInvokeStart,
-        onFinish = SpanProcessor::handleAgentInvokeFinish,
-        onError = SpanProcessor::handleAgentInvokeError
-    )
-
-    addLifecycleHook<LLMCallHook>(
-        onStart = SpanProcessor::handleLLMCallStart,
-        onFinish = SpanProcessor::handleLLMCallFinish,
-        onError = SpanProcessor::handleLLMCallError
-    )
-
-    addLifecycleHook<LLMStreamingHook>(
-        onStart = SpanProcessor::handleStreamingStart,
-        onFinish = SpanProcessor::handleStreamingFinish
-    )
-
-    addLifecycleHook<LLMToolCallsHook>(
-        onStart = SpanProcessor::handleToolCallsStart,
-        onFinish = SpanProcessor::handleToolCallsFinish
-    )
-
-    addLifecycleHook<LLMToolCallHook>(
-        onStart = SpanProcessor::handleToolCallStart,
-        onFinish = SpanProcessor::handleToolCallFinish,
-        onError = SpanProcessor::handleToolCallError
-    )
-
-    addLifecycleHook<LLMToolExecuteHook>(
-        onStart = SpanProcessor::handleToolExecuteStart,
-        onFinish = SpanProcessor::handleToolExecuteFinish,
-        onError = SpanProcessor::handleToolExecuteError
+    addLifecycleHook<LLMLifecycleHook>(
+        onStart = SpanProcessor::handleLifecycleStart,
+        onFinish = SpanProcessor::handleLifecycleFinish,
+        onError = SpanProcessor::handleLifecycleError
     )
 }
 
 private inline fun <reified T : TelemetryHook> BotEngine.addLifecycleHook(
-    crossinline onStart: (TelemetryProvider, T) -> Unit,
-    crossinline onFinish: (T) -> Unit,
-    crossinline onError: (T) -> Unit = {}
+    crossinline onStart: suspend (TelemetryProvider, T) -> Unit,
+    crossinline onFinish: suspend (T) -> Unit,
+    crossinline onError: suspend (T) -> Unit,
 ) {
     hooks.addHookAction<T> {
         when (stage) {
@@ -98,57 +73,164 @@ private object SpanProcessor {
     private fun shouldSkip(toolName: String) = toolName in SKIP_TOOL_SPANS
 
     private fun toolName(attributes: Map<String, Any?>) =
-        attributes["llm.tool.name"] as? String ?: "unknown"
+        attributes[LLMAttributes.TOOL_NAME] as? String ?: "unknown"
 
-    private fun toolSpanName(toolName: String) = "$ToolCall:$toolName"
+    private data class StartConfig(
+        val parentSpanName: String? = null,
+        val extraAttributes: (LLMLifecycleHook) -> Map<String, Any?> = { emptyMap() },
+        val useSimpleAttributes: Boolean = false,
+        val isToolType: Boolean = false,
+    )
 
-    private fun createSpan(
+    private data class FinishConfig(
+        val removeAfterClose: Boolean = false,
+        val hasCompletionUsage: Boolean = false,
+        val hasHandoffLogic: Boolean = false,
+    )
+
+    private data class ErrorConfig(
+        val skip: Boolean = false,
+        val errorPrefix: String = "llm",
+        val errorMaxLength: Int = 500,
+        val removeAfterClose: Boolean = false,
+        val hasHandoffLogic: Boolean = false,
+    )
+
+    private data class LifecycleConfig(
+        val start: StartConfig,
+        val finish: FinishConfig = FinishConfig(),
+        val error: ErrorConfig = ErrorConfig(),
+    )
+
+    private fun config(
+        parentSpanName: String? = null,
+        extraAttributes: (LLMLifecycleHook) -> Map<String, Any?> = { emptyMap() },
+        useSimpleAttributes: Boolean = false,
+        isToolType: Boolean = false,
+        removeAfterClose: Boolean = false,
+        hasCompletionUsage: Boolean = false,
+        hasHandoffLogic: Boolean = false,
+        errorSkip: Boolean = false,
+        errorPrefix: String = "llm",
+        errorMaxLength: Int = 500,
+    ) = LifecycleConfig(
+        start = StartConfig(parentSpanName, extraAttributes, useSimpleAttributes, isToolType),
+        finish = FinishConfig(removeAfterClose, hasCompletionUsage, hasHandoffLogic),
+        error = ErrorConfig(errorSkip, errorPrefix, errorMaxLength, removeAfterClose, hasHandoffLogic),
+    )
+
+    private fun genAIConversationId(context: BotContext): String? {
+        val id = context.getTelemetrySessionId()
+        return id.takeIf { it.isNotEmpty() }
+    }
+
+    private val lifecycleConfigs = mapOf(
+        LLMSpanType.ACTION_INVOKE to config(
+            extraAttributes = { hook ->
+                val attrs = mutableMapOf<String, Any?>(
+                    LLMAttributes.AGENT_STATE to (hook.state?.path?.toString() ?: ""),
+                    LLMAttributes.AGENT_INPUT_LENGTH to hook.request.input.length,
+                    GenAIAttributes.OPERATION_NAME to GenAIAttributes.OPERATION_INVOKE_AGENT,
+                    GenAIAttributes.AGENT_NAME to (hook.state?.path?.toString() ?: "unknown"),
+                )
+                genAIConversationId(hook.context)?.let { attrs[GenAIAttributes.CONVERSATION_ID] = it }
+                attrs
+            },
+            hasHandoffLogic = true,
+            errorPrefix = LLMAttributes.ERROR_PREFIX_AGENT,
+        ),
+        LLMSpanType.LLM_CALL to config(
+            parentSpanName = LLMSpanName.ActionInvoke,
+            extraAttributes = { hook ->
+                val model = hook.attributes[LLMAttributes.MODEL] as? String ?: ""
+                val attrs = mutableMapOf<String, Any?>(
+                    GenAIAttributes.OPERATION_NAME to GenAIAttributes.OPERATION_CHAT,
+                    GenAIAttributes.REQUEST_MODEL to model.ifBlank { null },
+                )
+                genAIConversationId(hook.context)?.let { attrs[GenAIAttributes.CONVERSATION_ID] = it }
+                attrs
+            },
+            hasCompletionUsage = true,
+            errorPrefix = LLMAttributes.ERROR_PREFIX_CALL,
+        ),
+        LLMSpanType.STREAMING to config(
+            parentSpanName = LLMSpanName.LLMCall,
+            errorSkip = true,
+        ),
+        LLMSpanType.TOOL_CALLS to config(errorSkip = true),
+        LLMSpanType.TOOL_CALL to config(
+            isToolType = true,
+            extraAttributes = { hook ->
+                val toolName = hook.attributes[LLMAttributes.TOOL_NAME] as? String ?: "unknown"
+                val callId = hook.attributes[LLMAttributes.TOOL_CALL_ID] as? String
+                mutableMapOf<String, Any?>(
+                    GenAIAttributes.OPERATION_NAME to GenAIAttributes.OPERATION_EXECUTE_TOOL,
+                    GenAIAttributes.TOOL_NAME to toolName,
+                ).apply {
+                    callId?.let { put(GenAIAttributes.TOOL_CALL_ID, it) }
+                    genAIConversationId(hook.context)?.let { put(GenAIAttributes.CONVERSATION_ID, it) }
+                }
+            },
+            removeAfterClose = true,
+            errorPrefix = LLMAttributes.ERROR_PREFIX_TOOL,
+            errorMaxLength = 200,
+        ),
+        LLMSpanType.TOOL_EXECUTE to config(
+            isToolType = true,
+            useSimpleAttributes = true,
+            extraAttributes = { hook ->
+                val toolName = hook.attributes[LLMAttributes.TOOL_NAME] as? String ?: "unknown"
+                val callId = hook.attributes[LLMAttributes.TOOL_CALL_ID] as? String
+                mutableMapOf<String, Any?>(
+                    GenAIAttributes.OPERATION_NAME to GenAIAttributes.OPERATION_EXECUTE_TOOL,
+                    GenAIAttributes.TOOL_NAME to toolName,
+                ).apply {
+                    callId?.let { put(GenAIAttributes.TOOL_CALL_ID, it) }
+                    genAIConversationId(hook.context)?.let { put(GenAIAttributes.CONVERSATION_ID, it) }
+                }
+            },
+            removeAfterClose = true,
+            errorPrefix = LLMAttributes.ERROR_PREFIX_TOOL,
+            errorMaxLength = 200,
+        ),
+    )
+
+    private suspend fun createSpan(
         provider: TelemetryProvider,
         context: BotContext,
         name: String,
-        attributes: Map<String, Any?>
+        attributes: Map<String, Any?>,
+        parentOverride: TelemetrySpan? = null,
     ): TelemetrySpan {
-        val parent = currentTelemetrySpan(context)
-        return try {
-            provider.createSpan(name, attributes, parent)
-        } catch (e: Throwable) {
-            TelemetrySpan.NoOp
-        }
+        val parent = sequenceOf(
+            parentOverride,
+            currentTelemetrySpan(),
+            context.getHandoffSpan(),
+            context.getTelemetrySpan(JaicfTelemetryAttributes.BOT_REQUEST_SPAN),
+        ).mapNotNull { it.realOrNull() }
+            .firstOrNull()
+        return provider.createSpanOrNoOp(name, attributes, parent)
     }
 
     private fun TelemetrySpan.addCommonAttributes(hook: BotActionHook) {
-        setAttribute("jaicf.state.name", hook.state.path.toString())
-        setAttribute("jaicf.state.current", hook.context.dialogContext.currentState)
-        setAttribute("jaicf.client.id", hook.context.clientId)
-        setAttribute("jaicf.request.type", hook.request.type.name)
-        setAttribute("jaicf.activator.name", hook.activator.toString())
+        setAttribute(JaicfTelemetryAttributes.STATE_NAME, hook.state.path.toString())
+        setAttribute(JaicfTelemetryAttributes.STATE_CURRENT, hook.context.dialogContext.currentState)
+        setAttribute(JaicfTelemetryAttributes.CLIENT_ID_ALT, hook.context.clientId)
+        setAttribute(JaicfTelemetryAttributes.REQUEST_TYPE, hook.request.type.name)
+        setAttribute(JaicfTelemetryAttributes.ACTIVATOR_NAME, hook.activator.toString())
+    }
+
+    private fun TelemetrySpan.addLifecycleAttributes(hook: LLMLifecycleHook) {
+        hook.state?.let { setAttribute(JaicfTelemetryAttributes.STATE_NAME, it.path.toString()) }
+        setAttribute(JaicfTelemetryAttributes.STATE_CURRENT, hook.context.dialogContext.currentState)
+        setAttribute(JaicfTelemetryAttributes.CLIENT_ID_ALT, hook.context.clientId)
+        setAttribute(JaicfTelemetryAttributes.REQUEST_TYPE, hook.request.type.name)
+        hook.activator?.let { setAttribute(JaicfTelemetryAttributes.ACTIVATOR_NAME, it.toString()) }
     }
 
     private fun TelemetrySpan.addSimpleAttributes(context: BotContext, request: BotRequest) {
-        setAttribute("jaicf.client.id", context.clientId)
-        setAttribute("jaicf.request.type", request.type.name)
-    }
-
-    private fun startSpan(
-        provider: TelemetryProvider,
-        hook: LLMLifecycleHook,
-        spanName: String,
-        extraAttributes: Map<String, Any?> = emptyMap()
-    ) {
-        val attrs = hook.attributes + extraAttributes
-        val span = createSpan(provider, hook.context, spanName, attrs)
-        if (span != TelemetrySpan.NoOp) {
-            span.addCommonAttributes(hook)
-            hook.context.setTelemetrySpan(spanName, span)
-            hook.context.setCurrentTelemetrySpan(span)
-        }
-    }
-
-    private fun finishSpan(context: BotContext, spanName: String, attributes: Map<String, Any?>) {
-        context.getTelemetrySpan(spanName)?.apply {
-            setAttributes(attributes)
-            close()
-        }
+        setAttribute(JaicfTelemetryAttributes.CLIENT_ID_ALT, context.clientId)
+        setAttribute(JaicfTelemetryAttributes.REQUEST_TYPE, request.type.name)
     }
 
     private fun closeHandoffSpans(context: BotContext) {
@@ -158,155 +240,96 @@ private object SpanProcessor {
         }
     }
 
-    fun handleAgentInvokeStart(provider: TelemetryProvider, hook: LLMActionHook) {
-        startSpan(
-            provider, hook, LLMSpanName.ActionInvoke, mapOf(
-                "llm.agent.state" to hook.state.path.toString(),
-                "llm.agent.input.length" to hook.request.input.length
-            )
-        )
+    private suspend fun resolveParent(hook: LLMLifecycleHook, parentSpanName: String?): TelemetrySpan? {
+        val fromContext = parentSpanName?.let { hook.context.getTelemetrySpan(it) }
+        if (fromContext != null) return fromContext
+        val handoff = hook.context.getHandoffSpan()
+        if (handoff != null) return handoff
+        return currentTelemetrySpan()
+            ?: hook.context.getTelemetrySpan(JaicfTelemetryAttributes.BOT_REQUEST_SPAN)
     }
 
-    fun handleAgentInvokeFinish(hook: LLMActionHook) {
-        finishSpan(hook.context, LLMSpanName.ActionInvoke, hook.attributes)
-        closeHandoffSpans(hook.context)
-    }
+    suspend fun handleLifecycleStart(provider: TelemetryProvider, hook: LLMLifecycleHook) {
+        val config = lifecycleConfigs[hook.type] ?: return
+        val start = config.start
+        if (start.isToolType && shouldSkip(toolName(hook.attributes))) return
 
-    fun handleAgentInvokeError(hook: LLMActionHook) {
-        hook.context.getTelemetrySpan(LLMSpanName.ActionInvoke)?.apply {
-            setAttributes(hook.attributes)
-            recordError(hook.exception, "llm.agent")
-            close()
-        }
-        closeHandoffSpans(hook.context)
-    }
+        val spanDisplayName = hook.resolveSpanName()
+        val storageKey = hook.getStorageKey()
+        val parent = resolveParent(hook, start.parentSpanName)
+        val attrs = hook.attributes + start.extraAttributes(hook)
 
-    fun handleLLMCallStart(provider: TelemetryProvider, hook: LLMCallHook) =
-        startSpan(provider, hook, LLMSpanName.LLMCall)
-
-    fun handleLLMCallFinish(hook: LLMCallHook) {
-        hook.context.getTelemetrySpan(LLMSpanName.LLMCall)?.apply {
-            setAttributes(hook.attributes)
-            hook.completionUsage?.let { usage ->
-                setAttribute("llm.tokens.usage.prompt", usage.promptTokens())
-                setAttribute("llm.tokens.usage.completion", usage.completionTokens())
-                setAttribute("llm.tokens.usage.total", usage.totalTokens())
+        val span = createSpan(provider, hook.context, spanDisplayName, attrs, parent)
+        span.realOrNull()?.let {
+            if (start.useSimpleAttributes) {
+                it.addSimpleAttributes(hook.context, hook.request)
+                it.setAttributes(hook.attributes)
+            } else {
+                it.addLifecycleAttributes(hook)
             }
-            close()
+            hook.context.setTelemetrySpan(storageKey, it)
         }
     }
 
-    fun handleLLMCallError(hook: LLMCallHook) {
-        hook.context.getTelemetrySpan(LLMSpanName.LLMCall)?.apply {
-            setAttributes(hook.attributes)
-            recordError(hook.exception, "llm.call")
-            close()
+    fun handleLifecycleFinish(hook: LLMLifecycleHook) {
+        val config = lifecycleConfigs[hook.type] ?: return
+        val finish = config.finish
+        if (config.start.isToolType && shouldSkip(toolName(hook.attributes))) return
+
+        val storageKey = hook.getStorageKey()
+        val span = hook.context.getTelemetrySpan(storageKey) ?: return
+        span.setAttributes(hook.attributes)
+        if (finish.hasCompletionUsage) {
+            hook.completionUsage?.let { usage ->
+                span.setAttribute(LLMAttributes.TOKENS_USAGE_PROMPT, usage.promptTokens())
+                span.setAttribute(LLMAttributes.TOKENS_USAGE_COMPLETION, usage.completionTokens())
+                span.setAttribute(LLMAttributes.TOKENS_USAGE_TOTAL, usage.totalTokens())
+                span.setAttribute(GenAIAttributes.USAGE_INPUT_TOKENS, usage.promptTokens())
+                span.setAttribute(GenAIAttributes.USAGE_OUTPUT_TOKENS, usage.completionTokens())
+            }
+        }
+        span.close()
+        if (finish.removeAfterClose) hook.context.removeTelemetrySpan(storageKey)
+        if (finish.hasHandoffLogic) {
+            if (hook.context.handoffPending) hook.context.handoffPending = false
+            else closeHandoffSpans(hook.context)
         }
     }
 
-    fun handleStreamingStart(provider: TelemetryProvider, hook: LLMStreamingHook) =
-        startSpan(provider, hook, LLMSpanName.Streaming)
+    fun handleLifecycleError(hook: LLMLifecycleHook) {
+        val config = lifecycleConfigs[hook.type] ?: return
+        val error = config.error
+        if (error.skip) return
+        if (config.start.isToolType && shouldSkip(toolName(hook.attributes))) return
 
-    fun handleStreamingFinish(hook: LLMStreamingHook) {
-        val span = hook.context.getTelemetrySpan(LLMSpanName.Streaming)?.apply {
-            setAttributes(hook.attributes)
-            close()
-        }
-        hook.context.setCurrentTelemetrySpan(span)
-    }
-
-    fun handleToolCallsStart(provider: TelemetryProvider, hook: LLMToolCallsHook) =
-        startSpan(provider, hook, LLMSpanName.ToolCalls)
-
-    fun handleToolCallsFinish(hook: LLMToolCallsHook) =
-        finishSpan(hook.context, LLMSpanName.ToolCalls, hook.attributes)
-
-    fun handleToolCallStart(provider: TelemetryProvider, hook: LLMToolCallHook) {
-        val name = toolName(hook.attributes)
-        if (shouldSkip(name)) return
-        startSpan(provider, hook, toolSpanName(name))
-    }
-
-    fun handleToolCallFinish(hook: LLMToolCallHook) {
-        val name = toolName(hook.attributes)
-        if (shouldSkip(name)) return
-
-        val spanName = toolSpanName(name)
-        val span = hook.context.getTelemetrySpan(spanName)?.apply {
-            setAttributes(hook.attributes)
-            close()
-            hook.context.removeTelemetrySpan(spanName)
-        }
-        hook.context.setCurrentTelemetrySpan(span)
-    }
-
-    fun handleToolCallError(hook: LLMToolCallHook) {
-        val name = toolName(hook.attributes)
-        if (shouldSkip(name)) return
-
-        val spanName = toolSpanName(name)
-        hook.context.getTelemetrySpan(spanName)?.apply {
-            setAttributes(hook.attributes)
-            recordError(hook.exception, "llm.tool", maxLength = 200)
-            close()
-            hook.context.removeTelemetrySpan(spanName)
+        val storageKey = hook.getStorageKey()
+        val span = hook.context.getTelemetrySpan(storageKey) ?: return
+        span.setAttributes(hook.attributes)
+        span.recordError(hook.exception, error.errorPrefix, maxLength = error.errorMaxLength)
+        span.close()
+        if (error.removeAfterClose) hook.context.removeTelemetrySpan(storageKey)
+        if (error.hasHandoffLogic) {
+            if (hook.context.handoffPending) hook.context.handoffPending = false
+            else closeHandoffSpans(hook.context)
         }
     }
 
-    fun handleHandoffStart(provider: TelemetryProvider, hook: LLMHandoffHook) {
-        val from = hook.attributes["llm.handoff.from.agent"]
-        val to = hook.attributes["llm.handoff.to.agent"]
+    suspend fun handleHandoffStart(provider: TelemetryProvider, hook: LLMHandoffHook) {
+        val from = hook.attributes[LLMAttributes.HANDOFF_FROM_AGENT]
+        val to = hook.attributes[LLMAttributes.HANDOFF_TO_AGENT]
         val spanName = "${LLMSpanName.Handoff} $from -> $to"
 
-        val span = createSpan(provider, hook.context, spanName, hook.attributes)
-        if (span != TelemetrySpan.NoOp) {
-            span.addCommonAttributes(hook)
-            hook.context.setTelemetrySpan(spanName, span)
-            hook.context.setCurrentTelemetrySpan(span)
+        val handoffParent = handoffSpanParent(hook.context)
+        val span = createSpan(provider, hook.context, spanName, hook.attributes, handoffParent)
+        span.realOrNull()?.let {
+            it.addCommonAttributes(hook)
+            hook.context.setTelemetrySpan(spanName, it)
+            hook.context.handoffPending = true
         }
     }
 
-    fun handleToolExecuteStart(provider: TelemetryProvider, hook: LLMToolExecuteHook) {
-        val name = toolName(hook.attributes)
-        if (shouldSkip(name)) return
-
-        val spanName = toolSpanName(name)
-        val span = createSpan(provider, hook.context, spanName, hook.attributes)
-        if (span != TelemetrySpan.NoOp) {
-            span.addSimpleAttributes(hook.context, hook.request)
-            span.setAttributes(hook.attributes)
-            hook.context.setTelemetrySpan(spanName, span)
-            hook.context.setCurrentTelemetrySpan(span)
-        }
-    }
-
-    fun handleToolExecuteFinish(hook: LLMToolExecuteHook) {
-        val name = toolName(hook.attributes)
-        if (shouldSkip(name)) return
-
-        val spanName = toolSpanName(name)
-        hook.context.getTelemetrySpan(spanName)?.apply {
-            setAttributes(hook.attributes)
-            close()
-            hook.context.removeTelemetrySpan(spanName)
-        }
-    }
-
-    fun handleToolExecuteError(hook: LLMToolExecuteHook) {
-        val name = toolName(hook.attributes)
-        if (shouldSkip(name)) return
-
-        val spanName = toolSpanName(name)
-        hook.context.getTelemetrySpan(spanName)?.apply {
-            setAttributes(hook.attributes)
-            recordError(hook.exception, "llm.tool", maxLength = 200)
-            close()
-            hook.context.removeTelemetrySpan(spanName)
-        }
-    }
-
-    fun handleAnyError(hook: AnyErrorHook) {
-        currentTelemetrySpan(hook.context)?.apply {
+    suspend fun handleAnyError(hook: AnyErrorHook) {
+        currentTelemetrySpan()?.apply {
             recordError(hook.exception, "jaicf")
         }
         hook.context.closeAllTelemetrySpans()

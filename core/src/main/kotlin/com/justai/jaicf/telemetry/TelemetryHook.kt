@@ -1,8 +1,6 @@
 package com.justai.jaicf.telemetry
 
-import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.hook.triggerBotHook
 
@@ -12,16 +10,6 @@ enum class TelemetryHookStage {
     ERROR,
 }
 
-enum class BotRequestStage { START, END }
-
-data class TelemetryProcessHook(
-    override val context: BotContext,
-    val request: BotRequest,
-    val requestContext: RequestContext,
-    val stage: BotRequestStage,
-    val durationMs: Double = 0.0,
-) : BotHook
-
 interface TelemetryHook : BotHook {
     val stage: TelemetryHookStage
     val exception: Throwable?
@@ -30,20 +18,36 @@ interface TelemetryHook : BotHook {
     fun withStage(stage: TelemetryHookStage, exception: Throwable? = null): TelemetryHook
 }
 
+data class CustomTelemetryHook(
+    override val context: BotContext,
+    val spanName: String,
+    val attributes: Map<String, Any?> = emptyMap(),
+    override val stage: TelemetryHookStage = TelemetryHookStage.START,
+    override val exception: Throwable? = null,
+) : TelemetryHook {
+    override fun withStage(stage: TelemetryHookStage, exception: Throwable?) =
+        copy(stage = stage, exception = exception)
+}
+
 
 suspend inline fun <T> runWithTelemetry(
     hook: TelemetryHook,
-    block: () -> T
+    spanName: String? = null,
+    crossinline block: suspend () -> T
 ): T {
     triggerBotHook(hook.withStage(TelemetryHookStage.START))
-    return try {
-        block()
-    } catch (e: Throwable) {
-        if (e !is TelemetrySkipException) {
-            triggerBotHook(hook.withStage(TelemetryHookStage.ERROR, e))
+    val effectiveSpanName = spanName ?: (hook as? CustomTelemetryHook)?.spanName
+    val span = effectiveSpanName?.let { hook.context.getTelemetrySpan(it) }
+    return withTelemetrySpan(span) {
+        try {
+            block()
+        } catch (e: Throwable) {
+            if (e !is TelemetrySkipException) {
+                triggerBotHook(hook.withStage(TelemetryHookStage.ERROR, e))
+            }
+            throw e
+        } finally {
+            triggerBotHook(hook.withStage(TelemetryHookStage.FINISH))
         }
-        throw e
-    } finally {
-        triggerBotHook(hook.withStage(TelemetryHookStage.FINISH))
     }
 }

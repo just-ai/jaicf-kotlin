@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonClassDescription
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMProps
+import com.justai.jaicf.activator.llm.telemetry.LLMAttributes
 import com.justai.jaicf.activator.llm.telemetry.LLMHandoffHook
 import com.justai.jaicf.activator.llm.tool.interrupt
 import com.justai.jaicf.activator.llm.tool.llmTool
@@ -63,9 +64,9 @@ private val LLMAgent.handoffTool
         }
 
         val handoffAttributes = mapOf(
-            "llm.handoff.from.agent" to name,
-            "llm.handoff.to.agent" to agentName,
-            "llm.handoff.messages.count" to messages.size,
+            LLMAttributes.HANDOFF_FROM_AGENT to name,
+            LLMAttributes.HANDOFF_TO_AGENT to agentName,
+            LLMAttributes.HANDOFF_MESSAGES_COUNT to messages.size,
         )
 
         interrupt {

@@ -7,11 +7,9 @@ import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.LLMEvent
 import com.justai.jaicf.activator.llm.LLMMessage
-import com.justai.jaicf.activator.llm.LLMToolCallHook
-import com.justai.jaicf.activator.llm.LLMToolCallsHook
 import com.justai.jaicf.activator.llm.ifLLMMemory
-import com.justai.jaicf.activator.llm.telemetry.LLMCallHook
-import com.justai.jaicf.activator.llm.telemetry.LLMStreamingHook
+import com.justai.jaicf.activator.llm.telemetry.LLMLifecycleHook
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanType
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCall
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
@@ -23,6 +21,11 @@ import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.triggerBotHook
 import com.justai.jaicf.telemetry.TelemetryHookStage
+import com.justai.jaicf.activator.llm.telemetry.GenAIAttributes
+import com.justai.jaicf.activator.llm.telemetry.LLMAttributes
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanName
+import com.justai.jaicf.telemetry.getTelemetrySpan
+import com.justai.jaicf.telemetry.withOptionalSpan
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.stream
 import com.openai.core.JsonField
@@ -88,18 +91,25 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
         completed = null
         acc = ChatCompletionAccumulator.create()
         triggerBotHook(context) { state ->
-            LLMCallHook(
-                state, context, request, reactions, activator,
+            LLMLifecycleHook(
+                type = LLMSpanType.LLM_CALL,
+                state = state,
+                context = context,
+                request = request,
+                reactions = reactions,
+                activator = activator,
                 attributes = mapOf(
-                    "llm.model" to (props.model ?: ""),
-                    "llm.tools.size" to (props.tools?.size ?: 0)
+                    LLMAttributes.MODEL to (props.model ?: ""),
+                    LLMAttributes.TOOLS_SIZE to (props.tools?.size ?: 0)
                 ),
                 stage = TelemetryHookStage.START
             )
         }
-        response = api.createStreaming(params)
-        stream = response.stream()
-        throwIfCancelled()
+        withOptionalSpan(context.getTelemetrySpan(LLMSpanName.LLMCall)) {
+            response = api.createStreaming(params)
+            stream = response.stream()
+            throwIfCancelled()
+        }
     }
 
     private fun closeStream() {
@@ -128,12 +138,21 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                 val chunks = mutableListOf<ChatCompletionChunk>()
 
                 triggerBotHook(context) { state ->
-                    LLMStreamingHook(state, context, request, reactions, activator, stage = TelemetryHookStage.START)
+                    LLMLifecycleHook(
+                        type = LLMSpanType.STREAMING,
+                        state = state,
+                        context = context,
+                        request = request,
+                        reactions = reactions,
+                        activator = activator,
+                        stage = TelemetryHookStage.START
+                    )
                 }
-                
-                try {
-                    val iterator = stream.iterator()
-                    while (iterator.hasNext()) {
+                val streamingSpan = context.getTelemetrySpan(LLMSpanName.Streaming)
+                val streamBlock: suspend () -> Unit = {
+                    try {
+                        val iterator = stream.iterator()
+                        while (iterator.hasNext()) {
                         val chunk = iterator.next()
                         yield()
 
@@ -168,27 +187,48 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                     }
                 } finally {
                     completed!!.complete(chunks)
-                    val usage = acc.chatCompletion().usage().getOrNull()
+                    val completion = acc.chatCompletion()
+                    val usage = completion.usage().getOrNull()
+                    val responseModel = runCatching { completion.model() }.getOrNull()?.toString()
+                    val finishReasons = completion.choices().mapNotNull { choice ->
+                        runCatching { choice.finishReason() }.getOrNull()?.toString()?.lowercase()
+                    }.distinct()
 
                     val finalContent = runCatching { message().content().getOrNull() }.getOrNull()
                     val truncatedContent = finalContent?.take(2_000)
 
                     triggerBotHook(context) { state ->
-                        LLMStreamingHook(
-                            state, context, request, reactions, activator,
-                            attributes = mapOf("llm.response" to truncatedContent),
+                        LLMLifecycleHook(
+                            type = LLMSpanType.STREAMING,
+                            state = state,
+                            context = context,
+                            request = request,
+                            reactions = reactions,
+                            activator = activator,
+                            attributes = mapOf(LLMAttributes.RESPONSE to truncatedContent),
                             stage = TelemetryHookStage.FINISH
                         )
                     }
                     triggerBotHook(context) { state ->
-                        LLMCallHook(
-                            state, context, request, reactions, activator,
+                        LLMLifecycleHook(
+                            type = LLMSpanType.LLM_CALL,
+                            state = state,
+                            context = context,
+                            request = request,
+                            reactions = reactions,
+                            activator = activator,
+                            attributes = buildMap {
+                                responseModel?.let { put(GenAIAttributes.RESPONSE_MODEL, it) }
+                                if (finishReasons.isNotEmpty()) put(GenAIAttributes.RESPONSE_FINISH_REASONS, finishReasons)
+                            },
                             stage = TelemetryHookStage.FINISH,
                             completionUsage = usage
                         )
                     }
                     closeStream()
                 }
+                }
+                withOptionalSpan(streamingSpan, streamBlock)
             }
         }
     }
@@ -306,7 +346,20 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
             } ?: "Error: no tool found with name ${function.name()}"
         ).also { result ->
             triggerBotHook(context) { state ->
-                LLMToolCallHook(state, context, request, reactions, activator, result)
+                LLMLifecycleHook(
+                    type = LLMSpanType.TOOL_CALL,
+                    state = state,
+                    context = context,
+                    request = request,
+                    reactions = reactions,
+                    activator = activator,
+                    attributes = mapOf(
+                        LLMAttributes.TOOL_NAME to result.name,
+                        LLMAttributes.TOOL_CALL_ID to result.callId,
+                        LLMAttributes.TOOL_ARGUMENTS to (result.arguments?.toString() ?: "")
+                    ),
+                    toolCallResult = result
+                )
             }
         }
     }
@@ -342,14 +395,24 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
         }.build()
 
         triggerBotHook(context) { state ->
-            LLMToolCallsHook(state, context, request, reactions, activator, toolCallResults)
+            LLMLifecycleHook(
+                type = LLMSpanType.TOOL_CALLS,
+                state = state,
+                context = context,
+                request = request,
+                reactions = reactions,
+                activator = activator,
+                toolCallResults = toolCallResults
+            )
         }
 
         if (toolCallExceptions.isNotEmpty()) {
             throw toolCallExceptions.first()
         }
 
-        startStream()
+        withOptionalSpan(context.getTelemetrySpan(LLMSpanName.ToolCalls)) {
+            startStream()
+        }
         return toolCallResults
     }
 

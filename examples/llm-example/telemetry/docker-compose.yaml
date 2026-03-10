@@ -1,4 +1,52 @@
+# Langfuse v3 (self-hosted) + OTLP Collector + Jaeger
+# Langfuse: http://localhost:3000
+# Jaeger UI: http://localhost:16686
+# OTLP Collector: http://localhost:4318
+#
+# Setup: export LANGFUSE_AUTH_HEADER="Basic $(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w 0)"
+# Run:   docker compose up -d && ./gradlew :examples:llm-example:runLangfuse
+
+x-langfuse-env: &langfuse-env
+  NEXTAUTH_URL: "http://localhost:3000"
+  DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/postgres"
+  DIRECT_URL: "postgresql://postgres:postgres@postgres:5432/postgres"
+  SALT: "02cf66d838aa6fcd53b0ad1568a14e1f1a8dd27ccd2c67e1c93bab4678a63b62"
+  ENCRYPTION_KEY: "02cf66d838aa6fcd53b0ad1568a14e1f1a8dd27ccd2c67e1c93bab4678a63b62"
+  TELEMETRY_ENABLED: "false"
+  CLICKHOUSE_MIGRATION_URL: "clickhouse://clickhouse:clickhouse@clickhouse:9000"
+  CLICKHOUSE_URL: "http://clickhouse:clickhouse@clickhouse:8123"
+  CLICKHOUSE_USER: clickhouse
+  CLICKHOUSE_PASSWORD: clickhouse
+  CLICKHOUSE_CLUSTER_ENABLED: "false"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_AUTH: myredissecret
+  LANGFUSE_S3_EVENT_UPLOAD_REGION: "us-east-1"
+  LANGFUSE_S3_EVENT_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_EVENT_UPLOAD_ACCESS_KEY_ID: minio
+  LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: miniosecret
+  LANGFUSE_S3_EVENT_UPLOAD_ENDPOINT: "http://minio:9000"
+  LANGFUSE_S3_EVENT_UPLOAD_FORCE_PATH_STYLE: "true"
+  LANGFUSE_S3_MEDIA_UPLOAD_REGION: "us-east-1"
+  LANGFUSE_S3_MEDIA_UPLOAD_BUCKET: langfuse
+  LANGFUSE_S3_MEDIA_UPLOAD_ACCESS_KEY_ID: minio
+  LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: miniosecret
+  LANGFUSE_S3_MEDIA_UPLOAD_ENDPOINT: "http://minio:9000"
+  LANGFUSE_S3_MEDIA_UPLOAD_FORCE_PATH_STYLE: "true"
+
 services:
+  otel-collector:
+    image: otel/opentelemetry-collector:0.112.0
+    command: ["--config=/etc/otel-collector/config.yaml"]
+    ports:
+      - "4318:4318"   # OTLP HTTP
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector/config.yaml:ro
+    environment:
+      LANGFUSE_AUTH_HEADER: ${LANGFUSE_AUTH_HEADER:?Set LANGFUSE_AUTH_HEADER before docker compose}
+    depends_on:
+      - langfuse-web
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
@@ -8,6 +56,120 @@ services:
     configs:
       - source: ui_config
         target: /etc/jaeger/ui.json
+
+  postgres:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24
+    restart: always
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: clickhouse
+      CLICKHOUSE_PASSWORD: clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: always
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: miniosecret
+    ports:
+      - "9090:9000"
+    volumes:
+      - minio_data:/data
+
+  minio-create-buckets:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set langfuse http://minio:9000 minio miniosecret;
+      mc mb langfuse/langfuse --ignore-existing;
+      exit 0;
+      "
+
+  redis:
+    image: redis:7
+    restart: always
+    command: redis-server --requirepass myredissecret
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "myredissecret", "ping"]
+      interval: 3s
+      timeout: 10s
+      retries: 10
+
+  langfuse-worker:
+    image: langfuse/langfuse-worker:3
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-create-buckets:
+        condition: service_completed_successfully
+    environment:
+      <<: *langfuse-env
+
+  langfuse-web:
+    image: langfuse/langfuse:3
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-create-buckets:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    environment:
+      <<: *langfuse-env
+      LANGFUSE_LOG_LEVEL: ${LANGFUSE_LOG_LEVEL:-info}
+      NEXTAUTH_SECRET: "02cf66d838aa6fcd53b0ad1568a14e1f1a8dd27ccd2c67e1c93bab4678a63b62"
+
+volumes:
+  postgres_data:
+  clickhouse_data:
+  minio_data:
+  redis_data:
 
 configs:
   ui_config:

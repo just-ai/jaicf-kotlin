@@ -7,7 +7,6 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
@@ -80,16 +79,25 @@ class OpenTelemetryTelemetryProvider(
         attributes: TelemetryAttributes,
         parent: TelemetrySpan?
     ): TelemetrySpan {
-        val builder = tracer.spanBuilder(name).applyParent(parent)
-        val span = builder.startSpan()
-        val scope = span.makeCurrent()
-        attributes.forEach { (key, value) -> span.setDynamicAttribute(key, value) }
-        return OtelTelemetrySpan(span, scope)
-    }
+        val span = when (parent) {
+            is OtelTelemetrySpan -> {
 
-    private fun SpanBuilder.applyParent(parent: TelemetrySpan?): SpanBuilder = when (parent) {
-        is OtelTelemetrySpan -> setParent(Context.current().with(parent.unwrap()))
-        else -> setParent(Context.current())
+                val parentContext = Context.root().with(parent.unwrap())
+                val builder = tracer.spanBuilder(name).setParent(parentContext)
+                val child = builder.startSpan()
+                val childScope = child.makeCurrent()
+                attributes.forEach { (key, value) -> child.setDynamicAttribute(key, value) }
+                OtelTelemetrySpan(child, childScope)
+            }
+            else -> {
+                val builder = tracer.spanBuilder(name).setNoParent()
+                val child = builder.startSpan()
+                val scope = child.makeCurrent()
+                attributes.forEach { (key, value) -> child.setDynamicAttribute(key, value) }
+                OtelTelemetrySpan(child, scope)
+            }
+        }
+        return span
     }
 
     private class OtelTelemetrySpan(

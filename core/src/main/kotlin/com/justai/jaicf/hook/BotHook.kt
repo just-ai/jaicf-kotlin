@@ -5,6 +5,7 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.api.MutableBotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.context.currentState
 import com.justai.jaicf.exceptions.BotException
 import com.justai.jaicf.exceptions.BotExecutionException
@@ -60,7 +61,8 @@ interface BotActionHook : BotProcessHook {
 data class BotRequestHook(
     override val context: BotContext,
     override val request: BotRequest,
-    override val reactions: Reactions
+    override val reactions: Reactions,
+    val requestContext: RequestContext,
 ) : BotPreProcessHook
 
 data class BeforeProcessHook(

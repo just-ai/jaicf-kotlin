@@ -1,6 +1,7 @@
 package com.justai.jaicf.activator.llm
 
-import com.justai.jaicf.activator.llm.LLMToolCallsHook
+import com.justai.jaicf.activator.llm.telemetry.LLMLifecycleHook
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanType
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.model.scenario.Scenario
 import com.justai.jaicf.test.ScenarioTest
@@ -10,10 +11,12 @@ import kotlin.reflect.KClass
 
 open class LLMScenarioTest(scenario: Scenario) : ScenarioTest(scenario) {
     init {
-        bot.hooks.addHookAction<LLMToolCallsHook> {
-            reactions.executionContext.reactions.addAll(
-                LLMToolCallReaction.fromHook(this)
-            )
+        bot.hooks.addHookAction<LLMLifecycleHook> {
+            if (type == LLMSpanType.TOOL_CALLS && reactions != null) {
+                reactions.executionContext.reactions.addAll(
+                    LLMToolCallReaction.fromHook(this)
+                )
+            }
         }
     }
 

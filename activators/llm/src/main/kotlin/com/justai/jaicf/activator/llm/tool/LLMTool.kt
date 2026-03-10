@@ -7,9 +7,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
-import com.justai.jaicf.activator.llm.telemetry.LLMToolExecuteHook
+import com.justai.jaicf.activator.llm.telemetry.LLMAttributes
+import com.justai.jaicf.activator.llm.telemetry.LLMLifecycleHook
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanType
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanName
 import com.justai.jaicf.telemetry.runWithTelemetry
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 
@@ -65,18 +68,23 @@ open class LLMTool<T>(
     ): R {
         val toolName = context.call.name
         val baseAttributes = mapOf(
-            "llm.tool.name" to toolName,
-            "llm.tool.call_id" to context.call.callId,
-            "llm.tool.arguments" to (context.call.arguments?.toString() ?: "")
+            LLMAttributes.TOOL_NAME to toolName,
+            LLMAttributes.TOOL_CALL_ID to context.call.callId,
+            LLMAttributes.TOOL_ARGUMENTS to (context.call.arguments?.toString() ?: "")
         )
 
-        val hook = LLMToolExecuteHook(
-            context.context,
-            context.request,
-            baseAttributes
+        val hook = LLMLifecycleHook(
+            type = LLMSpanType.TOOL_EXECUTE,
+            state = null,
+            context = context.context,
+            request = context.request,
+            reactions = null,
+            activator = null,
+            attributes = baseAttributes
         )
 
-        return runWithTelemetry(hook) {
+        val spanName = "${LLMSpanName.ToolCall}:${context.call.name}"
+        return runWithTelemetry(hook, spanName) {
             context.block()
         }
     }
