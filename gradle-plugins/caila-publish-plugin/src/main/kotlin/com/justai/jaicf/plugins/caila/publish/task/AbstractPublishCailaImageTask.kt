@@ -62,7 +62,7 @@ abstract class AbstractPublishCailaImageTask : DefaultTask() {
         val accountId = cailaAccountId.get()
         val baseUrl = cailaBaseUrl.get()
 
-        logger.lifecycle("Publishing Docker image to Caila platform (${getSourceDescription()})")
+        logger.lifecycle("Publishing Docker image to Caila platform (${sourceDescription()})")
         logger.lifecycle("Docker image: $dockerImage")
         logger.lifecycle("Caila image name: $cailaImageName")
 
@@ -141,7 +141,7 @@ abstract class AbstractPublishCailaImageTask : DefaultTask() {
 
     protected abstract fun validateDockerImage()
 
-    protected abstract fun getSourceDescription(): String
+    protected abstract fun sourceDescription(): String
 
     /**
      * Waits for models to be deleted from CAILA.

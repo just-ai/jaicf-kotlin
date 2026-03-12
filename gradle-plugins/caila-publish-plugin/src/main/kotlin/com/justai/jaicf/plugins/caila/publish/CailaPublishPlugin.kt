@@ -62,6 +62,11 @@ class CailaPublishPlugin : Plugin<Project> {
             spec.set(extension.model)
             httpClientSpec.set(extension.httpClient)
             imageId.set(imageFromDockerTask.flatMap { it.publishedImageId })
+            dockerImageName.convention(
+                project.provider {
+                    pushImageTask.get().images?.get()?.first()
+                }
+            )
             cailaBaseUrl.convention(extension.url)
             dependsOn(imageFromDockerTask)
         }
@@ -70,6 +75,7 @@ class CailaPublishPlugin : Plugin<Project> {
             spec.set(extension.model)
             httpClientSpec.set(extension.httpClient)
             imageId.set(imageFromRegistryTask.flatMap { it.publishedImageId })
+            dockerImageName.set(extension.image.image)
             cailaBaseUrl.convention(extension.url)
             dependsOn(imageFromRegistryTask)
         }

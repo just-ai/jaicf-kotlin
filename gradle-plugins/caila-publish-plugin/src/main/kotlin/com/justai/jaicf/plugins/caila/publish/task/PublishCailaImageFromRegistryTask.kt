@@ -19,8 +19,7 @@ abstract class PublishCailaImageFromRegistryTask : AbstractPublishCailaImageTask
         }
     }
 
-    @Internal
-    override fun getSourceDescription(): String {
+    override fun sourceDescription(): String {
         return "from manual registry"
     }
 }

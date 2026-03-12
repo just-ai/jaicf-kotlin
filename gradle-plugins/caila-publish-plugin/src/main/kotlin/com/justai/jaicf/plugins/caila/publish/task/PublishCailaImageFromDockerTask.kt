@@ -23,8 +23,7 @@ abstract class PublishCailaImageFromDockerTask : AbstractPublishCailaImageTask()
         }
     }
 
-    @Internal
-    override fun getSourceDescription(): String {
+    override fun sourceDescription(): String {
         return "from Docker Extension"
     }
 }

@@ -28,7 +28,11 @@ internal object HttpClientFactory {
         }
         install(ContentNegotiation) {
             json(
-                Json { ignoreUnknownKeys = true; isLenient = true; encodeDefaults = false }
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    encodeDefaults = true
+                }
             )
         }
     }

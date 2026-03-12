@@ -6,6 +6,7 @@ import com.justai.jaicf.plugins.caila.publish.model.PublishImageRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.PublishImageResponseDto
 import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.S3CredentialsResponseDto
+import com.justai.jaicf.plugins.caila.publish.model.WizardPublishModelRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -53,6 +54,22 @@ class CailaApiClient(
     fun publishModelBlocking(accountId: Int, body: PublishModelRequestDto) {
         runBlocking {
             publishModel(accountId, body)
+        }
+    }
+
+    suspend fun publishModelWizard(accountId: Int, body: WizardPublishModelRequestDto) {
+        httpClient.post("$baseUrl/wizard/account/$accountId/model") {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer $accessToken")
+            }
+            contentType(ContentType.Application.Json)
+            setBody(body)
+        }
+    }
+
+    fun publishModelWizardBlocking(accountId: Int, body: WizardPublishModelRequestDto) {
+        runBlocking {
+            publishModelWizard(accountId, body)
         }
     }
 

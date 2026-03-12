@@ -6,6 +6,8 @@ import com.justai.jaicf.plugins.caila.publish.extension.HttpClientSpec
 import com.justai.jaicf.plugins.caila.publish.internal.client.CailaApiClient
 import com.justai.jaicf.plugins.caila.publish.internal.http.HttpClientFactory
 import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
+import com.justai.jaicf.plugins.caila.publish.model.WizardPublishModelRequestDto
+import com.justai.jaicf.plugins.caila.publish.model.createWizardRequest
 import io.ktor.client.plugins.logging.LogLevel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -27,6 +29,10 @@ abstract class CailaModelTask : DefaultTask() {
 
     @get:Input
     abstract val imageId: Property<Int>
+
+    @get:Input
+    @get:Optional
+    abstract val dockerImageName: Property<String>
 
     @get:Input
     @get:Optional
@@ -58,13 +64,13 @@ abstract class CailaModelTask : DefaultTask() {
         validateInputs()
 
         val modelSpec = spec.get()
-        val image = imageId.get()
+        val dockerImage = dockerImageName.get()
         val token = cailaApiToken.get()
         val accountId = cailaAccountId.get()
         val baseUrl = cailaBaseUrl.get()
 
-        logger.lifecycle("Publishing model to Caila platform")
-        logger.lifecycle("Image ID: $image")
+        logger.lifecycle("Publishing model to Caila platform using Wizard API")
+        logger.lifecycle("Docker image: $dockerImage")
 
         try {
             val httpSpec = httpClientSpec.get()
@@ -80,32 +86,28 @@ abstract class CailaModelTask : DefaultTask() {
             val s3Settings = modelSpec.s3.orNull
             val s3EnvVars = fetchS3CredentialsAsMap(client, accountId, s3Settings)
 
-            val request = createRequestWithS3Credentials(
-                imageId = image,
-                imageAccountId = accountId,
+            val wizardRequest = createWizardRequest(
+                dockerImage = dockerImage,
+                accountId = accountId,
                 spec = modelSpec,
                 s3EnvVars = s3EnvVars
             )
 
-            // Log HTTP settings for debugging
-            logger.lifecycle("HTTP Settings:")
-            logger.lifecycle("  isHttpEnabled: ${request.httpSettings?.isHttpEnabled}")
-            logger.lifecycle("  httpPort: ${request.httpSettings?.httpPort}")
-            logger.lifecycle("  mainPageEndpoint: ${request.httpSettings?.mainPageEndpoint}")
-            logger.lifecycle("  httpInterfaceOnly: ${request.httpSettings?.httpInterfaceOnly}")
-
             // Log full request for debugging
             try {
-                val json = kotlinx.serialization.json.Json { prettyPrint = true }
-                logger.lifecycle("Full request body:")
-                logger.lifecycle(json.encodeToString(PublishModelRequestDto.serializer(), request))
+                val json = kotlinx.serialization.json.Json {
+                    prettyPrint = true
+                    encodeDefaults = true
+                }
+                logger.lifecycle("Full Wizard request body:")
+                logger.lifecycle(json.encodeToString(WizardPublishModelRequestDto.serializer(), wizardRequest))
             } catch (e: Exception) {
                 logger.warn("Could not serialize request for logging: ${e.message}")
             }
 
-            client.publishModelBlocking(accountId, request)
+            client.publishModelWizardBlocking(accountId, wizardRequest)
 
-            logger.lifecycle("Model published successfully")
+            logger.lifecycle("Model published successfully via Wizard API")
 
             logPublicAccessUrl(modelSpec, accountId)
 
