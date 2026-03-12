@@ -4,7 +4,6 @@ import com.justai.jaicf.plugins.caila.publish.model.GetImageResponse
 import com.justai.jaicf.plugins.caila.publish.model.GetModelResponse
 import com.justai.jaicf.plugins.caila.publish.model.PublishImageRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.PublishImageResponseDto
-import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.S3CredentialsResponseDto
 import com.justai.jaicf.plugins.caila.publish.model.WizardPublishModelRequestDto
 import io.ktor.client.HttpClient
@@ -38,22 +37,6 @@ class CailaApiClient(
     fun publishImageBlocking(accountId: Int, body: PublishImageRequestDto): PublishImageResponseDto {
         return runBlocking {
             publishImage(accountId, body)
-        }
-    }
-
-    suspend fun publishModel(accountId: Int, body: PublishModelRequestDto) {
-        httpClient.post("$baseUrl/account/$accountId/model") {
-            headers {
-                append(HttpHeaders.Authorization, "Bearer $accessToken")
-            }
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
-    }
-
-    fun publishModelBlocking(accountId: Int, body: PublishModelRequestDto) {
-        runBlocking {
-            publishModel(accountId, body)
         }
     }
 

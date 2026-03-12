@@ -1,14 +1,14 @@
 # CAILA Publish Plugin
 
-Gradle plugin for deploying JAICF bots to CAILA MLOps platform.
+Gradle plugin for deploying JAICF bots to CAILA platform.
 
 ## Quick Start
 
-### 1. Installation
+### 1. Add Plugin
 
 ```kotlin
 plugins {
-    id("com.justai.jaicf.caila-publish-plugin") version "1.0.0"
+    id("com.justai.jaicf.caila-publish-plugin")
 }
 ```
 
@@ -17,11 +17,10 @@ plugins {
 Add to `~/.gradle/gradle.properties`:
 
 ```properties
-caila.token=<your-api-token>
+caila.token=<your-caila-api-token>
 caila.accountId=<your-account-id>
 dockerUsername=<docker-username>
 dockerPassword=<docker-password>
-dockerEmail=<your-email>
 ```
 
 ### 3. Minimal Configuration
@@ -55,18 +54,17 @@ cailaPublish {
 ./gradlew publishToCailaFromDocker
 ```
 
-**That's it!** The plugin will automatically:
-- Clean build directory
-- Build Docker image
-- Push to registry
-- Create/update CAILA image
-- Create/update CAILA model
-- Configure S3 context manager (if available)
-- Start 1 instance on resource pool
+**That's it!** The plugin automatically:
+- Cleans build directory
+- Builds Docker image (linux/amd64)
+- Pushes to registry
+- Creates/updates CAILA service with public HTTP access
+- Starts instance on free resource pool
+- Configures S3 context manager
 
-## S3 Context Manager Setup
+## S3 Context Manager (Automatic)
 
-### Step 1: Configure Plugin
+### Step 1: Enable S3 in Plugin (Optional - enabled by default)
 
 ```kotlin
 model {
@@ -92,11 +90,81 @@ val bot = BotEngine(
 )
 ```
 
-**Done!** S3 credentials are automatically fetched from CAILA and injected as environment variables.
+**Done!** S3 credentials are automatically fetched and injected. Works in CAILA, falls back to InMemory locally.
 
-## Common Configuration Options
+## Configuration Options
 
-### Docker Settings
+### Model Settings
+
+```kotlin
+model {
+    name = "my-bot"                    // Required
+    displayName = "My Bot"             // Optional
+    displayAuthor = "My Team"          // Optional
+    shortDescription = "Description"   // Optional
+    taskType = "custom"                // Default: "custom"
+    modelType = "WEB_APPLICATION"      // Default: "WEB_APPLICATION"
+    languages = listOf("ru", "en")     // Default: []
+}
+```
+
+### HTTP Settings
+
+```kotlin
+http {
+    port = 8080                    // Required
+    mainPageEndpoint = "/health"   // Default: "/health"
+}
+```
+
+### Public Access
+
+```kotlin
+publicSettings {
+    isPublic = true                // Default: false
+    featured = false               // Default: false
+    hidden = false                 // Default: false
+}
+```
+
+### Resource Group & Limits
+
+```kotlin
+model {
+    resourceGroup = "my-resource-group"  // Default: "free-pool-quota-for-{accountId}"
+
+    // Optional: Custom resource limits (only for custom resource groups)
+    resourceLimits {
+        cpuRequest = "100m"            // Default: "100m"
+        memoryLimit = "500Mi"          // Default: "500Mi"
+        ephemeralDiskLimit = "100Mi"   // Default: "100Mi"
+        gpuRequested = false           // Default: false
+    }
+}
+```
+
+**Note:** Resource limits are only needed for custom resource groups. Free pool has predefined limits.
+
+### Timeouts
+
+```kotlin
+timeouts {
+    podStartTimeoutSec.set(120)    // Default: 120
+}
+```
+
+### Environment Variables
+
+```kotlin
+environmentVariables {
+    put("API_KEY", "your-key")
+    put("LOG_LEVEL", "INFO")
+}
+```
+
+S3 credentials are automatically added by the plugin.
+
+### Docker Registry
 
 ```kotlin
 docker {
@@ -121,166 +189,14 @@ docker {
 ```kotlin
 image {
     name = "my-bot-image"              // Required
-    accessMode = "private"             // private | public. Default: private
+    accessMode = "private"             // private | public. Default: "private"
     allowDestructiveUpdate = true      // Default: true
 }
 ```
 
-### Model Settings
-
-```kotlin
-model {
-    name = "my-bot"                    // Required
-    displayName = "My Bot"
-    displayAuthor = "My Team"
-    shortDescription = "Bot description"
-    minInstancesCount = 1              // Default: 1 (auto-starts instance)
-
-    http {
-        port = 8080                    // Required
-        mainEndpoint = "/health"       // Default healthcheck endpoint
-    }
-}
-```
-
-### Environment Variables
-
-```kotlin
-environmentVariables {
-    put("API_KEY", "your-key")
-    put("LOG_LEVEL", "INFO")
-    putAll(mapOf(
-        "VAR1" to "value1",
-        "VAR2" to "value2"
-    ))
-}
-```
-
-S3 credentials are automatically added by the plugin.
-
-### Resource Limits
-
-```kotlin
-resourceLimits {
-    cpuRequest = "500m"       // Default: 500m
-    memoryLimit = "1Gi"       // Default: 1Gi
-}
-```
-
-### Auto-scaling
-
-```kotlin
-autoScalingConfiguration {
-    enabled.set(true)
-    minInstanceCount.set(1)
-    maxInstanceCount.set(5)
-    scaleUpRequestsPerMinuteThreshold.set(100)
-    scaleDownRequestsPerMinuteThreshold.set(10)
-}
-```
-
-### Public Access
-
-```kotlin
-publicSettings {
-    isPublic = true           // Default: false
-}
-```
-
-## Available Tasks
-
-| Task | Description |
-|------|-------------|
-| `publishToCailaFromDocker` | Build Docker image and deploy to CAILA |
-| `publishCailaImageFromDocker` | Build and publish Docker image only |
-| `publishCailaModelFromDocker` | Publish model only (requires image) |
-| `publishToCailaFromRegistry` | Deploy pre-built image to CAILA |
-
-## Advanced Configuration
-
-<details>
-<summary>Timeouts</summary>
-
-```kotlin
-timeouts {
-    podStartTimeoutSec.set(120)   // Default: 120
-    predictTimeoutSec.set(30)     // Default: 30
-    fitTimeoutSec.set(600)        // Default: 600
-}
-```
-</details>
-
-<details>
-<summary>Retries</summary>
-
-```kotlin
-retriesConfig {
-    maxRetries.set(3)
-    timeoutsMs.set(listOf(1000L, 2000L, 4000L))
-    maxRetriesPerInstance.set(1)
-}
-```
-</details>
-
-<details>
-<summary>Batching</summary>
-
-```kotlin
-batchesConfig {
-    batchSize.set(10)
-    timeWaitMs.set(1000)
-    maxLengthToSkip.set(1000000)
-}
-```
-</details>
-
-<details>
-<summary>Caching</summary>
-
-```kotlin
-caching {
-    enabled.set(true)
-    mongoUri.set("mongodb://...")
-    collectionName.set("cache")
-    recordsLimit.set(10000)
-}
-```
-</details>
-
-<details>
-<summary>Priority Queue</summary>
-
-```kotlin
-priorityQueue {
-    enabled.set(true)
-    concurrencyLevel.set(10)
-}
-```
-</details>
-
-<details>
-<summary>Archive Settings</summary>
-
-```kotlin
-archiveSettings {
-    enabled.set(true)
-    numberOfArchivedRequests.set(1000)
-    encryptionEnabled.set(false)
-}
-```
-</details>
-
-## Requirements
-
-- Gradle 9.0+
-- Kotlin 2.2.0+
-- Java 17+
-- Docker (for automatic builds)
-- CAILA account with API access
-
 ## Use Pre-built Image
 
-If you already have a Docker image:
+If you have a Docker image already:
 
 ```kotlin
 cailaPublish {
@@ -303,3 +219,26 @@ Then run:
 ```bash
 ./gradlew publishToCailaFromRegistry
 ```
+
+## Available Tasks
+
+| Task | Description |
+|------|-------------|
+| `publishToCailaFromDocker` | Build Docker image and deploy to CAILA |
+| `publishCailaImageFromDocker` | Build and publish Docker image only |
+| `publishCailaModelFromDocker` | Publish model only (requires image task) |
+| `publishToCailaFromRegistry` | Deploy pre-built image to CAILA |
+
+## Requirements
+
+- Gradle 9.0+
+- Kotlin 2.2.0+
+- Java 17+
+- Docker (for automatic builds)
+- CAILA account with API access
+
+## Additional Resources
+
+- [CAILA Documentation](https://docs.caila.io)
+- [Task Types Reference](https://docs.caila.io/api/task-types)
+- [CAILA API](https://caila.io/swagger-ui)

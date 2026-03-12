@@ -5,7 +5,6 @@ import com.justai.jaicf.plugins.caila.publish.extension.CailaModelSpec
 import com.justai.jaicf.plugins.caila.publish.extension.HttpClientSpec
 import com.justai.jaicf.plugins.caila.publish.internal.client.CailaApiClient
 import com.justai.jaicf.plugins.caila.publish.internal.http.HttpClientFactory
-import com.justai.jaicf.plugins.caila.publish.model.PublishModelRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.WizardPublishModelRequestDto
 import com.justai.jaicf.plugins.caila.publish.model.createWizardRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -81,6 +80,38 @@ abstract class CailaModelTask : DefaultTask() {
                 keepAliveTimeMs = httpSpec.keepAliveTimeMs.get(),
             )
             val client = CailaApiClient(token, baseUrl, httpClient)
+
+            // Check if model already exists and delete it (wizard only creates new models)
+            val modelName = modelSpec.name.get()
+            val existingModels = client.getModelBlocking(accountId)
+            val existingModel = existingModels.records.find { it.modelName == modelName }
+
+            if (existingModel != null) {
+                logger.lifecycle("Model $modelName (ID: ${existingModel.id.modelId}) already exists. Deleting...")
+                client.deleteModelBlocking(accountId, existingModel.id.modelId)
+
+                // Wait for model to be fully deleted
+                logger.lifecycle("Waiting for model to be deleted...")
+                var attempts = 0
+                val maxAttempts = 30
+                while (attempts < maxAttempts) {
+                    Thread.sleep(2000)
+                    val currentModels = client.getModelBlocking(accountId)
+                    val stillExists = currentModels.records.any { it.modelName == modelName }
+
+                    if (!stillExists) {
+                        logger.lifecycle("✓ Model deleted successfully")
+                        break
+                    }
+
+                    attempts++
+                    logger.lifecycle("Waiting... (attempt $attempts/$maxAttempts)")
+                }
+
+                if (attempts >= maxAttempts) {
+                    logger.warn("⚠ Model deletion timeout. Attempting to create anyway...")
+                }
+            }
 
             // Fetch S3 credentials and add them to request
             val s3Settings = modelSpec.s3.orNull
@@ -166,105 +197,9 @@ abstract class CailaModelTask : DefaultTask() {
         }
     }
 
-    /**
-     * Creates PublishModelRequestDto with S3 credentials injected into environment variables.
-     */
-    private fun createRequestWithS3Credentials(
-        imageId: Int,
-        imageAccountId: Int,
-        spec: CailaModelSpec,
-        s3EnvVars: Map<String, String>?
-    ): PublishModelRequestDto {
-        val existingEnvMap = mutableMapOf<String, String>()
-
-        spec.env.orNull?.let { envString ->
-            try {
-                val json = Json { ignoreUnknownKeys = true }
-                existingEnvMap.putAll(json.decodeFromString<Map<String, String>>(envString))
-            } catch (e: Exception) {
-                envString.lines().forEach { line ->
-                    val parts = line.split("=", limit = 2)
-                    if (parts.size == 2) {
-                        existingEnvMap[parts[0].trim()] = parts[1].trim()
-                    }
-                }
-            }
-        }
-
-        spec.environmentVariables.orNull?.variables?.orNull?.let { vars ->
-            existingEnvMap.putAll(vars)
-        }
-
-        s3EnvVars?.let { existingEnvMap.putAll(it) }
-
-        val combinedEnv = if (existingEnvMap.isNotEmpty()) {
-            Json.encodeToString(existingEnvMap)
-        } else {
-            null
-        }
-
-        return PublishModelRequestDto(
-            modelName = spec.name.get(),
-            imageId = imageId,
-            imageAccountId = imageAccountId,
-            taskType = spec.taskType.get(),
-            modelType = spec.modelType.orNull,
-            displayName = spec.displayName.orNull,
-            displayAuthor = spec.displayAuthor.orNull,
-            rejectRequestsIfInactive = spec.rejectRequestsIfInactive.orNull,
-            config = spec.config.orNull,
-            env = combinedEnv,  // Our custom combined env with S3 credentials
-            fittable = spec.fittable.orNull,
-            hostingType = spec.hostingType.orNull,
-            resourceGroup = spec.resourceGroup.orNull,
-            shortDescription = spec.shortDescription.orNull,
-            minInstancesCount = spec.minInstancesCount.orElse(1).get(),
-            startTimeSec = spec.startTimeSec.orNull,
-            additionalFlags = spec.additionalFlags.orNull ?: emptyList(),
-            languages = spec.languages.orNull ?: emptyList(),
-            aliases = spec.aliases.orNull ?: emptyList(),
-            persistentVolumes = spec.persistentVolumes.orNull?.map {
-                com.justai.jaicf.plugins.caila.publish.model.PersistentVolumeDto(it)
-            } ?: emptyList(),
-            dataImageMounts = spec.dataImageMounts.orNull?.map {
-                com.justai.jaicf.plugins.caila.publish.model.DataImageMountDto(it)
-            } ?: emptyList(),
-            timeouts = spec.timeouts.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.TimeoutsDto(it)
-            },
-            resourceLimits = spec.resourceLimits.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.ResourceLimitsDto(it)
-            },
-            retriesConfig = spec.retriesConfig.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.RetriesConfigDto(it)
-            },
-            batchesConfig = spec.batchesConfig.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.BatchesConfigDto(it)
-            },
-            caching = spec.caching.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.CachingDto(it)
-            },
-            priorityQueue = spec.priorityQueue.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.PriorityQueueDto(it)
-            },
-            autoScalingConfiguration = spec.autoScalingConfiguration.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.AutoScalingConfigurationDto(it)
-            },
-            httpSettings = spec.http.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.HttpSettingsDto(it)
-            },
-            archiveSettings = spec.archiveSettings.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.ArchiveSettingsDto(it)
-            },
-            publicSettings = spec.publicSettings.orNull?.let {
-                com.justai.jaicf.plugins.caila.publish.model.PublicSettingsDto(it)
-            },
-        )
-    }
-
     private fun validateInputs() {
         require(spec.isPresent) { "Model spec must be provided" }
-        require(imageId.isPresent) { "Image ID must be provided" }
+        require(dockerImageName.isPresent) { "Docker image name must be provided" }
         require(cailaApiToken.isPresent) { "Caila API token must be provided (caila.token property)" }
         require(cailaAccountId.isPresent) { "Caila account ID must be provided (caila.accountId property)" }
 
@@ -276,9 +211,6 @@ abstract class CailaModelTask : DefaultTask() {
             val httpSettings = modelSpec.http.get()
             require(httpSettings.port.isPresent) {
                 "port must be specified when http block is used"
-            }
-            require(httpSettings.mainPageEndpoint.isPresent) {
-                "mainEndpoint must be specified when http block is used"
             }
         }
     }
