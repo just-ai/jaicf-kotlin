@@ -14,7 +14,8 @@ enum class TaskType(val tag: String) {
     CHAT("chat"),
     IMAGE_GENERATION("image-generation"),
     CUSTOM("custom"),
-    FILE_BASE64("file_base64")
+    FILE_BASE64("file_base64"),
+    MCP_SERVER("mcp_server")
 }
 
 /**
@@ -38,5 +39,6 @@ enum class AccessMode(val mode: String) {
  */
 enum class ModelType(val type: String) {
     WEB_APPLICATION("WEB_APPLICATION"),
-    MLP("MLP")
+    MLP("MLP"),
+    MCP_SERVER("MCP_SERVER")
 }

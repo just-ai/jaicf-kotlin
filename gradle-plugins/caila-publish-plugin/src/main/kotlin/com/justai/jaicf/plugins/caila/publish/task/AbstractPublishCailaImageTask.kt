@@ -78,7 +78,7 @@ abstract class AbstractPublishCailaImageTask : DefaultTask() {
             val request = PublishImageRequestDto(
                 name = cailaImageName,
                 image = dockerImage,
-                accessMode = imageSpec.accessMode.orNull
+                accessMode = imageSpec.accessMode.orNull?.mode
             )
 
             val imageResponse = client.getImagesBlocking(accountId)

@@ -1,5 +1,6 @@
 package com.justai.jaicf.plugins.caila.publish.extension
 
+import com.justai.jaicf.plugins.caila.publish.util.ModelType
 import com.justai.jaicf.plugins.caila.publish.util.TaskType
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
@@ -25,18 +26,18 @@ constructor(
      * See documentation for more details: https://docs.caila.io/api/task-types
      */
     @get:Input
-    val taskType: Property<String> = objectFactory.property<String>()
-        .convention(TaskType.CUSTOM.tag)
+    val taskType: Property<TaskType> = objectFactory.property<TaskType>()
+        .convention(TaskType.CUSTOM)
 
     /**
      * Model type for the service.
-     * Use "WEB_APPLICATION" for web applications, "MLP" for MLP SDK-based services.
-     * Default: "WEB_APPLICATION"
+     * Use ModelType.WEB_APPLICATION for web applications, ModelType.MLP for MLP SDK-based services.
+     * Default: ModelType.WEB_APPLICATION
      */
     @get:Input
     @Optional
-    val modelType: Property<String> = objectFactory.property<String>()
-        .convention("WEB_APPLICATION")
+    val modelType: Property<ModelType> = objectFactory.property<ModelType>()
+        .convention(ModelType.WEB_APPLICATION)
 
     @get:Input
     @Optional
@@ -244,7 +245,7 @@ open class PublicSettingsSpec
     constructor(
         objectFactory: ObjectFactory,
     ) {
-        val isPublic: Property<Boolean> = objectFactory.property<Boolean>().convention(false)
+        val isPublic: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
         val featured: Property<Boolean> = objectFactory.property<Boolean>().convention(false)
         val hidden: Property<Boolean> = objectFactory.property<Boolean>().convention(false)
         val publicTestingAllowed: Property<Boolean> = objectFactory.property<Boolean>().convention(false)

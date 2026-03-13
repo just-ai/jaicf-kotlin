@@ -116,7 +116,7 @@ fun createWizardRequest(
 
     return WizardPublishModelRequestDto(
         modelTypeStep = ModelTypeStep(
-            modelType = spec.modelType.getOrElse("WEB_APPLICATION"),
+            modelType = spec.modelType.get().type,
             enableHttpInterface = httpSettings?.isHttpEnabled?.getOrElse(true) ?: true
         ),
         serviceDescriptionStep = ServiceDescriptionStep(
@@ -125,14 +125,14 @@ fun createWizardRequest(
             modelName = spec.name.get(),
             shortDescription = spec.shortDescription.orNull,
             prototype = false,
-            taskType = spec.taskType.get(),
+            taskType = spec.taskType.get().tag,
             languages = spec.languages.orNull ?: emptyList(),
             publicSettingsData = PublicSettingsData(
-                isPublic = publicSettings?.isPublic?.getOrElse(false) ?: false,
-                featured = publicSettings?.featured?.getOrElse(false) ?: false,
-                hidden = publicSettings?.hidden?.getOrElse(false) ?: false,
-                publicTestingAllowed = publicSettings?.publicTestingAllowed?.getOrElse(false) ?: false,
-                showPersonalDataDisclaimer = publicSettings?.showPersonalDataDisclaimer?.getOrElse(false) ?: false
+                isPublic = publicSettings?.isPublic?.get() ?: true,
+                featured = publicSettings?.featured?.get() ?: false,
+                hidden = publicSettings?.hidden?.get() ?: false,
+                publicTestingAllowed = publicSettings?.publicTestingAllowed?.get() ?: false,
+                showPersonalDataDisclaimer = publicSettings?.showPersonalDataDisclaimer?.get() ?: false
             )
         ),
         imageStep = ImageStep(

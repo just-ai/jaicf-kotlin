@@ -1,5 +1,6 @@
 package com.justai.jaicf.plugins.caila.publish.extension
 
+import com.justai.jaicf.plugins.caila.publish.util.AccessMode
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -26,13 +27,13 @@ open class CailaImageSpec
         val name: Property<String> = objectFactory.property()
 
         /**
-         * Access mode for the image.
-         * Default: "private"
+         * Access mode for the image in CAILA registry.
+         * Default: AccessMode.PRIVATE
          */
         @get:Input
         @Optional
-        val accessMode: Property<String> = objectFactory.property<String>()
-            .convention("private")
+        val accessMode: Property<AccessMode> = objectFactory.property<AccessMode>()
+            .convention(AccessMode.PRIVATE)
 
         /**
          * If true, existing image with same name will be deleted

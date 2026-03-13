@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  * @param bucketName Name of the S3 bucket to store contexts
  * @param keyPrefix Optional prefix for S3 object keys (e.g., "contexts")
  */
-class S3BotContextManager(
+open class S3BotContextManager(
     private val s3Client: S3Client,
     private val bucketName: String,
     private val keyPrefix: String = "contexts"

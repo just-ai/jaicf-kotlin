@@ -26,6 +26,9 @@ dockerPassword=<docker-password>
 ### 3. Minimal Configuration
 
 ```kotlin
+import com.justai.jaicf.plugins.caila.publish.util.AccessMode
+import com.justai.jaicf.plugins.caila.publish.util.TaskType
+
 cailaPublish {
     docker {
         javaApplication {
@@ -85,7 +88,7 @@ import com.justai.jaicf.context.manager.s3.CailaS3ContextManager
 
 val bot = BotEngine(
     scenario = YourScenario,
-    defaultContextManager = CailaS3ContextManager.createOrNull() ?: InMemoryBotContextManager,
+    defaultContextManager = CailaS3ContextManager() ?: InMemoryBotContextManager,
     activators = arrayOf(...)
 )
 ```
@@ -97,13 +100,16 @@ val bot = BotEngine(
 ### Model Settings
 
 ```kotlin
+import com.justai.jaicf.plugins.caila.publish.util.TaskType
+import com.justai.jaicf.plugins.caila.publish.util.ModelType
+
 model {
     name = "my-bot"                    // Required
     displayName = "My Bot"             // Optional
     displayAuthor = "My Team"          // Optional
     shortDescription = "Description"   // Optional
-    taskType = "custom"                // Default: "custom"
-    modelType = "WEB_APPLICATION"      // Default: "WEB_APPLICATION"
+    taskType = TaskType.CUSTOM         // Default: TaskType.CUSTOM
+    modelType = ModelType.WEB_APPLICATION  // Default: ModelType.WEB_APPLICATION
     languages = listOf("ru", "en")     // Default: []
 }
 ```
@@ -119,13 +125,17 @@ http {
 
 ### Public Access
 
+Controls model visibility in CAILA catalog and public HTTP access.
+
 ```kotlin
 publicSettings {
-    isPublic = true                // Default: false
-    featured = false               // Default: false
-    hidden = false                 // Default: false
+    isPublic = true                // Enable public HTTP access. Default: true
+    featured = false               // Show in featured section. Default: false
+    hidden = false                 // Hide from catalog. Default: false
 }
 ```
+
+**Note:** `image.accessMode` controls Docker image access in registry (default: PRIVATE), while `publicSettings.isPublic` controls model's public HTTP endpoint availability (default: true).
 
 ### Resource Group & Limits
 
@@ -187,9 +197,11 @@ docker {
 ### Image Settings
 
 ```kotlin
+import com.justai.jaicf.plugins.caila.publish.util.AccessMode
+
 image {
     name = "my-bot-image"              // Required
-    accessMode = "private"             // private | public. Default: "private"
+    accessMode = AccessMode.PRIVATE    // Default: AccessMode.PRIVATE
     allowDestructiveUpdate = true      // Default: true
 }
 ```
