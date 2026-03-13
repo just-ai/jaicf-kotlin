@@ -1,5 +1,8 @@
 rootProject.name = "jaicf"
 
+// Include CAILA publish plugin as composite build
+includeBuild("gradle-plugins/caila-publish-plugin")
+
 include("core")
 
 include("examples:hello-world")
@@ -45,6 +48,8 @@ include("managers:mongo")
 findProject(":managers:mongo")?.name = "mongo"
 include("managers:mapdb")
 findProject(":managers:mapdb")?.name = "mapdb"
+include("managers:s3")
+findProject(":managers:s3")?.name = "s3"
 include("activators:rasa")
 findProject(":activators:rasa")?.name = "rasa"
 include("activators:llm")
