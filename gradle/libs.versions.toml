@@ -8,7 +8,7 @@ jackson = "2.18.2"
 slf4j = "2.0.17"
 jUnit = "5.13.4"
 
-ktor = "3.2.1"
+ktor = "3.4.1"
 coroutinesCore = "1.10.2"
 tomcatServletApi = "11.0.9"
 logbackGelfAppender = "1.5"
