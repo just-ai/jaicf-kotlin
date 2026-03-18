@@ -17,6 +17,16 @@ import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
 import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
 import com.justai.jaicf.channel.telegram.streaming.StreamConfig
+import com.justai.jaicf.channel.http.httpBotRouting
+import com.justai.jaicf.helpers.logging.WithLogger
+import com.pengrad.telegrambot.request.SetWebhook
+import io.ktor.server.application.port
+import io.ktor.server.engine.EmbeddedServer
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.routing.routing
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitCancellation
 import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -27,7 +37,8 @@ class TelegramChannel(
     private val telegramApiUrl: String? = null,
     private val requestExecutor: Executor = DefaultRequestExecutor,
     private val streamConfig: StreamConfig = StreamConfig(),
-) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
+    private val webhookUrl: String? = System.getenv("TELEGRAM_WEBHOOK_URL"),
+) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithLogger {
 
     private val gson = Gson()
     private var liveChatProvider: JaicpLiveChatProvider? = null
@@ -41,12 +52,14 @@ class TelegramChannel(
     }
 
     init {
-        bot.setUpdatesListener { updates ->
-            updates.forEach { update ->
-                update.httpBotRequest = HttpBotRequest("".byteInputStream())
-                processUpdate(update)
+        if (webhookUrl == null) {
+            bot.setUpdatesListener { updates ->
+                updates.forEach { update ->
+                    update.httpBotRequest = HttpBotRequest("".byteInputStream())
+                    processUpdate(update)
+                }
+                UpdatesListener.CONFIRMED_UPDATES_ALL
             }
-            UpdatesListener.CONFIRMED_UPDATES_ALL
         }
     }
 
@@ -150,7 +163,11 @@ class TelegramChannel(
         botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, streamConfig), requestContext)
     }
 
-    fun run() {
+    /**
+     * Start bot in long polling mode (blocks current thread).
+     * Best for local development and simple deployments.
+     */
+    fun startLongPolling() {
         bot.removeGetUpdatesListener()
         bot.setUpdatesListener { updates ->
             updates.forEach { update ->
@@ -162,6 +179,64 @@ class TelegramChannel(
 
         Thread.currentThread().join()
     }
+
+    /**
+     * Start bot in webhook mode with Ktor server.
+     *
+     * @param embeddedServer Optional Ktor server engine. If null, creates default Netty server on port 8000
+     * @param webhookUrl Optional webhook URL. If null, uses TELEGRAM_WEBHOOK_URL env variable
+     */
+    suspend fun startWebhook(
+        embeddedServer: EmbeddedServer<*, *>? = null,
+        webhookUrl: String? = this.webhookUrl
+    ) {
+        val url = webhookUrl ?: System.getenv("TELEGRAM_WEBHOOK_URL")
+            ?: error("Webhook URL is required. Pass it as parameter or set TELEGRAM_WEBHOOK_URL env variable")
+
+        val server = embeddedServer ?: embeddedServer(Netty, port = 8000) {
+            routing {
+                httpBotRouting("/telegram" to this@TelegramChannel)
+            }
+        }
+
+        server.start(wait = false)
+
+        logger.info("Server started on port ${server.environment.config.port}")
+        logger.debug("Setting webhook to: $url")
+
+        val response = bot.execute(SetWebhook().url(url))
+
+        if (response.isOk) {
+            logger.info("Webhook set successfully")
+        } else {
+            logger.error("✗ Failed to set webhook: ${response.description()}")
+            error("Failed to set webhook")
+        }
+
+        awaitCancellation()
+    }
+
+    /**
+     * Smart start: automatically detects mode from TELEGRAM_WEBHOOK_URL env variable.
+     * - If TELEGRAM_WEBHOOK_URL is set → starts in webhook mode
+     * - Otherwise → starts in long polling mode
+     */
+    suspend fun start() {
+        if (webhookUrl != null) {
+            startWebhook()
+        } else {
+            kotlinx.coroutines.withContext(Dispatchers.IO) {
+                startLongPolling()
+            }
+        }
+    }
+
+    /**
+     * Legacy method for backward compatibility.
+     * @deprecated Use startLongPolling() instead
+     */
+    @Deprecated("Use startLongPolling() instead", ReplaceWith("startLongPolling()"))
+    fun run() = startLongPolling()
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "telegram"

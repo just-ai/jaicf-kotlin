@@ -17,4 +17,7 @@ dependencies {
 
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
 }
