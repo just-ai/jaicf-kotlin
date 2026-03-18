@@ -1,25 +1,9 @@
 package com.justai.jaicf.channel.telegram
 
-import com.github.kotlintelegrambot.bot
-import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.animation
-import com.github.kotlintelegrambot.dispatcher.audio
-import com.github.kotlintelegrambot.dispatcher.callbackQuery
-import com.github.kotlintelegrambot.dispatcher.contact
-import com.github.kotlintelegrambot.dispatcher.document
-import com.github.kotlintelegrambot.dispatcher.game
-import com.github.kotlintelegrambot.dispatcher.location
-import com.github.kotlintelegrambot.dispatcher.photos
-import com.github.kotlintelegrambot.dispatcher.preCheckoutQuery
-import com.github.kotlintelegrambot.dispatcher.sticker
-import com.github.kotlintelegrambot.dispatcher.text
-import com.github.kotlintelegrambot.dispatcher.video
-import com.github.kotlintelegrambot.dispatcher.videoNote
-import com.github.kotlintelegrambot.dispatcher.voice
-import com.github.kotlintelegrambot.entities.Update
-import com.github.kotlintelegrambot.logging.LogLevel
-import com.github.kotlintelegrambot.network.serialization.GsonFactory
-import com.github.kotlintelegrambot.updater.Updater
+import com.google.gson.Gson
+import com.pengrad.telegrambot.TelegramBot
+import com.pengrad.telegrambot.UpdatesListener
+import com.pengrad.telegrambot.model.Update
 import com.justai.jaicf.api.BotApi
 import com.justai.jaicf.channel.http.HttpBotRequest
 import com.justai.jaicf.channel.http.HttpBotResponse
@@ -30,111 +14,139 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.context.RequestContext
-import com.justai.jaicf.helpers.http.withTrailingSlash
 import com.justai.jaicf.helpers.kotlin.PropertyWithBackingField
+import com.justai.jaicf.BotEngine.Defaults.DefaultRequestExecutor
+import com.justai.jaicf.channel.telegram.streaming.StreamConfig
+import com.justai.jaicf.channel.http.httpBotRouting
+import com.justai.jaicf.helpers.logging.WithLogger
+import com.pengrad.telegrambot.request.SetWebhook
+import io.ktor.server.application.port
+import io.ktor.server.engine.EmbeddedServer
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.routing.routing
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitCancellation
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class TelegramChannel(
     override val botApi: BotApi,
     private val telegramBotToken: String,
-    private val telegramApiUrl: String = "https://api.telegram.org/",
-    private val telegramLogLevel: LogLevel = LogLevel.None,
-    private val requestExecutor: Executor = Executors.newFixedThreadPool(10)
-) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel {
+    private val telegramApiUrl: String? = null,
+    private val requestExecutor: Executor = DefaultRequestExecutor,
+    private val streamConfig: StreamConfig = StreamConfig(),
+    private val webhookUrl: String? = System.getenv("TELEGRAM_WEBHOOK_URL"),
+) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithLogger {
 
-    private val gson = GsonFactory.createForApiClient()
+    private val gson = Gson()
     private var liveChatProvider: JaicpLiveChatProvider? = null
-    private lateinit var botUpdater: Updater
 
-    private val bot = bot {
-        apiUrl = telegramApiUrl.withTrailingSlash()
-        token = telegramBotToken
-        botUpdater = updater
-        logLevel = telegramLogLevel
+    private val bot = if (telegramApiUrl != null) {
+        TelegramBot.Builder(telegramBotToken)
+            .apiUrl(telegramApiUrl)
+            .build()
+    } else {
+        TelegramBot(telegramBotToken)
+    }
 
-        botUpdater.startCheckingUpdates()
-
-        dispatch {
-            fun process(request: TelegramBotRequest) {
-                requestExecutor.execute {
-                    botApi.process(
-                        request,
-                        TelegramReactions(bot, request, liveChatProvider),
-                        RequestContext.fromHttp(request.update.httpBotRequest)
-                    )
+    init {
+        if (webhookUrl == null) {
+            bot.setUpdatesListener { updates ->
+                updates.forEach { update ->
+                    update.httpBotRequest = HttpBotRequest("".byteInputStream())
+                    processUpdate(update)
                 }
-            }
-
-            text {
-                process(TelegramTextRequest(update, message))
-            }
-
-            callbackQuery {
-                val message = callbackQuery.message ?: return@callbackQuery
-                process(TelegramQueryRequest(update, message, callbackQuery.data))
-            }
-
-            location {
-                process(TelegramLocationRequest(update, message, location))
-            }
-
-            contact {
-                process(TelegramContactRequest(update, message, contact))
-            }
-
-            audio {
-                process(TelegramAudioRequest(update, message, media))
-            }
-
-            document {
-                process(TelegramDocumentRequest(update, message, media))
-            }
-
-            animation {
-                process(TelegramAnimationRequest(update, message, media))
-            }
-
-            game {
-                process(TelegramGameRequest(update, message, media))
-            }
-
-            photos {
-                process(TelegramPhotosRequest(update, message, media))
-            }
-
-            sticker {
-                process(TelegramStickerRequest(update, message, media))
-            }
-
-            video {
-                process(TelegramVideoRequest(update, message, media))
-            }
-
-            videoNote {
-                process(TelegramVideoNoteRequest(update, message, media))
-            }
-
-            voice {
-                process(TelegramVoiceRequest(update, message, media))
-            }
-
-            preCheckoutQuery {
-                process(TelegramPreCheckoutRequest(update, preCheckoutQuery))
-            }
-
-            successfulPayment {
-                process(TelegramSuccessfulPaymentRequest(update, message, successfulPayment))
+                UpdatesListener.CONFIRMED_UPDATES_ALL
             }
         }
+    }
+
+    private fun processUpdate(update: Update) {
+        requestExecutor.execute {
+            val request = createBotRequest(update) ?: return@execute
+            botApi.process(
+                request,
+                TelegramReactions(bot, request, liveChatProvider, streamConfig),
+                RequestContext.fromHttp(request.update.httpBotRequest)
+            )
+        }
+    }
+
+    private fun createBotRequest(update: Update): TelegramBotRequest? {
+        update.callbackQuery()?.let { callbackQuery ->
+            val message = callbackQuery.message() ?: return null
+            return TelegramQueryRequest(update, message, callbackQuery.data())
+        }
+
+        update.preCheckoutQuery()?.let { preCheckoutQuery ->
+            return TelegramPreCheckoutRequest(update, preCheckoutQuery)
+        }
+
+        val message = update.message() ?: return null
+
+        message.text()?.let {
+            return TelegramTextRequest(update, message)
+        }
+
+        message.location()?.let {
+            return TelegramLocationRequest(update, message, it)
+        }
+
+        message.contact()?.let {
+            return TelegramContactRequest(update, message, it)
+        }
+
+        message.audio()?.let {
+            return TelegramAudioRequest(update, message, it)
+        }
+
+        message.document()?.let {
+            return TelegramDocumentRequest(update, message, it)
+        }
+
+        message.animation()?.let {
+            return TelegramAnimationRequest(update, message, it)
+        }
+
+        message.game()?.let {
+            return TelegramGameRequest(update, message, it)
+        }
+
+        message.photo()?.let { photos ->
+            if (photos.isNotEmpty()) {
+                return TelegramPhotosRequest(update, message, photos)
+            }
+        }
+
+        message.sticker()?.let {
+            return TelegramStickerRequest(update, message, it)
+        }
+
+        message.video()?.let {
+            return TelegramVideoRequest(update, message, it)
+        }
+
+        message.videoNote()?.let {
+            return TelegramVideoNoteRequest(update, message, it)
+        }
+
+        message.voice()?.let {
+            return TelegramVoiceRequest(update, message, it)
+        }
+
+        message.successfulPayment()?.let {
+            return TelegramSuccessfulPaymentRequest(update, message, it)
+        }
+
+        return null
     }
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
         val update = gson.fromJson(request.receiveText(), Update::class.java)
         update.httpBotRequest = request
-        bot.processUpdate(update)
+        processUpdate(update)
         return HttpBotResponse.accepted()
     }
 
@@ -143,19 +155,88 @@ class TelegramChannel(
             .replace("\"{{ timestamp }}\"", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()).toString())
             .replace("{{ messageId }}", UUID.randomUUID().toString())
 
-
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val generatedRequest = generateRequestFromTemplate(request)
         val update = gson.fromJson(generatedRequest, Update::class.java) ?: return
-        val message = update.message ?: return
+        val message = update.message() ?: return
         val telegramRequest = TelegramInvocationRequest.create(request, update, message) ?: return
-        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider), requestContext)
+        botApi.process(telegramRequest, TelegramReactions(bot, telegramRequest, liveChatProvider, streamConfig), requestContext)
     }
 
-    fun run() {
-        botUpdater.stopCheckingUpdates()
-        bot.startPolling()
+    /**
+     * Start bot in long polling mode (blocks current thread).
+     * Best for local development and simple deployments.
+     */
+    fun startLongPolling() {
+        bot.removeGetUpdatesListener()
+        bot.setUpdatesListener { updates ->
+            updates.forEach { update ->
+                update.httpBotRequest = HttpBotRequest("".byteInputStream())
+                processUpdate(update)
+            }
+            UpdatesListener.CONFIRMED_UPDATES_ALL
+        }
+
+        Thread.currentThread().join()
     }
+
+    /**
+     * Start bot in webhook mode with Ktor server.
+     *
+     * @param embeddedServer Optional Ktor server engine. If null, creates default Netty server on port 8000
+     * @param webhookUrl Optional webhook URL. If null, uses TELEGRAM_WEBHOOK_URL env variable
+     */
+    suspend fun startWebhook(
+        embeddedServer: EmbeddedServer<*, *>? = null,
+        webhookUrl: String? = this.webhookUrl
+    ) {
+        val url = webhookUrl ?: System.getenv("TELEGRAM_WEBHOOK_URL")
+            ?: error("Webhook URL is required. Pass it as parameter or set TELEGRAM_WEBHOOK_URL env variable")
+
+        val server = embeddedServer ?: embeddedServer(Netty, port = 8000) {
+            routing {
+                httpBotRouting("/telegram" to this@TelegramChannel)
+            }
+        }
+
+        server.start(wait = false)
+
+        logger.info("Server started on port ${server.environment.config.port}")
+        logger.debug("Setting webhook to: $url")
+
+        val response = bot.execute(SetWebhook().url(url))
+
+        if (response.isOk) {
+            logger.info("Webhook set successfully")
+        } else {
+            logger.error("✗ Failed to set webhook: ${response.description()}")
+            error("Failed to set webhook")
+        }
+
+        awaitCancellation()
+    }
+
+    /**
+     * Smart start: automatically detects mode from TELEGRAM_WEBHOOK_URL env variable.
+     * - If TELEGRAM_WEBHOOK_URL is set → starts in webhook mode
+     * - Otherwise → starts in long polling mode
+     */
+    suspend fun start() {
+        if (webhookUrl != null) {
+            startWebhook()
+        } else {
+            kotlinx.coroutines.withContext(Dispatchers.IO) {
+                startLongPolling()
+            }
+        }
+    }
+
+    /**
+     * Legacy method for backward compatibility.
+     * @deprecated Use startLongPolling() instead
+     */
+    @Deprecated("Use startLongPolling() instead", ReplaceWith("startLongPolling()"))
+    fun run() = startLongPolling()
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "telegram"
@@ -163,7 +244,7 @@ class TelegramChannel(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider,
-        ) = TelegramChannel(botApi, telegramApiUrl = apiUrl, telegramBotToken = "").apply {
+        ) = TelegramChannel(botApi, telegramBotToken = "", telegramApiUrl = apiUrl).apply {
             this.liveChatProvider = liveChatProvider
         }
 
@@ -171,15 +252,14 @@ class TelegramChannel(
     }
 
     class Jaicp(
-        private val executor: Executor,
-        private val logLevel: LogLevel
+        private val executor: Executor
     ) : JaicpCompatibleAsyncChannelFactory {
 
         override fun create(
             botApi: BotApi,
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider
-        ): JaicpCompatibleAsyncBotChannel = TelegramChannel(botApi, "", apiUrl, logLevel, executor).apply {
+        ): JaicpCompatibleAsyncBotChannel = TelegramChannel(botApi, "", apiUrl, executor).apply {
             this.liveChatProvider = liveChatProvider
         }
 

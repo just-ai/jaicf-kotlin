@@ -8,7 +8,7 @@ jackson = "2.18.2"
 slf4j = "2.0.17"
 jUnit = "5.13.4"
 
-ktor = "3.2.1"
+ktor = "3.4.1"
 coroutinesCore = "1.10.2"
 tomcatServletApi = "11.0.9"
 logbackGelfAppender = "1.5"
@@ -19,7 +19,7 @@ mapDb = "3.1.0"
 eclipseCollections = "13.0.0"
 logbackClassic = "1.5.18"
 jline = "3.30.4"
-kotlinTelegram = "6.0.4"
+javaTelegramBotApi = "9.5.0"
 slack = "1.45.3"
 googleActions = "1.8.0"
 alexa = "2.86.0"
@@ -73,7 +73,7 @@ map-db = { module = "org.mapdb:mapdb", version.ref = "mapDb" }
 eclipse-collections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 
 jline = { module = "org.jline:jline", version.ref = "jline" }
-kotlin-telegram-bot = { module = "com.github.kotlin-telegram-bot:kotlin-telegram-bot", version.ref = "kotlinTelegram"}
+java-telegram-bot-api = { module = "com.github.pengrad:java-telegram-bot-api", version.ref = "javaTelegramBotApi"}
 slack = { module = "com.slack.api:bolt", version.ref = "slack" }
 actions-on-google = { module = "com.google.actions:actions-on-google", version.ref = "googleActions"}
 amazon-alexa = { module = "com.amazon.alexa:ask-sdk", version.ref = "alexa" }
