@@ -6,7 +6,7 @@ import com.justai.jaicf.activator.regex.RegexActivator
 import com.justai.jaicf.builder.Scenario
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.examples.llm.props.llmProps
-import com.justai.jaicf.telemetry.CustomTelemetryHook
+import com.justai.jaicf.telemetry.TelemetryProvider
 import com.justai.jaicf.telemetry.opentelemetry.LangfuseTelemetryProvider
 import com.justai.jaicf.telemetry.runWithTelemetry
 
@@ -34,7 +34,8 @@ private val scenario = Scenario {
         }
         action {
             reactions.say("TYPE ANY MATH EXPRESSION")
-            runWithTelemetry(CustomTelemetryHook(context = context, spanName = "Start Math dialogue")) {
+            val provider = BotEngine.current()?.telemetryProvider ?: TelemetryProvider.NoOp
+            runWithTelemetry(provider, "Start Math dialogue", emptyMap()) {
                 reactions.say("TYPE ME ANYTHING")
             }
         }

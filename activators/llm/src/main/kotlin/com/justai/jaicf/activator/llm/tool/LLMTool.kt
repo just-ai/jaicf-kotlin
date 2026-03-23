@@ -5,14 +5,14 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.builder.JsonSchemaBuilder
+import com.justai.jaicf.activator.llm.telemetry.GenAIAttributes
 import com.justai.jaicf.activator.llm.telemetry.LLMAttributes
-import com.justai.jaicf.activator.llm.telemetry.LLMLifecycleHook
-import com.justai.jaicf.activator.llm.telemetry.LLMSpanType
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
-import com.justai.jaicf.activator.llm.telemetry.LLMSpanName
+import com.justai.jaicf.telemetry.getTelemetrySessionId
 import com.justai.jaicf.telemetry.runWithTelemetry
 import com.openai.models.chat.completions.ChatCompletionMessageToolCall
 
@@ -67,24 +67,19 @@ open class LLMTool<T>(
         block: suspend LLMToolCallContext<T>.() -> R
     ): R {
         val toolName = context.call.name
-        val baseAttributes = mapOf(
+        val spanName = "${GenAIAttributes.OPERATION_EXECUTE_TOOL} $toolName"
+        val baseAttributes = mutableMapOf<String, Any?>(
+            GenAIAttributes.OPERATION_NAME to GenAIAttributes.OPERATION_EXECUTE_TOOL,
+            GenAIAttributes.TOOL_NAME to toolName,
             LLMAttributes.TOOL_NAME to toolName,
             LLMAttributes.TOOL_CALL_ID to context.call.callId,
             LLMAttributes.TOOL_ARGUMENTS to (context.call.arguments?.toString() ?: "")
         )
-
-        val hook = LLMLifecycleHook(
-            type = LLMSpanType.TOOL_EXECUTE,
-            state = null,
-            context = context.context,
-            request = context.request,
-            reactions = null,
-            activator = null,
-            attributes = baseAttributes
-        )
-
-        val spanName = "${LLMSpanName.ToolCall}:${context.call.name}"
-        return runWithTelemetry(hook, spanName) {
+        context.context.getTelemetrySessionId().takeIf { it.isNotEmpty() }?.let {
+            baseAttributes[GenAIAttributes.CONVERSATION_ID] = it
+        }
+        val provider = BotEngine.current()?.telemetryProvider ?: com.justai.jaicf.telemetry.TelemetryProvider.NoOp
+        return runWithTelemetry(provider, spanName, baseAttributes) {
             context.block()
         }
     }

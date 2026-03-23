@@ -16,8 +16,27 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.ReadableSpan
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.sdk.trace.SpanProcessor
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.samplers.Sampler
+import org.slf4j.LoggerFactory
+
+private val debugLog = LoggerFactory.getLogger("jaicf.telemetry.debug")
+
+private object DebugSpanProcessor : SpanProcessor {
+    override fun onStart(parentContext: Context, span: ReadWriteSpan) {}
+    override fun onEnd(span: ReadableSpan) {
+        val name = span.name
+        val spanId = span.spanContext.spanId
+        val parentSpanId = span.parentSpanContext.spanId
+        val parentValid = span.parentSpanContext.isValid
+        debugLog.info("[OTEL] span end name=$name spanId=$spanId parentSpanId=$parentSpanId parentValid=$parentValid")
+    }
+    override fun isStartRequired() = false
+    override fun isEndRequired() = true
+}
 
 private const val DEFAULT_ENDPOINT = "http://localhost:4317"
 private const val DEFAULT_SERVICE_NAME = "JAICF Bot"
@@ -56,6 +75,7 @@ class OpenTelemetryTelemetryProvider(
             val tracerProvider = SdkTracerProvider.builder()
                 .setResource(resource)
                 .setSampler(Sampler.alwaysOn())
+                .addSpanProcessor(DebugSpanProcessor)
                 .addSpanProcessor(
                     SimpleSpanProcessor.create(
                         OtlpGrpcSpanExporter.builder()
@@ -81,8 +101,7 @@ class OpenTelemetryTelemetryProvider(
     ): TelemetrySpan {
         val span = when (parent) {
             is OtelTelemetrySpan -> {
-
-                val parentContext = Context.root().with(parent.unwrap())
+                val parentContext = parent.unwrap().storeInContext(Context.root())
                 val builder = tracer.spanBuilder(name).setParent(parentContext)
                 val child = builder.startSpan()
                 val childScope = child.makeCurrent()

@@ -4,10 +4,9 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.BotActionHook
+import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
-import com.justai.jaicf.telemetry.TelemetryHook
-import com.justai.jaicf.telemetry.TelemetryHookStage
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.openai.models.completions.CompletionUsage
 
@@ -23,15 +22,10 @@ data class LLMLifecycleHook(
     val reactions: Reactions?,
     val activator: ActivatorContext?,
     val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
     val completionUsage: CompletionUsage? = null,
     val toolCallResult: LLMToolResult? = null,
     val toolCallResults: List<LLMToolResult> = emptyList(),
-) : TelemetryHook {
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMLifecycleHook =
-        copy(stage = stage, exception = exception)
+) : BotHook {
 
     fun withCompletionUsage(usage: CompletionUsage?): LLMLifecycleHook =
         copy(completionUsage = usage)

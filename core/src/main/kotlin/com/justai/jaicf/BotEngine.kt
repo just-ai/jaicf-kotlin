@@ -57,8 +57,8 @@ import com.justai.jaicf.telemetry.TelemetryProvider
 import com.justai.jaicf.telemetry.TelemetrySpanName
 import com.justai.jaicf.telemetry.addTelemetryHooks
 import com.justai.jaicf.telemetry.executeActionWithTelemetry
+import com.justai.jaicf.telemetry.runBotRequestWithTelemetry
 import com.justai.jaicf.telemetry.runWithTelemetry
-import com.justai.jaicf.telemetry.withTelemetryHook
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.job
@@ -198,11 +198,10 @@ open class BotEngine(
 
         processContext(botContext, requestContext)
         try {
-            withTelemetryHook(
-                BotRequestHook(botContext, request, reactions, requestContext),
-                TelemetrySpanName.BOT_REQUEST.value,
-            ) {
-                doProcess(request, reactions, requestContext, botContext, executionContext)
+            withHook(BotRequestHook(botContext, request, reactions, requestContext)) {
+                runBotRequestWithTelemetry(request, requestContext, botContext, reactions) {
+                    doProcess(request, reactions, requestContext, botContext, executionContext)
+                }
             }
         } catch (e: BotRequestRerouteException) {
             throw e
