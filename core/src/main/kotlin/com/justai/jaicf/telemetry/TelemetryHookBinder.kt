@@ -9,11 +9,10 @@ import com.justai.jaicf.hook.ActionErrorHook
 import com.justai.jaicf.hook.AfterProcessHook
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.hook.BeforeProcessHook
-import com.justai.jaicf.hook.BotRequestHook
 import com.justai.jaicf.test.reactions.answer
+import kotlinx.coroutines.withContext
 
 internal enum class TelemetrySpanName(val value: String) {
-    SESSION("jaicf.session"),
     PROCESS("jaicf.process"),
     BOT_REQUEST("jaicf.bot.request"),
     ACTIVATION_BEFORE("jaicf.activation.before"),
@@ -26,26 +25,12 @@ internal suspend fun BotEngine.runWithTelemetry(request: BotRequest, botContext:
         block()
         return
     }
-    val sessionSpan = botContext.getSessionSpan().takeIf { !it.isNoOp() }
-    val sessionRoot = if (sessionSpan != null) {
-        sessionSpan
-    } else {
-        val newSession = telemetryProvider.createSpanOrNoOp(
-            TelemetrySpanName.SESSION.value,
-            mapOf(JaicfTelemetryAttributes.CLIENT_ID to request.clientId),
-            parent = null
-        )
-        newSession.realOrNull()?.let { botContext.setSessionSpan(it) }
-        newSession
-    }
     val processAttributes = mapOf(
         JaicfTelemetryAttributes.REQUEST_TYPE to request.type.name,
         JaicfTelemetryAttributes.REQUEST_CLIENT_ID to request.clientId,
     )
-    withTelemetrySpan(sessionRoot.realOrNull()) {
-        runWithTelemetry(telemetryProvider, TelemetrySpanName.PROCESS.value, processAttributes) {
-            block()
-        }
+    runWithTelemetry(telemetryProvider, TelemetrySpanName.PROCESS.value, processAttributes) {
+        block()
     }
 }
 
@@ -98,13 +83,21 @@ internal suspend fun BotEngine.runBotRequestWithTelemetry(
 
 /**
  * Runs [block] with handoff span context when present.
- * Centralizes handoff/span logic; caller provides the action execution (withHook + executeAction).
+ * Note: handoff span is NOT closed here - it stays active for the entire processStates cycle.
  */
 internal suspend fun executeActionWithTelemetry(
     processContext: ProcessContext,
     block: suspend () -> Unit,
 ) {
-    withOptionalHandoffSpan(processContext.botContext) {
+    val handoffSpan = processContext.botContext.getHandoffSpan()
+    if (handoffSpan != null) {
+        val parentBeforeHandoff = currentTelemetrySpan()
+        withContext(HandoffContextElement(parentBeforeHandoff)) {
+            withTelemetrySpan(handoffSpan) {
+                block()
+            }
+        }
+    } else {
         block()
     }
 }
@@ -124,6 +117,7 @@ private object TelemetryHookProcessor {
         currentTelemetrySpan()?.apply {
             attributes.forEach { (k, v) -> setAttribute(k, v) }
         }
+        hook.context.closeAndRemoveHandoffSpan()
     }
 
     suspend fun handleActionError(telemetryProvider: TelemetryProvider, hook: ActionErrorHook) {
