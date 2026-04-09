@@ -17,6 +17,8 @@ include("examples:multilingual-bot")
 findProject(":examples:multilingual-bot")?.name = "multilingual-bot"
 include("examples:llm-example")
 findProject(":examples:llm-example")?.name = "llm-example"
+include("examples:telegram-agent-example")
+findProject(":examples:telegram-agent-example")?.name = "telegram-agent-example"
 
 include("activators:dialogflow")
 findProject(":activators:dialogflow")?.name = "dialogflow"
