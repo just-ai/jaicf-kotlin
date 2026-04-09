@@ -9,6 +9,16 @@ interface TelemetryProvider {
         parent: TelemetrySpan? = null
     ): TelemetrySpan
 
+    fun createSpanOrNoOp(
+        name: String,
+        attributes: TelemetryAttributes = emptyMap(),
+        parent: TelemetrySpan? = null,
+    ): TelemetrySpan = try {
+        createSpan(name, attributes, parent)
+    } catch (e: Throwable) {
+        TelemetrySpan.NoOp
+    }
+
     companion object {
         val NoOp: TelemetryProvider = object : TelemetryProvider {
             override fun createSpan(
@@ -36,3 +46,8 @@ interface TelemetrySpan : AutoCloseable {
         }
     }
 }
+
+fun TelemetrySpan.isNoOp(): Boolean = this == TelemetrySpan.NoOp
+
+fun TelemetrySpan?.realOrNull(): TelemetrySpan? =
+    this?.takeUnless { it.isNoOp() }

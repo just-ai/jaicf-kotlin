@@ -1,6 +1,6 @@
 package com.justai.jaicf.activator.llm
 
-import com.justai.jaicf.activator.llm.LLMToolCallsHook
+import com.justai.jaicf.activator.llm.telemetry.LLMLifecycleHook
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.logging.Reaction
 
@@ -9,8 +9,8 @@ data class LLMToolCallReaction(
     val toolCallResult: LLMToolResult,
 ) : Reaction(fromState) {
     companion object {
-        fun fromHook(hook: LLMToolCallsHook) = hook.toolCallResults.map {
-            LLMToolCallReaction(hook.state.path.toString(), it)
+        fun fromHook(hook: LLMLifecycleHook) = hook.toolCallResults.map {
+            LLMToolCallReaction(hook.state?.path?.toString() ?: "", it)
         }
     }
 }

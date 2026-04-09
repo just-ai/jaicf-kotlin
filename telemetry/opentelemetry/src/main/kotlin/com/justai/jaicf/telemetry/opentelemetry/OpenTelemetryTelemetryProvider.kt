@@ -7,7 +7,6 @@ import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
 import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
-import io.opentelemetry.api.trace.SpanBuilder
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
@@ -17,8 +16,27 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.ReadableSpan
+import io.opentelemetry.sdk.trace.ReadWriteSpan
+import io.opentelemetry.sdk.trace.SpanProcessor
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.samplers.Sampler
+import org.slf4j.LoggerFactory
+
+private val debugLog = LoggerFactory.getLogger("jaicf.telemetry.debug")
+
+private object DebugSpanProcessor : SpanProcessor {
+    override fun onStart(parentContext: Context, span: ReadWriteSpan) {}
+    override fun onEnd(span: ReadableSpan) {
+        val name = span.name
+        val spanId = span.spanContext.spanId
+        val parentSpanId = span.parentSpanContext.spanId
+        val parentValid = span.parentSpanContext.isValid
+        debugLog.info("[OTEL] span end name=$name spanId=$spanId parentSpanId=$parentSpanId parentValid=$parentValid")
+    }
+    override fun isStartRequired() = false
+    override fun isEndRequired() = true
+}
 
 private const val DEFAULT_ENDPOINT = "http://localhost:4317"
 private const val DEFAULT_SERVICE_NAME = "JAICF Bot"
@@ -57,6 +75,7 @@ class OpenTelemetryTelemetryProvider(
             val tracerProvider = SdkTracerProvider.builder()
                 .setResource(resource)
                 .setSampler(Sampler.alwaysOn())
+                .addSpanProcessor(DebugSpanProcessor)
                 .addSpanProcessor(
                     SimpleSpanProcessor.create(
                         OtlpGrpcSpanExporter.builder()
@@ -80,16 +99,24 @@ class OpenTelemetryTelemetryProvider(
         attributes: TelemetryAttributes,
         parent: TelemetrySpan?
     ): TelemetrySpan {
-        val builder = tracer.spanBuilder(name).applyParent(parent)
-        val span = builder.startSpan()
-        val scope = span.makeCurrent()
-        attributes.forEach { (key, value) -> span.setDynamicAttribute(key, value) }
-        return OtelTelemetrySpan(span, scope)
-    }
-
-    private fun SpanBuilder.applyParent(parent: TelemetrySpan?): SpanBuilder = when (parent) {
-        is OtelTelemetrySpan -> setParent(Context.current().with(parent.unwrap()))
-        else -> setParent(Context.current())
+        val span = when (parent) {
+            is OtelTelemetrySpan -> {
+                val parentContext = parent.unwrap().storeInContext(Context.root())
+                val builder = tracer.spanBuilder(name).setParent(parentContext)
+                val child = builder.startSpan()
+                val childScope = child.makeCurrent()
+                attributes.forEach { (key, value) -> child.setDynamicAttribute(key, value) }
+                OtelTelemetrySpan(child, childScope)
+            }
+            else -> {
+                val builder = tracer.spanBuilder(name).setNoParent()
+                val child = builder.startSpan()
+                val scope = child.makeCurrent()
+                attributes.forEach { (key, value) -> child.setDynamicAttribute(key, value) }
+                OtelTelemetrySpan(child, scope)
+            }
+        }
+        return span
     }
 
     private class OtelTelemetrySpan(

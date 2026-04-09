@@ -3,106 +3,38 @@ package com.justai.jaicf.telemetry
 import com.justai.jaicf.BotEngine
 import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.BotContext
+import com.justai.jaicf.context.ProcessContext
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.hook.ActionErrorHook
 import com.justai.jaicf.hook.AfterProcessHook
 import com.justai.jaicf.hook.AnyErrorHook
 import com.justai.jaicf.hook.BeforeProcessHook
 import com.justai.jaicf.test.reactions.answer
-import java.util.UUID
+import kotlinx.coroutines.withContext
 
-internal suspend inline fun <T> BotEngine.runWithTelemetry(
-    request: BotRequest,
-    requestContext: RequestContext,
-    context: BotContext,
-    crossinline block: suspend () -> T
-): T {
-    val startedAt = System.nanoTime()
+internal enum class TelemetrySpanName(val value: String) {
+    PROCESS("jaicf.process"),
+    BOT_REQUEST("jaicf.bot.request"),
+    ACTIVATION_BEFORE("jaicf.activation.before"),
+    ACTION_ERROR("jaicf.action.error"),
+    ERROR("jaicf.error"),
+}
 
-    val sessionId = context.getTelemetrySessionId()
-        .takeIf { it.isNotEmpty() }
-        ?: UUID.randomUUID().toString().also { context.setTelemetrySessionId(it) }
-
-    val sessionRootName = "jaicf.session"
-    var sessionRootSpan = context.getSessionSpan()
-    if (sessionRootSpan == TelemetrySpan.NoOp) {
-        val sessionAttributes = mapOf(
-            "session.id" to sessionId,
-            "jaicf.request.client_id" to request.clientId,
-        )
-        sessionRootSpan = try {
-            telemetryProvider.createSpan(sessionRootName, sessionAttributes, parent = null)
-        } catch (e: Throwable) {
-            TelemetrySpan.NoOp
-        }
-
-        if (sessionRootSpan != TelemetrySpan.NoOp) {
-            context.setSessionSpan(sessionRootSpan)
-            context.setTelemetrySpan(sessionRootName, sessionRootSpan)
-        }
-    }
-
-    val attributes = mapOf(
-        "jaicf.request.type" to request.type.name,
-        "jaicf.request.input" to request.input,
-        "jaicf.request.client_id" to request.clientId,
-        "jaicf.session.new" to requestContext.newSession,
-        "session.id" to sessionId,
-    )
-
-    val parentSpan = sessionRootSpan.takeUnless { it == TelemetrySpan.NoOp }
-    val span = try {
-        telemetryProvider.createSpan("jaicf.bot.request", attributes, parentSpan)
-    } catch (e: Throwable) {
-        TelemetrySpan.NoOp
-    }
-
-    if (span != TelemetrySpan.NoOp) {
-        context.setTelemetrySpan("jaicf.bot.request", span)
-        context.setCurrentTelemetrySpan(span)
-    }
-
-    return try {
-        val startHook = TelemetryProcessHook(
-            context,
-            request,
-            requestContext,
-            BotRequestStage.START,
-            durationMillis(startedAt)
-        )
-        hooks.triggerHook(startHook)
+internal suspend fun BotEngine.runWithTelemetry(request: BotRequest, botContext: BotContext, block: suspend () -> Unit) {
+    if (telemetryProvider == TelemetryProvider.NoOp) {
         block()
-    } catch (e: Throwable) {
-        span.recordException(e)
-        throw e
-    } finally {
-        val endHook = TelemetryProcessHook(
-            context,
-            request,
-            requestContext,
-            BotRequestStage.END,
-            durationMillis(startedAt)
-        )
-        hooks.triggerHook(endHook)
-
-        if (span != TelemetrySpan.NoOp) {
-            span.close()
-            context.removeTelemetrySpan("jaicf.bot.request")
-            if (context.getSessionSpan() != span) {
-                val root = context.getTelemetrySpan(sessionRootName)
-                context.setCurrentTelemetrySpan(root)
-            }
-        }
+        return
+    }
+    val processAttributes = mapOf(
+        JaicfTelemetryAttributes.REQUEST_TYPE to request.type.name,
+        JaicfTelemetryAttributes.REQUEST_CLIENT_ID to request.clientId,
+    )
+    runWithTelemetry(telemetryProvider, TelemetrySpanName.PROCESS.value, processAttributes) {
+        block()
     }
 }
 
-
 internal fun BotEngine.addTelemetryHooks() {
-
-    hooks.addHookAction<TelemetryProcessHook> {
-        TelemetryHookProcessor.handleRequestLifecycle(telemetryProvider, this)
-    }
-
     hooks.addHookAction<BeforeProcessHook> {
         TelemetryHookProcessor.handleBeforeProcess(telemetryProvider, this)
     }
@@ -120,127 +52,108 @@ internal fun BotEngine.addTelemetryHooks() {
     }
 }
 
+/**
+ * Runs [block] with BOT_REQUEST span. Session id and attributes are set up before the span.
+ */
+internal suspend fun BotEngine.runBotRequestWithTelemetry(
+    request: BotRequest,
+    requestContext: RequestContext,
+    botContext: BotContext,
+    reactions: com.justai.jaicf.reactions.Reactions,
+    block: suspend () -> Unit,
+) {
+    if (telemetryProvider == TelemetryProvider.NoOp) {
+        block()
+        return
+    }
+    val sessionId = botContext.getTelemetrySessionId().takeIf { it.isNotEmpty() }
+        ?: java.util.UUID.randomUUID().toString().also { botContext.setTelemetrySessionId(it) }
+    val attributes = mutableMapOf<String, Any?>(
+        JaicfTelemetryAttributes.REQUEST_TYPE to request.type.name,
+        JaicfTelemetryAttributes.REQUEST_INPUT to request.input,
+        JaicfTelemetryAttributes.REQUEST_CLIENT_ID to request.clientId,
+        JaicfTelemetryAttributes.SESSION_NEW to requestContext.newSession,
+        "session.id" to sessionId,
+    )
+    attributes["gen_ai.conversation.id"] = sessionId
+    runWithTelemetry(telemetryProvider, TelemetrySpanName.BOT_REQUEST.value, attributes) {
+        block()
+    }
+}
+
+/**
+ * Runs [block] with handoff span context when present.
+ * Note: handoff span is NOT closed here - it stays active for the entire processStates cycle.
+ */
+internal suspend fun executeActionWithTelemetry(
+    processContext: ProcessContext,
+    block: suspend () -> Unit,
+) {
+    val handoffSpan = processContext.botContext.getHandoffSpan()
+    if (handoffSpan != null) {
+        val parentBeforeHandoff = currentTelemetrySpan()
+        withContext(HandoffContextElement(parentBeforeHandoff)) {
+            withTelemetrySpan(handoffSpan) {
+                block()
+            }
+        }
+    } else {
+        block()
+    }
+}
+
 private object TelemetryHookProcessor {
 
-    fun handleRequestLifecycle(telemetryProvider: TelemetryProvider, hook: TelemetryProcessHook) {
-        if (hook.stage == BotRequestStage.START) {
-            val name = "jaicf.request.start"
-            val attributes = mapOf(
-                "jaicf.request.input" to hook.request.input,
-                "jaicf.request.type" to hook.request.type.name,
-                "jaicf.request.client_id" to hook.request.clientId,
-                "jaicf.session.new" to hook.requestContext.newSession,
-                "jaicf.duration_ms" to hook.durationMs
-            )
-            val parentSpan = hook.context.getCurrentTelemetrySpan()
-            val span = try {
-                telemetryProvider.createSpan(name, attributes, parentSpan)
-            } catch (e: Throwable) {
-                TelemetrySpan.NoOp
-            }
-            if (span != TelemetrySpan.NoOp) {
-                hook.context.setTelemetrySpan(name, span)
-                hook.context.setCurrentTelemetrySpan(span)
-            }
-        } else {
-            val span = hook.context.getTelemetrySpan("jaicf.request.start")
-            span?.apply {
-                setAttribute("jaicf.duration_ms", hook.durationMs)
-                setAttribute("jaicf.current_state", hook.context.dialogContext.currentState)
-                close()
-            }
-            hook.context.removeTelemetrySpan("jaicf.request.start")
-            val parentSpan = hook.context.getTelemetrySpan("jaicf.bot.request")
-            hook.context.setCurrentTelemetrySpan(parentSpan)
-        }
+    suspend fun handleBeforeProcess(telemetryProvider: TelemetryProvider, hook: BeforeProcessHook) {
+        // No-op: activation spans are no longer stored in context
     }
 
-    fun handleBeforeProcess(telemetryProvider: TelemetryProvider, hook: BeforeProcessHook) {
-        val activationSpan = hook.context.getTelemetrySpan("jaicf.activation.before")
-        activationSpan?.close()
-        hook.context.removeTelemetrySpan("jaicf.activation.before")
-
-        val name = "jaicf.process.start"
+    suspend fun handleAfterProcess(telemetryProvider: TelemetryProvider, hook: AfterProcessHook) {
         val attributes = mapOf(
-            "jaicf.request.client_id" to hook.request.clientId,
-            "jaicf.request.input" to hook.request.input,
-            "jaicf.activator" to hook.activator.javaClass.name,
-            "jaicf.current_state" to hook.context.dialogContext.currentState
+            JaicfTelemetryAttributes.REQUEST_RESPONSE to hook.reactions.answer,
+            JaicfTelemetryAttributes.ACTIVATOR to hook.activator.javaClass.name,
+            JaicfTelemetryAttributes.CURRENT_STATE to hook.context.dialogContext.currentState
         )
-        val parentSpan = hook.context.getTelemetrySpan("jaicf.bot.request")
-            ?: hook.context.getCurrentTelemetrySpan()
-        val span = try {
-            telemetryProvider.createSpan(name, attributes, parentSpan)
-        } catch (e: Throwable) {
-            TelemetrySpan.NoOp
-        }
-        if (span != TelemetrySpan.NoOp) {
-            hook.context.setTelemetrySpan(name, span)
-            hook.context.setCurrentTelemetrySpan(span)
-        }
-    }
-
-    fun handleAfterProcess(telemetryProvider: TelemetryProvider, hook: AfterProcessHook) {
-        val attributes = mapOf(
-            "jaicf.request.client_id" to hook.request.clientId,
-            "jaicf.request.response" to hook.reactions.answer,
-            "jaicf.activator" to hook.activator.javaClass.name,
-            "jaicf.current_state" to hook.context.dialogContext.currentState
-        )
-        val span = hook.context.getTelemetrySpan("jaicf.process.start")
-        span?.apply {
+        currentTelemetrySpan()?.apply {
             attributes.forEach { (k, v) -> setAttribute(k, v) }
-            close()
         }
-        hook.context.removeTelemetrySpan("jaicf.process.start")
-        val parentSpan = hook.context.getTelemetrySpan("jaicf.request.start")
-        hook.context.setCurrentTelemetrySpan(parentSpan)
+        hook.context.closeAndRemoveHandoffSpan()
     }
 
-    fun handleActionError(telemetryProvider: TelemetryProvider, hook: ActionErrorHook) {
-        val name = "jaicf.action.error"
+    suspend fun handleActionError(telemetryProvider: TelemetryProvider, hook: ActionErrorHook) {
+        val name = TelemetrySpanName.ACTION_ERROR.value
         val attributes = mutableMapOf(
-            "jaicf.request.client_id" to hook.request.clientId,
-            "jaicf.state" to hook.state.path,
-            "jaicf.state_path" to hook.state.path.toString(),
-            "jaicf.activator" to hook.activator.javaClass.name,
-            "jaicf.error.type" to hook.exception::class.qualifiedName,
-            "jaicf.error.message" to hook.exception.message,
-            "jaicf.error.state" to hook.state.path
+            JaicfTelemetryAttributes.REQUEST_CLIENT_ID to hook.request.clientId,
+            JaicfTelemetryAttributes.STATE to hook.state.path,
+            JaicfTelemetryAttributes.STATE_PATH to hook.state.path.toString(),
+            JaicfTelemetryAttributes.ACTIVATOR to hook.activator.javaClass.name,
+            JaicfTelemetryAttributes.ERROR_TYPE to hook.exception::class.qualifiedName,
+            JaicfTelemetryAttributes.ERROR_MESSAGE to hook.exception.message,
+            JaicfTelemetryAttributes.ERROR_STATE to hook.state.path
         )
         telemetryProvider.record(name, attributes, hook.context)
-        hook.context.getCurrentTelemetrySpan()?.recordException(hook.exception)
+        currentTelemetrySpan()?.recordException(hook.exception)
     }
 
-    fun handleAnyError(telemetryProvider: TelemetryProvider, hook: AnyErrorHook) {
-        val name = "jaicf.error"
+    suspend fun handleAnyError(telemetryProvider: TelemetryProvider, hook: AnyErrorHook) {
+        val name = TelemetrySpanName.ERROR.value
         val attributes = mutableMapOf<String, Any?>(
-            "jaicf.request.client_id" to hook.request.clientId,
-            "jaicf.error.type" to hook.exception::class.qualifiedName,
-            "jaicf.error.message" to hook.exception.message,
-            "jaicf.current_state" to hook.context.dialogContext.currentState
+            JaicfTelemetryAttributes.REQUEST_CLIENT_ID to hook.request.clientId,
+            JaicfTelemetryAttributes.ERROR_TYPE to hook.exception::class.qualifiedName,
+            JaicfTelemetryAttributes.ERROR_MESSAGE to hook.exception.message,
+            JaicfTelemetryAttributes.CURRENT_STATE to hook.context.dialogContext.currentState
         )
         telemetryProvider.record(name, attributes, hook.context)
-        hook.context.getCurrentTelemetrySpan()?.recordException(hook.exception)
+        currentTelemetrySpan()?.recordException(hook.exception)
     }
 
-    fun TelemetryProvider.record(
+    suspend fun TelemetryProvider.record(
         name: String,
         attributes: Map<String, Any?>,
         context: BotContext? = null,
     ) {
-        val parent = context?.getCurrentTelemetrySpan()
-        val span = try {
-            createSpan(name, attributes, parent)
-        } catch (e: Throwable) {
-            TelemetrySpan.NoOp
-        }
-        span.use { span ->
-            // Span is automatically closed by use block
-            // No need to set it in context for short-lived spans
-        }
+        val parent = currentTelemetrySpan()
+        val span = createSpanOrNoOp(name, attributes, parent)
+        span.use { }
     }
 }
-
-fun durationMillis(startedAt: Long): Double =
-    (System.nanoTime() - startedAt) / 1_000_000.0

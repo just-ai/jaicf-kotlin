@@ -6,11 +6,11 @@ import kotlin.reflect.KClass
 
 data class BotHookListener<T : BotHook>(
     val klass: KClass<T>,
-    val action: (T) -> Unit,
+    val action: suspend (T) -> Unit,
     val availableFrom: StatePath = StatePath.root(),
     val exceptFrom: Set<StatePath> = setOf<StatePath>()
 ) {
-    fun execute(hook: T) {
+    suspend fun execute(hook: T) {
         val current = hook.context.dialogContext.currentContext.toString()
         val isAvailable = current.startsWith(availableFrom.toString())
         val isException = exceptFrom.any { current.startsWith(it.toString()) }
@@ -35,7 +35,7 @@ class BotHookHandler {
      * @param action a block that will be invoked once specified [BotHook] was triggered.
      * @see BotHook
      */
-    inline fun <reified T : BotHook> addHookAction(noinline action: T.() -> Unit) {
+    inline fun <reified T : BotHook> addHookAction(noinline action: suspend T.() -> Unit) {
         val listener = BotHookListener<T>(T::class, { hook: T -> hook.action() })
         @Suppress("UNCHECKED_CAST")
         actions.computeIfAbsent(T::class) { mutableListOf() }.add(listener as BotHookListener<BotHook>)
@@ -48,7 +48,7 @@ class BotHookHandler {
      *
      * @param hook a particular [BotHook] to be triggered
      */
-    fun triggerHook(hook: BotHook) {
+    suspend fun triggerHook(hook: BotHook) {
         actions[hook::class]?.forEach { listener ->
             try {
                 listener.execute(hook)

@@ -4,8 +4,6 @@ import com.justai.jaicf.BotEngine
 import com.justai.jaicf.examples.llm.channel.ConsoleChannel
 import com.justai.jaicf.telemetry.opentelemetry.OpenTelemetryTelemetryProvider
 
-
-
 /**
  * Example: run multi-agent LLM scenario with Jaeger/OTLP tracing.
  *
@@ -23,5 +21,5 @@ fun main() {
     val engine = BotEngine(HandoffScenario)
         .withTelemetry(OpenTelemetryTelemetryProvider())
 
-    ConsoleChannel(engine).run("Calculate 2 + 2 and tell me a joke")
+    ConsoleChannel(engine).run("Calculate 2 + 2, Calculate 20 + 2  and tell me a joke")
 }

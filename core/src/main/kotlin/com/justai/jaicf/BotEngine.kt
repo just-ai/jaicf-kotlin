@@ -54,7 +54,10 @@ import com.justai.jaicf.slotfilling.getSlotFillingContext
 import com.justai.jaicf.slotfilling.isActiveSlotFilling
 import com.justai.jaicf.slotfilling.startSlotFilling
 import com.justai.jaicf.telemetry.TelemetryProvider
+import com.justai.jaicf.telemetry.TelemetrySpanName
 import com.justai.jaicf.telemetry.addTelemetryHooks
+import com.justai.jaicf.telemetry.executeActionWithTelemetry
+import com.justai.jaicf.telemetry.runBotRequestWithTelemetry
 import com.justai.jaicf.telemetry.runWithTelemetry
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.currentCoroutineContext
@@ -157,19 +160,29 @@ open class BotEngine(
     ) {
         val manager = contextManager ?: defaultContextManager
         val botContext = manager.loadContext(request, requestContext)
-        runWithTelemetry(request, requestContext, botContext) {
-            try {
-                val executionContext = ExecutionContext(requestContext, null, botContext, request)
-                processRequest(request, reactions, requestContext, botContext, executionContext)
-                saveContext(manager, botContext, request, reactions, requestContext)
-            } catch (e: BotRequestRerouteException) {
-                throw e
-            } catch (e: Exception) {
-                val exception = BotExecutionException(e, botContext.currentState)
-                withHook(AnyErrorHook(botContext, request, reactions, exception))
-                logger.error("Error handle request", e)
-                throw e
-            }
+        runWithTelemetry(request, botContext) {
+            handleWithContext(request, reactions, requestContext, botContext, manager)
+        }
+    }
+
+    private suspend fun handleWithContext(
+        request: BotRequest,
+        reactions: Reactions,
+        requestContext: RequestContext,
+        botContext: BotContext,
+        manager: BotContextManager,
+    ) {
+        try {
+            val executionContext = ExecutionContext(requestContext, null, botContext, request)
+            processRequest(request, reactions, requestContext, botContext, executionContext)
+            saveContext(manager, botContext, request, reactions, requestContext)
+        } catch (e: BotRequestRerouteException) {
+            throw e
+        } catch (e: Exception) {
+            val exception = BotExecutionException(e, botContext.currentState)
+            withHook(AnyErrorHook(botContext, request, reactions, exception)) {}
+            logger.error("Error handle request", e)
+            throw e
         }
     }
 
@@ -185,8 +198,10 @@ open class BotEngine(
 
         processContext(botContext, requestContext)
         try {
-            withHook(BotRequestHook(botContext, request, reactions)) {
-                doProcess(request, reactions, requestContext, botContext, executionContext)
+            withHook(BotRequestHook(botContext, request, reactions, requestContext)) {
+                runBotRequestWithTelemetry(request, requestContext, botContext, reactions) {
+                    doProcess(request, reactions, requestContext, botContext, executionContext)
+                }
             }
         } catch (e: BotRequestRerouteException) {
             throw e
@@ -211,7 +226,7 @@ open class BotEngine(
         val slotFillingContext = if (isActiveSlotFilling(botContext)) {
             getSlotFillingContext(botContext)!!
         } else {
-            withHook(BeforeActivationHook(botContext, request, reactions))
+            withHook(BeforeActivationHook(botContext, request, reactions)) {}
             selectActivation(botContext, request)?.let {
                 startSlotFilling(botContext, it)
             } ?: run {
@@ -260,21 +275,21 @@ open class BotEngine(
         addTelemetryHooks()
     }
 
-    private inline fun withHook(hook: BotHook, block: () -> Unit = {}) {
+    internal suspend inline fun withHook(hook: BotHook, crossinline block: suspend () -> Unit) {
         try {
             hooks.triggerHook(hook)
-            block.invoke()
+            block()
         } catch (e: BotHookException) {
             logger.debug("Hook {} interrupted a request processing", hook, e)
         }
     }
 
-    private inline fun <reified T : BotExceptionHandlingHook> tryHandleWithHook(
+    private suspend inline fun <reified T : BotExceptionHandlingHook> tryHandleWithHook(
         hook: T,
         executionContext: ExecutionContext,
         rethrow: Boolean,
     ) = when (hooks.hasHook<T>()) {
-        true -> withHook(hook)
+        true -> withHook(hook) {}
         false -> {
             logger.error("Unhandled exception for ${T::class.simpleName} handler: ", hook.exception.scenarioCause)
             if (rethrow) throw hook.exception else executionContext.scenarioException = hook.exception
@@ -308,22 +323,23 @@ open class BotEngine(
         dc.nextState = activationContext.activation.state
         var lastState = dc.nextState
 
-        withHook(BeforeProcessHook(botContext, request, reactions, activator)) {
-            while (dc.nextState() != null) {
-                val state = model.states[dc.currentState]
-                    ?: throw NoStateFoundException(requireNotNull(lastState), dc.currentState)
-                dc.nextContext(model)
+        withHook(BeforeProcessHook(botContext, request, reactions, activator)) {}
+        while (dc.nextState() != null) {
+            val state = model.states[dc.currentState]
+                ?: throw NoStateFoundException(requireNotNull(lastState), dc.currentState)
+            dc.nextContext(model)
 
+            executeActionWithTelemetry(context) {
                 withHook(BeforeActionHook(botContext, request, reactions, activator, state)) {
                     executeAction(state, dc, activator)
                 }
-
-                lastState = dc.currentState
             }
 
-            dc.nextContext(model)
-            withHook(AfterProcessHook(botContext, request, reactions, activationContext.activation.context))
+            lastState = dc.currentState
         }
+
+        dc.nextContext(model)
+        withHook(AfterProcessHook(botContext, request, reactions, activationContext.activation.context)) {}
     }
 
     private suspend fun ProcessContext.executeAction(
@@ -338,7 +354,7 @@ open class BotEngine(
         try {
             logger.trace("Executing state: {}", state)
             state.action.execute(this)
-            withHook(AfterActionHook(botContext, request, reactions, activator, state))
+            withHook(AfterActionHook(botContext, request, reactions, activator, state)) {}
         } catch (e: BotRequestRerouteException) {
             logger.trace("Changing executable bot engine to: {}", e.rerouteRequest)
             throw e

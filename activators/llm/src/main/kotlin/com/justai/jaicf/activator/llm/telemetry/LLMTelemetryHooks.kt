@@ -4,140 +4,65 @@ import com.justai.jaicf.api.BotRequest
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.BotActionHook
-import com.justai.jaicf.telemetry.TelemetryHookStage
-import com.justai.jaicf.telemetry.TelemetryHook
+import com.justai.jaicf.hook.BotHook
 import com.justai.jaicf.model.state.State
 import com.justai.jaicf.reactions.Reactions
+import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.openai.models.completions.CompletionUsage
 
-enum class LLMHookType {
-    ACTION_INVOKE,
-    LLM_CALL,
-    TOOL_CALL,
-    TOOL_CALLS,
-    STREAMING,
-    TOOL_EXECUTE,
-}
-
-interface LLMTelemetryHook : TelemetryHook {
-    val type: LLMHookType
-}
-
-interface LLMLifecycleHook : LLMTelemetryHook, BotActionHook {
-    override val state: State
-    override val context: BotContext
-    override val request: BotRequest
-    override val reactions: Reactions
-    override val activator: ActivatorContext
-    val attributes: Map<String, Any?>
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMLifecycleHook
-}
-
-interface SimpleLifecycleHook : LLMTelemetryHook {
-    override val context: BotContext
-    val request: BotRequest
-    val attributes: Map<String, Any?>
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): SimpleLifecycleHook
-}
-
-data class LLMActionHook(
-    override val state: State,
+/**
+ * Unified LLM telemetry hook with [type] determining span name and behavior.
+ * All fields are present; nullable ones are null for types that don't need them (e.g. TOOL_EXECUTE).
+ */
+data class LLMLifecycleHook(
+    val type: LLMSpanType,
+    val state: State?,
     override val context: BotContext,
-    override val request: BotRequest,
-    override val reactions: Reactions,
-    override val activator: ActivatorContext,
-    override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
-) : LLMLifecycleHook {
-    override val type: LLMHookType = LLMHookType.ACTION_INVOKE
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMActionHook =
-        copy(stage = stage, exception = exception)
-}
-
-data class LLMCallHook(
-    override val state: State,
-    override val context: BotContext,
-    override val request: BotRequest,
-    override val reactions: Reactions,
-    override val activator: ActivatorContext,
-    override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
+    val request: BotRequest,
+    val reactions: Reactions?,
+    val activator: ActivatorContext?,
+    val attributes: Map<String, Any?> = emptyMap(),
     val completionUsage: CompletionUsage? = null,
-) : LLMLifecycleHook {
-    override val type: LLMHookType = LLMHookType.LLM_CALL
+    val toolCallResult: LLMToolResult? = null,
+    val toolCallResults: List<LLMToolResult> = emptyList(),
+) : BotHook {
 
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMCallHook =
-        copy(stage = stage, exception = exception)
-
-    fun withCompletionUsage(usage: CompletionUsage?): LLMCallHook =
+    fun withCompletionUsage(usage: CompletionUsage?): LLMLifecycleHook =
         copy(completionUsage = usage)
 }
 
-data class LLMToolCallHook(
-    override val state: State,
-    override val context: BotContext,
-    override val request: BotRequest,
-    override val reactions: Reactions,
-    override val activator: ActivatorContext,
-    override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
-) : LLMLifecycleHook {
-    override val type: LLMHookType = LLMHookType.TOOL_CALL
+/**
+ * Resolves span display name per OpenTelemetry GenAI semantic conventions.
+ * - LLM_CALL: chat {gen_ai.request.model}
+ * - ACTION_INVOKE: invoke_agent {gen_ai.agent.name}
+ * - TOOL_CALL/TOOL_EXECUTE: execute_tool {gen_ai.tool.name}
+ */
+fun LLMLifecycleHook.resolveSpanName(): String =
+    when (type) {
+        LLMSpanType.LLM_CALL -> {
+            val model = attributes[LLMAttributes.MODEL] as? String ?: ""
+            "${GenAIAttributes.OPERATION_CHAT} ${model.ifBlank { "unknown" }}"
+        }
+        LLMSpanType.ACTION_INVOKE -> {
+            val agentName = state?.path?.toString() ?: "unknown"
+            "${GenAIAttributes.OPERATION_INVOKE_AGENT} $agentName"
+        }
+        LLMSpanType.TOOL_CALL, LLMSpanType.TOOL_EXECUTE -> {
+            val toolName = attributes[LLMAttributes.TOOL_NAME] as? String ?: "unknown"
+            "${GenAIAttributes.OPERATION_EXECUTE_TOOL} $toolName"
+        }
+        else -> type.spanName
+    }
 
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMToolCallHook =
-        copy(stage = stage, exception = exception)
-}
-
-data class LLMToolCallsHook(
-    override val state: State,
-    override val context: BotContext,
-    override val request: BotRequest,
-    override val reactions: Reactions,
-    override val activator: ActivatorContext,
-    override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
-) : LLMLifecycleHook {
-    override val type: LLMHookType = LLMHookType.TOOL_CALLS
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMToolCallsHook =
-        copy(stage = stage, exception = exception)
-}
-
-data class LLMStreamingHook(
-    override val state: State,
-    override val context: BotContext,
-    override val request: BotRequest,
-    override val reactions: Reactions,
-    override val activator: ActivatorContext,
-    override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
-) : LLMLifecycleHook {
-    override val type: LLMHookType = LLMHookType.STREAMING
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMStreamingHook =
-        copy(stage = stage, exception = exception)
-}
-
-data class LLMToolExecuteHook(
-    override val context: BotContext,
-    override val request: BotRequest,
-    override val attributes: Map<String, Any?> = emptyMap(),
-    override val stage: TelemetryHookStage = TelemetryHookStage.START,
-    override val exception: Throwable? = null,
-) : SimpleLifecycleHook {
-    override val type: LLMHookType = LLMHookType.TOOL_EXECUTE
-
-    override fun withStage(stage: TelemetryHookStage, exception: Throwable?): LLMToolExecuteHook =
-        copy(stage = stage, exception = exception)
-}
+/**
+ * Storage key for span lookup. Uses fixed LLMSpanName for parent/context resolution;
+ * dynamic names for tool spans (unique per tool).
+ */
+fun LLMLifecycleHook.getStorageKey(): String =
+    when (type) {
+        LLMSpanType.TOOL_CALL, LLMSpanType.TOOL_EXECUTE -> resolveSpanName()
+        else -> type.spanName
+    }
 
 data class LLMHandoffHook(
     override val state: State,

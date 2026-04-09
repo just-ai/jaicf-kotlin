@@ -4,25 +4,28 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.justai.jaicf.BotEngine
 import com.justai.jaicf.activator.llm.LLMContext
 import com.justai.jaicf.activator.llm.LLMEvent
 import com.justai.jaicf.activator.llm.LLMMessage
-import com.justai.jaicf.activator.llm.LLMToolCallHook
-import com.justai.jaicf.activator.llm.LLMToolCallsHook
 import com.justai.jaicf.activator.llm.ifLLMMemory
-import com.justai.jaicf.activator.llm.telemetry.LLMCallHook
-import com.justai.jaicf.activator.llm.telemetry.LLMStreamingHook
+import com.justai.jaicf.activator.llm.telemetry.GenAIAttributes
+import com.justai.jaicf.activator.llm.telemetry.LLMAttributes
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanName
 import com.justai.jaicf.activator.llm.tool.LLMTool
 import com.justai.jaicf.activator.llm.tool.LLMToolCall
 import com.justai.jaicf.activator.llm.tool.LLMToolCallContext
 import com.justai.jaicf.activator.llm.tool.LLMToolInterruptionException
 import com.justai.jaicf.activator.llm.tool.LLMToolResult
 import com.justai.jaicf.api.BotRequest
+import com.justai.jaicf.activator.llm.telemetry.LLMLifecycleHook
+import com.justai.jaicf.activator.llm.telemetry.LLMSpanType
 import com.justai.jaicf.context.ActionContext
 import com.justai.jaicf.context.ActivatorContext
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.hook.triggerBotHook
-import com.justai.jaicf.telemetry.TelemetryHookStage
+import com.justai.jaicf.telemetry.getTelemetrySessionId
+import com.justai.jaicf.telemetry.runWithTelemetry
 import com.justai.jaicf.reactions.Reactions
 import com.justai.jaicf.reactions.stream
 import com.openai.core.JsonField
@@ -87,19 +90,23 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     internal suspend fun LLMContext.startStream() = withActiveJob {
         completed = null
         acc = ChatCompletionAccumulator.create()
-        triggerBotHook(context) { state ->
-            LLMCallHook(
-                state, context, request, reactions, activator,
-                attributes = mapOf(
-                    "llm.model" to (props.model ?: ""),
-                    "llm.tools.size" to (props.tools?.size ?: 0)
-                ),
-                stage = TelemetryHookStage.START
-            )
+        val provider = BotEngine.current()?.telemetryProvider ?: com.justai.jaicf.telemetry.TelemetryProvider.NoOp
+        val model = props.model ?: ""
+        val spanName = "${GenAIAttributes.OPERATION_CHAT} ${model.ifBlank { "unknown" }}"
+        val attrs = mutableMapOf<String, Any?>(
+            GenAIAttributes.OPERATION_NAME to GenAIAttributes.OPERATION_CHAT,
+            GenAIAttributes.REQUEST_MODEL to model.takeIf { it.isNotBlank() },
+            LLMAttributes.MODEL to model,
+            LLMAttributes.TOOLS_SIZE to (props.tools?.size ?: 0)
+        )
+        context.getTelemetrySessionId().takeIf { it.isNotEmpty() }?.let {
+            attrs[GenAIAttributes.CONVERSATION_ID] = it
         }
-        response = api.createStreaming(params)
-        stream = response.stream()
-        throwIfCancelled()
+        runWithTelemetry(provider, spanName, attrs) {
+            response = api.createStreaming(params)
+            stream = response.stream()
+            throwIfCancelled()
+        }
     }
 
     private fun closeStream() {
@@ -124,70 +131,67 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
             completed!!.await().stream()
         } else {
             channelStream { channel ->
-                var finished = false
-                val chunks = mutableListOf<ChatCompletionChunk>()
+                val provider = BotEngine.current()?.telemetryProvider ?: com.justai.jaicf.telemetry.TelemetryProvider.NoOp
+                runWithTelemetry(provider, LLMSpanName.Streaming, emptyMap()) { span ->
+                    var finished = false
+                    val chunks = mutableListOf<ChatCompletionChunk>()
+                    try {
+                        val iterator = stream.iterator()
+                        while (iterator.hasNext()) {
+                            val chunk = iterator.next()
+                            yield()
 
-                triggerBotHook(context) { state ->
-                    LLMStreamingHook(state, context, request, reactions, activator, stage = TelemetryHookStage.START)
-                }
-                
-                try {
-                    val iterator = stream.iterator()
-                    while (iterator.hasNext()) {
-                        val chunk = iterator.next()
-                        yield()
+                            chunks.add(chunk)
+                            channel.send(chunk)
 
-                        chunks.add(chunk)
-                        channel.send(chunk)
+                            val reason = chunk.choices().firstOrNull()?.finishReason()?.getOrNull()
+                            if (reason != null) {
+                                finished = true
+                                acc.accumulate(chunk)
 
-                        val reason = chunk.choices().firstOrNull()?.finishReason()?.getOrNull()
-                        if (reason != null) {
-                            finished = true
-                            acc.accumulate(chunk)
-
-                            val message = message()
-                            val toolCalls = toolCalls()
-                            if (reason == ChatCompletionChunk.Choice.FinishReason.STOP || reason == ChatCompletionChunk.Choice.FinishReason.LENGTH) {
-                                props.messages?.ifLLMMemory { memory ->
-                                    memory.set(
-                                        // fix nullable tool calls in an assistant message
-                                        params.toBuilder()
-                                            .addMessage(message.toBuilder()
-                                                .toolCalls(JsonField.Companion.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
-                                                .build()
-                                            ).build().messages()
-                                    )
+                                val message = message()
+                                val toolCalls = toolCalls()
+                                if (reason == ChatCompletionChunk.Choice.FinishReason.STOP || reason == ChatCompletionChunk.Choice.FinishReason.LENGTH) {
+                                    props.messages?.ifLLMMemory { memory ->
+                                        memory.set(
+                                            params.toBuilder()
+                                                .addMessage(message.toBuilder()
+                                                    .toolCalls(JsonField.Companion.ofNullable(toolCalls.takeIf { it.isNotEmpty() }))
+                                                    .build()
+                                                ).build().messages()
+                                        )
+                                    }
                                 }
+                            } else if (finished && chunk.usage().isPresent) {
+                                acc.accumulate(chunk)
+                                break
+                            } else if (!finished) {
+                                acc.accumulate(chunk)
                             }
-                        } else if (finished && chunk.usage().isPresent) {
-                            acc.accumulate(chunk)
-                            break
-                        } else if (!finished) {
-                            acc.accumulate(chunk)
                         }
-                    }
-                } finally {
-                    completed!!.complete(chunks)
-                    val usage = acc.chatCompletion().usage().getOrNull()
+                    } finally {
+                        completed!!.complete(chunks)
+                        val completion = acc.chatCompletion()
+                        val usage = completion.usage().getOrNull()
+                        val responseModel = runCatching { completion.model() }.getOrNull()?.toString()
+                        val finishReasons = completion.choices().mapNotNull { choice ->
+                            runCatching { choice.finishReason() }.getOrNull()?.toString()?.lowercase()
+                        }.distinct()
+                        val finalContent = runCatching { message().content().getOrNull() }.getOrNull()
+                        val truncatedContent = finalContent?.take(2_000)
 
-                    val finalContent = runCatching { message().content().getOrNull() }.getOrNull()
-                    val truncatedContent = finalContent?.take(2_000)
-
-                    triggerBotHook(context) { state ->
-                        LLMStreamingHook(
-                            state, context, request, reactions, activator,
-                            attributes = mapOf("llm.response" to truncatedContent),
-                            stage = TelemetryHookStage.FINISH
-                        )
+                        truncatedContent?.let { span.setAttribute(LLMAttributes.RESPONSE, it) }
+                        responseModel?.let { span.setAttribute(GenAIAttributes.RESPONSE_MODEL, it) }
+                        if (finishReasons.isNotEmpty()) span.setAttribute(GenAIAttributes.RESPONSE_FINISH_REASONS, finishReasons)
+                        usage?.let { u ->
+                            span.setAttribute(LLMAttributes.TOKENS_USAGE_PROMPT, u.promptTokens())
+                            span.setAttribute(LLMAttributes.TOKENS_USAGE_COMPLETION, u.completionTokens())
+                            span.setAttribute(LLMAttributes.TOKENS_USAGE_TOTAL, u.totalTokens())
+                            span.setAttribute(GenAIAttributes.USAGE_INPUT_TOKENS, u.promptTokens())
+                            span.setAttribute(GenAIAttributes.USAGE_OUTPUT_TOKENS, u.completionTokens())
+                        }
+                        closeStream()
                     }
-                    triggerBotHook(context) { state ->
-                        LLMCallHook(
-                            state, context, request, reactions, activator,
-                            stage = TelemetryHookStage.FINISH,
-                            completionUsage = usage
-                        )
-                    }
-                    closeStream()
                 }
             }
         }
@@ -304,11 +308,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
                     "Error: ${e.message}"
                 }
             } ?: "Error: no tool found with name ${function.name()}"
-        ).also { result ->
-            triggerBotHook(context) { state ->
-                LLMToolCallHook(state, context, request, reactions, activator, result)
-            }
-        }
+        )
     }
 
     suspend fun LLMContext.submitToolResults(): List<LLMToolResult> {
@@ -342,14 +342,25 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
         }.build()
 
         triggerBotHook(context) { state ->
-            LLMToolCallsHook(state, context, request, reactions, activator, toolCallResults)
+            LLMLifecycleHook(
+                type = LLMSpanType.TOOL_CALLS,
+                state = state,
+                context = context,
+                request = request,
+                reactions = reactions,
+                activator = activator,
+                toolCallResults = toolCallResults
+            )
         }
 
         if (toolCallExceptions.isNotEmpty()) {
             throw toolCallExceptions.first()
         }
 
-        startStream()
+        val provider = BotEngine.current()?.telemetryProvider ?: com.justai.jaicf.telemetry.TelemetryProvider.NoOp
+        runWithTelemetry(provider, LLMSpanName.ToolCalls, emptyMap()) {
+            startStream()
+        }
         return toolCallResults
     }
 

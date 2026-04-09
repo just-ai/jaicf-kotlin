@@ -1,0 +1,29 @@
+# OpenTelemetry Collector: receives OTLP from app, forwards to Langfuse
+# CRITICAL: Set LANGFUSE_AUTH_HEADER before docker compose up, e.g.:
+#   export LANGFUSE_AUTH_HEADER="Basic $(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w 0)"
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+
+exporters:
+  debug:
+    verbosity: basic
+  otlphttp/langfuse:
+    endpoint: "http://langfuse-web:3000/api/public/otel"
+    headers:
+      Authorization: "${env:LANGFUSE_AUTH_HEADER}"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug, otlphttp/langfuse]
