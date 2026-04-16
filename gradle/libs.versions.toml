@@ -8,7 +8,7 @@ jackson = "2.18.2"
 slf4j = "2.0.17"
 jUnit = "5.13.4"
 
-ktor = "3.2.1"
+ktor = "3.4.1"
 coroutinesCore = "1.10.2"
 tomcatServletApi = "11.0.9"
 logbackGelfAppender = "1.5"
@@ -19,7 +19,7 @@ mapDb = "3.1.0"
 eclipseCollections = "13.0.0"
 logbackClassic = "1.5.18"
 jline = "3.30.4"
-kotlinTelegram = "6.0.4"
+javaTelegramBotApi = "9.5.0"
 slack = "1.45.3"
 googleActions = "1.8.0"
 alexa = "2.86.0"
@@ -27,6 +27,7 @@ messenger4j = "1.1.0"
 openai = "2.17.0"
 modelcontextprotocol = "0.7.2"
 lexruntimev2 = "2.32.4"
+awsS3 = "2.32.4"
 grpc-okhttp = "1.73.0"
 google-dialogflow = "4.74.0"
 
@@ -43,6 +44,7 @@ kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-
 
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-cio-jvm = { module = "io.ktor:ktor-client-cio-jvm", version.ref = "ktor" }
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization-jvm", version.ref = "ktor" }
@@ -73,7 +75,7 @@ map-db = { module = "org.mapdb:mapdb", version.ref = "mapDb" }
 eclipse-collections = { group = "org.eclipse.collections", name = "eclipse-collections", version.ref = "eclipseCollections" }
 
 jline = { module = "org.jline:jline", version.ref = "jline" }
-kotlin-telegram-bot = { module = "com.github.kotlin-telegram-bot:kotlin-telegram-bot", version.ref = "kotlinTelegram"}
+java-telegram-bot-api = { module = "com.github.pengrad:java-telegram-bot-api", version.ref = "javaTelegramBotApi"}
 slack = { module = "com.slack.api:bolt", version.ref = "slack" }
 actions-on-google = { module = "com.google.actions:actions-on-google", version.ref = "googleActions"}
 amazon-alexa = { module = "com.amazon.alexa:ask-sdk", version.ref = "alexa" }
@@ -83,6 +85,7 @@ jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datat
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
 modelcontextprotocol = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "modelcontextprotocol"}
 lexruntimev2 = { module = "software.amazon.awssdk:lexruntimev2", version.ref = "lexruntimev2"}
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "awsS3"}
 google-dialogflow = { module = "com.google.cloud:google-cloud-dialogflow", version.ref = "google-dialogflow"}
 grpc-okhttp = { module = "io.grpc:grpc-okhttp", version.ref = "grpc-okhttp"}
 

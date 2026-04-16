@@ -11,14 +11,13 @@ plugins {
 
 dependencies {
     core()
-    api(libs.kotlin.telegram.bot) {
-        exclude("com.github.kotlin-telegram-bot.kotlin-telegram-bot", "webhook")
-        exclude("org.jetbrains.kotlin", "kotlin-stdlib")
-        exclude("com.squareup.okhttp3", "okhttp")
-        exclude("com.squareup.okhttp3", "logging-interceptor")
-    }
+    api(libs.java.telegram.bot.api)
     api(libs.okhttp)
     api(libs.okhttp.logging.interceptor)
 
     implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.serialization)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
 }
