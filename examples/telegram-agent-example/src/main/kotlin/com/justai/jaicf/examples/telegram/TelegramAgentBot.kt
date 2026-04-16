@@ -25,9 +25,6 @@ val TelegramAgentBot = LLMAgent(
             reactions.say(joinToString(prefix = ">> RESULTS: ", postfix = "\n") { "${it.result}" })
         }
 
-        // Stream assistant response if any
-        reactions.streamOrSay()
-
         // Show tool calls if any
         toolCalls().takeIf { it.isNotEmpty() }?.run {
             reactions.say(joinToString(prefix = ">> CALLING: ") {
@@ -35,4 +32,7 @@ val TelegramAgentBot = LLMAgent(
             })
         }
     }
+
+    // Stream final response after all tool calls are done
+    reactions.streamOrSay()
 }
