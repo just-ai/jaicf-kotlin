@@ -161,7 +161,9 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
     suspend fun LLMContext.hasToolCalls() = toolCalls().isNotEmpty()
 
     suspend fun LLMContext.deltaStream(): Stream<ChatCompletionChunk.Choice.Delta> =
-        chunkStream().map { it.choices().first().delta() }
+        chunkStream()
+            .filter { it.choices().isNotEmpty() }
+            .map { it.choices().first().delta() }
 
     suspend fun LLMContext.contentStream(): Stream<String> = deltaStream()
         .map { it.content() }
@@ -174,6 +176,7 @@ data class LLMActionContext<A: ActivatorContext, B: BotRequest, R: Reactions>(
             var reason: ChatCompletionChunk.Choice.FinishReason? = null
             var usage: CompletionUsage? = null
             for (chunk in chunkStream()) {
+                if (chunk.choices().isEmpty()) continue
                 val choice = chunk.choices().first()
                 reason = reason ?: choice.finishReason().getOrNull()
                 usage = usage ?: chunk.usage().getOrNull()
