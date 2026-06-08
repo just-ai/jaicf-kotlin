@@ -1,0 +1,10 @@
+{
+  "update_type": "message_created",
+  "timestamp": "{{ randomLong }}",
+  "message": {
+    "sender": { "user_id": {{ clientId }}, "name": "invocation", "is_bot": false },
+    "recipient": { "chat_id": {{ clientId }}, "chat_type": "dialog", "user_id": {{ clientId }} },
+    "timestamp": "{{ randomLong }}",
+    "body": { "mid": "invocation", "seq": "{{ randomInt }}", "text": "{{ text }}", "attachments": null }
+  }
+}
