@@ -50,6 +50,7 @@ data class BotRemovedUpdate(
     override val timestamp: Long? = null
 ) : MaxUpdate()
 
+// Must be a class (not an object): Jackson instantiates defaultImpl via its no-arg constructor on unknown types.
 class UnknownMaxUpdate : MaxUpdate() {
     override val timestamp: Long? = null
 }

@@ -1,0 +1,6 @@
+{"update_type":"message_created","timestamp":1700000000000,
+ "message":{"sender":{"user_id":101,"name":"Ivan","is_bot":false},
+   "recipient":{"chat_id":202,"chat_type":"dialog","user_id":101},
+   "timestamp":1700000000000,
+   "body":{"mid":"m9","seq":9,"text":null,
+     "attachments":[{"type":"image","payload":{"url":"https://x/img.jpg"}}]}}}

@@ -17,4 +17,5 @@ data class MaxContactAttachment(val payload: MaxContactPayload) : MaxAttachment(
 data class MaxMediaPayload(val url: String? = null, val token: String? = null)
 data class MaxAudioAttachment(val payload: MaxMediaPayload) : MaxAttachment()
 
+// Must be a class (not an object): Jackson instantiates defaultImpl via its no-arg constructor on unknown types.
 class UnknownMaxAttachment : MaxAttachment()
