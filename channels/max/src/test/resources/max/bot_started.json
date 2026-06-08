@@ -1,0 +1,2 @@
+{"update_type":"bot_started","timestamp":1700000000000,"chat_id":202,
+ "user":{"user_id":101,"name":"Ivan","is_bot":false},"payload":"start_payload"}

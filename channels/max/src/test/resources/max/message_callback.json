@@ -1,0 +1,6 @@
+{"update_type":"message_callback","timestamp":1700000000000,
+ "callback":{"timestamp":1700000000000,"callback_id":"cb1","payload":"press_yes",
+   "user":{"user_id":101,"name":"Ivan","is_bot":false}},
+ "message":{"sender":{"user_id":999,"name":"bot","is_bot":true},
+   "recipient":{"chat_id":202,"chat_type":"dialog","user_id":101},
+   "timestamp":1700000000000,"body":{"mid":"m4","seq":4,"text":"choose","attachments":null}}}

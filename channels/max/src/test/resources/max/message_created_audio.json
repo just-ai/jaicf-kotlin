@@ -1,0 +1,6 @@
+{"update_type":"message_created","timestamp":1700000000000,
+ "message":{"sender":{"user_id":101,"name":"Ivan","is_bot":false},
+   "recipient":{"chat_id":202,"chat_type":"dialog","user_id":101},
+   "timestamp":1700000000000,
+   "body":{"mid":"m3","seq":3,"text":null,
+     "attachments":[{"type":"audio","payload":{"url":"https://x/a.mp3","token":"tok-1"}}]}}}
