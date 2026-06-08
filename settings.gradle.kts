@@ -38,6 +38,8 @@ include("channels:google-actions")
 findProject(":channels:google-actions")?.name = "google-actions"
 include("channels:jaicp")
 findProject(":channels:jaicp")?.name = "jaicp"
+include("channels:max")
+findProject(":channels:max")?.name = "max"
 
 include("managers:mongo")
 findProject(":managers:mongo")?.name = "mongo"
