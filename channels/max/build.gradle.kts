@@ -7,8 +7,14 @@ ext[POM_DESCRIPTION] = "JAICF-Kotlin Max Channel implementation. Enables JAICF-K
 plugins {
     `jaicf-kotlin`
     `jaicf-publish`
+    `jaicf-junit`
 }
 
 dependencies {
     core()
+    api(jackson())
+
+    testImplementation("io.mockk:mockk" version { mockk })
+    testImplementation(kotlin("test-junit"))
+    testImplementation(kotlin("test"))
 }
