@@ -13,8 +13,10 @@ plugins {
 dependencies {
     core()
     api(jackson())
+    api(ktor("ktor-client-cio"))
 
     testImplementation("io.mockk:mockk" version { mockk })
     testImplementation(kotlin("test-junit"))
     testImplementation(kotlin("test"))
+    testImplementation(ktor("ktor-client-mock"))
 }

@@ -9,4 +9,5 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 internal val maxObjectMapper: ObjectMapper = jacksonObjectMapper().apply {
     propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
     configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    setSerializationInclusion(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
 }
