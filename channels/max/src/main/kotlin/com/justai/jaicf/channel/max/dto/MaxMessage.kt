@@ -26,10 +26,3 @@ data class MaxMessage(
     val timestamp: Long? = null,
     val body: MaxMessageBody
 )
-
-data class MaxCallback(
-    val callbackId: String,
-    val payload: String? = null,
-    val user: MaxUser,
-    val timestamp: Long? = null
-)
