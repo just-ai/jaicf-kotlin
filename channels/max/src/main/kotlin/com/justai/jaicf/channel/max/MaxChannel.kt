@@ -26,7 +26,7 @@ class MaxChannel(
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
         val update = maxObjectMapper.readValue(request.receiveText(), MaxUpdate::class.java)
-        val botRequest = MaxBotRequestFactory.create(update)
+        val botRequest = update.toBotRequest()
         if (botRequest == null) {
             logger.debug("No request converter for Max update: $update")
             return HttpBotResponse.accepted()
@@ -42,7 +42,7 @@ class MaxChannel(
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val generated = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
         val update = maxObjectMapper.readValue(generated, MaxUpdate::class.java)
-        val botRequest = MaxBotRequestFactory.create(update) ?: return
+        val botRequest = update.toBotRequest() ?: return
         botApi.process(botRequest, MaxReactions(api, botRequest, liveChatProvider), requestContext)
     }
 
