@@ -9,6 +9,11 @@ import com.justai.jaicf.channel.max.dto.BotStartedUpdate
 import com.justai.jaicf.channel.max.dto.MaxCallback
 import com.justai.jaicf.channel.max.dto.MaxMessage
 
+interface MaxBotRequest : BotRequest {
+    /** Chat id replies are sent to. */
+    val chatId: Long
+}
+
 val BotRequest.max get() = this as? MaxBotRequest
 
 val MaxBotRequest.text get() = this as? MaxTextRequest
@@ -18,14 +23,6 @@ val MaxBotRequest.callback get() = this as? MaxQueryRequest
 val MaxBotRequest.botAdded get() = this as? MaxBotAddedRequest
 val MaxBotRequest.botStarted get() = this as? MaxBotStartedRequest
 val MaxBotRequest.botRemoved get() = this as? MaxBotRemovedRequest
-
-interface MaxBotRequest : BotRequest {
-    /** Chat id replies are sent to. */
-    val chatId: Long
-}
-
-private fun MaxMessage.clientId() = (sender?.userId ?: recipient.userId
-    ?: error("Max message has neither sender nor recipient user id")).toString()
 
 data class MaxTextRequest(
     val message: MaxMessage
@@ -69,3 +66,6 @@ data class MaxBotRemovedRequest(
 ) : MaxBotRequest, EventBotRequest(clientId = update.user.userId.toString(), input = MaxEvent.BOT_REMOVED) {
     override val chatId = update.chatId
 }
+
+private fun MaxMessage.clientId() = (sender?.userId ?: recipient.userId
+    ?: error("Max message has neither sender nor recipient user id")).toString()
