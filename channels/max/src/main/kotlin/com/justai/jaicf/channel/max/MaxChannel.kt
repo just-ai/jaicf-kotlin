@@ -10,8 +10,8 @@ import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncBotChannel
 import com.justai.jaicf.channel.jaicp.JaicpCompatibleAsyncChannelFactory
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.max.api.MaxBotApi
-import com.justai.jaicf.channel.max.dto.MaxObjectMapper
 import com.justai.jaicf.channel.max.dto.MaxUpdate
+import com.justai.jaicf.channel.max.dto.maxObjectMapper
 import com.justai.jaicf.context.RequestContext
 import com.justai.jaicf.helpers.logging.WithLogger
 
@@ -25,7 +25,7 @@ class MaxChannel(
     private var liveChatProvider: JaicpLiveChatProvider? = null
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
-        val update = MaxObjectMapper.mapper.readValue(request.receiveText(), MaxUpdate::class.java)
+        val update = maxObjectMapper.readValue(request.receiveText(), MaxUpdate::class.java)
         val botRequest = MaxBotRequestFactory.create(update)
         if (botRequest == null) {
             logger.debug("No request converter for Max update: $update")
@@ -41,7 +41,7 @@ class MaxChannel(
 
     override fun processInvocation(request: InvocationRequest, requestContext: RequestContext) {
         val generated = getRequestTemplateFromResources(request, REQUEST_TEMPLATE_PATH)
-        val update = MaxObjectMapper.mapper.readValue(generated, MaxUpdate::class.java)
+        val update = maxObjectMapper.readValue(generated, MaxUpdate::class.java)
         val botRequest = MaxBotRequestFactory.create(update) ?: return
         botApi.process(botRequest, MaxReactions(api, botRequest, liveChatProvider), requestContext)
     }

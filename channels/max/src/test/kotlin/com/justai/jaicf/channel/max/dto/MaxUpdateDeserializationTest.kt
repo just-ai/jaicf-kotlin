@@ -11,7 +11,7 @@ class MaxUpdateDeserializationTest {
         javaClass.getResource("/max/$name.json")!!.readText()
 
     private inline fun <reified T : MaxUpdate> parse(name: String): T {
-        val raw = MaxObjectMapper.mapper.readValue(read(name), MaxUpdate::class.java)
+        val raw = maxObjectMapper.readValue(read(name), MaxUpdate::class.java)
         assertTrue(raw is T, "Expected ${T::class.simpleName} but got ${raw::class.simpleName}")
         return raw
     }
@@ -67,7 +67,7 @@ class MaxUpdateDeserializationTest {
     }
 
     @Test fun `unknown update_type deserializes to UnknownMaxUpdate`() {
-        val u = MaxObjectMapper.mapper.readValue(read("unknown_update"), MaxUpdate::class.java)
+        val u = maxObjectMapper.readValue(read("unknown_update"), MaxUpdate::class.java)
         assertTrue(u is UnknownMaxUpdate)
     }
 
