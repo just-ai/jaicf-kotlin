@@ -16,6 +16,7 @@ val MaxBotRequest.contact get() = this as? MaxContactRequest
 val MaxBotRequest.audio get() = this as? MaxAudioRequest
 val MaxBotRequest.callback get() = this as? MaxQueryRequest
 val MaxBotRequest.botAdded get() = this as? MaxBotAddedRequest
+val MaxBotRequest.botStarted get() = this as? MaxBotStartedRequest
 val MaxBotRequest.botRemoved get() = this as? MaxBotRemovedRequest
 
 interface MaxBotRequest : BotRequest {
@@ -46,10 +47,9 @@ data class MaxAudioRequest(
 
 data class MaxQueryRequest(
     val callbackData: MaxCallback,
-    val message: MaxMessage?
+    val message: MaxMessage
 ) : MaxBotRequest, QueryBotRequest(clientId = callbackData.user.userId.toString(), input = callbackData.payload.orEmpty()) {
-    override val chatId = message?.recipient?.chatId
-        ?: error("Max callback has no originating message chat id")
+    override val chatId = message.recipient.chatId
 }
 
 data class MaxBotAddedRequest(
