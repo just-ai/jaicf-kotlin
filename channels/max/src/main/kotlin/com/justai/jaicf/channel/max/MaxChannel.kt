@@ -17,8 +17,10 @@ import com.justai.jaicf.helpers.logging.WithLogger
 
 class MaxChannel(
     override val botApi: BotApi,
-    private val maxBotToken: String,
-    private val maxApiUrl: String = "https://botapi.max.ru/"
+    // null in JAICP-proxied mode (JAICP cloud holds the bot auth); set for standalone
+    // direct Max API use. The outbound auth model is finalized in VS-13663.
+    private val maxBotToken: String? = null,
+    private val maxApiUrl: String = DEFAULT_API_URL
 ) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithLogger {
 
     private val api = MaxBotApi(maxBotToken, maxApiUrl)
@@ -48,6 +50,7 @@ class MaxChannel(
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "max"
+        private const val DEFAULT_API_URL = "https://botapi.max.ru/"
         private const val REQUEST_TEMPLATE_PATH = "/MaxRequestTemplate.json"
 
         override fun create(
@@ -55,7 +58,7 @@ class MaxChannel(
             apiUrl: String,
             liveChatProvider: JaicpLiveChatProvider
         ): JaicpCompatibleAsyncBotChannel =
-            MaxChannel(botApi, maxBotToken = "", maxApiUrl = apiUrl).apply {
+            MaxChannel(botApi, maxApiUrl = apiUrl).apply {
                 this.liveChatProvider = liveChatProvider
             }
     }

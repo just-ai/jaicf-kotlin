@@ -5,6 +5,6 @@ package com.justai.jaicf.channel.max.api
  * (sendMessage with inline keyboard, sendVoice/sendAudio 3-step upload, answerCallbackQuery).
  */
 class MaxBotApi(
-    private val token: String,
+    private val token: String?,
     private val apiUrl: String
 )
