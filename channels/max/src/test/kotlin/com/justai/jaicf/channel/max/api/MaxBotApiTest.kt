@@ -36,4 +36,29 @@ class MaxBotApiTest {
         val api = api { respond("{}", HttpStatusCode.TooManyRequests) }
         assertFailsWith<MaxRateLimitException> { api.sendMessage(1, NewMessageBody(text = "x")) }
     }
+
+    @Test fun `sendMedia does uploads then binary then messages`() {
+        val calls = mutableListOf<String>()
+        val api = api { req -> calls += req.url.encodedPath
+            when {
+                req.url.encodedPath.endsWith("/uploads") -> respond("""{"url":"https://up.test/put"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json"))
+                req.url.host == "up.test" -> respond("""{"token":"tok-1"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json"))
+                req.url.encodedPath.endsWith("/messages") -> respond("""{"message":{"recipient":{"chat_id":1},"body":{"mid":"m","seq":1}}}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json"))
+                else -> respond("{}", HttpStatusCode.OK)
+            } }
+        api.sendMedia(chatId = 1, type = "audio", bytes = byteArrayOf(1,2,3), text = null)
+        assertTrue(calls.any { it.endsWith("/uploads") } && calls.any { it.endsWith("/messages") })
+    }
+
+    @Test fun `attachment_not_ready retries the messages call`() {
+        var msgCalls = 0
+        val api = api { req -> when {
+            req.url.encodedPath.endsWith("/uploads") -> respond("""{"url":"https://up.test/put"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json"))
+            req.url.host == "up.test" -> respond("""{"token":"tok"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json"))
+            else -> { msgCalls++
+                if (msgCalls == 1) respond("""{"code":"attachment.not.ready","message":"x"}""", HttpStatusCode.BadRequest, headersOf(HttpHeaders.ContentType,"application/json"))
+                else respond("""{"message":{"recipient":{"chat_id":1},"body":{"mid":"m","seq":1}}}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json")) } } }
+        api.sendMedia(1, "audio", byteArrayOf(1), null)
+        assertEquals(2, msgCalls)   // retried once
+    }
 }
