@@ -49,3 +49,6 @@ data class SendMessageResult(val message: MaxMessage? = null)
 
 /** Result of POST /uploads — the endpoint to upload bytes to. */
 data class UploadEndpoint(val url: String)
+
+/** Body for POST /answers — answer a callback query. Null fields are omitted by NON_NULL mapper. */
+data class CallbackAnswer(val message: NewMessageBody? = null, val notification: String? = null)

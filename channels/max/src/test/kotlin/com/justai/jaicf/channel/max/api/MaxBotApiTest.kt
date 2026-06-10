@@ -61,4 +61,11 @@ class MaxBotApiTest {
         api.sendMedia(1, "audio", byteArrayOf(1), null)
         assertEquals(2, msgCalls)   // retried once
     }
+
+    @Test fun `answerCallback posts to answers with callback_id`() {
+        var url: String? = null
+        val api = api { req -> url = req.url.toString(); respond("{}", HttpStatusCode.OK) }
+        api.answerCallback(callbackId = "cb1", notification = "done")
+        assertTrue(url!!.contains("/answers") && url!!.contains("callback_id=cb1"))
+    }
 }

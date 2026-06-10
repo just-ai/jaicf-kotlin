@@ -1,5 +1,6 @@
 package com.justai.jaicf.channel.max.api
 
+import com.justai.jaicf.channel.max.dto.CallbackAnswer
 import com.justai.jaicf.channel.max.dto.MaxApiError
 import com.justai.jaicf.channel.max.dto.MaxAttachmentRequest
 import com.justai.jaicf.channel.max.dto.MaxMediaToken
@@ -67,6 +68,16 @@ class MaxBotApi(
             val bytes = fetchBytes(url)
             sendMediaSuspend(chatId, type, bytes, text)
         }
+
+    /**
+     * Answers a callback query: POST /answers?access_token=…&callback_id=[callbackId]
+     *
+     * @param callbackId The callback query ID to answer.
+     * @param message    Optional message to send back to the user.
+     * @param notification Optional notification text shown as a toast.
+     */
+    fun answerCallback(callbackId: String, message: NewMessageBody? = null, notification: String? = null): Unit =
+        runBlocking { answerCallbackSuspend(callbackId, message, notification) }
 
     // -------------------------------------------------------------------------
     // Suspend implementations
@@ -138,6 +149,21 @@ class MaxBotApi(
     private fun attachmentFor(type: String, token: String): MaxAttachmentRequest = when (type) {
         "image" -> MaxAttachmentRequest.Image(MaxMediaToken(token))
         else    -> MaxAttachmentRequest.Audio(MaxMediaToken(token))
+    }
+
+    private suspend fun answerCallbackSuspend(callbackId: String, message: NewMessageBody?, notification: String?) {
+        val json = maxObjectMapper.writeValueAsString(CallbackAnswer(message, notification))
+        val response: HttpResponse = client.post("$apiUrl/answers") {
+            if (token != null) parameter("access_token", token)
+            parameter("callback_id", callbackId)
+            contentType(ContentType.Application.Json)
+            body = json
+        }
+        if (!response.status.isSuccess()) {
+            val text = response.readText()
+            val error = runCatching { maxObjectMapper.readValue(text, MaxApiError::class.java) }.getOrNull()
+            throw error.toException(response.status.value)
+        }
     }
 
     // -------------------------------------------------------------------------
