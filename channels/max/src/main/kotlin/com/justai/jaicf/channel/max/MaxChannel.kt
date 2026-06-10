@@ -50,7 +50,7 @@ class MaxChannel(
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "max"
-        private const val DEFAULT_API_URL = "https://botapi.max.ru/"
+        private const val DEFAULT_API_URL = "https://botapi.max.ru"
         private const val REQUEST_TEMPLATE_PATH = "/MaxRequestTemplate.json"
 
         override fun create(

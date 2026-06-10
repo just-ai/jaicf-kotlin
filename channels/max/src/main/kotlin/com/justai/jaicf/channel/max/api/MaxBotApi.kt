@@ -32,9 +32,11 @@ import kotlinx.coroutines.runBlocking
 class MaxBotApi(
     private val token: String?,
     private val apiUrl: String,
-    engine: HttpClientEngine = CIO.create(),
+    engine: HttpClientEngine = CIO.create { requestTimeout = 30_000 },
     internal val attachmentRetryDelayMs: Long = 500L
 ) {
+
+    private val baseUrl = apiUrl.trimEnd('/')
 
     private val client = HttpClient(engine) {
         expectSuccess = false
@@ -49,7 +51,7 @@ class MaxBotApi(
     // -------------------------------------------------------------------------
 
     fun sendMessage(chatId: Long, body: NewMessageBody): SendMessageResult =
-        runBlocking { execute("$apiUrl/messages", chatId, body, SendMessageResult::class.java) }
+        runBlocking { execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java) }
 
     /**
      * 3-step media upload:
@@ -85,16 +87,13 @@ class MaxBotApi(
 
     private suspend fun sendMediaSuspend(chatId: Long, type: String, bytes: ByteArray, text: String?): SendMessageResult {
         // Step 1: obtain upload endpoint
-        val uploadEndpointResponse: HttpResponse = client.post("$apiUrl/uploads") {
+        val uploadEndpointResponse: HttpResponse = client.post("$baseUrl/uploads") {
             if (token != null) parameter("access_token", token)
             parameter("type", type)
         }
-        val uploadEndpointText = uploadEndpointResponse.readText()
-        if (!uploadEndpointResponse.status.isSuccess()) {
-            val error = runCatching { maxObjectMapper.readValue(uploadEndpointText, MaxApiError::class.java) }.getOrNull()
-            throw error.toException(uploadEndpointResponse.status.value)
-        }
-        val uploadEndpoint = maxObjectMapper.readValue(uploadEndpointText, UploadEndpoint::class.java)
+        val uploadEndpoint = maxObjectMapper.readValue(
+            checkOrThrow(uploadEndpointResponse), UploadEndpoint::class.java
+        )
 
         // Step 2: upload binary to the returned URL
         val uploadResponse: HttpResponse = client.post(uploadEndpoint.url) {
@@ -106,12 +105,9 @@ class MaxBotApi(
                 }
             )
         }
-        val uploadResponseText = uploadResponse.readText()
-        if (!uploadResponse.status.isSuccess()) {
-            val error = runCatching { maxObjectMapper.readValue(uploadResponseText, MaxApiError::class.java) }.getOrNull()
-            throw error.toException(uploadResponse.status.value)
-        }
-        val mediaToken = maxObjectMapper.readValue(uploadResponseText, MaxMediaToken::class.java)
+        val mediaToken = maxObjectMapper.readValue(
+            checkOrThrow(uploadResponse), MaxMediaToken::class.java
+        )
 
         // Step 3: send message with attachment token, retry on attachment.not.ready
         val attachment = attachmentFor(type, mediaToken.token)
@@ -120,7 +116,7 @@ class MaxBotApi(
         var lastException: MaxApiException? = null
         repeat(MAX_ATTACHMENT_RETRIES) { attempt ->
             try {
-                return execute("$apiUrl/messages", chatId, messageBody, SendMessageResult::class.java)
+                return execute("$baseUrl/messages", chatId, messageBody, SendMessageResult::class.java)
             } catch (e: MaxApiException) {
                 if (e.httpStatus == 400 && e.code == "attachment.not.ready") {
                     lastException = e
@@ -139,8 +135,8 @@ class MaxBotApi(
         val response: HttpResponse = client.get(url)
         val bytes = response.readBytes()
         if (!response.status.isSuccess()) {
-            val text = bytes.toString(Charsets.UTF_8)
-            val error = runCatching { maxObjectMapper.readValue(text, MaxApiError::class.java) }.getOrNull()
+            val bodyText = bytes.toString(Charsets.UTF_8)
+            val error = runCatching { maxObjectMapper.readValue(bodyText, MaxApiError::class.java) }.getOrNull()
             throw error.toException(response.status.value)
         }
         return bytes
@@ -148,27 +144,33 @@ class MaxBotApi(
 
     private fun attachmentFor(type: String, token: String): MaxAttachmentRequest = when (type) {
         "image" -> MaxAttachmentRequest.Image(MaxMediaToken(token))
+        "file"  -> MaxAttachmentRequest.File(MaxMediaToken(token))
         else    -> MaxAttachmentRequest.Audio(MaxMediaToken(token))
     }
 
     private suspend fun answerCallbackSuspend(callbackId: String, message: NewMessageBody?, notification: String?) {
         val json = maxObjectMapper.writeValueAsString(CallbackAnswer(message, notification))
-        val response: HttpResponse = client.post("$apiUrl/answers") {
+        val response: HttpResponse = client.post("$baseUrl/answers") {
             if (token != null) parameter("access_token", token)
             parameter("callback_id", callbackId)
             contentType(ContentType.Application.Json)
             body = json
         }
-        if (!response.status.isSuccess()) {
-            val text = response.readText()
-            val error = runCatching { maxObjectMapper.readValue(text, MaxApiError::class.java) }.getOrNull()
-            throw error.toException(response.status.value)
-        }
+        checkOrThrow(response)
     }
 
     // -------------------------------------------------------------------------
-    // Shared request/response helper
+    // Shared request/response helpers
     // -------------------------------------------------------------------------
+
+    private suspend fun checkOrThrow(response: HttpResponse): String {
+        val text = response.readText()
+        if (!response.status.isSuccess()) {
+            val error = runCatching { maxObjectMapper.readValue(text, MaxApiError::class.java) }.getOrNull()
+            throw error.toException(response.status.value)
+        }
+        return text
+    }
 
     private suspend fun <T : Any> execute(url: String, chatId: Long, requestBody: Any, responseType: Class<T>): T {
         val json = maxObjectMapper.writeValueAsString(requestBody)
@@ -180,17 +182,6 @@ class MaxBotApi(
             body = json
         }
 
-        val text = response.readText()
-        val status = response.status.value
-
-        if (response.status.isSuccess()) {
-            return maxObjectMapper.readValue(text, responseType)
-        }
-
-        val error = runCatching {
-            maxObjectMapper.readValue(text, MaxApiError::class.java)
-        }.getOrNull()
-
-        throw error.toException(status)
+        return maxObjectMapper.readValue(checkOrThrow(response), responseType)
     }
 }

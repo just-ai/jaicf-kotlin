@@ -15,7 +15,8 @@ data class NewMessageBody(
 @JsonSubTypes(
     JsonSubTypes.Type(value = MaxAttachmentRequest.InlineKeyboard::class, name = "inline_keyboard"),
     JsonSubTypes.Type(value = MaxAttachmentRequest.Audio::class, name = "audio"),
-    JsonSubTypes.Type(value = MaxAttachmentRequest.Image::class, name = "image")
+    JsonSubTypes.Type(value = MaxAttachmentRequest.Image::class, name = "image"),
+    JsonSubTypes.Type(value = MaxAttachmentRequest.File::class, name = "file")
 )
 sealed class MaxAttachmentRequest {
     @JsonTypeName("inline_keyboard")
@@ -24,6 +25,8 @@ sealed class MaxAttachmentRequest {
     data class Audio(val payload: MaxMediaToken) : MaxAttachmentRequest()
     @JsonTypeName("image")
     data class Image(val payload: MaxMediaToken) : MaxAttachmentRequest()
+    @JsonTypeName("file")
+    data class File(val payload: MaxMediaToken) : MaxAttachmentRequest()
 }
 
 data class MaxKeyboardPayload(val buttons: List<List<MaxButton>>)

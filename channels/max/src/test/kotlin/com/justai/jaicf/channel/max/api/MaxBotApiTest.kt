@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 
 class MaxBotApiTest {
     private fun api(handler: MockRequestHandler) =
-        MaxBotApi(token = "t", apiUrl = "https://api.test", engine = MockEngine(handler))
+        MaxBotApi(token = "t", apiUrl = "https://api.test", engine = MockEngine(handler), attachmentRetryDelayMs = 0)
 
     @Test fun `sendMessage posts to messages with access_token and chat_id`() {
         var seen: String? = null
@@ -60,6 +60,25 @@ class MaxBotApiTest {
                 else respond("""{"message":{"recipient":{"chat_id":1},"body":{"mid":"m","seq":1}}}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json")) } } }
         api.sendMedia(1, "audio", byteArrayOf(1), null)
         assertEquals(2, msgCalls)   // retried once
+    }
+
+    @Test fun `sendMedia with type file produces messages body with type file`() {
+        var messagesBody: String? = null
+        val api = api { req ->
+            when {
+                req.url.encodedPath.endsWith("/uploads") ->
+                    respond("""{"url":"https://up.test/put"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                req.url.host == "up.test" ->
+                    respond("""{"token":"tok-file"}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                req.url.encodedPath.endsWith("/messages") -> {
+                    messagesBody = req.body.toByteArray().decodeToString()
+                    respond("""{"message":{"recipient":{"chat_id":1},"body":{"mid":"m","seq":1}}}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+                }
+                else -> respond("{}", HttpStatusCode.OK)
+            }
+        }
+        api.sendMedia(chatId = 1, type = "file", bytes = byteArrayOf(1, 2, 3), text = null)
+        assertTrue(messagesBody!!.contains(""""type":"file""""))
     }
 
     @Test fun `answerCallback posts to answers with callback_id`() {

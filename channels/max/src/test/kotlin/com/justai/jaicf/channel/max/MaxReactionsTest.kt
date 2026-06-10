@@ -61,4 +61,9 @@ class MaxReactionsTest {
         verify { api.sendMedia(202, "audio", "https://x/a.mp3", null) }
         assertEquals("https://x/a.mp3", r.audioUrl)
     }
+
+    @Test fun `sendDocument calls api sendMedia with type file`() {
+        reactions().sendDocument("https://x/doc.pdf")
+        verify { api.sendMedia(202, "file", "https://x/doc.pdf", null) }
+    }
 }
