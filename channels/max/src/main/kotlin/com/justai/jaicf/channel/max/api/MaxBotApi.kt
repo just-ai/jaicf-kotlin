@@ -46,142 +46,119 @@ class MaxBotApi(
         private const val MAX_ATTACHMENT_RETRIES = 3
     }
 
-    // -------------------------------------------------------------------------
-    // Public API
-    // -------------------------------------------------------------------------
-
     fun sendMessage(chatId: Long, body: NewMessageBody): SendMessageResult =
         runBlocking { execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java) }
 
-    /**
-     * 3-step media upload:
-     * 1. POST /uploads?type=… → [UploadEndpoint]
-     * 2. POST bytes to upload URL → media token
-     * 3. POST /messages with attachment token (retries on `attachment.not.ready`)
-     */
+    /** Uploads [bytes] of the given [type] (audio/image/file) and sends them to [chatId] (see [sendMediaSuspend]). */
     fun sendMedia(chatId: Long, type: String, bytes: ByteArray, text: String? = null): SendMessageResult =
         runBlocking { sendMediaSuspend(chatId, type, bytes, text) }
 
-    /**
-     * URL-based overload: fetches the bytes from [url] then delegates to the bytes overload.
-     */
+    /** URL-based overload: fetches the bytes from [url] then delegates to the bytes overload. */
     fun sendMedia(chatId: Long, type: String, url: String, text: String? = null): SendMessageResult =
-        runBlocking {
-            val bytes = fetchBytes(url)
-            sendMediaSuspend(chatId, type, bytes, text)
-        }
+        runBlocking { sendMediaSuspend(chatId, type, fetchBytes(url), text) }
 
-    /**
-     * Answers a callback query: POST /answers?access_token=…&callback_id=[callbackId]
-     *
-     * @param callbackId The callback query ID to answer.
-     * @param message    Optional message to send back to the user.
-     * @param notification Optional notification text shown as a toast.
-     */
+    /** Answers a callback query: `POST /answers?callback_id=…` with an optional [message] and [notification]. */
     fun answerCallback(callbackId: String, message: NewMessageBody? = null, notification: String? = null): Unit =
         runBlocking { answerCallbackSuspend(callbackId, message, notification) }
 
-    // -------------------------------------------------------------------------
-    // Suspend implementations
-    // -------------------------------------------------------------------------
-
+    /**
+     * 3-step media send: obtain an upload endpoint, upload the bytes, then post a message
+     * referencing the resulting attachment token (retrying while the attachment is still processing).
+     */
     private suspend fun sendMediaSuspend(chatId: Long, type: String, bytes: ByteArray, text: String?): SendMessageResult {
-        // Step 1: obtain upload endpoint
-        val uploadEndpointResponse: HttpResponse = client.post("$baseUrl/uploads") {
-            if (token != null) parameter("access_token", token)
+        val endpoint = requestUploadEndpoint(type)
+        val mediaToken = uploadBytes(endpoint.url, bytes)
+        val body = NewMessageBody(text = text, attachments = listOf(attachmentFor(type, mediaToken)))
+        return sendWithAttachmentRetry(chatId, body)
+    }
+
+    /** Step 1 — `POST /uploads?type=…` returning the endpoint to upload the binary to. */
+    private suspend fun requestUploadEndpoint(type: String): UploadEndpoint {
+        val response = client.post<HttpResponse>("$baseUrl/uploads") {
+            accessToken()
             parameter("type", type)
         }
-        val uploadEndpoint = maxObjectMapper.readValue(
-            checkOrThrow(uploadEndpointResponse), UploadEndpoint::class.java
-        )
+        return maxObjectMapper.readValue(checkOrThrow(response), UploadEndpoint::class.java)
+    }
 
-        // Step 2: upload binary to the returned URL
-        val uploadResponse: HttpResponse = client.post(uploadEndpoint.url) {
-            body = MultiPartFormDataContent(
-                formData {
-                    append("data", bytes, Headers.build {
-                        append(HttpHeaders.ContentDisposition, "filename=upload")
-                    })
-                }
-            )
-        }
-        val mediaToken = maxObjectMapper.readValue(
-            checkOrThrow(uploadResponse), MaxMediaToken::class.java
-        )
+    /** Step 2 — upload [bytes] to [uploadUrl] as multipart form-data, returning the attachment token. */
+    private suspend fun uploadBytes(uploadUrl: String, bytes: ByteArray): String {
+        val response = client.post<HttpResponse>(uploadUrl) { body = multipartOf(bytes) }
+        return maxObjectMapper.readValue(checkOrThrow(response), MaxMediaToken::class.java).token
+    }
 
-        // Step 3: send message with attachment token, retry on attachment.not.ready
-        val attachment = attachmentFor(type, mediaToken.token)
-        val messageBody = NewMessageBody(text = text, attachments = listOf(attachment))
-
-        var lastException: MaxApiException? = null
-        repeat(MAX_ATTACHMENT_RETRIES) { attempt ->
+    /** Step 3 — `POST /messages`, retrying while Max reports the attachment is not yet processed. */
+    private suspend fun sendWithAttachmentRetry(chatId: Long, body: NewMessageBody): SendMessageResult {
+        repeat(MAX_ATTACHMENT_RETRIES - 1) {
             try {
-                return execute("$baseUrl/messages", chatId, messageBody, SendMessageResult::class.java)
+                return execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java)
             } catch (e: MaxApiException) {
-                if (e.httpStatus == 400 && e.code == "attachment.not.ready") {
-                    lastException = e
-                    if (attempt < MAX_ATTACHMENT_RETRIES - 1) {
-                        delay(attachmentRetryDelayMs)
-                    }
-                } else {
-                    throw e
-                }
+                if (!e.isAttachmentNotReady) throw e
+                delay(attachmentRetryDelayMs)
             }
         }
-        throw lastException!!
-    }
-
-    private suspend fun fetchBytes(url: String): ByteArray {
-        val response: HttpResponse = client.get(url)
-        val bytes = response.readBytes()
-        if (!response.status.isSuccess()) {
-            val bodyText = bytes.toString(Charsets.UTF_8)
-            val error = runCatching { maxObjectMapper.readValue(bodyText, MaxApiError::class.java) }.getOrNull()
-            throw error.toException(response.status.value)
-        }
-        return bytes
-    }
-
-    private fun attachmentFor(type: String, token: String): MaxAttachmentRequest = when (type) {
-        "image" -> MaxAttachmentRequest.Image(MaxMediaToken(token))
-        "file"  -> MaxAttachmentRequest.File(MaxMediaToken(token))
-        else    -> MaxAttachmentRequest.Audio(MaxMediaToken(token))
+        // Final attempt: let any exception propagate to the caller.
+        return execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java)
     }
 
     private suspend fun answerCallbackSuspend(callbackId: String, message: NewMessageBody?, notification: String?) {
-        val json = maxObjectMapper.writeValueAsString(CallbackAnswer(message, notification))
-        val response: HttpResponse = client.post("$baseUrl/answers") {
-            if (token != null) parameter("access_token", token)
+        val response = client.post<HttpResponse>("$baseUrl/answers") {
+            accessToken()
             parameter("callback_id", callbackId)
-            contentType(ContentType.Application.Json)
-            body = json
+            jsonBody(CallbackAnswer(message, notification))
         }
         checkOrThrow(response)
     }
 
-    // -------------------------------------------------------------------------
-    // Shared request/response helpers
-    // -------------------------------------------------------------------------
-
-    private suspend fun checkOrThrow(response: HttpResponse): String {
-        val text = response.readText()
-        if (!response.status.isSuccess()) {
-            val error = runCatching { maxObjectMapper.readValue(text, MaxApiError::class.java) }.getOrNull()
-            throw error.toException(response.status.value)
-        }
-        return text
+    private suspend fun fetchBytes(url: String): ByteArray {
+        val response = client.get<HttpResponse>(url)
+        val bytes = response.readBytes()
+        if (!response.status.isSuccess()) raiseError(response.status, bytes.toString(Charsets.UTF_8))
+        return bytes
     }
 
     private suspend fun <T : Any> execute(url: String, chatId: Long, requestBody: Any, responseType: Class<T>): T {
-        val json = maxObjectMapper.writeValueAsString(requestBody)
-
-        val response: HttpResponse = client.post(url) {
-            if (token != null) parameter("access_token", token)
+        val response = client.post<HttpResponse>(url) {
+            accessToken()
             parameter("chat_id", chatId)
-            contentType(ContentType.Application.Json)
-            body = json
+            jsonBody(requestBody)
         }
-
         return maxObjectMapper.readValue(checkOrThrow(response), responseType)
     }
+
+    /** Reads the response body, raising the matching typed [MaxApiException] on a non-2xx status. */
+    private suspend fun checkOrThrow(response: HttpResponse): String {
+        val text = response.readText()
+        if (!response.status.isSuccess()) raiseError(response.status, text)
+        return text
+    }
+
+    private fun raiseError(status: HttpStatusCode, body: String): Nothing {
+        val error = runCatching { maxObjectMapper.readValue(body, MaxApiError::class.java) }.getOrNull()
+        throw error.toException(status.value)
+    }
+
+    private fun HttpRequestBuilder.accessToken() = token?.let { parameter("access_token", it) }
+
+    private fun HttpRequestBuilder.jsonBody(value: Any) {
+        contentType(ContentType.Application.Json)
+        body = maxObjectMapper.writeValueAsString(value)
+    }
+
+    private fun multipartOf(bytes: ByteArray) = MultiPartFormDataContent(
+        formData {
+            append("data", bytes, Headers.build {
+                append(HttpHeaders.ContentDisposition, "filename=upload")
+            })
+        }
+    )
+
+    private fun attachmentFor(type: String, token: String): MaxAttachmentRequest = when (type) {
+        "image" -> MaxAttachmentRequest.Image(MaxMediaToken(token))
+        "file" -> MaxAttachmentRequest.File(MaxMediaToken(token))
+        else -> MaxAttachmentRequest.Audio(MaxMediaToken(token))
+    }
+
+    private val MaxApiException.isAttachmentNotReady: Boolean
+        get() = httpStatus == 400 && code == "attachment.not.ready"
 }
