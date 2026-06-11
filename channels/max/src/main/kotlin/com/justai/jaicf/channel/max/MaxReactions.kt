@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.max
 
 import com.justai.jaicf.channel.jaicp.JaicpLiveChatProvider
 import com.justai.jaicf.channel.max.api.MaxBotApi
+import com.justai.jaicf.channel.max.api.MaxMediaType
 import com.justai.jaicf.channel.max.dto.MaxAttachmentRequest
 import com.justai.jaicf.channel.max.dto.MaxButton
 import com.justai.jaicf.channel.max.dto.MaxKeyboardPayload
@@ -60,19 +61,19 @@ class MaxReactions(
     }
 
     override fun image(url: String): ImageReaction {
-        api.sendMedia(chatId, "image", url, text = null)
+        api.sendMedia(chatId, MaxMediaType.IMAGE, url, text = null)
         return ImageReaction.create(url)
     }
 
     override fun audio(url: String): AudioReaction {
-        api.sendMedia(chatId, "audio", url, text = null)
+        api.sendMedia(chatId, MaxMediaType.AUDIO, url, text = null)
         return AudioReaction.create(url)
     }
 
     fun sendVoice(url: String): AudioReaction = audio(url)
 
     fun sendDocument(url: String) {
-        api.sendMedia(chatId, "file", url, text = null)
+        api.sendMedia(chatId, MaxMediaType.FILE, url, text = null)
     }
 
     // -------------------------------------------------------------------------

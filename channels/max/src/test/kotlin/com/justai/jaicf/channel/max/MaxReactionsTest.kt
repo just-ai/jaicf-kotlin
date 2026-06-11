@@ -1,6 +1,7 @@
 package com.justai.jaicf.channel.max
 
 import com.justai.jaicf.channel.max.api.MaxBotApi
+import com.justai.jaicf.channel.max.api.MaxMediaType
 import com.justai.jaicf.channel.max.dto.MaxAttachmentRequest
 import com.justai.jaicf.channel.max.dto.MaxButton
 import com.justai.jaicf.channel.max.dto.MaxMessage
@@ -58,12 +59,12 @@ class MaxReactionsTest {
 
     @Test fun `audio sends media of type audio and returns AudioReaction`() {
         val r = reactions().audio("https://x/a.mp3")
-        verify { api.sendMedia(202, "audio", "https://x/a.mp3", null) }
+        verify { api.sendMedia(202, MaxMediaType.AUDIO, "https://x/a.mp3", null) }
         assertEquals("https://x/a.mp3", r.audioUrl)
     }
 
     @Test fun `sendDocument calls api sendMedia with type file`() {
         reactions().sendDocument("https://x/doc.pdf")
-        verify { api.sendMedia(202, "file", "https://x/doc.pdf", null) }
+        verify { api.sendMedia(202, MaxMediaType.FILE, "https://x/doc.pdf", null) }
     }
 }

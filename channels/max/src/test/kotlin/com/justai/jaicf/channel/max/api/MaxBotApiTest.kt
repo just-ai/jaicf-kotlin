@@ -46,7 +46,7 @@ class MaxBotApiTest {
                 req.url.encodedPath.endsWith("/messages") -> respond("""{"message":{"recipient":{"chat_id":1},"body":{"mid":"m","seq":1}}}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json"))
                 else -> respond("{}", HttpStatusCode.OK)
             } }
-        api.sendMedia(chatId = 1, type = "audio", bytes = byteArrayOf(1,2,3), text = null)
+        api.sendMedia(chatId = 1, type = MaxMediaType.AUDIO, bytes = byteArrayOf(1,2,3), text = null)
         assertTrue(calls.any { it.endsWith("/uploads") } && calls.any { it.endsWith("/messages") })
     }
 
@@ -58,7 +58,7 @@ class MaxBotApiTest {
             else -> { msgCalls++
                 if (msgCalls == 1) respond("""{"code":"attachment.not.ready","message":"x"}""", HttpStatusCode.BadRequest, headersOf(HttpHeaders.ContentType,"application/json"))
                 else respond("""{"message":{"recipient":{"chat_id":1},"body":{"mid":"m","seq":1}}}""", HttpStatusCode.OK, headersOf(HttpHeaders.ContentType,"application/json")) } } }
-        api.sendMedia(1, "audio", byteArrayOf(1), null)
+        api.sendMedia(1, MaxMediaType.AUDIO, byteArrayOf(1), null)
         assertEquals(2, msgCalls)   // retried once
     }
 
@@ -77,7 +77,7 @@ class MaxBotApiTest {
                 else -> respond("{}", HttpStatusCode.OK)
             }
         }
-        api.sendMedia(chatId = 1, type = "file", bytes = byteArrayOf(1, 2, 3), text = null)
+        api.sendMedia(chatId = 1, type = MaxMediaType.FILE, bytes = byteArrayOf(1, 2, 3), text = null)
         assertTrue(messagesBody!!.contains(""""type":"file""""))
     }
 

@@ -49,12 +49,12 @@ class MaxBotApi(
     fun sendMessage(chatId: Long, body: NewMessageBody): SendMessageResult =
         runBlocking { execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java) }
 
-    /** Uploads [bytes] of the given [type] (audio/image/file) and sends them to [chatId] (see [sendMediaSuspend]). */
-    fun sendMedia(chatId: Long, type: String, bytes: ByteArray, text: String? = null): SendMessageResult =
+    /** Uploads [bytes] of the given [type] and sends them to [chatId] (see [sendMediaSuspend]). */
+    fun sendMedia(chatId: Long, type: MaxMediaType, bytes: ByteArray, text: String? = null): SendMessageResult =
         runBlocking { sendMediaSuspend(chatId, type, bytes, text) }
 
     /** URL-based overload: fetches the bytes from [url] then delegates to the bytes overload. */
-    fun sendMedia(chatId: Long, type: String, url: String, text: String? = null): SendMessageResult =
+    fun sendMedia(chatId: Long, type: MaxMediaType, url: String, text: String? = null): SendMessageResult =
         runBlocking { sendMediaSuspend(chatId, type, fetchBytes(url), text) }
 
     /** Answers a callback query: `POST /answers?callback_id=…` with an optional [message] and [notification]. */
@@ -65,7 +65,7 @@ class MaxBotApi(
      * 3-step media send: obtain an upload endpoint, upload the bytes, then post a message
      * referencing the resulting attachment token (retrying while the attachment is still processing).
      */
-    private suspend fun sendMediaSuspend(chatId: Long, type: String, bytes: ByteArray, text: String?): SendMessageResult {
+    private suspend fun sendMediaSuspend(chatId: Long, type: MaxMediaType, bytes: ByteArray, text: String?): SendMessageResult {
         val endpoint = requestUploadEndpoint(type)
         val mediaToken = uploadBytes(endpoint.url, bytes)
         val body = NewMessageBody(text = text, attachments = listOf(attachmentFor(type, mediaToken)))
@@ -73,10 +73,10 @@ class MaxBotApi(
     }
 
     /** Step 1 — `POST /uploads?type=…` returning the endpoint to upload the binary to. */
-    private suspend fun requestUploadEndpoint(type: String): UploadEndpoint {
+    private suspend fun requestUploadEndpoint(type: MaxMediaType): UploadEndpoint {
         val response = client.post<HttpResponse>("$baseUrl/uploads") {
             accessToken()
-            parameter("type", type)
+            parameter("type", type.apiValue)
         }
         return maxObjectMapper.readValue(checkOrThrow(response), UploadEndpoint::class.java)
     }
@@ -153,10 +153,10 @@ class MaxBotApi(
         }
     )
 
-    private fun attachmentFor(type: String, token: String): MaxAttachmentRequest = when (type) {
-        "image" -> MaxAttachmentRequest.Image(MaxMediaToken(token))
-        "file" -> MaxAttachmentRequest.File(MaxMediaToken(token))
-        else -> MaxAttachmentRequest.Audio(MaxMediaToken(token))
+    private fun attachmentFor(type: MaxMediaType, token: String): MaxAttachmentRequest = when (type) {
+        MaxMediaType.IMAGE -> MaxAttachmentRequest.Image(MaxMediaToken(token))
+        MaxMediaType.AUDIO -> MaxAttachmentRequest.Audio(MaxMediaToken(token))
+        MaxMediaType.FILE -> MaxAttachmentRequest.File(MaxMediaToken(token))
     }
 
     private val MaxApiException.isAttachmentNotReady: Boolean
