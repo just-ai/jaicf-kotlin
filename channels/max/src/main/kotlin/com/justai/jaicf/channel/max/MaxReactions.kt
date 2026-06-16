@@ -6,6 +6,7 @@ import com.justai.jaicf.channel.max.api.MaxMediaType
 import com.justai.jaicf.channel.max.dto.MaxAttachmentRequest
 import com.justai.jaicf.channel.max.dto.MaxButton
 import com.justai.jaicf.channel.max.dto.MaxKeyboardPayload
+import com.justai.jaicf.channel.max.dto.MaxTextFormat
 import com.justai.jaicf.channel.max.dto.NewMessageBody
 import com.justai.jaicf.logging.AudioReaction
 import com.justai.jaicf.logging.ButtonsReaction
@@ -28,7 +29,12 @@ class MaxReactions(
     private val chatId get() = request.chatId
 
     override fun say(text: String): SayReaction {
-        api.sendMessage(chatId, NewMessageBody(text = text, format = "markdown"))
+        api.sendMessage(chatId, NewMessageBody(text = text))
+        return SayReaction.create(text)
+    }
+
+    fun say(text: String, format: MaxTextFormat): SayReaction {
+        api.sendMessage(chatId, NewMessageBody(text = text, format = format.apiValue))
         return SayReaction.create(text)
     }
 
@@ -37,7 +43,6 @@ class MaxReactions(
             chatId,
             NewMessageBody(
                 text = text,
-                format = "markdown",
                 attachments = listOf(keyboard(inlineButtons.map { MaxButton.Callback(it, it) }))
             )
         )

@@ -7,6 +7,7 @@ import com.justai.jaicf.channel.max.dto.MaxButton
 import com.justai.jaicf.channel.max.dto.MaxMessage
 import com.justai.jaicf.channel.max.dto.MaxMessageBody
 import com.justai.jaicf.channel.max.dto.MaxRecipient
+import com.justai.jaicf.channel.max.dto.MaxTextFormat
 import com.justai.jaicf.channel.max.dto.MaxUser
 import com.justai.jaicf.context.BotContext
 import com.justai.jaicf.context.ExecutionContext
@@ -39,6 +40,16 @@ class MaxReactionsTest {
         val r = reactions().say("hello")
         verify { api.sendMessage(202, match { it.text == "hello" }) }
         assertEquals("hello", r.text)
+    }
+
+    @Test fun `say sends plain text with no format by default`() {
+        reactions().say("hi")
+        verify { api.sendMessage(202, match { it.text == "hi" && it.format == null }) }
+    }
+
+    @Test fun `say with format sets the wire format value`() {
+        reactions().say("hi", MaxTextFormat.HTML)
+        verify { api.sendMessage(202, match { it.format == "html" }) }
     }
 
     @Test fun `buttons sends an inline keyboard of callback buttons`() {
