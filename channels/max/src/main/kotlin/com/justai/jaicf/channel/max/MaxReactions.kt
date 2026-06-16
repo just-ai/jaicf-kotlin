@@ -43,7 +43,7 @@ class MaxReactions(
             chatId,
             NewMessageBody(
                 text = text,
-                attachments = listOf(keyboard(inlineButtons.map { MaxButton.Callback(it, it) }))
+                attachments = listOf(keyboardAttachment(inlineButtons.map { MaxButton.Callback(it, it) }))
             )
         )
         return SayReaction.create(text)
@@ -52,7 +52,7 @@ class MaxReactions(
     override fun buttons(vararg buttons: String): ButtonsReaction {
         api.sendMessage(
             chatId,
-            NewMessageBody(attachments = listOf(keyboard(buttons.map { MaxButton.Callback(it, it) })))
+            NewMessageBody(attachments = listOf(keyboardAttachment(buttons.map { MaxButton.Callback(it, it) })))
         )
         return ButtonsReaction.create(buttons.asList())
     }
@@ -60,9 +60,15 @@ class MaxReactions(
     fun requestContactButton(text: String): ButtonsReaction {
         api.sendMessage(
             chatId,
-            NewMessageBody(attachments = listOf(keyboard(listOf(MaxButton.RequestContact(text)))))
+            NewMessageBody(attachments = listOf(keyboardAttachment(listOf(MaxButton.RequestContact(text)))))
         )
         return ButtonsReaction.create(listOf(text))
+    }
+
+    /** Sends [text] (optional) with an inline keyboard of typed [buttons] — callback, url (link) or request_contact, possibly mixed. */
+    fun keyboard(text: String?, buttons: List<MaxButton>): ButtonsReaction {
+        api.sendMessage(chatId, NewMessageBody(text = text, attachments = listOf(keyboardAttachment(buttons))))
+        return ButtonsReaction.create(buttons.map { it.text })
     }
 
     override fun image(url: String): ImageReaction {
@@ -85,6 +91,6 @@ class MaxReactions(
     // Keyboard builder helpers
     // -------------------------------------------------------------------------
 
-    private fun keyboard(buttons: List<MaxButton>) =
+    private fun keyboardAttachment(buttons: List<MaxButton>) =
         MaxAttachmentRequest.InlineKeyboard(MaxKeyboardPayload(buttons.map { listOf(it) }))
 }

@@ -78,4 +78,12 @@ class MaxReactionsTest {
         reactions().sendDocument("https://x/doc.pdf")
         verify { api.sendMedia(202, MaxMediaType.FILE, "https://x/doc.pdf", null) }
     }
+
+    @Test fun `keyboard sends a mixed inline keyboard including a url button`() {
+        reactions().keyboard("pick", listOf(MaxButton.Link("Site", "https://x"), MaxButton.Callback("Yes", "yes")))
+        verify { api.sendMessage(202, match { b ->
+            val row = b.attachments?.filterIsInstance<MaxAttachmentRequest.InlineKeyboard>()?.single()?.payload?.buttons?.flatten().orEmpty()
+            row.any { it is MaxButton.Link && it.url == "https://x" } && row.any { it is MaxButton.Callback }
+        }) }
+    }
 }

@@ -39,12 +39,14 @@ data class MaxMediaToken(val token: String)
     JsonSubTypes.Type(value = MaxButton.RequestContact::class, name = "request_contact")
 )
 sealed class MaxButton {
+    abstract val text: String
+
     @JsonTypeName("callback")
-    data class Callback(val text: String, val payload: String) : MaxButton()
+    data class Callback(override val text: String, val payload: String) : MaxButton()
     @JsonTypeName("link")
-    data class Link(val text: String, val url: String) : MaxButton()
+    data class Link(override val text: String, val url: String) : MaxButton()
     @JsonTypeName("request_contact")
-    data class RequestContact(val text: String) : MaxButton()
+    data class RequestContact(override val text: String) : MaxButton()
 }
 
 /** Result of POST /messages — the created message echoed back. */
