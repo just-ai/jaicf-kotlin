@@ -34,7 +34,7 @@ class MaxBotApi(
     private val apiUrl: String,
     engine: HttpClientEngine = CIO.create { requestTimeout = 30_000 },
     internal val attachmentRetryDelayMs: Long = 500L
-) {
+) : java.io.Closeable {
 
     private val baseUrl = apiUrl.trimEnd('/')
 
@@ -60,6 +60,8 @@ class MaxBotApi(
     /** Answers a callback query: `POST /answers?callback_id=…` with an optional [message] and [notification]. */
     fun answerCallback(callbackId: String, message: NewMessageBody? = null, notification: String? = null): Unit =
         runBlocking { answerCallbackSuspend(callbackId, message, notification) }
+
+    override fun close() = client.close()
 
     /**
      * 3-step media send: obtain an upload endpoint, upload the bytes, then post a message

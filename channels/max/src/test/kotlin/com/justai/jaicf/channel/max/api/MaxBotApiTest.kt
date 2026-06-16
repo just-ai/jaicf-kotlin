@@ -87,4 +87,8 @@ class MaxBotApiTest {
         api.answerCallback(callbackId = "cb1", notification = "done")
         assertTrue(url!!.contains("/answers") && url!!.contains("callback_id=cb1"))
     }
+
+    @Test fun `close does not throw`() {
+        api { respond("{}", HttpStatusCode.OK) }.close()
+    }
 }

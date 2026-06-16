@@ -21,7 +21,7 @@ class MaxChannel(
     // direct Max API use. The outbound auth model is finalized in VS-13663.
     private val maxBotToken: String? = null,
     private val maxApiUrl: String = DEFAULT_API_URL
-) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithLogger {
+) : JaicpCompatibleAsyncBotChannel, InvocableBotChannel, WithLogger, java.io.Closeable {
 
     private val api = MaxBotApi(maxBotToken, maxApiUrl)
     private var liveChatProvider: JaicpLiveChatProvider? = null
@@ -47,6 +47,8 @@ class MaxChannel(
         val botRequest = update.toBotRequest() ?: return
         botApi.process(botRequest, MaxReactions(api, botRequest, liveChatProvider), requestContext)
     }
+
+    override fun close() = api.close()
 
     companion object : JaicpCompatibleAsyncChannelFactory {
         override val channelType = "max"
