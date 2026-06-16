@@ -57,7 +57,7 @@ data class MaxBotAddedRequest(
 
 data class MaxBotStartedRequest(
     val update: BotStartedUpdate
-) : MaxBotRequest, EventBotRequest(clientId = update.user.userId.toString(), input = MaxEvent.BOT_ADDED) {
+) : MaxBotRequest, EventBotRequest(clientId = update.user.userId.toString(), input = MaxEvent.BOT_STARTED) {
     override val chatId = update.chatId
 }
 

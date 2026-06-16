@@ -2,6 +2,7 @@ package com.justai.jaicf.channel.max
 
 import com.justai.jaicf.channel.max.dto.*
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -40,6 +41,12 @@ class MaxBotRequestMappingTest {
         assertTrue(BotAddedUpdate(202, sender).toBotRequest() is MaxBotAddedRequest)
         assertTrue(BotStartedUpdate(202, sender).toBotRequest() is MaxBotStartedRequest)
         assertTrue(BotRemovedUpdate(202, sender).toBotRequest() is MaxBotRemovedRequest)
+    }
+
+    @Test fun `bot events carry distinct inputs`() {
+        assertEquals(MaxEvent.BOT_ADDED, (BotAddedUpdate(202, sender).toBotRequest() as MaxBotAddedRequest).input)
+        assertEquals(MaxEvent.BOT_STARTED, (BotStartedUpdate(202, sender).toBotRequest() as MaxBotStartedRequest).input)
+        assertEquals(MaxEvent.BOT_REMOVED, (BotRemovedUpdate(202, sender).toBotRequest() as MaxBotRemovedRequest).input)
     }
 
     @Test fun `empty message with no supported content returns null`() {

@@ -4,5 +4,6 @@ object MaxEvent {
     const val CONTACT = "contact"
     const val AUDIO = "audio"
     const val BOT_ADDED = "bot_added"
+    const val BOT_STARTED = "bot_started"
     const val BOT_REMOVED = "bot_removed"
 }
