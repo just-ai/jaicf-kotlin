@@ -16,7 +16,7 @@ import com.justai.jaicf.channel.max.dto.UnknownMaxUpdate
  * channel does not handle. Pure and stateless. For created messages, attachments are
  * detected before text so a captioned attachment is never misread as a plain text message.
  */
-fun MaxUpdate.toBotRequest(): MaxBotRequest? = when (this) {
+internal fun MaxUpdate.toBotRequest(): MaxBotRequest? = when (this) {
     is MessageCreatedUpdate -> message.toBotRequest()
     is MessageCallbackUpdate -> message?.let { MaxQueryRequest(callback, it) }
     is BotAddedUpdate -> MaxBotAddedRequest(this)

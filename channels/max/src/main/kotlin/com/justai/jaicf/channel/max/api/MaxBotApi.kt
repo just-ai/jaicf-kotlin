@@ -37,6 +37,7 @@ class MaxBotApi(
 ) : java.io.Closeable {
 
     private val baseUrl = apiUrl.trimEnd('/')
+    private val messagesUrl get() = "$baseUrl/messages"
 
     private val client = HttpClient(engine) {
         expectSuccess = false
@@ -44,10 +45,11 @@ class MaxBotApi(
 
     companion object {
         private const val MAX_ATTACHMENT_RETRIES = 3
+        private const val ATTACHMENT_NOT_READY = "attachment.not.ready"
     }
 
     fun sendMessage(chatId: Long, body: NewMessageBody): SendMessageResult =
-        runBlocking { execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java) }
+        runBlocking { execute(messagesUrl, chatId, body, SendMessageResult::class.java) }
 
     /** Uploads [bytes] of the given [type] and sends them to [chatId] (see [sendMediaSuspend]). */
     fun sendMedia(chatId: Long, type: MaxMediaType, bytes: ByteArray, text: String? = null): SendMessageResult =
@@ -93,14 +95,14 @@ class MaxBotApi(
     private suspend fun sendWithAttachmentRetry(chatId: Long, body: NewMessageBody): SendMessageResult {
         repeat(MAX_ATTACHMENT_RETRIES - 1) {
             try {
-                return execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java)
+                return execute(messagesUrl, chatId, body, SendMessageResult::class.java)
             } catch (e: MaxApiException) {
                 if (!e.isAttachmentNotReady) throw e
                 delay(attachmentRetryDelayMs)
             }
         }
         // Final attempt: let any exception propagate to the caller.
-        return execute("$baseUrl/messages", chatId, body, SendMessageResult::class.java)
+        return execute(messagesUrl, chatId, body, SendMessageResult::class.java)
     }
 
     private suspend fun answerCallbackSuspend(callbackId: String, message: NewMessageBody?, notification: String?) {
@@ -162,5 +164,5 @@ class MaxBotApi(
     }
 
     private val MaxApiException.isAttachmentNotReady: Boolean
-        get() = httpStatus == 400 && code == "attachment.not.ready"
+        get() = httpStatus == 400 && code == ATTACHMENT_NOT_READY
 }
