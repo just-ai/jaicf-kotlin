@@ -3,6 +3,8 @@ rootProject.name = "jaicf"
 include("core")
 
 include("examples:hello-world")
+include("examples:mr-happy")
+findProject(":examples:mr-happy")?.name = "mr-happy"
 findProject(":examples:hello-world")?.name = "hello-world"
 include("examples:jaicp-telephony")
 findProject(":examples:jaicp-telephony")?.name = "jaicp-telephony"
