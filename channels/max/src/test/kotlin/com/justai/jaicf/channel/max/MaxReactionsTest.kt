@@ -52,6 +52,15 @@ class MaxReactionsTest {
         verify { api.sendMessage(202, match { it.format == "html" }) }
     }
 
+    @Test fun `say with inline buttons sends text plus a callback keyboard`() {
+        reactions().say("pick", listOf("Yes", "No"))
+        verify { api.sendMessage(202, match { b ->
+            b.text == "pick" &&
+                b.attachments?.filterIsInstance<MaxAttachmentRequest.InlineKeyboard>()?.singleOrNull()
+                    ?.payload?.buttons?.flatten()?.all { it is MaxButton.Callback } == true
+        }) }
+    }
+
     @Test fun `buttons sends an inline keyboard of callback buttons`() {
         reactions().buttons("Yes", "No")
         verify { api.sendMessage(202, match { b ->

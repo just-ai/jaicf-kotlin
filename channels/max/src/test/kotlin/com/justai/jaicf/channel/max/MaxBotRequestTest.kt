@@ -20,7 +20,7 @@ class MaxBotRequestTest {
 
     @Test fun `callback request uses payload as input and callback user as client`() {
         val cb = MaxCallback(callbackId = "cb1", payload = "press_yes", user = sender)
-        val r = MaxQueryRequest(cb, msg("choose"))
+        val r = MaxCallbackRequest(cb, msg("choose"))
         assertEquals("101", r.clientId)
         assertEquals("press_yes", r.input)
         assertEquals(202L, r.chatId)

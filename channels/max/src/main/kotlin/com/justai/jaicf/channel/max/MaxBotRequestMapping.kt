@@ -18,7 +18,7 @@ import com.justai.jaicf.channel.max.dto.UnknownMaxUpdate
  */
 internal fun MaxUpdate.toBotRequest(): MaxBotRequest? = when (this) {
     is MessageCreatedUpdate -> message.toBotRequest()
-    is MessageCallbackUpdate -> message?.let { MaxQueryRequest(callback, it) }
+    is MessageCallbackUpdate -> message?.let { MaxCallbackRequest(callback, it) }
     is BotAddedUpdate -> MaxBotAddedRequest(this)
     is BotStartedUpdate -> MaxBotStartedRequest(this)
     is BotRemovedUpdate -> MaxBotRemovedRequest(this)

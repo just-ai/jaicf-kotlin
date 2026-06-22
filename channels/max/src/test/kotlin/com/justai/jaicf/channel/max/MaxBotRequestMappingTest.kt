@@ -27,9 +27,9 @@ class MaxBotRequestMappingTest {
         assertTrue(u.toBotRequest() is MaxAudioRequest)
     }
 
-    @Test fun `callback maps to MaxQueryRequest`() {
+    @Test fun `callback maps to MaxCallbackRequest`() {
         val u = MessageCallbackUpdate(MaxCallback("cb1", "p", sender), created("x").message)
-        assertTrue(u.toBotRequest() is MaxQueryRequest)
+        assertTrue(u.toBotRequest() is MaxCallbackRequest)
     }
 
     @Test fun `callback with null message returns null`() {

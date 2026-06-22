@@ -24,7 +24,9 @@ import kotlinx.coroutines.runBlocking
 /**
  * HTTP client for the Max Bot API.
  *
- * @param token Bot access token; appended as `access_token` query parameter when non-null.
+ * @param token Bot access token, appended as the `access_token` query parameter. Pass `null` in
+ *   JAICP-proxied mode — there JAICP cloud injects the bot's auth server-side and the channel sends no
+ *   token of its own; set a real token only for standalone, direct Max API use.
  * @param apiUrl Base URL of the Max Bot API (e.g. "https://botapi.max.ru").
  * @param engine Ktor [HttpClientEngine] — default is CIO; override with [MockEngine] in tests.
  * @param attachmentRetryDelayMs Delay between `attachment.not.ready` retries (ms). Exposed for testing.

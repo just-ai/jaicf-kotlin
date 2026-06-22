@@ -19,7 +19,7 @@ val BotRequest.max get() = this as? MaxBotRequest
 val MaxBotRequest.text get() = this as? MaxTextRequest
 val MaxBotRequest.contact get() = this as? MaxContactRequest
 val MaxBotRequest.audio get() = this as? MaxAudioRequest
-val MaxBotRequest.callback get() = this as? MaxQueryRequest
+val MaxBotRequest.callback get() = this as? MaxCallbackRequest
 val MaxBotRequest.botAdded get() = this as? MaxBotAddedRequest
 val MaxBotRequest.botStarted get() = this as? MaxBotStartedRequest
 val MaxBotRequest.botRemoved get() = this as? MaxBotRemovedRequest
@@ -42,7 +42,7 @@ data class MaxAudioRequest(
     override val chatId = message.recipient.chatId
 }
 
-data class MaxQueryRequest(
+data class MaxCallbackRequest(
     val callbackData: MaxCallback,
     val message: MaxMessage
 ) : MaxBotRequest, QueryBotRequest(clientId = callbackData.user.userId.toString(), input = callbackData.payload.orEmpty()) {

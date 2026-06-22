@@ -27,17 +27,22 @@ class MaxChannel(
     private var liveChatProvider: JaicpLiveChatProvider? = null
 
     override fun process(request: HttpBotRequest): HttpBotResponse {
-        val update = maxObjectMapper.readValue(request.receiveText(), MaxUpdate::class.java)
-        val botRequest = update.toBotRequest()
-        if (botRequest == null) {
-            logger.debug("No request converter for Max update: $update")
-            return HttpBotResponse.accepted()
+        // Always acknowledge the JAICP webhook with 202; processing errors are logged, never surfaced as 500.
+        try {
+            val update = maxObjectMapper.readValue(request.receiveText(), MaxUpdate::class.java)
+            val botRequest = update.toBotRequest()
+            if (botRequest == null) {
+                logger.debug("No request converter for Max update of type ${update::class.simpleName}")
+            } else {
+                botApi.process(
+                    botRequest,
+                    MaxReactions(api, botRequest, liveChatProvider),
+                    RequestContext.fromHttp(request)
+                )
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to process Max update", e)
         }
-        botApi.process(
-            botRequest,
-            MaxReactions(api, botRequest, liveChatProvider),
-            RequestContext.fromHttp(request)
-        )
         return HttpBotResponse.accepted()
     }
 
