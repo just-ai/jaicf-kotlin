@@ -4,6 +4,7 @@ import com.justai.jaicf.channel.max.api.MaxBotApi
 import com.justai.jaicf.channel.max.api.MaxMediaType
 import com.justai.jaicf.channel.max.dto.MaxAttachmentRequest
 import com.justai.jaicf.channel.max.dto.MaxButton
+import com.justai.jaicf.channel.max.dto.MaxCallback
 import com.justai.jaicf.channel.max.dto.MaxMessage
 import com.justai.jaicf.channel.max.dto.MaxMessageBody
 import com.justai.jaicf.channel.max.dto.MaxRecipient
@@ -81,6 +82,15 @@ class MaxReactionsTest {
         val r = reactions().audio("https://x/a.mp3")
         verify { api.sendMedia(202, MaxMediaType.AUDIO, "https://x/a.mp3", null) }
         assertEquals("https://x/a.mp3", r.audioUrl)
+    }
+
+    @Test fun `answerCallback acknowledges the callback that triggered the request`() {
+        val cb = MaxCallback(callbackId = "cb1", payload = "p", user = MaxUser(101))
+        val callbackRequest = MaxCallbackRequest(
+            cb, MaxMessage(MaxUser(101), MaxRecipient(chatId = 202), body = MaxMessageBody())
+        )
+        MaxReactions(api, callbackRequest, liveChatProvider = null).answerCallback("done")
+        verify { api.answerCallback("cb1", notification = "done") }
     }
 
     @Test fun `sendDocument calls api sendMedia with type file`() {

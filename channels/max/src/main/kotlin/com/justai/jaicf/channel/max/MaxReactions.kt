@@ -71,6 +71,15 @@ class MaxReactions(
         return ButtonsReaction.create(buttons.map { it.text })
     }
 
+    /**
+     * Acknowledges the inline-button callback that triggered the current request (Max `POST /answers`),
+     * optionally showing [notification] to the user. No-op when the request is not a callback.
+     */
+    fun answerCallback(notification: String? = null) {
+        val callbackId = (request as? MaxCallbackRequest)?.callbackData?.callbackId ?: return
+        api.answerCallback(callbackId, notification = notification)
+    }
+
     override fun image(url: String): ImageReaction {
         api.sendMedia(chatId, MaxMediaType.IMAGE, url, text = null)
         return ImageReaction.create(url)

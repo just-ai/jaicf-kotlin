@@ -31,6 +31,8 @@ private fun MaxMessage.toBotRequest(): MaxBotRequest? {
         attachments.any { it is MaxContactAttachment } -> MaxContactRequest(this)
         attachments.any { it is MaxAudioAttachment } -> MaxAudioRequest(this)
         !body.text.isNullOrBlank() -> MaxTextRequest(this)
+        // Inbound is intentionally scoped to text, contact and audio (VS-13661). A message carrying
+        // only image/file/video/sticker (no text) is not surfaced to scenarios in this MVP scope.
         else -> null
     }
 }
